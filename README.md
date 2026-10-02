@@ -28,6 +28,7 @@ Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
 |---|---|
 | `backend/` | Spring Boot (Java, Maven) – REST-API, Geschäftslogik, Datenbankzugriff |
 | `frontend/` | React + TypeScript (Vite) – Weboberfläche |
+| `docs/roadmap.md` | Plan aller Pakete + Nachverfolgung der Bugs aus der Analyse |
 | `docs/adr/` | Architektur-Entscheide (*Architecture Decision Records*) |
 | `docs/analyse/` | Analyse der alten App: Funktionsumfang, Bugs, UI-Review mit Screenshots |
 
@@ -97,14 +98,14 @@ Läuft auf http://localhost:5173. Aufrufe nach `/api/*` leitet Vite ans Backend
 
 ## Roadmap
 
-- [x] 1a – Repository & Struktur
-- [x] 1b – Backend-Grundgerüst (Health-Endpoint)
-- [x] 1c – PostgreSQL + Flyway
-- [x] 1d – Frontend-Grundgerüst
-- [x] 1e – Alles in Docker Compose
-- [ ] 2+ – Fachliche Module (Mitarbeiter, Aufträge, Ersatzwagen, …)
-- [ ] Datenmigration aus der alten App
-- [ ] Deployment auf das NAS (Version 1)
+Detaillierter Plan mit allen Paketen: [`docs/roadmap.md`](docs/roadmap.md)
+
+| Phase | Thema | Status |
+|---|---|---|
+| 1 | Grundgerüst | ✅ |
+| 2 | Fundament (CI, Konventionen, UI-Bausteine, Live-Updates) | |
+| 3–10 | Fachmodule: Mitarbeiter, Stammdaten, Kunden/Import, Aufträge, Ersatzwagen, To-dos/Pinnwand, Abwesenheiten, Dashboard | |
+| 11 | Migration & Go-Live auf dem NAS | |
 
 ## Arbeitsweise
 
