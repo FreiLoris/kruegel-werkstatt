@@ -37,6 +37,20 @@ spring:
 server:
   port: 8080
 
+# OpenAPI-Beschreibung der API (springdoc).
+#   /api/openapi    Beschreibung als JSON (daraus entstehen die Frontend-Typen)
+#   /api/docs       Swagger UI – API im Browser ansehen und ausprobieren
+springdoc:
+  api-docs:
+    path: /api/openapi
+  swagger-ui:
+    path: /api/docs
+  # Nur unsere API beschreiben (keine Test-Endpoints, kein Actuator)
+  paths-to-match: /api/**
+  # Stabile, gut lesbare Ausgabe → saubere Diffs im Pull Request
+  writer-with-default-pretty-printer: true
+  writer-with-order-by-keys: true
+
 # Actuator: Betriebs-Endpoints von Spring Boot.
 # Wir veröffentlichen nur "health" und legen ihn unter /api,
 # damit später alles Backend-seitige unter einem Pfad liegt (nginx leitet /api weiter).
@@ -46,6 +60,9 @@ management:
       base-path: /api
       exposure:
         include: health
+      # Keine Übersichtsseite aller Actuator-Endpoints unter /api
+      discovery:
+        enabled: false
   endpoint:
     health:
       # Internes Tool: Details (z.B. Datenbank-Status ab Schritt 1c) immer anzeigen.

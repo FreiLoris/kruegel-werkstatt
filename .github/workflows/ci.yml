@@ -37,6 +37,15 @@ jobs:
       - name: Build & Test
         run: ./mvnw -B verify
 
+      # Die Tests schreiben api/openapi.json neu. Weicht sie von der eingecheckten
+      # Datei ab, wurde die API geändert, ohne den Vertrag mitzuliefern.
+      - name: API-Vertrag aktuell?
+        run: |
+          git diff --exit-code ../api/openapi.json || {
+            echo "::error::api/openapi.json ist veraltet. Lokal './mvnw test' ausführen und die Datei committen."
+            exit 1
+          }
+
   frontend:
     name: Frontend (Lint & Build)
     runs-on: ubuntu-latest
@@ -54,6 +63,15 @@ jobs:
 
       - name: Abhängigkeiten installieren
         run: npm ci
+
+      # Typen neu aus api/openapi.json erzeugen – müssen der eingecheckten Datei entsprechen.
+      - name: API-Typen aktuell?
+        run: |
+          npm run api:generate
+          git diff --exit-code src/api/schema.d.ts || {
+            echo "::error::src/api/schema.d.ts ist veraltet. Lokal 'npm run api:generate' ausführen und die Datei committen."
+            exit 1
+          }
 
       - name: Lint
         run: npm run lint
