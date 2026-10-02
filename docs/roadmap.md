@@ -16,7 +16,7 @@ Quellen: [`analyse/TIEFENANALYSE_NEUBAU.md`](analyse/TIEFENANALYSE_NEUBAU.md) (F
 | Phase | Thema | Ergebnis |
 |---|---|---|
 | 1 | Grundgerüst ✅ | Repo, Backend, DB, Frontend, Docker Compose |
-| 2 | Fundament | CI, Konventionen, API-Vertrag, UI-Grundbausteine, Live-Updates |
+| 2 | Fundament ✅ | CI, Konventionen, API-Vertrag, UI-Grundbausteine, Live-Updates |
 | 3 | Mitarbeiter | Erstes Fachmodul = Vorlage für alle weiteren |
 | 4 | Stammdaten | Lifts, Service-Leistungen, Ersatzwagen-Fahrzeuge, Feiertage |
 | 5 | Kunden, Fahrzeuge, Import | SwissGarage-Import serverseitig, Kundensuche |
@@ -37,7 +37,7 @@ Quellen: [`analyse/TIEFENANALYSE_NEUBAU.md`](analyse/TIEFENANALYSE_NEUBAU.md) (F
 - [x] 1d – Frontend-Grundgerüst
 - [x] 1e – Alles in Docker Compose
 
-## Phase 2 – Fundament
+## Phase 2 – Fundament ✅
 
 Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in jedem Modul neu.
 
@@ -61,7 +61,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
   (Esc schliesst, Sticky-Footer), Toast (nicht hinter anderen Elementen), Bestätigungsdialog.
   Touch-taugliche Grössen (min. 44 px). Schrift + Icons lokal statt CDN (läuft ohne Internet).
   Dropdowns schliessen bei Esc/Klick daneben (→ F9).
-- [ ] **2g – Live-Updates (SSE)**
+- [x] **2g – Live-Updates (SSE)**
   Backend sendet „X hat sich geändert" an alle Geräte, Frontend lädt betroffene Daten neu.
   Ersetzt Socket.IO der alten App. Verbindungsstatus im UI sichtbar.
 

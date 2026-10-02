@@ -109,7 +109,7 @@ Detaillierter Plan mit allen Paketen: [`docs/roadmap.md`](docs/roadmap.md)
 | Phase | Thema | Status |
 |---|---|---|
 | 1 | Grundgerüst | ✅ |
-| 2 | Fundament (CI, Konventionen, UI-Bausteine, Live-Updates) | |
+| 2 | Fundament (CI, Konventionen, UI-Bausteine, Live-Updates) | ✅ |
 | 3–10 | Fachmodule: Mitarbeiter, Stammdaten, Kunden/Import, Aufträge, Ersatzwagen, To-dos/Pinnwand, Abwesenheiten, Dashboard | |
 | 11 | Migration & Go-Live auf dem NAS | |
 

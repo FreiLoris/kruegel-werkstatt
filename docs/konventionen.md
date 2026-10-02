@@ -61,6 +61,21 @@ frontend/src/
   `formatZeitpunkt`). Nie `new Date("2026-10-15")` für fachliche Daten.
 - **Tests** (Vitest) liegen neben der Datei: `format.ts` → `format.test.ts`.
 
+## Live-Updates
+
+Ändert ein Gerät Daten, laden alle anderen offenen Browser die betroffenen Daten sofort neu.
+
+```
+Service speichert ─▶ publishEvent(new DatenGeaendert("mitarbeiter")) ─▶ nach Commit an alle Browser
+Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbeiter']) ─▶ lädt neu
+```
+
+- **Backend:** Jeder Service, der Daten ändert, veröffentlicht danach `DatenGeaendert` mit
+  seinem Bereich. Verschickt wird automatisch erst nach erfolgreichem Commit.
+- **Frontend:** Der **erste Teil jedes Query-Keys ist der Bereich** – genau derselbe Text wie
+  im Backend: `['mitarbeiter']`, `['mitarbeiter', id]`. Sonst kommen Änderungen nicht an.
+- Bereichsnamen: Kleinbuchstaben, Mehrzahl wie die API-Pfade (`mitarbeiter`, `auftraege`, `todos`).
+
 ## UI-Bausteine & Gestaltung
 
 Übersicht aller Bausteine mit Beispielen: http://localhost:5173/system/komponenten

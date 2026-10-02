@@ -7,6 +7,40 @@
   "servers" : [ {
     "url" : "/"
   } ],
-  "paths" : { },
-  "components" : { }
+  "paths" : {
+    "/api/live" : {
+      "get" : {
+        "description" : "Ereignisse: 'verbunden' (direkt nach dem Verbinden) und 'aenderung' (Daten eines Bereichs haben sich geändert → neu laden).",
+        "operationId" : "live",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "text/event-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatenGeaendert"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Live-Verbindung für Änderungen (Server-Sent Events)",
+        "tags" : [ "live-controller" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "DatenGeaendert" : {
+        "type" : "object",
+        "properties" : {
+          "bereich" : {
+            "type" : "string",
+            "example" : "mitarbeiter"
+          }
+        },
+        "required" : [ "bereich" ]
+      }
+    }
+  }
 }

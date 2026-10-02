@@ -1,6 +1,8 @@
 import { Wrench } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router'
 import styles from './AppLayout.module.css'
+import { LiveAnzeige } from './live/LiveAnzeige'
+import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
 
 /**
@@ -8,6 +10,8 @@ import { navigation } from './navigation'
  * `<Outlet />` ist die Stelle, an der der Router die aktuelle Seite einsetzt.
  */
 export function AppLayout() {
+  const liveStatus = useLiveUpdates()
+
   return (
     <>
       <header className={styles.kopfzeile}>
@@ -28,6 +32,7 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <LiveAnzeige status={liveStatus} />
       </header>
       <main className={styles.inhalt}>
         <Outlet />
