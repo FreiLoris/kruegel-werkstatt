@@ -17,6 +17,12 @@ public interface MitarbeiterRepository extends JpaRepository<Mitarbeiter, UUID> 
     /** Nur aktive, in der festen Reihenfolge – für alle Auswahllisten. */
     List<Mitarbeiter> findByAktivTrueOrderByReihenfolgeAscNameAsc();
 
+    /** Gibt es schon einen aktiven Mitarbeiter mit diesem Namen (Gross-/Kleinschreibung egal)? */
+    boolean existsByAktivTrueAndNameIgnoreCase(String name);
+
+    /** Wie oben, aber ohne die Person selbst (beim Bearbeiten). */
+    boolean existsByAktivTrueAndNameIgnoreCaseAndIdNot(String name, UUID id);
+
     /** Für neue Einträge: ans Ende der Liste setzen. */
     @Query("select coalesce(max(m.reihenfolge), -1) + 1 from Mitarbeiter m")
     int naechsteReihenfolge();

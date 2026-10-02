@@ -2,9 +2,9 @@
  * Fehler aus der Backend-API.
  *
  * Das Backend antwortet bei jedem Fehler im Format "Problem Details" (RFC 9457),
- * siehe GlobalExceptionHandler im Backend. Der Typ ist hier von Hand beschrieben,
- * weil er (noch) nicht im generierten Vertrag vorkommt – sobald Endpoints existieren,
- * nimmt springdoc ihn auf.
+ * siehe GlobalExceptionHandler im Backend. Der Typ ist hier bewusst von Hand beschrieben:
+ * Das generierte `ProblemDetail` im Vertrag bildet Springs interne Klasse ab (Zusatzfelder
+ * als `properties`), nicht das tatsächliche JSON mit unserem Feld `fehler`.
  */
 
 export interface Feldfehler {

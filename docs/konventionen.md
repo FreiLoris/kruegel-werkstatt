@@ -117,6 +117,19 @@ Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbei
 - Beziehungen immer mit Fremdschlüssel (`REFERENCES …`), Regeln möglichst als Constraint.
 - Hibernate erzeugt nie Tabellen (`ddl-auto: validate`).
 
+## API-Design (Vorlage: Modul `mitarbeiter`)
+
+| Was | Regel |
+|---|---|
+| Ausgabe | `…Dto`-Record, z. B. `MitarbeiterDto`. Enthält **immer alle Felder** (leere als `null`) und die `version`. Entities verlassen das Backend nie. |
+| Eingabe | `…Eingabe`-Record mit Bean Validation. **Flach** – dieselbe für Anlegen und Bearbeiten; beim Bearbeiten zusätzlich `version`. |
+| Anlegen | `POST /api/<bereich>` → **201** mit `Location`-Header |
+| Bearbeiten | `PUT /api/<bereich>/{id}` mit `version` → 409 bei veraltetem Stand |
+| Löschen | Stammdaten, auf die andere Daten verweisen, werden **deaktiviert** (`POST …/{id}/deaktivieren`), nicht gelöscht |
+| Regel braucht DB | im Service prüfen und `throw new EingabeFehlerException("feld", "…")` → erscheint beim Formularfeld |
+| Nach dem Speichern | `repository.flush()` (damit die zurückgegebene `version` stimmt) und `publishEvent(new DatenGeaendert(BEREICH))` |
+| Tests | API-Test von aussen (`…ApiTest`, MockMvcTester), Repository-Test, Unit-Test für Regeln |
+
 ## API-Fehler
 
 Alle Fehler kommen im Format **Problem Details** (RFC 9457, `application/problem+json`),
