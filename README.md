@@ -36,21 +36,37 @@ Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
 Voraussetzung: **JDK 25** (in IntelliJ: *File → Project Structure → SDK*). Maven muss nicht
 installiert sein – der Maven Wrapper (`mvnw`) lädt die richtige Version selbst.
 
-### Backend
+Zusätzlich: **Docker Desktop** muss laufen (für die Datenbank und für die Tests).
+
+### 1. Datenbank
+
+```bash
+docker compose up -d        # PostgreSQL starten (Port 5432)
+docker compose down         # stoppen – Daten bleiben erhalten
+docker compose down -v      # stoppen UND Daten löschen (frische DB)
+```
+
+Zugangsdaten: Standardwerte reichen lokal. Zum Anpassen `.env.example` nach `.env` kopieren.
+
+### 2. Backend
 
 ```bash
 cd backend
 ./mvnw spring-boot:run      # Windows: mvnw.cmd spring-boot:run
-./mvnw test                 # Tests ausführen
+./mvnw test                 # Tests – starten eigenes Postgres via Testcontainers
 ```
 
 Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/health
+(zeigt auch, ob die Datenbank erreichbar ist).
+
+Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
+`backend/src/main/resources/db/migration` aus.
 
 ## Roadmap
 
 - [x] 1a – Repository & Struktur
 - [x] 1b – Backend-Grundgerüst (Health-Endpoint)
-- [ ] 1c – PostgreSQL + Flyway
+- [x] 1c – PostgreSQL + Flyway
 - [ ] 1d – Frontend-Grundgerüst
 - [ ] 1e – Alles in Docker Compose
 - [ ] 2+ – Fachliche Module (Mitarbeiter, Aufträge, Ersatzwagen, …)
