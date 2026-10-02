@@ -1,0 +1,30 @@
+# Docker Compose für die Werkstatt-App.
+# Aktuell nur die Datenbank – Backend und Frontend folgen in Schritt 1e.
+#
+#   docker compose up -d      starten (im Hintergrund)
+#   docker compose down       stoppen (Daten bleiben im Volume erhalten)
+#
+# Zugangsdaten kommen aus der Datei .env (Vorlage: .env.example).
+# Ohne .env gelten die Standardwerte hinter ":-" – reicht für die lokale Entwicklung.
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-werkstatt}
+      POSTGRES_USER: ${DB_USER:-werkstatt}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-werkstatt}
+    ports:
+      # Nur für die lokale Entwicklung: Backend läuft (noch) ausserhalb von Docker.
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:

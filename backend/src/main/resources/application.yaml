@@ -2,6 +2,18 @@ spring:
   application:
     name: werkstatt
 
+  # Verbindung zur PostgreSQL-Datenbank.
+  # Werte kommen aus Umgebungsvariablen, sonst gelten die Standardwerte
+  # (passend zu compose.yaml für die lokale Entwicklung).
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:werkstatt}
+    username: ${DB_USER:werkstatt}
+    password: ${DB_PASSWORD:werkstatt}
+
+  # Flyway führt beim Start alle neuen Skripte aus src/main/resources/db/migration aus.
+  flyway:
+    locations: classpath:db/migration
+
 server:
   port: 8080
 
