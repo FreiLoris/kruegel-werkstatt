@@ -70,7 +70,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
 Einfachstes Fachmodul. Hier entsteht das Muster (DB → Entity → Service → API → UI → Tests),
 nach dem alle weiteren Module gebaut werden.
 
-- [ ] **3a – Datenmodell Mitarbeiter**
+- [x] **3a – Datenmodell Mitarbeiter**
   Tabelle + Entity: Name, Rolle (Mechaniker/Büro/Praktikum/Lernender/Geschäftsführung),
   Farbe, Geburtstag, Ferienanspruch, Flags (als Mechaniker wählbar / für To-dos & Notizen /
   eigene Pinnwand-Spalte), aktiv. Testdaten nur im Entwicklungsprofil (→ Bug #9).
