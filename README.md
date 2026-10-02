@@ -33,12 +33,23 @@ Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
 
 ## Lokal starten
 
-*Folgt mit Schritt 1b–1e.*
+Voraussetzung: **JDK 25** (in IntelliJ: *File → Project Structure → SDK*). Maven muss nicht
+installiert sein – der Maven Wrapper (`mvnw`) lädt die richtige Version selbst.
+
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run      # Windows: mvnw.cmd spring-boot:run
+./mvnw test                 # Tests ausführen
+```
+
+Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/health
 
 ## Roadmap
 
 - [x] 1a – Repository & Struktur
-- [ ] 1b – Backend-Grundgerüst (Health-Endpoint)
+- [x] 1b – Backend-Grundgerüst (Health-Endpoint)
 - [ ] 1c – PostgreSQL + Flyway
 - [ ] 1d – Frontend-Grundgerüst
 - [ ] 1e – Alles in Docker Compose

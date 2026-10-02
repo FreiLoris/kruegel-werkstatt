@@ -22,7 +22,7 @@ Rahmenbedingungen:
 | Bereich | Wahl |
 |---|---|
 | Datenbank | **PostgreSQL** |
-| Backend | **Java 25 + Spring Boot 4**, Build mit **Maven** |
+| Backend | **Java 25 + Spring Boot 4** (Start mit 4.1.1), Build mit **Maven** |
 | DB-Migrationen | **Flyway** (Schema nur über versionierte SQL-Skripte) |
 | Frontend | **React + TypeScript mit Vite**, ausgeliefert als statische Dateien über **nginx** |
 | Live-Updates | **Server-Sent Events (SSE)** |

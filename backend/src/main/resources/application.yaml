@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: werkstatt
+
+server:
+  port: 8080
+
+# Actuator: Betriebs-Endpoints von Spring Boot.
+# Wir veröffentlichen nur "health" und legen ihn unter /api,
+# damit später alles Backend-seitige unter einem Pfad liegt (nginx leitet /api weiter).
+management:
+  endpoints:
+    web:
+      base-path: /api
+      exposure:
+        include: health
+  endpoint:
+    health:
+      # Internes Tool: Details (z.B. Datenbank-Status ab Schritt 1c) immer anzeigen.
+      show-details: always
