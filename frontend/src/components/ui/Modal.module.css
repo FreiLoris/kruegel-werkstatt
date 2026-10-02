@@ -1,0 +1,69 @@
+.dialog {
+  width: min(32rem, calc(100vw - 2 * var(--abstand-4)));
+  max-height: calc(100dvh - 2 * var(--abstand-6));
+  padding: 0;
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-gross);
+  background: var(--farbe-flaeche);
+  color: var(--farbe-text);
+  box-shadow: var(--schatten);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.breit {
+  width: min(56rem, calc(100vw - 2 * var(--abstand-4)));
+}
+
+/* Kopf und Fuss fix, Inhalt scrollt */
+.rahmen {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+
+.kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--abstand-3);
+  padding: var(--abstand-3) var(--abstand-3) var(--abstand-3) var(--abstand-5);
+  border-bottom: 1px solid var(--farbe-rand);
+}
+
+.titel {
+  margin: 0;
+  font-size: var(--schrift-gross);
+}
+
+.schliessen {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--farbe-text-gedaempft);
+  cursor: pointer;
+}
+
+.schliessen:hover {
+  background: var(--farbe-flaeche-erhoeht);
+  color: var(--farbe-text);
+}
+
+.inhalt {
+  overflow-y: auto;
+  padding: var(--abstand-5);
+}
+
+.fuss {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--abstand-2);
+  padding: var(--abstand-3) var(--abstand-5);
+  border-top: 1px solid var(--farbe-rand);
+}

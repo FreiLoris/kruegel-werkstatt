@@ -56,7 +56,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
 - [x] **2e – Frontend-Fundament: Routing & Datenabfragen**
   React Router (eine URL pro Seite), TanStack Query (Laden, Caching, Neuladen),
   App-Layout mit Navigation. Formatierung zentral: Datum immer `dd.mm.yyyy` (→ F7).
-- [ ] **2f – UI-Grundbausteine**
+- [x] **2f – UI-Grundbausteine**
   Design-Tokens (Farben, Abstände, Schrift), Button, Eingabefelder mit Label, Select, Modal
   (Esc schliesst, Sticky-Footer), Toast (nicht hinter anderen Elementen), Bestätigungsdialog.
   Touch-taugliche Grössen (min. 44 px). Schrift + Icons lokal statt CDN (läuft ohne Internet).

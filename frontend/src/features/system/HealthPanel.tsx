@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import styles from './HealthPanel.module.css'
 import { fetchHealth } from './healthApi'
 
 /**
@@ -17,27 +18,27 @@ export function HealthPanel() {
   })
 
   if (isPending) {
-    return <p className="muted">Prüfe Verbindung …</p>
+    return <p className="gedaempft">Prüfe Verbindung …</p>
   }
 
   const backendUp = !error
   const dbUp = data?.components?.db?.status === 'UP'
 
   return (
-    <ul className="status-list">
-      <StatusRow label="Backend" ok={backendUp} />
-      <StatusRow label="Datenbank" ok={dbUp} />
-      {error && <li className="status-row status-message muted">{error.message}</li>}
+    <ul className={styles.liste}>
+      <StatusZeile label="Backend" ok={backendUp} />
+      <StatusZeile label="Datenbank" ok={dbUp} />
+      {error && <li className={`${styles.zeile} ${styles.meldung}`}>{error.message}</li>}
     </ul>
   )
 }
 
-function StatusRow({ label, ok }: { label: string; ok: boolean }) {
+function StatusZeile({ label, ok }: { label: string; ok: boolean }) {
   return (
-    <li className="status-row">
-      <span className={ok ? 'dot dot-ok' : 'dot dot-error'} aria-hidden />
+    <li className={styles.zeile}>
+      <span className={`${styles.punkt} ${ok ? styles.ok : styles.fehler}`} aria-hidden />
       <span>{label}</span>
-      <span className="muted">{ok ? 'erreichbar' : 'nicht erreichbar'}</span>
+      <span className="gedaempft">{ok ? 'erreichbar' : 'nicht erreichbar'}</span>
     </li>
   )
 }

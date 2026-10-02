@@ -61,6 +61,25 @@ frontend/src/
   `formatZeitpunkt`). Nie `new Date("2026-10-15")` für fachliche Daten.
 - **Tests** (Vitest) liegen neben der Datei: `format.ts` → `format.test.ts`.
 
+## UI-Bausteine & Gestaltung
+
+Übersicht aller Bausteine mit Beispielen: http://localhost:5173/system/komponenten
+
+| Baustein | Datei | Verwendung |
+|---|---|---|
+| Button | `components/ui/Button.tsx` | `variante` primaer/sekundaer/gefahr/ghost, `icon`, `laedt` |
+| Eingabefelder | `components/ui/Felder.tsx` | `Textfeld`, `Textbereich`, `Auswahl`, `Checkbox` – immer mit `label`, Fehler über `fehler` |
+| Modal | `components/ui/Modal.tsx` | Buttons in `fuss` (bleibt sichtbar), Esc/Hintergrund schliesst |
+| Toast | `useToast()` | `toast.erfolg('…')`, `toast.fehler('…')` |
+| Bestätigung | `useBestaetigung()` | `if (await bestaetige({ titel, text, gefaehrlich: true })) …` – nie `window.confirm()` |
+| Menü | `components/ui/Menue.tsx` | Aufklappmenü, schliesst bei Esc/Klick daneben |
+
+- **Keine fixen Farben/Abstände** im CSS – nur Variablen aus `styles/tokens.css`.
+- **CSS pro Komponente** als CSS-Modul (`Button.module.css`) – Klassennamen gelten nur dort.
+- **Icons** aus `lucide-react`, mit `aria-hidden`, wenn daneben Text steht.
+- **Klickbares mindestens 44 px hoch** (`var(--touch-min)`) – Tablets.
+- **Schrift und Icons sind lokal** im Build – die App braucht kein Internet.
+
 ## Entitäten
 
 - Erben von `BaseEntity` → automatisch `id` (UUIDv7), `version`, `erstelltAm`, `geaendertAm`.

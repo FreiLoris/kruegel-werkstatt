@@ -1,0 +1,41 @@
+.liste {
+  list-style: none;
+  margin: var(--abstand-5) 0 0;
+  padding: 0;
+  max-width: 32rem;
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  background: var(--farbe-flaeche);
+}
+
+.zeile {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--abstand-3);
+  padding: var(--abstand-3) var(--abstand-4);
+}
+
+.zeile + .zeile {
+  border-top: 1px solid var(--farbe-rand);
+}
+
+.meldung {
+  display: block;
+  font-size: var(--schrift-klein);
+  color: var(--farbe-text-gedaempft);
+}
+
+.punkt {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.ok {
+  background: var(--farbe-erfolg);
+}
+
+.fehler {
+  background: var(--farbe-gefahr);
+}

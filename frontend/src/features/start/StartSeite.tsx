@@ -3,7 +3,7 @@ export function StartSeite() {
   return (
     <>
       <h1>Krügel Werkstatt</h1>
-      <p className="muted">Neue Werkstatt-App – im Aufbau.</p>
+      <p className="gedaempft">Neue Werkstatt-App – im Aufbau.</p>
     </>
   )
 }

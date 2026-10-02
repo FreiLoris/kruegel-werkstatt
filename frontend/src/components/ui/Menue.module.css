@@ -1,0 +1,62 @@
+.ausloeser {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--abstand-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--abstand-3);
+  border: 1px solid var(--farbe-rand-stark);
+  border-radius: var(--radius);
+  background: var(--farbe-flaeche-erhoeht);
+  color: var(--farbe-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ausloeser svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.pfeil {
+  color: var(--farbe-text-gedaempft);
+}
+
+.menue {
+  position: fixed;
+  inset: auto; /* Browser-Standard (mittig) aufheben – Position kommt aus dem Code */
+  margin: 0;
+  min-width: 15rem;
+  padding: var(--abstand-1);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  background: var(--farbe-flaeche-erhoeht);
+  color: var(--farbe-text);
+  box-shadow: var(--schatten);
+}
+
+.eintrag {
+  display: flex;
+  align-items: center;
+  gap: var(--abstand-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--abstand-3);
+  border: none;
+  border-radius: var(--radius-klein);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.eintrag:hover,
+.eintrag:focus-visible {
+  background: var(--farbe-flaeche);
+}
+
+.eintrag svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--farbe-text-gedaempft);
+}

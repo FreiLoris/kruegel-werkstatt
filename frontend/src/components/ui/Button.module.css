@@ -1,0 +1,80 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--abstand-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--abstand-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.button svg {
+  width: 1.125em;
+  height: 1.125em;
+  flex-shrink: 0;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.klein {
+  min-height: 2.25rem;
+  padding: 0 var(--abstand-3);
+  font-size: var(--schrift-klein);
+}
+
+.primaer {
+  background: var(--farbe-akzent);
+  color: var(--farbe-auf-akzent);
+}
+
+.primaer:hover:not(:disabled) {
+  background: var(--farbe-akzent-hover);
+}
+
+.sekundaer {
+  background: var(--farbe-flaeche-erhoeht);
+  border-color: var(--farbe-rand-stark);
+  color: var(--farbe-text);
+}
+
+.sekundaer:hover:not(:disabled) {
+  border-color: var(--farbe-text-gedaempft);
+}
+
+.gefahr {
+  background: var(--farbe-gefahr);
+  color: #fff;
+}
+
+.gefahr:hover:not(:disabled) {
+  background: var(--farbe-gefahr-hover);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--farbe-text-gedaempft);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--farbe-flaeche-erhoeht);
+  color: var(--farbe-text);
+}
+
+.kreisel {
+  animation: drehen 0.8s linear infinite;
+}
+
+@keyframes drehen {
+  to {
+    transform: rotate(360deg);
+  }
+}

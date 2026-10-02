@@ -1,0 +1,60 @@
+/*
+ * Design-Tokens: alle Grundwerte der Gestaltung an EINER Stelle.
+ * Komponenten verwenden nur diese Variablen – nie direkte Farbwerte oder Pixelzahlen.
+ * Soll z. B. die Akzentfarbe ändern, ändert man sie hier und nirgends sonst.
+ */
+
+:root {
+  /* ── Farben: Flächen ─────────────────────────────────────── */
+  --farbe-hintergrund: #111214;
+  --farbe-flaeche: #1a1b1e;
+  --farbe-flaeche-erhoeht: #232428;
+  --farbe-rand: #2e3035;
+  --farbe-rand-stark: #45484f;
+
+  /* ── Farben: Text ────────────────────────────────────────── */
+  --farbe-text: #f1f2f4;
+  --farbe-text-gedaempft: #a3a7b0; /* Kontrast ≥ 4.5:1 auf Hintergrund */
+
+  /* ── Farben: Bedeutung ───────────────────────────────────── */
+  --farbe-akzent: #f0b429;
+  --farbe-akzent-hover: #f7c64f;
+  --farbe-auf-akzent: #1a1300;
+  --farbe-erfolg: #2fbf71;
+  --farbe-warnung: #f59f0b;
+  --farbe-gefahr: #e5484d;
+  --farbe-gefahr-hover: #f0646a;
+  --farbe-info: #4c9aff;
+  --farbe-fokus: #7cb7ff;
+
+  /* ── Schrift ─────────────────────────────────────────────── */
+  --schrift: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --schrift-klein: 0.875rem;
+  --schrift-normal: 1rem;
+  --schrift-gross: 1.125rem;
+  --schrift-titel: 1.5rem;
+  --schrift-seitentitel: 2rem;
+
+  /* ── Abstände (4-px-Raster) ──────────────────────────────── */
+  --abstand-1: 0.25rem;
+  --abstand-2: 0.5rem;
+  --abstand-3: 0.75rem;
+  --abstand-4: 1rem;
+  --abstand-5: 1.5rem;
+  --abstand-6: 2rem;
+  --abstand-8: 3rem;
+
+  /* ── Formen ──────────────────────────────────────────────── */
+  --radius-klein: 6px;
+  --radius: 8px;
+  --radius-gross: 12px;
+  --schatten: 0 8px 24px rgb(0 0 0 / 0.4);
+
+  /* Mindestgrösse für alles Klickbare – Tablets/Touch (Empfehlung: 44 px) */
+  --touch-min: 2.75rem;
+
+  /* ── Ebenen (was liegt über wem) ─────────────────────────── */
+  --ebene-kopfzeile: 10;
+  --ebene-menue: 50;
+  --ebene-toast: 100;
+}

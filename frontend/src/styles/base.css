@@ -1,0 +1,54 @@
+/* Grundgestaltung für das ganze Dokument (keine Komponenten). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--schrift);
+  font-size: 100%;
+  color: var(--farbe-text);
+  background: var(--farbe-hintergrund);
+  color-scheme: dark; /* Browser-eigene Elemente (Scrollbalken, Datumsauswahl) dunkel */
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--abstand-2);
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: var(--schrift-seitentitel);
+}
+
+h2 {
+  font-size: var(--schrift-titel);
+}
+
+p {
+  margin: 0 0 var(--abstand-3);
+}
+
+a {
+  color: var(--farbe-akzent);
+}
+
+/* Sichtbarer Fokus für Tastaturbedienung – überall gleich */
+:focus-visible {
+  outline: 2px solid var(--farbe-fokus);
+  outline-offset: 2px;
+}
+
+.gedaempft {
+  color: var(--farbe-text-gedaempft);
+}

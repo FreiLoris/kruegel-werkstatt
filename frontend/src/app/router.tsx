@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
-import { SystemSeite } from '../features/health/SystemSeite'
 import { StartSeite } from '../features/start/StartSeite'
+import { KomponentenSeite } from '../features/system/KomponentenSeite'
+import { SystemSeite } from '../features/system/SystemSeite'
 import { AppLayout } from './AppLayout'
 import { AbsturzSeite, NichtGefundenSeite } from './FehlerSeiten'
 
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <StartSeite /> },
       { path: 'system', element: <SystemSeite /> },
+      { path: 'system/komponenten', element: <KomponentenSeite /> },
       { path: '*', element: <NichtGefundenSeite /> },
     ],
   },
