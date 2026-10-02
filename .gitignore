@@ -1,0 +1,20 @@
+# ── IDE / OS ─────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ── Backend (Java / Maven) ──────────────────────────────
+backend/target/
+*.class
+*.log
+
+# ── Frontend (Node / Vite) ──────────────────────────────
+frontend/node_modules/
+frontend/dist/
+
+# ── Lokale Konfiguration / Secrets ──────────────────────
+.env
+.env.*
+!.env.example
