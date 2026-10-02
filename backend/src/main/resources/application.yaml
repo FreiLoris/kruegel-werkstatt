@@ -14,6 +14,20 @@ spring:
   flyway:
     locations: classpath:db/migration
 
+  jpa:
+    # Das Schema gehört Flyway. Hibernate prüft beim Start nur, ob Entitäten und
+    # Tabellen zusammenpassen – und verweigert den Start, wenn nicht.
+    hibernate:
+      ddl-auto: validate
+    # Keine Datenbankzugriffe mehr, nachdem der Controller fertig ist
+    # (sonst entstehen unbemerkt langsame Nachlade-Abfragen beim JSON-Erzeugen).
+    open-in-view: false
+    properties:
+      hibernate:
+        # Zeitpunkte immer in UTC an die Datenbank übergeben.
+        jdbc:
+          time_zone: UTC
+
 server:
   port: 8080
 

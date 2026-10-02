@@ -41,10 +41,10 @@ Quellen: [`analyse/TIEFENANALYSE_NEUBAU.md`](analyse/TIEFENANALYSE_NEUBAU.md) (F
 
 Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in jedem Modul neu.
 
-- [ ] **2a – CI mit GitHub Actions**
+- [x] **2a – CI mit GitHub Actions**
   Bei jedem PR: Backend-Tests (inkl. Testcontainers), Frontend Lint + Build, Docker-Images bauen.
   PR kann erst gemergt werden, wenn alles grün ist.
-- [ ] **2b – Backend-Konventionen**
+- [x] **2b – Backend-Konventionen**
   JPA einführen; Basis für Entitäten (UUID-ID, `erstelltAm`/`geaendertAm`, `@Version` für
   Optimistic Locking); Zeitzone `Europe/Zurich`; JSON-Datumsformat ISO.
 - [ ] **2c – Fehlerbehandlung & Validierung**

@@ -1,0 +1,8 @@
+# Ergänzt die Haupt-Konfiguration (src/main/resources/application.yaml) NUR in Tests.
+# Spring lädt beide Dateien; Werte von hier überschreiben die gleichnamigen von dort.
+
+spring:
+  flyway:
+    # Zusätzliche Migrationen mit Tabellen, die es nur für Tests gibt
+    # (z.B. für die Test-Entität in common.persistence).
+    locations: classpath:db/migration, classpath:db/test-migration
