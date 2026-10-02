@@ -1,55 +1,33 @@
-import { useEffect, useState } from 'react'
-import { fetchHealth, type HealthResponse } from './healthApi'
-
-const REFRESH_INTERVAL_MS = 10_000
-
-type State =
-  | { kind: 'loading' }
-  | { kind: 'loaded'; health: HealthResponse }
-  | { kind: 'error'; message: string }
+import { useQuery } from '@tanstack/react-query'
+import { fetchHealth } from './healthApi'
 
 /**
- * Zeigt, ob Backend und Datenbank erreichbar sind.
- * Fragt den Status alle 10 Sekunden neu ab.
+ * Zeigt, ob Backend und Datenbank erreichbar sind. Fragt alle 10 Sekunden neu ab.
+ *
+ * Laden, Neuladen im Intervall und Abbrechen beim Verlassen der Seite
+ * übernimmt TanStack Query.
  */
 export function HealthPanel() {
-  const [state, setState] = useState<State>({ kind: 'loading' })
+  const { data, error, isPending } = useQuery({
+    queryKey: ['health'],
+    queryFn: ({ signal }) => fetchHealth(signal),
+    refetchInterval: 10_000,
+    // Statusanzeige soll sofort umschalten, nicht erst nach einem zweiten Versuch.
+    retry: false,
+  })
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    async function load() {
-      try {
-        const health = await fetchHealth(controller.signal)
-        setState({ kind: 'loaded', health })
-      } catch (error) {
-        if (controller.signal.aborted) return
-        setState({ kind: 'error', message: error instanceof Error ? error.message : String(error) })
-      }
-    }
-
-    void load()
-    const interval = setInterval(load, REFRESH_INTERVAL_MS)
-
-    // Aufräumen, wenn die Komponente verschwindet: Timer stoppen, laufenden Request abbrechen.
-    return () => {
-      clearInterval(interval)
-      controller.abort()
-    }
-  }, [])
-
-  if (state.kind === 'loading') {
+  if (isPending) {
     return <p className="muted">Prüfe Verbindung …</p>
   }
 
-  const backendUp = state.kind === 'loaded'
-  const dbUp = state.kind === 'loaded' && state.health.components?.db?.status === 'UP'
+  const backendUp = !error
+  const dbUp = data?.components?.db?.status === 'UP'
 
   return (
     <ul className="status-list">
       <StatusRow label="Backend" ok={backendUp} />
       <StatusRow label="Datenbank" ok={dbUp} />
-      {state.kind === 'error' && <li className="status-row status-message muted">{state.message}</li>}
+      {error && <li className="status-row status-message muted">{error.message}</li>}
     </ul>
   )
 }

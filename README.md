@@ -95,6 +95,7 @@ cd frontend
 npm install                 # einmalig bzw. nach Änderungen an package.json
 npm run dev                 # Entwicklungsserver mit Hot Reload
 npm run lint                # Code-Prüfung (oxlint)
+npm test                    # Tests (Vitest)
 npm run build               # Typprüfung + Produktions-Build nach dist/
 ```
 
