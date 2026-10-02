@@ -1,4 +1,8 @@
-import { NavLink, Outlet } from 'react-router'
+import { Wrench } from 'lucide-react'
+import { Link, NavLink, Outlet } from 'react-router'
+import styles from './AppLayout.module.css'
+import { LiveAnzeige } from './live/LiveAnzeige'
+import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
 
 /**
@@ -6,25 +10,31 @@ import { navigation } from './navigation'
  * `<Outlet />` ist die Stelle, an der der Router die aktuelle Seite einsetzt.
  */
 export function AppLayout() {
+  const liveStatus = useLiveUpdates()
+
   return (
     <>
-      <header className="app-header">
-        <span className="app-titel">Krügel Werkstatt</span>
-        <nav className="app-nav">
+      <header className={styles.kopfzeile}>
+        <Link to="/" className={styles.titel}>
+          <Wrench aria-hidden />
+          Krügel Werkstatt
+        </Link>
+        <nav className={styles.navigation}>
           {navigation.map((eintrag) => (
             <NavLink
               key={eintrag.pfad}
               to={eintrag.pfad}
               // "end": Start-Link nur bei genau "/" aktiv, nicht bei jeder Unterseite
               end={eintrag.pfad === '/'}
-              className={({ isActive }) => (isActive ? 'nav-link nav-link-aktiv' : 'nav-link')}
+              className={({ isActive }) => (isActive ? `${styles.link} ${styles.aktiv}` : styles.link)}
             >
               {eintrag.titel}
             </NavLink>
           ))}
         </nav>
+        <LiveAnzeige status={liveStatus} />
       </header>
-      <main className="page">
+      <main className={styles.inhalt}>
         <Outlet />
       </main>
     </>

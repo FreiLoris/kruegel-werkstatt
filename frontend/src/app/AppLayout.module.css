@@ -1,0 +1,59 @@
+.kopfzeile {
+  position: sticky;
+  top: 0;
+  z-index: var(--ebene-kopfzeile);
+  display: flex;
+  align-items: center;
+  gap: var(--abstand-6);
+  min-height: 3.75rem;
+  padding: 0 var(--abstand-5);
+  background: var(--farbe-flaeche);
+  border-bottom: 1px solid var(--farbe-rand);
+}
+
+.titel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--abstand-2);
+  font-weight: 700;
+  color: var(--farbe-akzent);
+  text-decoration: none;
+}
+
+.titel svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.navigation {
+  display: flex;
+  gap: var(--abstand-1);
+  flex: 1;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: 0 var(--abstand-3);
+  border-radius: var(--radius);
+  color: var(--farbe-text-gedaempft);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--farbe-text);
+  background: var(--farbe-flaeche-erhoeht);
+}
+
+.aktiv,
+.aktiv:hover {
+  color: var(--farbe-auf-akzent);
+  background: var(--farbe-akzent);
+}
+
+.inhalt {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--abstand-6) var(--abstand-5);
+}

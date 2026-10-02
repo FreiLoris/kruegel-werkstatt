@@ -1,0 +1,87 @@
+.bereich {
+  position: fixed;
+  /* Browser-Standard für Popover (mittig, mit Rahmen) aufheben */
+  inset: var(--abstand-4) var(--abstand-4) auto auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+  z-index: var(--ebene-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand-2);
+  width: min(24rem, calc(100vw - 2 * var(--abstand-4)));
+  pointer-events: none; /* leere Fläche blockiert keine Klicks darunter */
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--abstand-3);
+  padding: var(--abstand-2) var(--abstand-2) var(--abstand-2) var(--abstand-4);
+  border: 1px solid var(--farbe-rand);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--farbe-flaeche-erhoeht);
+  box-shadow: var(--schatten);
+  pointer-events: auto;
+  animation: einblenden 0.2s ease-out;
+}
+
+.erfolg {
+  border-left-color: var(--farbe-erfolg);
+}
+
+.erfolg .icon {
+  color: var(--farbe-erfolg);
+}
+
+.fehler {
+  border-left-color: var(--farbe-gefahr);
+}
+
+.fehler .icon {
+  color: var(--farbe-gefahr);
+}
+
+.info {
+  border-left-color: var(--farbe-info);
+}
+
+.info .icon {
+  color: var(--farbe-info);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.text {
+  flex: 1;
+}
+
+.schliessen {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: var(--radius-klein);
+  background: transparent;
+  color: var(--farbe-text-gedaempft);
+  cursor: pointer;
+}
+
+.schliessen:hover {
+  color: var(--farbe-text);
+}
+
+@keyframes einblenden {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}

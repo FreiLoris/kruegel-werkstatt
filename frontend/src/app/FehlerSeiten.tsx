@@ -1,11 +1,12 @@
 import { Link, isRouteErrorResponse, useRouteError } from 'react-router'
+import styles from './AppLayout.module.css'
 
 /** Für URLs, zu denen es keine Seite gibt. */
 export function NichtGefundenSeite() {
   return (
     <>
       <h1>Seite nicht gefunden</h1>
-      <p className="muted">Diese Adresse gibt es nicht.</p>
+      <p className="gedaempft">Diese Adresse gibt es nicht.</p>
       <Link to="/">Zur Startseite</Link>
     </>
   )
@@ -24,9 +25,9 @@ export function AbsturzSeite() {
       : 'Unbekannter Fehler'
 
   return (
-    <main className="page">
+    <main className={styles.inhalt}>
       <h1>Etwas ist schiefgelaufen</h1>
-      <p className="muted">{meldung}</p>
+      <p className="gedaempft">{meldung}</p>
       <a href="/">Seite neu laden</a>
     </main>
   )
