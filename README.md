@@ -1,5 +1,7 @@
 # Krügel Werkstatt
 
+[![CI](https://github.com/FreiLoris/kruegel-werkstatt/actions/workflows/ci.yml/badge.svg)](https://github.com/FreiLoris/kruegel-werkstatt/actions/workflows/ci.yml)
+
 Dispositions-Tool für die Werkstatt von Krügel Fahrzeugtechnik:
 Termine & Aufträge, Lift-Belegung, Ersatzwagen, Pinnwand, To-dos und Mitarbeiterkalender.
 
@@ -112,3 +114,5 @@ Detaillierter Plan mit allen Paketen: [`docs/roadmap.md`](docs/roadmap.md)
 - `main` ist immer lauffähig.
 - Jede Änderung in einem eigenen Branch, Merge über Pull Request.
 - Branch-Namen: `feat/…`, `fix/…`, `chore/…`, `docs/…`
+- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) prüft jeden PR:
+  Backend-Tests, Frontend-Lint + Build, Docker-Images. Gemergt wird nur, wenn alles grün ist.
