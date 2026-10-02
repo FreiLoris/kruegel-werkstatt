@@ -71,6 +71,22 @@ public abstract class BaseEntity {
     }
 
     /**
+     * Prüft, ob der Client beim Bearbeiten den aktuellen Stand hatte.
+     *
+     * <p>Ablauf bei einer Änderung über die API: Der Client lädt den Datensatz (mit
+     * {@code version}), ändert ihn und schickt die Version mit. Hat in der Zwischenzeit
+     * jemand anderes gespeichert, ist die Version in der Datenbank höher → Fehler, statt
+     * die fremde Änderung still zu überschreiben.
+     *
+     * @throws VeralteteVersionException wenn die Versionen nicht übereinstimmen
+     */
+    public void pruefeVersion(long versionDesClients) {
+        if (versionDesClients != version) {
+            throw new VeralteteVersionException(versionDesClients, version);
+        }
+    }
+
+    /**
      * Zwei Entitäten sind gleich, wenn sie dieselbe ID haben.
      * Noch nicht gespeicherte Entitäten (ohne ID) sind nur zu sich selbst gleich.
      *

@@ -57,6 +57,22 @@ ch.kruegel.werkstatt
 - Beziehungen immer mit Fremdschlüssel (`REFERENCES …`), Regeln möglichst als Constraint.
 - Hibernate erzeugt nie Tabellen (`ddl-auto: validate`).
 
+## API-Fehler
+
+Alle Fehler kommen im Format **Problem Details** (RFC 9457, `application/problem+json`),
+erzeugt zentral im `GlobalExceptionHandler`. Kein Controller baut eigene Fehlerantworten.
+
+| Situation | Im Code | HTTP |
+|---|---|---|
+| Eingabe ungültig | Bean Validation am DTO (`@NotBlank`, `@Size`, …) + `@Valid` | 400 mit Liste `fehler[]` (`feld`, `meldung`) |
+| Datensatz fehlt | `throw new NichtGefundenException("Mitarbeiter", id)` | 404 |
+| Gleichzeitig bearbeitet | `entity.pruefeVersion(dto.version())` im Service | 409 |
+| Alles andere | – (wird automatisch geloggt) | 500, ohne technische Details |
+
+- Validierungsregeln stehen am **DTO**, nicht an der Entity.
+- Update-DTOs enthalten immer die `version`, die der Client geladen hat.
+- Meldungen sind deutsch (Locale fest auf `de`).
+
 ## Zeit
 
 | Was | Java-Typ | DB-Typ |

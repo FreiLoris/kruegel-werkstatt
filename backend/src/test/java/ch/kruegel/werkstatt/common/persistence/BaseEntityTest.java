@@ -114,6 +114,20 @@ class BaseEntityTest {
     }
 
     @Test
+    void pruefeVersionAkzeptiertAktuelleUndLehntVeralteteAb() {
+        TestEntity entity = new TestEntity("Test");
+        em.persist(entity);
+        em.flush();
+        entity.setName("geändert");
+        em.flush(); // jetzt Version 1
+
+        entity.pruefeVersion(1); // aktueller Stand → ok
+
+        assertThatThrownBy(() -> entity.pruefeVersion(0))
+                .isInstanceOf(VeralteteVersionException.class);
+    }
+
+    @Test
     void entitaetenMitGleicherIdSindGleich() {
         TestEntity entity = new TestEntity("Test");
         em.persist(entity);
