@@ -1,0 +1,73 @@
+# CI: Prüft bei jedem Pull Request und jedem Push auf main,
+# ob Backend, Frontend und Docker-Images sauber bauen.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Neuer Push auf denselben Branch bricht den alten, noch laufenden Lauf ab.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # "verify" kompiliert, führt alle Tests aus (Testcontainers nutzt das
+      # Docker des GitHub-Runners) und baut das JAR.
+      - name: Build & Test
+        run: ./mvnw -B verify
+
+  frontend:
+    name: Frontend (Lint & Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (inkl. Typprüfung)
+        run: npm run build
+
+  docker:
+    name: Docker-Images
+    runs-on: ubuntu-latest
+    # Erst wenn Code und Tests ok sind – spart Zeit bei Fehlern.
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Images bauen
+        run: docker compose build
