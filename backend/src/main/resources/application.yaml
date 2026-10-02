@@ -28,6 +28,12 @@ spring:
         jdbc:
           time_zone: UTC
 
+  # Die App ist nur deutschsprachig: Validierungsmeldungen ("darf nicht leer sein")
+  # immer auf Deutsch, unabhängig von der Spracheinstellung des Browsers.
+  web:
+    locale: de
+    locale-resolver: fixed
+
 server:
   port: 8080
 

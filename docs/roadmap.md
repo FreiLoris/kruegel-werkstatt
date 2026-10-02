@@ -47,7 +47,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
 - [x] **2b – Backend-Konventionen**
   JPA einführen; Basis für Entitäten (UUID-ID, `erstelltAm`/`geaendertAm`, `@Version` für
   Optimistic Locking); Zeitzone `Europe/Zurich`; JSON-Datumsformat ISO.
-- [ ] **2c – Fehlerbehandlung & Validierung**
+- [x] **2c – Fehlerbehandlung & Validierung**
   Einheitliche Fehlerantworten (RFC 9457 *Problem Details*), Bean Validation für Eingaben,
   409 bei gleichzeitiger Bearbeitung (Optimistic Locking). Tests dafür.
 - [ ] **2d – API-Vertrag**

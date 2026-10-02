@@ -26,6 +26,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
+        <!-- Prüfung von Eingaben (@NotBlank, @Size, ...) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <!-- Betriebs-Endpoints, u.a. /api/health -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
