@@ -1,0 +1,7 @@
+# Nicht in den Docker-Build-Kontext kopieren.
+# node_modules wird im Container frisch mit "npm ci" installiert (Linux statt Windows).
+node_modules/
+dist/
+.idea/
+Dockerfile
+.dockerignore
