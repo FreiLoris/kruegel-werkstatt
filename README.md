@@ -62,12 +62,27 @@ Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/hea
 Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
 `backend/src/main/resources/db/migration` aus.
 
+### 3. Frontend
+
+Voraussetzung: **Node.js 22** (oder neuer).
+
+```bash
+cd frontend
+npm install                 # einmalig bzw. nach Änderungen an package.json
+npm run dev                 # Entwicklungsserver mit Hot Reload
+npm run lint                # Code-Prüfung (oxlint)
+npm run build               # Typprüfung + Produktions-Build nach dist/
+```
+
+Läuft auf http://localhost:5173. Aufrufe nach `/api/*` leitet Vite ans Backend
+(`localhost:8080`) weiter – das Backend muss also laufen.
+
 ## Roadmap
 
 - [x] 1a – Repository & Struktur
 - [x] 1b – Backend-Grundgerüst (Health-Endpoint)
 - [x] 1c – PostgreSQL + Flyway
-- [ ] 1d – Frontend-Grundgerüst
+- [x] 1d – Frontend-Grundgerüst
 - [ ] 1e – Alles in Docker Compose
 - [ ] 2+ – Fachliche Module (Mitarbeiter, Aufträge, Ersatzwagen, …)
 - [ ] Datenmigration aus der alten App
