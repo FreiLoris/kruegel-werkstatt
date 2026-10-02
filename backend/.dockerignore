@@ -1,0 +1,4 @@
+# Nicht in den Docker-Build-Kontext kopieren (macht den Build schneller und sauberer)
+target/
+.idea/
+*.iml

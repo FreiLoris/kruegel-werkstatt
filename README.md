@@ -38,17 +38,35 @@ installiert sein – der Maven Wrapper (`mvnw`) lädt die richtige Version selbs
 
 Zusätzlich: **Docker Desktop** muss laufen (für die Datenbank und für die Tests).
 
-### 1. Datenbank
+Konfiguration: Standardwerte reichen lokal. Zum Anpassen `.env.example` nach `.env` kopieren.
+
+Es gibt zwei Arten, die App zu starten:
+
+### Variante A – Alles in Docker (wie später auf dem NAS)
 
 ```bash
-docker compose up -d        # PostgreSQL starten (Port 5432)
-docker compose down         # stoppen – Daten bleiben erhalten
-docker compose down -v      # stoppen UND Daten löschen (frische DB)
+docker compose up -d --build    # bauen + starten
+docker compose ps               # Status der Container
+docker compose logs -f backend  # Logs eines Containers verfolgen
+docker compose down             # stoppen – Daten bleiben erhalten
+docker compose down -v          # stoppen UND Daten löschen (frische DB)
 ```
 
-Zugangsdaten: Standardwerte reichen lokal. Zum Anpassen `.env.example` nach `.env` kopieren.
+App: **http://localhost:8090** (aus dem Netzwerk: `http://<rechnername>:8090`).
+Das Backend ist nur intern erreichbar – alle Aufrufe gehen über nginx (`/api/*`).
 
-### 2. Backend
+### Variante B – Entwicklung (Hot Reload)
+
+Nur die Datenbank läuft in Docker, Backend und Frontend direkt auf dem Rechner.
+Änderungen am Code sind so sofort sichtbar, ohne Images neu zu bauen.
+
+#### 1. Datenbank
+
+```bash
+docker compose up -d db     # nur PostgreSQL starten (Port 5432, nur lokal erreichbar)
+```
+
+#### 2. Backend
 
 ```bash
 cd backend
@@ -62,7 +80,7 @@ Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/hea
 Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
 `backend/src/main/resources/db/migration` aus.
 
-### 3. Frontend
+#### 3. Frontend
 
 Voraussetzung: **Node.js 22** (oder neuer).
 
@@ -83,7 +101,7 @@ Läuft auf http://localhost:5173. Aufrufe nach `/api/*` leitet Vite ans Backend
 - [x] 1b – Backend-Grundgerüst (Health-Endpoint)
 - [x] 1c – PostgreSQL + Flyway
 - [x] 1d – Frontend-Grundgerüst
-- [ ] 1e – Alles in Docker Compose
+- [x] 1e – Alles in Docker Compose
 - [ ] 2+ – Fachliche Module (Mitarbeiter, Aufträge, Ersatzwagen, …)
 - [ ] Datenmigration aus der alten App
 - [ ] Deployment auf das NAS (Version 1)

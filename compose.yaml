@@ -1,11 +1,13 @@
-# Docker Compose für die Werkstatt-App.
-# Aktuell nur die Datenbank – Backend und Frontend folgen in Schritt 1e.
+# Docker Compose für die Werkstatt-App: Datenbank, Backend, Frontend.
 #
-#   docker compose up -d      starten (im Hintergrund)
-#   docker compose down       stoppen (Daten bleiben im Volume erhalten)
+#   docker compose up -d --build    alles bauen und starten → http://localhost:8090
+#   docker compose up -d db         nur die Datenbank (für Entwicklung mit lokalem Backend)
+#   docker compose down             stoppen (Daten bleiben im Volume erhalten)
 #
-# Zugangsdaten kommen aus der Datei .env (Vorlage: .env.example).
-# Ohne .env gelten die Standardwerte hinter ":-" – reicht für die lokale Entwicklung.
+# Konfiguration kommt aus der Datei .env (Vorlage: .env.example).
+# Ohne .env gelten die Standardwerte hinter ":-".
+#
+# Speicherlimits: Ziel-NAS hat 2 GB RAM, davon braucht DSM selbst einen grossen Teil.
 
 services:
   db:
@@ -16,8 +18,9 @@ services:
       POSTGRES_USER: ${DB_USER:-werkstatt}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-werkstatt}
     ports:
-      # Nur für die lokale Entwicklung: Backend läuft (noch) ausserhalb von Docker.
-      - "${DB_PORT:-5432}:5432"
+      # Nur vom eigenen Rechner aus erreichbar (127.0.0.1), nicht aus dem Netzwerk.
+      # Gebraucht, wenn das Backend lokal ausserhalb von Docker läuft.
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql
     healthcheck:
@@ -25,6 +28,41 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    mem_limit: 256m
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-werkstatt}
+      DB_USER: ${DB_USER:-werkstatt}
+      DB_PASSWORD: ${DB_PASSWORD:-werkstatt}
+      # Java soll höchstens 60 % des Container-Limits als Heap nutzen
+      # (Rest: Metaspace, Threads, ...). SerialGC braucht am wenigsten Speicher.
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
+    # Kein "ports": Das Backend ist nur intern erreichbar – von aussen geht alles über nginx.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    mem_limit: 400m
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8090}:80"
+    mem_limit: 64m
 
 volumes:
   db-data:
