@@ -86,6 +86,9 @@ API-Dokumentation (Swagger UI): http://localhost:8080/api/docs
 Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
 `backend/src/main/resources/db/migration` aus.
 
+`spring-boot:run` startet im Profil **dev** und legt bei leerer Datenbank Testdaten an
+(z. B. 5 Mitarbeiter). Das Docker-Image (Variante A / NAS) startet ohne Testdaten.
+
 #### 3. Frontend
 
 Voraussetzung: **Node.js 22** (oder neuer).

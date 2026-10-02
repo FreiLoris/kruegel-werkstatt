@@ -167,6 +167,14 @@ Controller/DTOs ──./mvnw test──▶ api/openapi.json ──npm run api:ge
 - Jeder Test startet mit definiertem Zustand (keine Abhängigkeit von der Reihenfolge).
 - Zeitabhängige Tests mit `TestClock`.
 
+## Testdaten für die Entwicklung
+
+- Nur im Spring-Profil `dev` (automatisch bei `./mvnw spring-boot:run`) – nie im Docker-Image/NAS, nie in Tests.
+- Angelegt in Java (`common/dev/DevTestdaten.java`), **nicht** als Flyway-Migration: Die Flyway-Historie
+  enthält nur das echte Schema. Sonst startet eine Installation ohne Testdaten nicht mehr, sobald sie
+  auf eine Datenbank mit eingetragener Testdaten-Migration trifft.
+- Nur anlegen, wenn die Tabelle leer ist – lokale Änderungen bleiben erhalten.
+
 ## Git
 
 - Ein Paket aus [`roadmap.md`](roadmap.md) = ein Branch = ein Pull Request.
