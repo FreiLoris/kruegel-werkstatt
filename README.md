@@ -31,6 +31,7 @@ Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
 | `backend/` | Spring Boot (Java, Maven) – REST-API, Geschäftslogik, Datenbankzugriff |
 | `frontend/` | React + TypeScript (Vite) – Weboberfläche |
 | `docs/roadmap.md` | Plan aller Pakete + Nachverfolgung der Bugs aus der Analyse |
+| `docs/konventionen.md` | Verbindliche Regeln für Code, Datenbank, Zeit, Tests |
 | `docs/adr/` | Architektur-Entscheide (*Architecture Decision Records*) |
 | `docs/analyse/` | Analyse der alten App: Funktionsumfang, Bugs, UI-Review mit Screenshots |
 
