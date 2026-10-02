@@ -53,7 +53,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
 - [x] **2d – API-Vertrag**
   OpenAPI-Beschreibung aus dem Backend (springdoc), daraus TypeScript-Typen fürs Frontend
   generieren – keine handgeschriebenen API-Typen.
-- [ ] **2e – Frontend-Fundament: Routing & Datenabfragen**
+- [x] **2e – Frontend-Fundament: Routing & Datenabfragen**
   React Router (eine URL pro Seite), TanStack Query (Laden, Caching, Neuladen),
   App-Layout mit Navigation. Formatierung zentral: Datum immer `dd.mm.yyyy` (→ F7).
 - [ ] **2f – UI-Grundbausteine**

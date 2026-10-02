@@ -35,6 +35,32 @@ ch.kruegel.werkstatt
 - **Entity**: Daten + Regeln, die nur das Objekt selbst betreffen (z. B. Statuswechsel prüfen).
 - **DTOs**: Die API gibt nie Entities direkt heraus, sondern eigene Records.
 
+## Frontend-Struktur
+
+```
+frontend/src/
+├── main.tsx            Einstieg: Router + TanStack Query
+├── app/                App-weit: Router, Layout, Navigation, Fehlerseiten, QueryClient
+├── api/                client.ts (typisierter API-Zugriff), schema.d.ts (generiert), fehler.ts
+├── lib/                Allgemeine Hilfsfunktionen (z. B. format.ts)
+└── features/           ← ein Ordner pro Fachbereich, wie im Backend
+    ├── mitarbeiter/
+    │   ├── MitarbeiterSeite.tsx     Seite (an eine Route gebunden)
+    │   ├── MitarbeiterFormular.tsx  Komponenten
+    │   └── mitarbeiterApi.ts        Queries/Mutations für diesen Bereich
+    └── …
+```
+
+- **Seiten** heissen `…Seite.tsx` und werden in `app/router.tsx` einer URL zugeordnet.
+  Neue Seiten zusätzlich in `app/navigation.ts` eintragen.
+- **Server-Daten nur über TanStack Query** (`useQuery`/`useMutation`), nie mit eigenem
+  `useEffect` + `fetch`. Abfragefunktionen geben `datenOderFehler(await api.GET(…))` zurück.
+- **Fehler** aus der API sind immer `ApiFehler` (`api/fehler.ts`) – mit `meldungFuerFeld()`
+  für Formulare und `istKonflikt` für 409.
+- **Datum/Uhrzeit** nur über `lib/format.ts` anzeigen (`formatDatum`, `formatUhrzeit`,
+  `formatZeitpunkt`). Nie `new Date("2026-10-15")` für fachliche Daten.
+- **Tests** (Vitest) liegen neben der Datei: `format.ts` → `format.test.ts`.
+
 ## Entitäten
 
 - Erben von `BaseEntity` → automatisch `id` (UUIDv7), `version`, `erstelltAm`, `geaendertAm`.
