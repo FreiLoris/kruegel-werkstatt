@@ -18,6 +18,7 @@
 
     <properties>
         <java.version>25</java.version>
+        <springdoc.version>3.1.1</springdoc.version>
     </properties>
 
     <dependencies>
@@ -30,6 +31,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <!-- API-Beschreibung (OpenAPI) + Swagger UI zum Ausprobieren -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <!-- Betriebs-Endpoints, u.a. /api/health -->
         <dependency>

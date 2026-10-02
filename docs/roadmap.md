@@ -50,7 +50,7 @@ Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in j
 - [x] **2c – Fehlerbehandlung & Validierung**
   Einheitliche Fehlerantworten (RFC 9457 *Problem Details*), Bean Validation für Eingaben,
   409 bei gleichzeitiger Bearbeitung (Optimistic Locking). Tests dafür.
-- [ ] **2d – API-Vertrag**
+- [x] **2d – API-Vertrag**
   OpenAPI-Beschreibung aus dem Backend (springdoc), daraus TypeScript-Typen fürs Frontend
   generieren – keine handgeschriebenen API-Typen.
 - [ ] **2e – Frontend-Fundament: Routing & Datenabfragen**

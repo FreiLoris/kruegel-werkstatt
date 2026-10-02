@@ -73,6 +73,20 @@ erzeugt zentral im `GlobalExceptionHandler`. Kein Controller baut eigene Fehlera
 - Update-DTOs enthalten immer die `version`, die der Client geladen hat.
 - Meldungen sind deutsch (Locale fest auf `de`).
 
+## API-Vertrag (OpenAPI)
+
+Das Backend beschreibt seine API automatisch (springdoc). Diese Beschreibung ist der
+Vertrag zwischen Backend und Frontend – daraus entstehen die TypeScript-Typen.
+
+```
+Controller/DTOs ──./mvnw test──▶ api/openapi.json ──npm run api:generate──▶ frontend/src/api/schema.d.ts
+```
+
+- Nach jeder API-Änderung: `./mvnw test` (Backend) und `npm run api:generate` (Frontend),
+  beide Dateien mit committen. Die CI schlägt sonst fehl.
+- Das Frontend ruft die API nur über `src/api/client.ts` auf – nie API-Typen von Hand schreiben.
+- API im Browser ansehen/ausprobieren: http://localhost:8080/api/docs (Swagger UI).
+
 ## Zeit
 
 | Was | Java-Typ | DB-Typ |

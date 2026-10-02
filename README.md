@@ -30,6 +30,7 @@ Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
 |---|---|
 | `backend/` | Spring Boot (Java, Maven) – REST-API, Geschäftslogik, Datenbankzugriff |
 | `frontend/` | React + TypeScript (Vite) – Weboberfläche |
+| `api/` | `openapi.json` – API-Vertrag zwischen Backend und Frontend (generiert, eingecheckt) |
 | `docs/roadmap.md` | Plan aller Pakete + Nachverfolgung der Bugs aus der Analyse |
 | `docs/konventionen.md` | Verbindliche Regeln für Code, Datenbank, Zeit, Tests |
 | `docs/adr/` | Architektur-Entscheide (*Architecture Decision Records*) |
@@ -78,7 +79,8 @@ cd backend
 ./mvnw test                 # Tests – starten eigenes Postgres via Testcontainers
 ```
 
-Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/health
+Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/health,
+API-Dokumentation (Swagger UI): http://localhost:8080/api/docs
 (zeigt auch, ob die Datenbank erreichbar ist).
 
 Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
