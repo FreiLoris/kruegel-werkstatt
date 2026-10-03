@@ -1,0 +1,85 @@
+.kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--abstand-4);
+  margin-bottom: var(--abstand-4);
+}
+
+.fehler {
+  color: var(--farbe-gefahr);
+}
+
+.liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-gross);
+  background: var(--farbe-flaeche);
+}
+
+.zeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--abstand-3);
+  padding: var(--abstand-2) var(--abstand-3);
+}
+
+.zeile + .zeile {
+  border-top: 1px solid var(--farbe-rand);
+}
+
+/* Spaltennummer: zeigt die Position in der Tagesansicht */
+.nummer {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--farbe-flaeche-erhoeht);
+  font-size: var(--schrift-klein);
+  font-weight: 600;
+  color: var(--farbe-text-gedaempft);
+}
+
+.name {
+  flex: 1;
+  min-width: 8rem;
+  font-weight: 600;
+}
+
+.aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--abstand-1);
+}
+
+.stillgelegt {
+  margin-top: var(--abstand-4);
+}
+
+.stillgelegt summary {
+  min-height: var(--touch-min);
+  line-height: var(--touch-min);
+  font-weight: 600;
+  color: var(--farbe-text-gedaempft);
+  cursor: pointer;
+}
+
+.stillgelegtListe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand-2);
+  margin: var(--abstand-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stillgelegtListe li {
+  display: flex;
+  align-items: center;
+  gap: var(--abstand-4);
+}

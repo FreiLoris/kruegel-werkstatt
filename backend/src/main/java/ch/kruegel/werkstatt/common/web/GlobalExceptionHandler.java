@@ -94,6 +94,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Der Datensatz wurde in der Zwischenzeit von jemand anderem geändert. Bitte neu laden.");
     }
 
+    /** 409 – fachlich nicht erlaubt (z. B. letzten Lift stilllegen). Meldung geht so an den Benutzer. */
+    @ExceptionHandler(RegelVerletztException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    ProblemDetail regelVerletzt(RegelVerletztException ex) {
+        return problem(HttpStatus.CONFLICT, "Nicht möglich", ex.getMessage());
+    }
+
     /**
      * 409 – ein Datenbank-Constraint hat zugeschlagen (z.B. zwei Geräte legen fast gleichzeitig
      * denselben Namen an – die Prüfung im Service hat beide durchgelassen, die DB nicht).

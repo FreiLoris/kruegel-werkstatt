@@ -1,0 +1,4 @@
+.abschnitt {
+  max-width: 48rem;
+  margin-top: var(--abstand-5);
+}
