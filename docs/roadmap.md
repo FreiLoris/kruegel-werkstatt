@@ -89,6 +89,18 @@ nach dem alle weiteren Module gebaut werden.
   Tabelle statt 3 hartcodierter Lifts; Anzahl/Namen änderbar. (→ Bug #13)
 - [x] **4b – Service-Leistungen konfigurierbar**
   Ölwechsel, Wischblätter, Klimaservice, … als pflegbare Liste statt 8 fixer Checkboxen.
+- [ ] **4r – Refactoring: Code auf Englisch** *(eingeschoben vor 4c)*
+  Programmiersprache wird Englisch, **die App bleibt deutsch** (alle Texte im UI und
+  Fehlermeldungen für Benutzer). Kein neues Verhalten – alle Tests bleiben grün, nur umbenannt.
+  - Glossar Deutsch→Englisch (`docs/glossary.md`) zuerst – damit jeder Begriff einmal und
+    einheitlich übersetzt wird (Mitarbeiter → employee, Ersatzwagen → courtesy car, MFK → …)
+  - Java: Packages, Klassen, Felder, Methoden, Tests
+  - Datenbank: neue Migration mit `RENAME TABLE/COLUMN` – gemergte Migrationen bleiben unverändert
+  - API: Pfade und JSON-Felder (`/api/mitarbeiter` → `/api/employees`), Live-Bereiche, OpenAPI neu
+  - Frontend: Dateien, Komponenten, Typen, Hooks, Query-Keys
+  - Kommentare, Javadoc, Doku (`konventionen.md`, Roadmap, README) und Commits auf Englisch
+  - ADR 0002 hält den Wechsel und den Grund fest (ersetzt die Regel „Fachbegriffe Deutsch“)
+  - Ein PR (Backend und Frontend hängen über die API zusammen), aber ein Commit pro Bereich
 - [ ] **4c – Ersatzwagen-Fahrzeuge**
   Stammdaten (Bezeichnung, Modell, Kennzeichen, Service fällig, Versicherung bis) mit
   Warnung bei fälligem Service. Formular mit Labels. (→ UI-Review Ersatzwagen)
