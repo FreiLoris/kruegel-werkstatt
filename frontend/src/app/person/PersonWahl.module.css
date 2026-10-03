@@ -1,0 +1,58 @@
+.wahl {
+  max-width: 48rem;
+  margin: var(--abstand-6) auto 0;
+  text-align: center;
+}
+
+.personen {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--abstand-3);
+  margin: var(--abstand-5) 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Ganze Kachel ist klickbar, deutlich grösser als das Minimum – wird im Stehen angetippt */
+.person {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 5rem;
+  padding: var(--abstand-3);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-gross);
+  background: var(--farbe-flaeche);
+  font: inherit;
+  font-size: var(--schrift-gross);
+  cursor: pointer;
+}
+
+.person:hover {
+  border-color: var(--farbe-text-gedaempft);
+  background: var(--farbe-flaeche-erhoeht);
+}
+
+.ansehen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--abstand-3);
+  min-height: var(--touch-min);
+  padding: var(--abstand-3) var(--abstand-5);
+  border: 1px dashed var(--farbe-rand-stark);
+  border-radius: var(--radius-gross);
+  background: transparent;
+  color: var(--farbe-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ansehen:hover {
+  border-color: var(--farbe-text-gedaempft);
+}
+
+.ansehen svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}

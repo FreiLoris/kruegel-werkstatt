@@ -1,5 +1,6 @@
 package ch.kruegel.werkstatt.common.web;
 
+import ch.kruegel.werkstatt.common.person.KeinePersonException;
 import ch.kruegel.werkstatt.common.persistence.VeralteteVersionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     ProblemDetail eingabeFehler(EingabeFehlerException ex) {
         return ungueltigeEingabe(List.of(new Feldfehler(ex.getFeld(), ex.getMessage())));
+    }
+
+    /** 403 – Änderung von einem Gerät ohne gültige Person (z. B. TV «nur ansehen»). */
+    @ExceptionHandler(KeinePersonException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    ProblemDetail keinePerson(KeinePersonException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Keine Person gewählt", ex.getMessage());
     }
 
     /** 404 – Datensatz existiert nicht. */

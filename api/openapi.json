@@ -33,6 +33,16 @@
             },
             "description" : "Bad Request"
           },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -104,6 +114,16 @@
             },
             "description" : "Bad Request"
           },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -170,6 +190,16 @@
               }
             },
             "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
           },
           "404" : {
             "content" : {
@@ -243,6 +273,16 @@
             },
             "description" : "Bad Request"
           },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -310,6 +350,16 @@
               }
             },
             "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
           },
           "404" : {
             "content" : {
@@ -388,6 +438,16 @@
             },
             "description" : "Bad Request"
           },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -455,6 +515,16 @@
               }
             },
             "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
           },
           "404" : {
             "content" : {
@@ -524,6 +594,16 @@
             },
             "description" : "Bad Request"
           },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
           "404" : {
             "content" : {
               "application/problem+json" : {
@@ -591,6 +671,15 @@
           "fuerAufgabenWaehlbar" : {
             "type" : "boolean"
           },
+          "geaendertAm" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "geaendertVon" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Wer zuletzt geändert hat (leer: Testdaten/Ersteinrichtung)"
+          },
           "geburtstag" : {
             "type" : [ "string", "null" ],
             "format" : "date"
@@ -618,7 +707,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "aktiv", "alsMechanikerWaehlbar", "farbe", "ferienanspruch", "fuerAufgabenWaehlbar", "geburtstag", "id", "name", "pinnwandSpalte", "reihenfolge", "rolle", "version" ]
+        "required" : [ "aktiv", "alsMechanikerWaehlbar", "farbe", "ferienanspruch", "fuerAufgabenWaehlbar", "geaendertAm", "geaendertVon", "geburtstag", "id", "name", "pinnwandSpalte", "reihenfolge", "rolle", "version" ]
       },
       "MitarbeiterEingabe" : {
         "type" : "object",

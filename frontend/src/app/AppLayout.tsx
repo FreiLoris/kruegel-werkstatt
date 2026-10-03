@@ -1,16 +1,24 @@
 import { Wrench } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router'
+import { useAktiveMitarbeiter } from '../features/mitarbeiter/mitarbeiterApi'
 import styles from './AppLayout.module.css'
 import { LiveAnzeige } from './live/LiveAnzeige'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
+import { PersonAnzeige } from './person/PersonAnzeige'
+import { PersonWahl } from './person/PersonWahl'
+import { useGeraetPerson } from './person/useGeraetPerson'
 
 /**
  * Rahmen jeder Seite: Kopfzeile mit Navigation, darunter der Seiteninhalt.
  * `<Outlet />` ist die Stelle, an der der Router die aktuelle Seite einsetzt.
+ *
+ * Hat das Gerät noch nicht gesagt, wer es benutzt, erscheint statt der Seite die Personenwahl.
  */
 export function AppLayout() {
   const liveStatus = useLiveUpdates()
+  const geraet = useGeraetPerson()
+  const { data: aktive = [] } = useAktiveMitarbeiter()
 
   return (
     <>
@@ -32,10 +40,11 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <PersonAnzeige status={geraet} />
         <LiveAnzeige status={liveStatus} />
       </header>
       <main className={styles.inhalt}>
-        <Outlet />
+        {geraet.art === 'waehlen' ? <PersonWahl aktive={aktive} nichtMehrAktiv={geraet.nichtMehrAktiv !== undefined} /> : <Outlet />}
       </main>
     </>
   )

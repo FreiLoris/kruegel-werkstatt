@@ -21,6 +21,8 @@ const erich: Mitarbeiter = {
   pinnwandSpalte: true,
   aktiv: true,
   reihenfolge: 1,
+  geaendertAm: '2026-10-01T06:00:00Z',
+  geaendertVon: null,
 }
 
 /** Formular mit eigenem Zustand – wie im Dialog, aber ohne API */

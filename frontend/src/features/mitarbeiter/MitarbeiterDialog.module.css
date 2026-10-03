@@ -2,3 +2,9 @@
 .links {
   margin-right: auto;
 }
+
+.zuletzt {
+  margin: var(--abstand-5) 0 0;
+  font-size: var(--schrift-klein);
+  color: var(--farbe-text-gedaempft);
+}
