@@ -1,4 +1,4 @@
-package ch.kruegel.werkstatt.lift;
+package ch.kruegel.werkstatt.serviceleistung;
 
 import ch.kruegel.werkstatt.TestDatenbank;
 import ch.kruegel.werkstatt.TestcontainersConfiguration;
@@ -25,12 +25,12 @@ import java.io.UnsupportedEncodingException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Lift-API von aussen, mit echter Datenbank. Geändert wird als Person «Chef». */
+/** Serviceleistungen-API von aussen, mit echter Datenbank. Geändert wird als Person «Chef». */
 @SpringBootTest
 @AutoConfigureMockMvc
 @RecordApplicationEvents
 @Import(TestcontainersConfiguration.class)
-class LiftApiTest {
+class ServiceleistungApiTest {
 
     @Autowired
     private MockMvcTester mvc;
@@ -53,22 +53,22 @@ class LiftApiTest {
     }
 
     @Test
-    void neuerLiftKommtAnsEnde() {
-        anlegen("Lift 1");
-        MvcTestResult antwort = anlegen("  Grube  ");
+    void neueLeistungKommtAnsEnde() {
+        anlegen("Ölwechsel");
+        MvcTestResult antwort = anlegen("  Reifen einlagern  ");
 
         assertThat(antwort).hasStatus(HttpStatus.CREATED);
-        assertThat(antwort).bodyJson().extractingPath("$.name").isEqualTo("Grube");
+        assertThat(antwort).bodyJson().extractingPath("$.name").isEqualTo("Reifen einlagern");
         assertThat(antwort).bodyJson().extractingPath("$.geaendertVon").isEqualTo(chef);
-        assertThat(mvc.get().uri("/api/lifts")).bodyJson().extractingPath("$[*].name").asArray()
-                .containsExactly("Lift 1", "Grube");
+        assertThat(mvc.get().uri("/api/serviceleistungen")).bodyJson().extractingPath("$[*].name").asArray()
+                .containsExactly("Ölwechsel", "Reifen einlagern");
     }
 
     @Test
     void doppelterNameIstFeldfehler() {
-        anlegen("Lift 1");
+        anlegen("Ölwechsel");
 
-        MvcTestResult antwort = anlegen("LIFT 1");
+        MvcTestResult antwort = anlegen("ÖLWECHSEL");
 
         assertThat(antwort).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(antwort).bodyJson().extractingPath("$.fehler[0].feld").isEqualTo("name");
@@ -76,10 +76,10 @@ class LiftApiTest {
 
     @Test
     void umbenennenAufVorhandenenNamenIstFeldfehler() {
-        anlegen("Lift 1");
-        String id = idVon(anlegen("Lift 2"));
+        anlegen("Ölwechsel");
+        String id = idVon(anlegen("Bremsen"));
 
-        MvcTestResult antwort = senden("PUT", "/api/lifts/" + id, "{ \"name\": \" lift 1 \", \"version\": 0 }");
+        MvcTestResult antwort = senden("PUT", "/api/serviceleistungen/" + id, "{ \"name\": \" ölwechsel \", \"version\": 0 }");
 
         assertThat(antwort).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(antwort).bodyJson().extractingPath("$.fehler[0].feld").isEqualTo("name");
@@ -87,61 +87,50 @@ class LiftApiTest {
 
     @Test
     void umbenennenMitVersion() {
-        String id = idVon(anlegen("Lift 1"));
+        String id = idVon(anlegen("Oelwechsel"));
 
-        MvcTestResult antwort = senden("PUT", "/api/lifts/" + id, "{ \"name\": \"Lift A\", \"version\": 0 }");
+        MvcTestResult antwort = senden("PUT", "/api/serviceleistungen/" + id, "{ \"name\": \"Ölwechsel\", \"version\": 0 }");
 
         assertThat(antwort).hasStatus(HttpStatus.OK);
-        assertThat(antwort).bodyJson().extractingPath("$.name").isEqualTo("Lift A");
-        assertThat(senden("PUT", "/api/lifts/" + id, "{ \"name\": \"Lift B\", \"version\": 0 }"))
+        assertThat(antwort).bodyJson().extractingPath("$.name").isEqualTo("Ölwechsel");
+        assertThat(senden("PUT", "/api/serviceleistungen/" + id, "{ \"name\": \"Öl\", \"version\": 0 }"))
                 .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
-    void stillgelegteErscheinenNurAufWunsch() {
-        anlegen("Lift 1");
-        String zwei = idVon(anlegen("Lift 2"));
+    void alleDuerfenDeaktiviertWerden() {
+        // Anders als bei Lifts: Ein Auftrag kommt auch ohne Serviceleistungen aus
+        String einzige = idVon(anlegen("Ölwechsel"));
 
-        assertThat(senden("POST", "/api/lifts/" + zwei + "/deaktivieren", null)).hasStatus(HttpStatus.OK);
+        assertThat(senden("POST", "/api/serviceleistungen/" + einzige + "/deaktivieren", null)).hasStatus(HttpStatus.OK);
 
-        assertThat(mvc.get().uri("/api/lifts")).bodyJson().extractingPath("$[*].name").asArray()
-                .containsExactly("Lift 1");
-        assertThat(mvc.get().uri("/api/lifts?inklusiveInaktive=true")).bodyJson().extractingPath("$[*].name").asArray()
-                .containsExactly("Lift 1", "Lift 2");
-    }
-
-    @Test
-    void letzterAktiverLiftBleibt() {
-        String einziger = idVon(anlegen("Lift 1"));
-
-        MvcTestResult antwort = senden("POST", "/api/lifts/" + einziger + "/deaktivieren", null);
-
-        assertThat(antwort).hasStatus(HttpStatus.CONFLICT);
-        assertThat(antwort).bodyJson().extractingPath("$.detail").isEqualTo("Mindestens ein Lift muss in Betrieb bleiben.");
+        assertThat(mvc.get().uri("/api/serviceleistungen")).bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri("/api/serviceleistungen?inklusiveInaktive=true")).bodyJson().extractingPath("$[*].name").asArray()
+                .containsExactly("Ölwechsel");
     }
 
     @Test
     void reihenfolgeSetzen() {
-        String eins = idVon(anlegen("Lift 1"));
-        anlegen("Lift 2");
-        String drei = idVon(anlegen("Lift 3"));
+        String oel = idVon(anlegen("Ölwechsel"));
+        anlegen("Bremsen");
+        String klima = idVon(anlegen("Klimaservice"));
 
-        MvcTestResult antwort = senden("PUT", "/api/lifts/reihenfolge", "{ \"ids\": [\"%s\", \"%s\"] }".formatted(drei, eins));
+        MvcTestResult antwort = senden("PUT", "/api/serviceleistungen/reihenfolge", "{ \"ids\": [\"%s\", \"%s\"] }".formatted(klima, oel));
 
-        assertThat(antwort).bodyJson().extractingPath("$[*].name").asArray().containsExactly("Lift 3", "Lift 1", "Lift 2");
+        assertThat(antwort).bodyJson().extractingPath("$[*].name").asArray().containsExactly("Klimaservice", "Ölwechsel", "Bremsen");
     }
 
     @Test
     void aenderungenMeldenSichAlsLiveUpdate() {
-        anlegen("Lift 1");
+        anlegen("Ölwechsel");
 
-        assertThat(ereignisse.stream(DatenGeaendert.class)).extracting(DatenGeaendert::bereich).containsExactly("lifts");
+        assertThat(ereignisse.stream(DatenGeaendert.class)).extracting(DatenGeaendert::bereich).containsExactly("serviceleistungen");
     }
 
     // ── Hilfen ───────────────────────────────────────────────────────
 
     private MvcTestResult anlegen(String name) {
-        return senden("POST", "/api/lifts", "{ \"name\": \"%s\" }".formatted(name));
+        return senden("POST", "/api/serviceleistungen", "{ \"name\": \"%s\" }".formatted(name));
     }
 
     private MvcTestResult senden(String methode, String uri, String json) {

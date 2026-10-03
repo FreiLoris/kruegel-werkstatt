@@ -87,7 +87,7 @@ nach dem alle weiteren Module gebaut werden.
 
 - [x] **4a – Lifts konfigurierbar**
   Tabelle statt 3 hartcodierter Lifts; Anzahl/Namen änderbar. (→ Bug #13)
-- [ ] **4b – Service-Leistungen konfigurierbar**
+- [x] **4b – Service-Leistungen konfigurierbar**
   Ölwechsel, Wischblätter, Klimaservice, … als pflegbare Liste statt 8 fixer Checkboxen.
 - [ ] **4c – Ersatzwagen-Fahrzeuge**
   Stammdaten (Bezeichnung, Modell, Kennzeichen, Service fällig, Versicherung bis) mit

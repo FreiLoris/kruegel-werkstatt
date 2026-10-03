@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public final class TestDatenbank {
 
-    private static final String FACHTABELLEN = "lift, mitarbeiter";
+    private static final String FACHTABELLEN = "serviceleistung, lift, mitarbeiter";
 
     private TestDatenbank() {
     }

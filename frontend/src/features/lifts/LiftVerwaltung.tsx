@@ -1,23 +1,22 @@
-import { ArrowDown, ArrowUp, Pencil, Plus, PowerOff, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useDarfAendern } from '../../app/person/useGeraetPerson'
+import { NameDialog } from '../../components/stammdaten/NameDialog'
+import { Stammdatenliste } from '../../components/stammdaten/Stammdatenliste'
 import { useBestaetigung } from '../../components/ui/bestaetigungKontext'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastKontext'
-import { verschoben } from '../../lib/reihenfolge'
-import { LiftDialog } from './LiftDialog'
-import { useAlleLifts, useLiftAktivSetzen, useLiftReihenfolge, type Lift } from './liftApi'
-import styles from './LiftVerwaltung.module.css'
+import { useAlleLifts, useLiftAktivSetzen, useLiftReihenfolge, useLiftSpeichern, type Lift } from './liftApi'
 
 type Dialog = { art: 'neu' } | { art: 'umbenennen'; lift: Lift } | null
 
 /**
  * Lifts verwalten: Anzahl, Namen, Reihenfolge (= Spalten von links nach rechts).
- * Früher fest «Lift 1/2/3» im Code (Bug #13).
+ * Früher fest «Lift 1/2/3» im Code (Bug #13). Darstellung: {@link Stammdatenliste}.
  */
 export function LiftVerwaltung() {
   const { data: alle, error, isPending, refetch } = useAlleLifts()
   const darfAendern = useDarfAendern()
+  const speichern = useLiftSpeichern()
   const reihenfolge = useLiftReihenfolge()
   const aktivSetzen = useLiftAktivSetzen()
   const toast = useToast()
@@ -28,19 +27,10 @@ export function LiftVerwaltung() {
   if (error) {
     return (
       <>
-        <p className={styles.fehler}>Lifts konnten nicht geladen werden: {error.message}</p>
+        <p className="gedaempft">Lifts konnten nicht geladen werden: {error.message}</p>
         <Button onClick={() => void refetch()}>Erneut versuchen</Button>
       </>
     )
-  }
-
-  const aktive = alle.filter((l) => l.aktiv)
-  const stillgelegte = alle.filter((l) => !l.aktiv)
-
-  function verschieben(index: number, richtung: -1 | 1) {
-    reihenfolge.mutate(verschoben(aktive.map((l) => l.id), index, richtung), {
-      onError: (fehler) => toast.fehler(`Reihenfolge nicht gespeichert: ${fehler.message}`),
-    })
   }
 
   async function stilllegen(lift: Lift) {
@@ -60,97 +50,51 @@ export function LiftVerwaltung() {
     )
   }
 
-  function inBetriebNehmen(lift: Lift) {
-    aktivSetzen.mutate(
-      { id: lift.id, aktiv: true },
-      {
-        onSuccess: () => toast.erfolg(`${lift.name} ist wieder in Betrieb`),
-        onError: (fehler) => toast.fehler(`${lift.name} konnte nicht aktiviert werden: ${fehler.message}`),
-      },
-    )
-  }
-
   return (
     <>
-      <div className={styles.kopf}>
-        <div>
-          <h2>Lifts</h2>
-          <p className="gedaempft">Reihenfolge von oben nach unten = Spalten von links nach rechts in Tagesansicht und Dashboard.</p>
-        </div>
-        {darfAendern && (
-          <Button icon={Plus} onClick={() => setDialog({ art: 'neu' })}>
-            Lift hinzufügen
-          </Button>
-        )}
-      </div>
-
-      <ol className={styles.liste}>
-        {aktive.map((lift, index) => (
-          <li key={lift.id} className={styles.zeile}>
-            <span className={styles.nummer} aria-hidden>
-              {index + 1}
-            </span>
-            <span className={styles.name}>{lift.name}</span>
-            {darfAendern && (
-              <span className={styles.aktionen}>
-                <Button
-                  variante="ghost"
-                  icon={ArrowUp}
-                  aria-label={`${lift.name} nach oben`}
-                  title="Nach oben (weiter links)"
-                  disabled={index === 0 || reihenfolge.isPending}
-                  onClick={() => verschieben(index, -1)}
-                />
-                <Button
-                  variante="ghost"
-                  icon={ArrowDown}
-                  aria-label={`${lift.name} nach unten`}
-                  title="Nach unten (weiter rechts)"
-                  disabled={index === aktive.length - 1 || reihenfolge.isPending}
-                  onClick={() => verschieben(index, 1)}
-                />
-                <Button variante="ghost" icon={Pencil} onClick={() => setDialog({ art: 'umbenennen', lift })} aria-label={`${lift.name} umbenennen`}>
-                  Umbenennen
-                </Button>
-                <Button
-                  variante="ghost"
-                  icon={PowerOff}
-                  onClick={() => void stilllegen(lift)}
-                  // Letzter Lift: Backend würde ablehnen – Knopf gar nicht erst anbieten
-                  disabled={aktive.length <= 1 || aktivSetzen.isPending}
-                  title={aktive.length <= 1 ? 'Mindestens ein Lift muss in Betrieb bleiben' : undefined}
-                  aria-label={`${lift.name} stilllegen`}
-                >
-                  Stilllegen
-                </Button>
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
-
-      {stillgelegte.length > 0 && (
-        <details className={styles.stillgelegt}>
-          <summary>Stillgelegt ({stillgelegte.length})</summary>
-          <ul className={styles.stillgelegtListe}>
-            {stillgelegte.map((lift) => (
-              <li key={lift.id}>
-                <span className="gedaempft">{lift.name}</span>
-                {darfAendern && (
-                  <Button klein icon={RotateCcw} onClick={() => inBetriebNehmen(lift)} disabled={aktivSetzen.isPending}>
-                    Wieder in Betrieb
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <Stammdatenliste
+        eintraege={alle}
+        texte={{
+          titel: 'Lifts',
+          beschreibung: 'Reihenfolge von oben nach unten = Spalten von links nach rechts in Tagesansicht und Dashboard.',
+          neu: 'Lift hinzufügen',
+          deaktivieren: 'Stilllegen',
+          inaktiv: 'Stillgelegt',
+          aktivieren: 'Wieder in Betrieb',
+        }}
+        darfAendern={darfAendern}
+        beschaeftigt={reihenfolge.isPending || aktivSetzen.isPending}
+        mindestensEinerAktiv
+        onNeu={() => setDialog({ art: 'neu' })}
+        onUmbenennen={(lift) => setDialog({ art: 'umbenennen', lift })}
+        onDeaktivieren={(lift) => void stilllegen(lift)}
+        onAktivieren={(lift) =>
+          aktivSetzen.mutate(
+            { id: lift.id, aktiv: true },
+            {
+              onSuccess: () => toast.erfolg(`${lift.name} ist wieder in Betrieb`),
+              onError: (fehler) => toast.fehler(`${lift.name} konnte nicht aktiviert werden: ${fehler.message}`),
+            },
+          )
+        }
+        onReihenfolge={(ids) =>
+          reihenfolge.mutate(ids, { onError: (fehler) => toast.fehler(`Reihenfolge nicht gespeichert: ${fehler.message}`) })
+        }
+      />
 
       {dialog && (
-        <LiftDialog
+        <NameDialog
           key={dialog.art === 'neu' ? 'neu' : dialog.lift.id}
-          lift={dialog.art === 'umbenennen' ? dialog.lift : undefined}
+          titel={dialog.art === 'neu' ? 'Neuer Lift' : `${dialog.lift.name} umbenennen`}
+          startName={dialog.art === 'umbenennen' ? dialog.lift.name : undefined}
+          placeholder="z. B. Lift 4 oder Grube"
+          hinweis="So heisst die Spalte in Tagesansicht und Dashboard."
+          maxLength={30}
+          speichern={(name) =>
+            speichern.mutateAsync(
+              dialog.art === 'neu' ? { name } : { id: dialog.lift.id, name, version: dialog.lift.version },
+            )
+          }
           onSchliessen={() => setDialog(null)}
         />
       )}

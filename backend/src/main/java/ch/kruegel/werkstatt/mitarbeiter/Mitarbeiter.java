@@ -1,6 +1,7 @@
 package ch.kruegel.werkstatt.mitarbeiter;
 
 import ch.kruegel.werkstatt.common.persistence.BaseEntity;
+import ch.kruegel.werkstatt.common.persistence.Sortierbar;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
  * damit alte Aufträge und Notizen ihren Namen behalten.
  */
 @Entity
-public class Mitarbeiter extends BaseEntity {
+public class Mitarbeiter extends BaseEntity implements Sortierbar {
 
     @Column(nullable = false)
     private String name;
@@ -66,6 +67,7 @@ public class Mitarbeiter extends BaseEntity {
         this.aktiv = true;
     }
 
+    @Override
     public void verschieben(int neueReihenfolge) {
         this.reihenfolge = neueReihenfolge;
     }

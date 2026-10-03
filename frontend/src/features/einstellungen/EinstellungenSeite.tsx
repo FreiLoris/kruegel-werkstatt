@@ -1,9 +1,10 @@
 import { LiftVerwaltung } from '../lifts/LiftVerwaltung'
+import { ServiceleistungVerwaltung } from '../serviceleistungen/ServiceleistungVerwaltung'
 import styles from './EinstellungenSeite.module.css'
 
 /**
  * Stammdaten, die selten geändert werden. Jeder Bereich ist ein eigener Abschnitt;
- * Service-Leistungen (4b) und Ersatzwagen (4c) kommen hier dazu.
+ * Ersatzwagen (4c) kommt hier dazu.
  */
 export function EinstellungenSeite() {
   return (
@@ -11,6 +12,9 @@ export function EinstellungenSeite() {
       <h1>Einstellungen</h1>
       <section className={styles.abschnitt}>
         <LiftVerwaltung />
+      </section>
+      <section className={styles.abschnitt}>
+        <ServiceleistungVerwaltung />
       </section>
     </>
   )
