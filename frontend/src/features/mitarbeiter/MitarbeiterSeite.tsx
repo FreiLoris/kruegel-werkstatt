@@ -4,6 +4,7 @@ import { useDarfAendern } from '../../app/person/useGeraetPerson'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastKontext'
 import { formatDatum } from '../../lib/format'
+import { verschoben } from '../../lib/reihenfolge'
 import { MitarbeiterDialog } from './MitarbeiterDialog'
 import { ROLLEN, useAlleMitarbeiter, useMitarbeiterAktivSetzen, useMitarbeiterReihenfolge, type Mitarbeiter } from './mitarbeiterApi'
 import styles from './MitarbeiterSeite.module.css'
@@ -81,9 +82,7 @@ function AktiveListe({ aktive, darfAendern, onBearbeiten }: {
   const toast = useToast()
 
   function verschieben(index: number, richtung: -1 | 1) {
-    const ids = aktive.map((m) => m.id)
-    ;[ids[index], ids[index + richtung]] = [ids[index + richtung], ids[index]]
-    reihenfolge.mutate(ids, {
+    reihenfolge.mutate(verschoben(aktive.map((m) => m.id), index, richtung), {
       onError: (fehler) => toast.fehler(`Reihenfolge nicht gespeichert: ${fehler.message}`),
     })
   }

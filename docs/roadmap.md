@@ -85,7 +85,7 @@ nach dem alle weiteren Module gebaut werden.
 
 ## Phase 4 – Stammdaten
 
-- [ ] **4a – Lifts konfigurierbar**
+- [x] **4a – Lifts konfigurierbar**
   Tabelle statt 3 hartcodierter Lifts; Anzahl/Namen änderbar. (→ Bug #13)
 - [ ] **4b – Service-Leistungen konfigurierbar**
   Ölwechsel, Wischblätter, Klimaservice, … als pflegbare Liste statt 8 fixer Checkboxen.

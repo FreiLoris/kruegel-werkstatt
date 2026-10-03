@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router'
+import { EinstellungenSeite } from '../features/einstellungen/EinstellungenSeite'
 import { MitarbeiterSeite } from '../features/mitarbeiter/MitarbeiterSeite'
 import { StartSeite } from '../features/start/StartSeite'
 import { KomponentenSeite } from '../features/system/KomponentenSeite'
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <StartSeite /> },
       { path: 'mitarbeiter', element: <MitarbeiterSeite /> },
+      { path: 'einstellungen', element: <EinstellungenSeite /> },
       { path: 'system', element: <SystemSeite /> },
       { path: 'system/komponenten', element: <KomponentenSeite /> },
       { path: '*', element: <NichtGefundenSeite /> },

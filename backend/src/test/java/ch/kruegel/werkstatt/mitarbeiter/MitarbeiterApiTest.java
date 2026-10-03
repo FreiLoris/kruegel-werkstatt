@@ -1,5 +1,6 @@
 package ch.kruegel.werkstatt.mitarbeiter;
 
+import ch.kruegel.werkstatt.TestDatenbank;
 import ch.kruegel.werkstatt.TestcontainersConfiguration;
 import ch.kruegel.werkstatt.common.live.DatenGeaendert;
 import ch.kruegel.werkstatt.common.person.AktuellePerson;
@@ -12,6 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
@@ -44,6 +46,9 @@ class MitarbeiterApiTest {
     @Autowired
     private ApplicationEvents ereignisse;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     /** Wer auf dem Test-Gerät gewählt ist (null = keine Person, z. B. TV) */
     private String person;
 
@@ -51,8 +56,7 @@ class MitarbeiterApiTest {
 
     @BeforeEach
     void startMitChef() {
-        // In einem einzigen DELETE: Personen verweisen über geaendert_von aufeinander
-        repository.deleteAllInBatch();
+        TestDatenbank.leeren(jdbc);
         chef = repository.save(MitarbeiterTestdaten.mitarbeiter("Chef", 0)).getId().toString();
         person = chef;
     }
@@ -240,7 +244,7 @@ class MitarbeiterApiTest {
 
     @Test
     void ersteinrichtungGehtOhnePerson() {
-        repository.deleteAllInBatch(); // noch niemand erfasst → niemand kann gewählt sein
+        TestDatenbank.leeren(jdbc); // noch niemand erfasst → niemand kann gewählt sein
         person = null;
 
         MvcTestResult antwort = anlegen("Reto");

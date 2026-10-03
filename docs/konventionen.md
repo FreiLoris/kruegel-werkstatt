@@ -147,6 +147,7 @@ Backend: PersonInterceptor prüft ─▶ Auditing füllt erstelltVon/geaendertVo
 | Bearbeiten | `PUT /api/<bereich>/{id}` mit `version` → 409 bei veraltetem Stand |
 | Löschen | Stammdaten, auf die andere Daten verweisen, werden **deaktiviert** (`POST …/{id}/deaktivieren`), nicht gelöscht |
 | Regel braucht DB | im Service prüfen und `throw new EingabeFehlerException("feld", "…")` → erscheint beim Formularfeld |
+| Regel ohne Feld | `throw new RegelVerletztException("Mindestens ein Lift muss in Betrieb bleiben.")` → 409, Meldung erscheint als Toast |
 | Nach dem Speichern | `repository.flush()` (damit die zurückgegebene `version` stimmt) und `publishEvent(new DatenGeaendert(BEREICH))` |
 | Tests | API-Test von aussen (`…ApiTest`, MockMvcTester), Repository-Test, Unit-Test für Regeln |
 
@@ -198,6 +199,7 @@ Controller/DTOs ──./mvnw test──▶ api/openapi.json ──npm run api:ge
 - Gegen echtes PostgreSQL (Testcontainers), nie H2.
 - `@DataJpaTest` für Datenbank-Logik, `@SpringBootTest` für die ganze App / API.
 - Jeder Test startet mit definiertem Zustand (keine Abhängigkeit von der Reihenfolge).
+  API-Tests leeren die Fachtabellen mit `TestDatenbank.leeren(jdbc)` – **neue Tabelle dort ergänzen**.
 - Zeitabhängige Tests mit `TestClock`.
 
 ## Testdaten für die Entwicklung
