@@ -23,6 +23,12 @@ public interface MitarbeiterRepository extends JpaRepository<Mitarbeiter, UUID> 
     /** Wie oben, aber ohne die Person selbst (beim Bearbeiten). */
     boolean existsByAktivTrueAndNameIgnoreCaseAndIdNot(String name, UUID id);
 
+    /** Ist diese Person aktiv? (Prüfung des Headers «X-Person») */
+    boolean existsByIdAndAktivTrue(UUID id);
+
+    /** Gibt es überhaupt aktive Personen? (Nein = Ersteinrichtung) */
+    boolean existsByAktivTrue();
+
     /** Für neue Einträge: ans Ende der Liste setzen. */
     @Query("select coalesce(max(m.reihenfolge), -1) + 1 from Mitarbeiter m")
     int naechsteReihenfolge();

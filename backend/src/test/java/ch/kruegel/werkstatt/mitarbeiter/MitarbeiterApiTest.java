@@ -2,6 +2,7 @@ package ch.kruegel.werkstatt.mitarbeiter;
 
 import ch.kruegel.werkstatt.TestcontainersConfiguration;
 import ch.kruegel.werkstatt.common.live.DatenGeaendert;
+import ch.kruegel.werkstatt.common.person.AktuellePerson;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,12 +18,16 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import java.io.UnsupportedEncodingException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Testet die Mitarbeiter-API von aussen – so wie das Frontend sie aufruft
  * (HTTP-Request rein, JSON raus), mit echter Datenbank.
+ *
+ * <p>Änderungen schickt das "Gerät" als Person «Chef» (Header {@code X-Person}), ausser ein
+ * Test setzt {@link #person} anders.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,9 +44,17 @@ class MitarbeiterApiTest {
     @Autowired
     private ApplicationEvents ereignisse;
 
+    /** Wer auf dem Test-Gerät gewählt ist (null = keine Person, z. B. TV) */
+    private String person;
+
+    private String chef;
+
     @BeforeEach
-    void leereTabelle() {
-        repository.deleteAll();
+    void startMitChef() {
+        // In einem einzigen DELETE: Personen verweisen über geaendert_von aufeinander
+        repository.deleteAllInBatch();
+        chef = repository.save(MitarbeiterTestdaten.mitarbeiter("Chef", 0)).getId().toString();
+        person = chef;
     }
 
     // ── Anlegen ──────────────────────────────────────────────────────
@@ -63,7 +76,7 @@ class MitarbeiterApiTest {
         anlegen("Erich");
 
         assertThat(mvc.get().uri("/api/mitarbeiter"))
-                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Reto", "Erich");
+                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Chef", "Reto", "Erich");
     }
 
     @Test
@@ -146,9 +159,9 @@ class MitarbeiterApiTest {
         assertThat(senden("POST", "/api/mitarbeiter/" + erich + "/deaktivieren", null)).hasStatus(HttpStatus.OK);
 
         assertThat(mvc.get().uri("/api/mitarbeiter"))
-                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Reto");
+                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Chef", "Reto");
         assertThat(mvc.get().uri("/api/mitarbeiter?inklusiveInaktive=true"))
-                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Reto", "Erich");
+                .bodyJson().extractingPath("$[*].name").asArray().containsExactly("Chef", "Reto", "Erich");
     }
 
     @Test
@@ -176,7 +189,64 @@ class MitarbeiterApiTest {
                 """.formatted(doeme, erich));
 
         assertThat(antwort).hasStatus(HttpStatus.OK);
-        assertThat(antwort).bodyJson().extractingPath("$[*].name").asArray().containsExactly("Döme", "Erich", "Reto");
+        assertThat(antwort).bodyJson().extractingPath("$[*].name").asArray().containsExactly("Döme", "Erich", "Chef", "Reto");
+    }
+
+    // ── Wer bin ich? (Person pro Gerät) ──────────────────────────────
+
+    @Test
+    void merktSichWerAngelegtUndGeaendertHat() {
+        MvcTestResult antwort = anlegen("Reto");
+
+        assertThat(antwort).bodyJson().extractingPath("$.geaendertVon").isEqualTo(chef);
+        assertThat(repository.findById(UUID.fromString(idVon(antwort))).orElseThrow().getErstelltVon())
+                .hasToString(chef);
+    }
+
+    @Test
+    void aenderungOhnePersonWirdAbgelehnt() {
+        person = null; // z. B. TV im Modus «nur ansehen»
+
+        MvcTestResult antwort = anlegen("Reto");
+
+        assertThat(antwort).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(antwort).bodyJson().extractingPath("$.title").isEqualTo("Keine Person gewählt");
+    }
+
+    @Test
+    void aenderungVonDeaktivierterPersonWirdAbgelehnt() {
+        String erich = idVon(anlegen("Erich"));
+        senden("POST", "/api/mitarbeiter/" + erich + "/deaktivieren", null);
+        person = erich; // Tablet, auf dem noch Erich gewählt ist
+
+        assertThat(anlegen("Reto")).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void unbekannteOderKaputtePersonZaehltAlsKeine() {
+        person = "0199ffff-0000-7000-8000-000000000000";
+        assertThat(anlegen("Reto")).hasStatus(HttpStatus.FORBIDDEN);
+
+        person = "kaputt";
+        assertThat(anlegen("Reto")).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void lesenGehtAuchOhnePerson() {
+        person = null;
+
+        assertThat(mvc.get().uri("/api/mitarbeiter")).hasStatus(HttpStatus.OK);
+    }
+
+    @Test
+    void ersteinrichtungGehtOhnePerson() {
+        repository.deleteAllInBatch(); // noch niemand erfasst → niemand kann gewählt sein
+        person = null;
+
+        MvcTestResult antwort = anlegen("Reto");
+
+        assertThat(antwort).hasStatus(HttpStatus.CREATED);
+        assertThat(antwort).bodyJson().extractingPath("$.geaendertVon").isNull();
     }
 
     // ── Live-Updates ─────────────────────────────────────────────────
@@ -212,6 +282,9 @@ class MitarbeiterApiTest {
             case "PUT" -> mvc.put().uri(uri);
             default -> throw new IllegalArgumentException(methode);
         };
+        if (person != null) {
+            anfrage = anfrage.header(AktuellePerson.HEADER, person);
+        }
         if (json != null) {
             anfrage = anfrage.contentType(MediaType.APPLICATION_JSON).content(json);
         }

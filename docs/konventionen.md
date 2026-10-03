@@ -76,6 +76,22 @@ Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbei
   im Backend: `['mitarbeiter']`, `['mitarbeiter', id]`. Sonst kommen Änderungen nicht an.
 - Bereichsnamen: Kleinbuchstaben, Mehrzahl wie die API-Pfade (`mitarbeiter`, `auftraege`, `todos`).
 
+## Wer bin ich? (Person pro Gerät)
+
+Kein Login – jedes Gerät wählt einmal eine Person oder «nur ansehen» (Werkstatt-TV).
+
+```
+Gerät wählt Person ─▶ localStorage ─▶ Header X-Person bei jeder Anfrage (api/client.ts)
+Backend: PersonInterceptor prüft ─▶ Auditing füllt erstelltVon/geaendertVon
+         Änderung (nicht GET) ohne aktive Person ─▶ 403 (ausser: noch gar keine Mitarbeiter)
+```
+
+- **Backend:** nichts zu tun – `BaseEntity` + Interceptor erledigen es für jedes Modul.
+  `…Dto` gibt `geaendertAm` und `geaendertVon` mit aus.
+- **Frontend:** Bearbeiten-Knöpfe nur zeigen, wenn `useDarfAendern()` true ist.
+  Den Namen zu `geaendertVon` aus der Mitarbeiterliste holen.
+- Schutz vor Versehen, nicht vor Absicht (Header ist fälschbar) – bewusst so (Bug #11, ADR 0001).
+
 ## UI-Bausteine & Gestaltung
 
 Übersicht aller Bausteine mit Beispielen: http://localhost:5173/system/komponenten
@@ -98,7 +114,8 @@ Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbei
 
 ## Entitäten
 
-- Erben von `BaseEntity` → automatisch `id` (UUIDv7), `version`, `erstelltAm`, `geaendertAm`.
+- Erben von `BaseEntity` → automatisch `id` (UUIDv7), `version`, `erstelltAm`, `geaendertAm`,
+  `erstelltVon`, `geaendertVon`.
 - Kein öffentlicher Setter für alles: Änderungen über sprechende Methoden
   (`auftrag.statusWechseln(...)` statt `setStatus(...)`).
 - Parameterloser Konstruktor nur `protected` (wird nur von JPA gebraucht).
@@ -110,10 +127,12 @@ Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbei
 - Tabellen- und Spaltennamen: `snake_case`, Einzahl (`auftrag`, `ersatzwagen_buchung`).
 - Pflichtspalten jeder Tabelle (passend zu `BaseEntity`):
   ```sql
-  id            uuid         PRIMARY KEY,
-  version       bigint       NOT NULL,
-  erstellt_am   timestamptz  NOT NULL,
-  geaendert_am  timestamptz  NOT NULL
+  id             uuid         PRIMARY KEY,
+  version        bigint       NOT NULL,
+  erstellt_am    timestamptz  NOT NULL,
+  geaendert_am   timestamptz  NOT NULL,
+  erstellt_von   uuid         REFERENCES mitarbeiter (id),
+  geaendert_von  uuid         REFERENCES mitarbeiter (id)
   ```
 - Beziehungen immer mit Fremdschlüssel (`REFERENCES …`), Regeln möglichst als Constraint.
 - Hibernate erzeugt nie Tabellen (`ddl-auto: validate`).

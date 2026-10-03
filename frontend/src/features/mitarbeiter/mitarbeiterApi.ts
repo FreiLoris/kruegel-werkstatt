@@ -28,6 +28,14 @@ export function useAlleMitarbeiter() {
   })
 }
 
+/** Nur aktive, in fester Reihenfolge – für Auswahllisten und «Wer bin ich?». */
+export function useAktiveMitarbeiter() {
+  return useQuery({
+    queryKey: [BEREICH, 'aktiv'],
+    queryFn: async ({ signal }) => datenOderFehler(await api.GET('/api/mitarbeiter', { signal })),
+  })
+}
+
 /**
  * Anlegen (ohne `id`) oder Bearbeiten (mit `id`, Eingabe enthält dann die geladene `version`).
  *

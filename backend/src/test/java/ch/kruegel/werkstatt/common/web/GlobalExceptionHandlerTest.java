@@ -1,10 +1,12 @@
 package ch.kruegel.werkstatt.common.web;
 
+import ch.kruegel.werkstatt.common.person.PersonVerzeichnis;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -18,6 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @WebMvcTest(FehlerTestController.class)
 class GlobalExceptionHandlerTest {
+
+    // Die Personenprüfung gehört zur Web-Schicht und wird darum mitgestartet –
+    // sie braucht die Mitarbeiter-Datenbank, die es in diesem schlanken Test nicht gibt.
+    @MockitoBean
+    private PersonVerzeichnis personVerzeichnis;
+
 
     @Autowired
     private MockMvcTester mvc;

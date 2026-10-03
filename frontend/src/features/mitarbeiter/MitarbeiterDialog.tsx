@@ -5,6 +5,7 @@ import { useBestaetigung } from '../../components/ui/bestaetigungKontext'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastKontext'
+import { formatZeitpunkt } from '../../lib/format'
 import styles from './MitarbeiterDialog.module.css'
 import { alsEingabe, startwerte } from './formularwerte'
 import { MitarbeiterFormular } from './MitarbeiterFormular'
@@ -111,7 +112,19 @@ export function MitarbeiterDialog({ mitarbeiter, alle, onSchliessen }: Mitarbeit
         fehler={speichern.error}
         farbenVergeben={farbenVergeben}
       />
+      {mitarbeiter && <ZuletztGeaendert mitarbeiter={mitarbeiter} alle={alle} />}
     </Modal>
+  )
+}
+
+/** «Zuletzt geändert am … von …» – wer hat zuletzt etwas angepasst? */
+function ZuletztGeaendert({ mitarbeiter, alle }: { mitarbeiter: Mitarbeiter; alle: Mitarbeiter[] }) {
+  const von = alle.find((m) => m.id === mitarbeiter.geaendertVon)?.name
+  return (
+    <p className={styles.zuletzt}>
+      Zuletzt geändert {formatZeitpunkt(mitarbeiter.geaendertAm)}
+      {von && ` von ${von}`}
+    </p>
   )
 }
 

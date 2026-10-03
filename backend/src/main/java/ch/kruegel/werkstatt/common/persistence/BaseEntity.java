@@ -8,7 +8,9 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -16,13 +18,15 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Basis für alle Entitäten. Jede Tabelle hat damit dieselben vier Spalten:
+ * Basis für alle Entitäten. Jede Tabelle hat damit dieselben sechs Spalten:
  *
  * <pre>
- *   id            uuid         PRIMARY KEY
- *   version       bigint       NOT NULL
- *   erstellt_am   timestamptz  NOT NULL
- *   geaendert_am  timestamptz  NOT NULL
+ *   id             uuid         PRIMARY KEY
+ *   version        bigint       NOT NULL
+ *   erstellt_am    timestamptz  NOT NULL
+ *   geaendert_am   timestamptz  NOT NULL
+ *   erstellt_von   uuid         REFERENCES mitarbeiter (id)
+ *   geaendert_von  uuid         REFERENCES mitarbeiter (id)
  * </pre>
  *
  * <ul>
@@ -32,6 +36,10 @@ import java.util.UUID;
  *       Datensatz, gewinnt nicht einfach der Letzte. Der Zweite bekommt einen Fehler,
  *       weil seine Version veraltet ist.</li>
  *   <li><b>erstelltAm / geaendertAm</b> – werden von Spring Data automatisch gesetzt.</li>
+ *   <li><b>erstelltVon / geaendertVon</b> – ebenso: die Person, die das Gerät gewählt hat
+ *       ({@link ch.kruegel.werkstatt.common.person.AktuellePerson}). Leer bei Testdaten und
+ *       bei der Ersteinrichtung. Nur die ID, kein verknüpftes Objekt – den Namen holt sich
+ *       das Frontend aus der Mitarbeiterliste.</li>
  * </ul>
  */
 @MappedSuperclass
@@ -54,6 +62,13 @@ public abstract class BaseEntity {
     @Column(nullable = false)
     private Instant geaendertAm;
 
+    @CreatedBy
+    @Column(updatable = false)
+    private UUID erstelltVon;
+
+    @LastModifiedBy
+    private UUID geaendertVon;
+
     public UUID getId() {
         return id;
     }
@@ -68,6 +83,14 @@ public abstract class BaseEntity {
 
     public Instant getGeaendertAm() {
         return geaendertAm;
+    }
+
+    public UUID getErstelltVon() {
+        return erstelltVon;
+    }
+
+    public UUID getGeaendertVon() {
+        return geaendertVon;
     }
 
     /**

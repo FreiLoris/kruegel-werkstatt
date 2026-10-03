@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Pencil, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
+import { useDarfAendern } from '../../app/person/useGeraetPerson'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastKontext'
 import { formatDatum } from '../../lib/format'
@@ -18,6 +19,7 @@ type Dialog = { art: 'neu' } | { art: 'bearbeiten'; mitarbeiter: Mitarbeiter } |
 export function MitarbeiterSeite() {
   const { data: alle, error, isPending, refetch } = useAlleMitarbeiter()
   const [dialog, setDialog] = useState<Dialog>(null)
+  const darfAendern = useDarfAendern()
 
   if (isPending) {
     return <p className="gedaempft">Lade Mitarbeiter …</p>
@@ -42,18 +44,20 @@ export function MitarbeiterSeite() {
           <h1>Mitarbeiter</h1>
           <p className="gedaempft">Die Reihenfolge gilt überall – Pinnwand-Spalten, Auswahllisten, Kalender.</p>
         </div>
-        <Button variante="primaer" icon={Plus} onClick={() => setDialog({ art: 'neu' })}>
-          Neuer Mitarbeiter
-        </Button>
+        {darfAendern && (
+          <Button variante="primaer" icon={Plus} onClick={() => setDialog({ art: 'neu' })}>
+            Neuer Mitarbeiter
+          </Button>
+        )}
       </div>
 
       {aktive.length === 0 ? (
         <p className={styles.leer}>Noch niemand erfasst. Mit «Neuer Mitarbeiter» die erste Person anlegen.</p>
       ) : (
-        <AktiveListe aktive={aktive} onBearbeiten={(mitarbeiter) => setDialog({ art: 'bearbeiten', mitarbeiter })} />
+        <AktiveListe aktive={aktive} darfAendern={darfAendern} onBearbeiten={(mitarbeiter) => setDialog({ art: 'bearbeiten', mitarbeiter })} />
       )}
 
-      {ehemalige.length > 0 && <Ehemalige ehemalige={ehemalige} />}
+      {ehemalige.length > 0 && <Ehemalige ehemalige={ehemalige} darfAendern={darfAendern} />}
 
       {dialog && (
         <MitarbeiterDialog
@@ -67,7 +71,12 @@ export function MitarbeiterSeite() {
   )
 }
 
-function AktiveListe({ aktive, onBearbeiten }: { aktive: Mitarbeiter[]; onBearbeiten: (m: Mitarbeiter) => void }) {
+function AktiveListe({ aktive, darfAendern, onBearbeiten }: {
+  aktive: Mitarbeiter[]
+  /** Nein bei «nur ansehen»: Tabelle ohne Knöpfe */
+  darfAendern: boolean
+  onBearbeiten: (m: Mitarbeiter) => void
+}) {
   const reihenfolge = useMitarbeiterReihenfolge()
   const toast = useToast()
 
@@ -89,9 +98,11 @@ function AktiveListe({ aktive, onBearbeiten }: { aktive: Mitarbeiter[]; onBearbe
             <th>Geburtstag</th>
             <th>Ferien</th>
             <th>Erscheint bei</th>
-            <th>
-              <span className={styles.nurScreenreader}>Aktionen</span>
-            </th>
+            {darfAendern && (
+              <th>
+                <span className={styles.nurScreenreader}>Aktionen</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -106,27 +117,29 @@ function AktiveListe({ aktive, onBearbeiten }: { aktive: Mitarbeiter[]; onBearbe
               <td>
                 <ErscheintBei mitarbeiter={m} />
               </td>
-              <td className={styles.aktionen}>
-                <Button
-                  variante="ghost"
-                  icon={ArrowUp}
-                  aria-label={`${m.name} nach oben`}
-                  title="Nach oben"
-                  disabled={index === 0 || reihenfolge.isPending}
-                  onClick={() => verschieben(index, -1)}
-                />
-                <Button
-                  variante="ghost"
-                  icon={ArrowDown}
-                  aria-label={`${m.name} nach unten`}
-                  title="Nach unten"
-                  disabled={index === aktive.length - 1 || reihenfolge.isPending}
-                  onClick={() => verschieben(index, 1)}
-                />
-                <Button icon={Pencil} onClick={() => onBearbeiten(m)} aria-label={`${m.name} bearbeiten`}>
-                  Bearbeiten
-                </Button>
-              </td>
+              {darfAendern && (
+                <td className={styles.aktionen}>
+                  <Button
+                    variante="ghost"
+                    icon={ArrowUp}
+                    aria-label={`${m.name} nach oben`}
+                    title="Nach oben"
+                    disabled={index === 0 || reihenfolge.isPending}
+                    onClick={() => verschieben(index, -1)}
+                  />
+                  <Button
+                    variante="ghost"
+                    icon={ArrowDown}
+                    aria-label={`${m.name} nach unten`}
+                    title="Nach unten"
+                    disabled={index === aktive.length - 1 || reihenfolge.isPending}
+                    onClick={() => verschieben(index, 1)}
+                  />
+                  <Button icon={Pencil} onClick={() => onBearbeiten(m)} aria-label={`${m.name} bearbeiten`}>
+                    Bearbeiten
+                  </Button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -157,7 +170,7 @@ function ErscheintBei({ mitarbeiter }: { mitarbeiter: Mitarbeiter }) {
 }
 
 /** Personen, die nicht mehr im Betrieb sind – zugeklappt, weil selten gebraucht. */
-function Ehemalige({ ehemalige }: { ehemalige: Mitarbeiter[] }) {
+function Ehemalige({ ehemalige, darfAendern }: { ehemalige: Mitarbeiter[]; darfAendern: boolean }) {
   const aktivSetzen = useMitarbeiterAktivSetzen()
   const toast = useToast()
 
@@ -180,9 +193,11 @@ function Ehemalige({ ehemalige }: { ehemalige: Mitarbeiter[] }) {
           <li key={m.id}>
             <Namensschild name={m.name} farbe={m.farbe} />
             <span className="gedaempft">{ROLLEN[m.rolle]}</span>
-            <Button klein icon={RotateCcw} onClick={() => aktivieren(m)} disabled={aktivSetzen.isPending}>
-              Wieder aktivieren
-            </Button>
+            {darfAendern && (
+              <Button klein icon={RotateCcw} onClick={() => aktivieren(m)} disabled={aktivSetzen.isPending}>
+                Wieder aktivieren
+              </Button>
+            )}
           </li>
         ))}
       </ul>

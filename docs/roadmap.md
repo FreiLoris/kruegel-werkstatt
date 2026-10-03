@@ -79,7 +79,7 @@ nach dem alle weiteren Module gebaut werden.
 - [x] **3c – Mitarbeiter-Seite**
   Liste + Formular (Label/Platzhalter stimmig, gut unterscheidbare Farben, Rolle
   Geschäftsführung wählbar). Textfarbe automatisch aus Hintergrund.
-- [ ] **3d – „Wer bin ich?" pro Gerät**
+- [x] **3d – „Wer bin ich?" pro Gerät**
   Kein Login, aber jedes Gerät wählt einmal eine Person. Wird bei Änderungen mitgespeichert
   („geändert von"). TV-Gerät = „nur ansehen". (→ Bug #11, bewusst ohne Passwort)
 
