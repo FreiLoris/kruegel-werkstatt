@@ -76,7 +76,7 @@ nach dem alle weiteren Module gebaut werden.
   eigene Pinnwand-Spalte), aktiv. Testdaten nur im Entwicklungsprofil (→ Bug #9).
 - [x] **3b – Mitarbeiter-API**
   CRUD-Endpoints, Validierung, Integrationstests. Löschen = deaktivieren (Historie bleibt).
-- [ ] **3c – Mitarbeiter-Seite**
+- [x] **3c – Mitarbeiter-Seite**
   Liste + Formular (Label/Platzhalter stimmig, gut unterscheidbare Farben, Rolle
   Geschäftsführung wählbar). Textfarbe automatisch aus Hintergrund.
 - [ ] **3d – „Wer bin ich?" pro Gerät**

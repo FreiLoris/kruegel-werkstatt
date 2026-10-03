@@ -9,5 +9,6 @@ export interface NavEintrag {
 
 export const navigation: NavEintrag[] = [
   { pfad: '/', titel: 'Start' },
+  { pfad: '/mitarbeiter', titel: 'Mitarbeiter' },
   { pfad: '/system', titel: 'System' },
 ]

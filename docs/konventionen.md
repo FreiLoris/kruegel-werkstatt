@@ -88,6 +88,7 @@ Browser empfängt { bereich: "mitarbeiter" } ─▶ invalidateQueries(['mitarbei
 | Toast | `useToast()` | `toast.erfolg('…')`, `toast.fehler('…')` |
 | Bestätigung | `useBestaetigung()` | `if (await bestaetige({ titel, text, gefaehrlich: true })) …` – nie `window.confirm()` |
 | Menü | `components/ui/Menue.tsx` | Aufklappmenü, schliesst bei Esc/Klick daneben |
+| Namensschild | `features/mitarbeiter/Namensschild.tsx` | Name einer Person auf ihrer Farbe, Schriftfarbe automatisch – überall verwenden, wo Personen erscheinen |
 
 - **Keine fixen Farben/Abstände** im CSS – nur Variablen aus `styles/tokens.css`.
 - **CSS pro Komponente** als CSS-Modul (`Button.module.css`) – Klassennamen gelten nur dort.

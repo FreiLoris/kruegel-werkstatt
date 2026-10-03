@@ -1,0 +1,128 @@
+.kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--abstand-4);
+  margin-bottom: var(--abstand-5);
+}
+
+.fehler {
+  color: var(--farbe-gefahr);
+}
+
+.leer {
+  padding: var(--abstand-6);
+  border: 1px dashed var(--farbe-rand-stark);
+  border-radius: var(--radius-gross);
+  text-align: center;
+  color: var(--farbe-text-gedaempft);
+}
+
+/* Auf schmalen Geräten scrollt die Tabelle seitlich statt das Layout zu sprengen */
+.tabellenRahmen {
+  overflow-x: auto;
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius-gross);
+  background: var(--farbe-flaeche);
+}
+
+.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabelle th,
+.tabelle td {
+  padding: var(--abstand-2) var(--abstand-3);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.tabelle th {
+  font-size: var(--schrift-klein);
+  font-weight: 600;
+  color: var(--farbe-text-gedaempft);
+  border-bottom: 1px solid var(--farbe-rand);
+}
+
+.tabelle tbody tr + tr td {
+  border-top: 1px solid var(--farbe-rand);
+}
+
+.aktionen {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--abstand-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--abstand-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0 var(--abstand-2);
+  border: 1px solid var(--farbe-rand-stark);
+  border-radius: 999px;
+  font-size: var(--schrift-klein);
+  color: var(--farbe-text-gedaempft);
+}
+
+.ehemalige {
+  margin-top: var(--abstand-6);
+}
+
+.ehemalige summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  font-weight: 600;
+  gap: var(--abstand-2);
+  color: var(--farbe-text-gedaempft);
+  cursor: pointer;
+}
+
+/* Eigener Pfeil – das Standard-Dreieck fehlt bei display: inline-flex */
+.ehemalige summary::before {
+  content: '▸';
+  transition: transform 0.15s;
+}
+
+.ehemalige[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.ehemaligeListe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--abstand-2);
+  margin: var(--abstand-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ehemaligeListe li {
+  display: flex;
+  align-items: center;
+  gap: var(--abstand-4);
+}
+
+/* Ehemalige blasser, damit sie sich klar von den aktiven unterscheiden */
+.ehemaligeListe li > span:first-child {
+  opacity: 0.6;
+}
+
+.nurScreenreader {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
