@@ -1,4 +1,4 @@
-package ch.kruegel.werkstatt.lift;
+package ch.kruegel.werkstatt.serviceleistung;
 
 import ch.kruegel.werkstatt.common.persistence.BaseEntity;
 import ch.kruegel.werkstatt.common.persistence.Sortierbar;
@@ -6,16 +6,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 /**
- * Eine Hebebühne. Termine werden einem Lift zugeteilt; in Tagesansicht und Dashboard
- * hat jeder aktive Lift eine eigene Spalte.
+ * Eine Leistung, die beim Service angekreuzt werden kann (z. B. Ölwechsel).
  *
- * <p>Stillgelegte Lifts werden {@linkplain #deaktivieren() deaktiviert}, nicht gelöscht –
- * alte Aufträge verweisen weiterhin auf sie.
+ * <p>Nicht mehr angebotene Leistungen werden {@linkplain #deaktivieren() deaktiviert},
+ * nicht gelöscht – alte Aufträge verweisen weiterhin auf sie.
  */
 @Entity
-public class Lift extends BaseEntity implements Sortierbar {
+public class Serviceleistung extends BaseEntity implements Sortierbar {
 
-    static final int NAME_MAX = 30;
+    static final int NAME_MAX = 40;
 
     @Column(nullable = false)
     private String name;
@@ -24,17 +23,17 @@ public class Lift extends BaseEntity implements Sortierbar {
 
     private int reihenfolge;
 
-    protected Lift() {
+    protected Serviceleistung() {
         // für JPA
     }
 
-    public Lift(String name, int reihenfolge) {
+    public Serviceleistung(String name, int reihenfolge) {
         umbenennen(name);
         this.aktiv = true;
         this.reihenfolge = reihenfolge;
     }
 
-    /** Leerzeichen am Rand werden entfernt; 1–30 Zeichen. */
+    /** Leerzeichen am Rand werden entfernt; 1–40 Zeichen. */
     public void umbenennen(String neuerName) {
         String bereinigt = neuerName == null ? "" : neuerName.strip();
         if (bereinigt.isEmpty() || bereinigt.length() > NAME_MAX) {

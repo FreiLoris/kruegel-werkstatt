@@ -1,14 +1,13 @@
 package ch.kruegel.werkstatt.mitarbeiter;
 
 import ch.kruegel.werkstatt.common.live.DatenGeaendert;
+import ch.kruegel.werkstatt.common.persistence.Reihenfolge;
 import ch.kruegel.werkstatt.common.web.EingabeFehlerException;
 import ch.kruegel.werkstatt.common.web.NichtGefundenException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,17 +87,7 @@ public class MitarbeiterService {
      * Personen, die nicht in der Liste stehen, folgen dahinter in ihrer bisherigen Reihenfolge.
      */
     public List<MitarbeiterDto> reihenfolgeSetzen(List<UUID> ids) {
-        if (new HashSet<>(ids).size() != ids.size()) {
-            throw new EingabeFehlerException("ids", "enthält dieselbe Person mehrfach");
-        }
-        List<Mitarbeiter> neueReihenfolge = new ArrayList<>(ids.stream().map(this::finden).toList());
-        repository.findAllByOrderByReihenfolgeAscNameAsc().stream()
-                .filter(m -> !ids.contains(m.getId()))
-                .forEach(neueReihenfolge::add);
-
-        for (int i = 0; i < neueReihenfolge.size(); i++) {
-            neueReihenfolge.get(i).verschieben(i);
-        }
+        Reihenfolge.neuSetzen(repository.findAllByOrderByReihenfolgeAscNameAsc(), ids, "Mitarbeiter");
         repository.flush();
         events.publishEvent(new DatenGeaendert(BEREICH));
         return alle(true);

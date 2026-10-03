@@ -1,6 +1,7 @@
 package ch.kruegel.werkstatt.lift;
 
 import ch.kruegel.werkstatt.common.live.DatenGeaendert;
+import ch.kruegel.werkstatt.common.persistence.Reihenfolge;
 import ch.kruegel.werkstatt.common.web.EingabeFehlerException;
 import ch.kruegel.werkstatt.common.web.NichtGefundenException;
 import ch.kruegel.werkstatt.common.web.RegelVerletztException;
@@ -8,8 +9,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,10 +49,13 @@ public class LiftService {
         }
         Lift lift = finden(id);
         lift.pruefeVersion(eingabe.version());
-        lift.umbenennen(eingabe.name());
-        if (lift.isAktiv() && repository.existsByAktivTrueAndNameIgnoreCaseAndIdNot(lift.getName(), id)) {
-            throw nameVergeben(lift.getName());
+        // Erst prüfen, dann ändern: Die Prüf-Abfrage würde eine schon geänderte Entity vorher
+        // in die DB schreiben (Hibernate "Auto-Flush") – und dann schlägt der Unique-Index zu.
+        String name = eingabe.name().strip();
+        if (lift.isAktiv() && repository.existsByAktivTrueAndNameIgnoreCaseAndIdNot(name, id)) {
+            throw nameVergeben(name);
         }
+        lift.umbenennen(name);
         return gespeichert(lift);
     }
 
@@ -81,17 +83,7 @@ public class LiftService {
 
     /** Erste ID = ganz links. Nicht genannte folgen dahinter in bisheriger Reihenfolge. */
     public List<LiftDto> reihenfolgeSetzen(List<UUID> ids) {
-        if (new HashSet<>(ids).size() != ids.size()) {
-            throw new EingabeFehlerException("ids", "enthält denselben Lift mehrfach");
-        }
-        List<Lift> neueReihenfolge = new ArrayList<>(ids.stream().map(this::finden).toList());
-        repository.findAllByOrderByReihenfolgeAscNameAsc().stream()
-                .filter(l -> !ids.contains(l.getId()))
-                .forEach(neueReihenfolge::add);
-
-        for (int i = 0; i < neueReihenfolge.size(); i++) {
-            neueReihenfolge.get(i).verschieben(i);
-        }
+        Reihenfolge.neuSetzen(repository.findAllByOrderByReihenfolgeAscNameAsc(), ids, "Lift");
         repository.flush();
         events.publishEvent(new DatenGeaendert(BEREICH));
         return alle(true);

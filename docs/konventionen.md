@@ -104,6 +104,7 @@ Backend: PersonInterceptor prüft ─▶ Auditing füllt erstelltVon/geaendertVo
 | Toast | `useToast()` | `toast.erfolg('…')`, `toast.fehler('…')` |
 | Bestätigung | `useBestaetigung()` | `if (await bestaetige({ titel, text, gefaehrlich: true })) …` – nie `window.confirm()` |
 | Menü | `components/ui/Menue.tsx` | Aufklappmenü, schliesst bei Esc/Klick daneben |
+| Stammdatenliste | `components/stammdaten/Stammdatenliste.tsx` + `NameDialog.tsx` | Einfache Stammdaten (nur Name + Reihenfolge, z. B. Lifts, Serviceleistungen): Liste mit ↑/↓, Umbenennen, Deaktivieren |
 | Namensschild | `features/mitarbeiter/Namensschild.tsx` | Name einer Person auf ihrer Farbe, Schriftfarbe automatisch – überall verwenden, wo Personen erscheinen |
 
 - **Keine fixen Farben/Abstände** im CSS – nur Variablen aus `styles/tokens.css`.
@@ -148,6 +149,8 @@ Backend: PersonInterceptor prüft ─▶ Auditing füllt erstelltVon/geaendertVo
 | Löschen | Stammdaten, auf die andere Daten verweisen, werden **deaktiviert** (`POST …/{id}/deaktivieren`), nicht gelöscht |
 | Regel braucht DB | im Service prüfen und `throw new EingabeFehlerException("feld", "…")` → erscheint beim Formularfeld |
 | Regel ohne Feld | `throw new RegelVerletztException("Mindestens ein Lift muss in Betrieb bleiben.")` → 409, Meldung erscheint als Toast |
+| Reihenfolge | Entity `implements Sortierbar`, im Service `Reihenfolge.neuSetzen(alleBisher, ids, "Lift")` |
+| Erst prüfen, dann ändern | Eindeutigkeit prüfen, **bevor** die Entity geändert wird – sonst schreibt Hibernate die Änderung vor der Prüf-Abfrage schon in die DB (Auto-Flush) und es kommt 409 statt Feldfehler |
 | Nach dem Speichern | `repository.flush()` (damit die zurückgegebene `version` stimmt) und `publishEvent(new DatenGeaendert(BEREICH))` |
 | Tests | API-Test von aussen (`…ApiTest`, MockMvcTester), Repository-Test, Unit-Test für Regeln |
 

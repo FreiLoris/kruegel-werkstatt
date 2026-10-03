@@ -7,8 +7,12 @@
   margin-bottom: var(--abstand-4);
 }
 
-.fehler {
-  color: var(--farbe-gefahr);
+.leer {
+  padding: var(--abstand-5);
+  border: 1px dashed var(--farbe-rand-stark);
+  border-radius: var(--radius-gross);
+  text-align: center;
+  color: var(--farbe-text-gedaempft);
 }
 
 .liste {
@@ -57,11 +61,11 @@
   gap: var(--abstand-1);
 }
 
-.stillgelegt {
+.inaktiv {
   margin-top: var(--abstand-4);
 }
 
-.stillgelegt summary {
+.inaktiv summary {
   min-height: var(--touch-min);
   line-height: var(--touch-min);
   font-weight: 600;
@@ -69,7 +73,7 @@
   cursor: pointer;
 }
 
-.stillgelegtListe {
+.inaktivListe {
   display: flex;
   flex-direction: column;
   gap: var(--abstand-2);
@@ -78,7 +82,7 @@
   list-style: none;
 }
 
-.stillgelegtListe li {
+.inaktivListe li {
   display: flex;
   align-items: center;
   gap: var(--abstand-4);

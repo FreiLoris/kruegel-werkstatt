@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /** Alle Lifts in fester Reihenfolge (Standard: nur aktive) */
-        get: operations["alle_1"];
+        get: operations["alle_2"];
         put?: never;
         /** Lift anlegen (wird ans Ende gesetzt) */
-        post: operations["anlegen_1"];
+        post: operations["anlegen_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -31,7 +31,7 @@ export interface paths {
         };
         get?: never;
         /** Reihenfolge setzen (erste ID = ganz links) */
-        put: operations["reihenfolge_1"];
+        put: operations["reihenfolge_2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -51,7 +51,7 @@ export interface paths {
          * Lift umbenennen
          * @description Braucht die geladene `version` – sonst 409.
          */
-        put: operations["umbenennen"];
+        put: operations["umbenennen_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -69,7 +69,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Wieder in Betrieb nehmen */
-        post: operations["aktivieren_1"];
+        post: operations["aktivieren_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -86,7 +86,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Stilllegen (statt löschen) – der letzte aktive Lift bleibt */
-        post: operations["deaktivieren_1"];
+        post: operations["deaktivieren_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -121,10 +121,10 @@ export interface paths {
             cookie?: never;
         };
         /** Alle Mitarbeiter in fester Reihenfolge */
-        get: operations["alle"];
+        get: operations["alle_1"];
         put?: never;
         /** Mitarbeiter anlegen (wird ans Ende der Reihenfolge gesetzt) */
-        post: operations["anlegen"];
+        post: operations["anlegen_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -140,7 +140,7 @@ export interface paths {
         };
         get?: never;
         /** Reihenfolge setzen (erste ID = ganz vorne) */
-        put: operations["reihenfolge"];
+        put: operations["reihenfolge_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -179,7 +179,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Wieder aktivieren */
-        post: operations["aktivieren"];
+        post: operations["aktivieren_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -196,6 +196,95 @@ export interface paths {
         get?: never;
         put?: never;
         /** Deaktivieren (statt löschen) */
+        post: operations["deaktivieren_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/serviceleistungen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alle Serviceleistungen in fester Reihenfolge (Standard: nur aktive) */
+        get: operations["alle"];
+        put?: never;
+        /** Serviceleistung anlegen (wird ans Ende gesetzt) */
+        post: operations["anlegen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/serviceleistungen/reihenfolge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reihenfolge setzen (erste ID = ganz oben) */
+        put: operations["reihenfolge"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/serviceleistungen/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Serviceleistung umbenennen
+         * @description Braucht die geladene `version` – sonst 409.
+         */
+        put: operations["umbenennen"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/serviceleistungen/{id}/aktivieren": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Wieder anbieten */
+        post: operations["aktivieren"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/serviceleistungen/{id}/deaktivieren": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Nicht mehr anbieten (statt löschen) */
         post: operations["deaktivieren"];
         delete?: never;
         options?: never;
@@ -300,6 +389,34 @@ export interface components {
         Reihenfolge: {
             ids: string[];
         };
+        ServiceleistungDto: {
+            aktiv: boolean;
+            /** Format: date-time */
+            geaendertAm: string;
+            /**
+             * Format: uuid
+             * @description Wer zuletzt geändert hat (leer: Ausgangsdaten)
+             */
+            geaendertVon: string | null;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: int32 */
+            reihenfolge: number;
+            /** Format: int64 */
+            version: number;
+        };
+        ServiceleistungEingabe: {
+            name: string;
+            /**
+             * Format: int64
+             * @description Nur beim Bearbeiten nötig
+             */
+            version?: number;
+        };
+        ServiceleistungReihenfolge: {
+            ids: string[];
+        };
     };
     responses: never;
     parameters: never;
@@ -309,7 +426,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    alle_1: {
+    alle_2: {
         parameters: {
             query?: {
                 inklusiveInaktive?: boolean;
@@ -376,7 +493,7 @@ export interface operations {
             };
         };
     };
-    anlegen_1: {
+    anlegen_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -445,7 +562,7 @@ export interface operations {
             };
         };
     };
-    reihenfolge_1: {
+    reihenfolge_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -514,7 +631,7 @@ export interface operations {
             };
         };
     };
-    umbenennen: {
+    umbenennen_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -585,7 +702,7 @@ export interface operations {
             };
         };
     };
-    aktivieren_1: {
+    aktivieren_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -652,7 +769,7 @@ export interface operations {
             };
         };
     };
-    deaktivieren_1: {
+    deaktivieren_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -784,7 +901,7 @@ export interface operations {
             };
         };
     };
-    alle: {
+    alle_1: {
         parameters: {
             query?: {
                 inklusiveInaktive?: boolean;
@@ -851,7 +968,7 @@ export interface operations {
             };
         };
     };
-    anlegen: {
+    anlegen_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -920,7 +1037,7 @@ export interface operations {
             };
         };
     };
-    reihenfolge: {
+    reihenfolge_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1127,7 +1244,7 @@ export interface operations {
             };
         };
     };
-    aktivieren: {
+    aktivieren_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1194,7 +1311,7 @@ export interface operations {
             };
         };
     };
-    deaktivieren: {
+    deaktivieren_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1212,6 +1329,416 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MitarbeiterDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    alle: {
+        parameters: {
+            query?: {
+                inklusiveInaktive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    anlegen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceleistungEingabe"];
+            };
+        };
+        responses: {
+            /** @description Angelegt */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    reihenfolge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceleistungReihenfolge"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    umbenennen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceleistungEingabe"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    aktivieren: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    deaktivieren: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceleistungDto"];
                 };
             };
             /** @description Bad Request */
