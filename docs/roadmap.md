@@ -74,7 +74,7 @@ nach dem alle weiteren Module gebaut werden.
   Tabelle + Entity: Name, Rolle (Mechaniker/Büro/Praktikum/Lernender/Geschäftsführung),
   Farbe, Geburtstag, Ferienanspruch, Flags (als Mechaniker wählbar / für To-dos & Notizen /
   eigene Pinnwand-Spalte), aktiv. Testdaten nur im Entwicklungsprofil (→ Bug #9).
-- [ ] **3b – Mitarbeiter-API**
+- [x] **3b – Mitarbeiter-API**
   CRUD-Endpoints, Validierung, Integrationstests. Löschen = deaktivieren (Historie bleibt).
 - [ ] **3c – Mitarbeiter-Seite**
   Liste + Formular (Label/Platzhalter stimmig, gut unterscheidbare Farben, Rolle
