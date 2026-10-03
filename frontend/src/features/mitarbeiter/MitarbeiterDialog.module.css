@@ -1,0 +1,4 @@
+/* "Deaktivieren" links, getrennt von Abbrechen/Speichern – wird so nicht versehentlich getroffen */
+.links {
+  margin-right: auto;
+}
