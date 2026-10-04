@@ -102,10 +102,12 @@ is created that all further modules follow.
 
 ## Phase 5 – Customers, vehicles, SwissGarage import
 
-- [ ] **5a – ADR 0003: customers as master data or only as an import copy?**
-  Fundamental decision before the data model (see deep analysis §15 point 2).
+- [x] **5a – ADR 0003: customers as master data or only as an import copy?**
+  Decided: **hybrid** – SwissGarage records (import only, read-only) + local records (walk-ins),
+  tasks reference by ID. [ADR 0003](adr/0003-customers-and-vehicles.md)
 - [ ] **5b – Customer & vehicle data model**
-  Incl. company customers (own field instead of "last name"), SwissGarage address number as reference.
+  `source` SWISSGARAGE/LOCAL, SwissGarage number as key, incl. company customers (own field
+  instead of "last name"); local customers editable via API, SwissGarage ones read-only.
 - [ ] **5c – Import address list (server side)**
   Excel upload to the backend, filter "garage customer"/not blocked, update instead of
   replacing everything, import log (date, number new/changed).
@@ -248,7 +250,6 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 | Question | When |
 |---|---|
-| Customers as own master data or only an import copy? | 5a |
 | Enforce the format of the task number or free text? | 6a |
 | Take over the time when moving in the week view? | 6g |
 | Real connection to SwissGarage/C16 possible later? | after version 1 |
