@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * Upload of the SwissGarage Excel exports and the import log.
- * The vehicle list follows in 5d, the import page in 5f.
+ * Upload of the SwissGarage Excel exports and the import log. The import page follows in 5f.
+ * Order: address list first, then vehicle list (vehicles are linked to the imported customers).
  */
 @RestController
 @RequestMapping("/api/swissgarage-imports")
@@ -30,10 +30,13 @@ class SwissGarageImportController {
     static final String TOPIC = "swissgarage-imports";
 
     private final CustomerImportService customerImport;
+    private final VehicleImportService vehicleImport;
     private final ImportRunRepository runs;
 
-    SwissGarageImportController(CustomerImportService customerImport, ImportRunRepository runs) {
+    SwissGarageImportController(CustomerImportService customerImport, VehicleImportService vehicleImport,
+                                ImportRunRepository runs) {
         this.customerImport = customerImport;
+        this.vehicleImport = vehicleImport;
         this.runs = runs;
     }
 
@@ -49,11 +52,29 @@ class SwissGarageImportController {
     @PostMapping(path = "/customers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     ImportRunDto importCustomers(@RequestParam("file") MultipartFile file) {
+        return withInput(file, input -> customerImport.importAddressList(input, fileName(file)));
+    }
+
+    @Operation(summary = "Import the SwissGarage vehicle list (xlsx)",
+            description = "Import the address list first – holders are matched by address number. "
+                    + "Vehicles missing from the file are deactivated.")
+    @ApiResponse(responseCode = "201", description = "Imported – the result is in the log entry")
+    @PostMapping(path = "/vehicles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    ImportRunDto importVehicles(@RequestParam("file") MultipartFile file) {
+        return withInput(file, input -> vehicleImport.importVehicleList(input, fileName(file)));
+    }
+
+    private interface Importer {
+        ImportRunDto run(InputStream input);
+    }
+
+    private static ImportRunDto withInput(MultipartFile file, Importer importer) {
         if (file.isEmpty()) {
             throw new InvalidInputException("file", "Die Datei ist leer.");
         }
         try (InputStream input = file.getInputStream()) {
-            return customerImport.importAddressList(input, fileName(file));
+            return importer.run(input);
         } catch (IOException e) {
             throw new InvalidInputException("file", "Die Datei konnte nicht gelesen werden.");
         }
