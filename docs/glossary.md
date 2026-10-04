@@ -63,7 +63,9 @@ If a term is missing: add it here in the same pull request that introduces it.
 | To-do | `Todo` | |
 | Einkaufsliste | `shoppingList` | |
 | Abwesenheit (Ferien, Krank, Kurs, Fremdarbeit) | `Absence` (`VACATION`, `SICK`, `TRAINING`, `EXTERNAL_WORK`) | |
-| Feiertag | `PublicHoliday` | canton Zurich |
+| Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
+| Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |
+| Ostersonntag | `EasterSunday` | basis for the moving holidays |
 | Auftragszettel | task sheet | printed sheet for the mechanic |
 | SwissGarage-Import | SwissGarage import | product name stays |
 

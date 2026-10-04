@@ -120,7 +120,8 @@ Detailed plan with all packages: [`docs/roadmap.md`](docs/roadmap.md)
 | 1 | Skeleton | ✅ |
 | 2 | Foundation (CI, conventions, UI components, live updates) | ✅ |
 | 3 | Employees | ✅ |
-| 4–10 | Business modules: master data, customers/import, tasks, courtesy cars, to-dos/pinboard, absences, dashboard | in progress |
+| 4 | Master data (lifts, service items, courtesy cars, public holidays) | ✅ |
+| 5–10 | Business modules: customers/import, tasks, courtesy car bookings, to-dos/pinboard, absences, dashboard | |
 | 11 | Migration & go-live on the NAS | |
 
 ## Way of working
