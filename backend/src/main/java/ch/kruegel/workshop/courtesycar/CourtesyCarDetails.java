@@ -1,7 +1,9 @@
 package ch.kruegel.workshop.courtesycar;
 
+import ch.kruegel.workshop.common.LicensePlates;
+import ch.kruegel.workshop.common.Texts;
+
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -31,30 +33,11 @@ public record CourtesyCarDetails(
     public CourtesyCarDetails {
         Objects.requireNonNull(name, "name");
         name = name.strip();
-        model = emptyToNull(model);
-        licensePlate = normalizeLicensePlate(licensePlate);
+        model = Texts.checkMaxLength(Texts.emptyToNull(model), MODEL_MAX, "Model");
+        licensePlate = Texts.checkMaxLength(LicensePlates.normalize(licensePlate), LICENSE_PLATE_MAX, "License plate");
 
         if (name.isEmpty() || name.length() > NAME_MAX) {
             throw new IllegalArgumentException("Name must be 1–" + NAME_MAX + " characters: '" + name + "'");
         }
-        if (model != null && model.length() > MODEL_MAX) {
-            throw new IllegalArgumentException("Model must be at most " + MODEL_MAX + " characters: '" + model + "'");
-        }
-        if (licensePlate != null && licensePlate.length() > LICENSE_PLATE_MAX) {
-            throw new IllegalArgumentException("License plate must be at most " + LICENSE_PLATE_MAX + " characters: '" + licensePlate + "'");
-        }
-    }
-
-    /** " zh  123456 " → "ZH 123456" – so the same plate is always written the same way. */
-    static String normalizeLicensePlate(String value) {
-        String cleaned = emptyToNull(value);
-        return cleaned == null ? null : cleaned.replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
-    }
-
-    private static String emptyToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.strip();
     }
 }

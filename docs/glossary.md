@@ -41,11 +41,23 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Auftragsnummer | `taskNumber` | external, optional |
 | Status Eingang / In Arbeit / Wartet auf Material / Fertig | `RECEIVED` / `IN_PROGRESS` / `WAITING_FOR_PARTS` / `DONE` | |
 | Wartekunde | `waitingCustomer` | flag: customer waits on site |
-| Kunde | `Customer` | |
-| Fahrzeug | `Vehicle` | |
+| Kunde | `Customer` | source `SWISSGARAGE` or `LOCAL` (ADR 0003) |
+| ↳ Anrede / Vorname / Name / Firma / Zusatz | `salutation` / `firstName` / `lastName` / `company` / `addition` | |
+| ↳ Strasse / PLZ / Ort | `street` / `postalCode` / `city` | |
+| ↳ Telefon / Handy | `phone` / `mobile` | |
+| ↳ Adressnummer (SwissGarage) | `swissgarageNumber` | key of SwissGarage customers |
+| Halter | holder (`Vehicle.customer`) | |
+| Laufkundschaft / lokal erfasst | walk-in, `LOCAL` | |
+| Fahrzeug | `Vehicle` | source `SWISSGARAGE` or `LOCAL` |
+| ↳ Int.Nr. (SwissGarage) | `swissgarageNumber` | key of SwissGarage vehicles |
+| ↳ Marke / Typ | `make` / `model` | |
+| ↳ Chassis-Nr. | `vin` | |
+| ↳ 1. Inverkehrsetzung | `firstRegistration` | |
+| ↳ Treibstoff | `fuel` | |
 | Kennzeichen | `licensePlate` | |
 | Jahrgang | `modelYear` | |
 | Kilometerstand | `mileageKm` | |
+| letzte MFK | `lastMfk` | the SwissGarage export only contains the date of the LAST inspection |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
 | Radwechsel | `tireChange` | |
 | Material / Bestellung | `parts` / `partsOrder` | |

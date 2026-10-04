@@ -105,7 +105,7 @@ is created that all further modules follow.
 - [x] **5a – ADR 0003: customers as master data or only as an import copy?**
   Decided: **hybrid** – SwissGarage records (import only, read-only) + local records (walk-ins),
   tasks reference by ID. [ADR 0003](adr/0003-customers-and-vehicles.md)
-- [ ] **5b – Customer & vehicle data model**
+- [x] **5b – Customer & vehicle data model**
   `source` SWISSGARAGE/LOCAL, SwissGarage number as key, incl. company customers (own field
   instead of "last name"); local customers editable via API, SwissGarage ones read-only.
 - [ ] **5c – Import address list (server side)**

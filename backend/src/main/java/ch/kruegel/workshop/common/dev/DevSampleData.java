@@ -3,10 +3,16 @@ package ch.kruegel.workshop.common.dev;
 import ch.kruegel.workshop.courtesycar.CourtesyCar;
 import ch.kruegel.workshop.courtesycar.CourtesyCarDetails;
 import ch.kruegel.workshop.courtesycar.CourtesyCarRepository;
+import ch.kruegel.workshop.customer.Customer;
+import ch.kruegel.workshop.customer.CustomerDetails;
+import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeDetails;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.Role;
+import ch.kruegel.workshop.vehicle.Vehicle;
+import ch.kruegel.workshop.vehicle.VehicleDetails;
+import ch.kruegel.workshop.vehicle.VehicleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -39,11 +45,16 @@ class DevSampleData implements ApplicationRunner {
 
     private final EmployeeRepository employees;
     private final CourtesyCarRepository courtesyCars;
+    private final CustomerRepository customers;
+    private final VehicleRepository vehicles;
     private final Clock clock;
 
-    DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, Clock clock) {
+    DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
+                  VehicleRepository vehicles, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
+        this.customers = customers;
+        this.vehicles = vehicles;
         this.clock = clock;
     }
 
@@ -55,6 +66,9 @@ class DevSampleData implements ApplicationRunner {
         }
         if (courtesyCars.count() == 0) {
             createCourtesyCars();
+        }
+        if (customers.count() == 0) {
+            createCustomersAndVehicles();
         }
     }
 
@@ -87,5 +101,31 @@ class DevSampleData implements ApplicationRunner {
 
     private static EmployeeDetails person(String name, Role role, String color, String birthday, int vacationDays) {
         return new EmployeeDetails(name, role, color, LocalDate.parse(birthday), vacationDays, true, true, true);
+    }
+
+    /**
+     * Fictitious customers (no real people): two as if imported from SwissGarage, one walk-in.
+     * The real ones come with the SwissGarage import (5c).
+     */
+    private void createCustomersAndVehicles() {
+        LocalDate today = LocalDate.now(clock);
+        Customer huber = customers.save(Customer.fromSwissGarage("90001", new CustomerDetails(
+                "Herr", "Peter", "Huber", null, null, "Musterstrasse 12", "8400", "Winterthur",
+                "052 000 00 01", "079 000 00 01", null)));
+        Customer musterAg = customers.save(Customer.fromSwissGarage("90002", new CustomerDetails(
+                null, null, null, "Muster Transport AG", "z. Hd. Frau Keller", "Industriestrasse 5", "8404", "Winterthur",
+                "052 000 00 02", null, null)));
+        Customer walkIn = customers.save(Customer.local(new CustomerDetails(
+                "Frau", "Anna", "Beispiel", null, null, null, null, "Seuzach", null, "078 000 00 03", null)));
+
+        vehicles.save(Vehicle.fromSwissGarage("70001", huber, new VehicleDetails(
+                "ZH 900001", "VW", "Golf", null, LocalDate.of(2019, 3, 15), 2019, 86_000, today.minusYears(2), "Grau", "Benzin")));
+        vehicles.save(Vehicle.fromSwissGarage("70002", musterAg, new VehicleDetails(
+                "ZH 900002", "Mercedes-Benz", "Sprinter", null, LocalDate.of(2017, 6, 1), 2017, 154_000, today.minusYears(1), "Weiss", "Diesel")));
+        vehicles.save(Vehicle.fromSwissGarage("70003", musterAg, new VehicleDetails(
+                "ZH 900003", "Skoda", "Octavia Combi", null, LocalDate.of(2021, 9, 20), 2021, 61_000, null, "Blau", "Diesel")));
+        vehicles.save(Vehicle.local(walkIn, new VehicleDetails(
+                "ZH 900004", "Toyota", "Yaris", null, null, 2015, null, null, "Rot", "Hybrid")));
+        log.info("Dev sample data created: 3 customers, 4 vehicles");
     }
 }
