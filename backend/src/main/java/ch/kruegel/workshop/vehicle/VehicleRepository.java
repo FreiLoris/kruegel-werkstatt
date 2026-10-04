@@ -17,6 +17,12 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
     /** For the import: all vehicles of one source at once (one query instead of one per row). */
     List<Vehicle> findBySource(RecordSource source);
 
+    /** For the import page: how many active vehicles come from this source. */
+    long countBySourceAndActiveTrue(RecordSource source);
+
+    /** For the import page: active vehicles of this source whose holder is unknown. */
+    long countBySourceAndActiveTrueAndCustomerIsNull(RecordSource source);
+
     /** All vehicles of a holder, active ones first, then by plate. */
     List<Vehicle> findByCustomerIdOrderByActiveDescLicensePlateAsc(UUID customerId);
 

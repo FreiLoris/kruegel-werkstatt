@@ -1,0 +1,49 @@
+/* On narrow devices the table scrolls sideways instead of breaking the layout */
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table tbody tr + tr td {
+  border-top: 1px solid var(--color-border);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.problems {
+  font-size: var(--font-size-sm);
+}
+
+.problems summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.problems ul {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
+}

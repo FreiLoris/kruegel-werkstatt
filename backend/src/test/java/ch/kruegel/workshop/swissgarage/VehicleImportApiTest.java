@@ -181,6 +181,22 @@ class VehicleImportApiTest {
     }
 
     @Test
+    void statusCountsOnlyActiveSwissGarageData() {
+        upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001)
+                .row(5002, "ZH 2", "Audi", "A3", null, null, null, null, null, null, null, "Unbekannt", 9999)
+                .bytes(), "a.xlsx");
+        customers.save(CustomerTestData.local("Lokal"));
+        vehicles.save(Vehicle.local(null, new VehicleDetails("ZH 9", "Toyota", null, null, null, null, null, null, null, null)));
+
+        MvcTestResult status = mvc.get().uri("/api/swissgarage-imports/status").exchange();
+
+        assertThat(status).bodyJson().extractingPath("$.customers").isEqualTo(1);
+        assertThat(status).bodyJson().extractingPath("$.vehicles").isEqualTo(2);
+        assertThat(status).bodyJson().extractingPath("$.vehiclesWithoutHolder").isEqualTo(1);
+    }
+
+    @Test
     void addressListInsteadOfVehicleListIsFieldError() {
         assertThat(upload(TestExcel.with("Adressart", "Name", "Adressnummer").row("Garage-Kunde", "Huber", 1001).bytes(), "Adrliste.xlsx"))
                 .hasStatus(HttpStatus.BAD_REQUEST)

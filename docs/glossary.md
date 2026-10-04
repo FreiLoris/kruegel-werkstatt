@@ -85,6 +85,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Adressart „Garage-Kunde“ / „gesperrt“ | address kind | only garage customers that are not blocked are imported |
 | Import-Protokoll | import log (`ImportRun`) | who, when, file, new/changed/unchanged/deactivated/skipped |
 | Kundensuche | customer search (`CustomerSearchService`) | wizard step 1; every word must occur |
+| Import-Seite | import page (`SwissGarageImportPage`) | under Einstellungen |
+| Hinweis (Import) | problem (`ImportRunDto.problems`) | one German line per problem, shown on the import page |
 | Treffer | hit (`CustomerSearchHitDto`) | a customer with vehicles, or a vehicle without holder |
 | Fahrzeug ohne Halter | vehicle without holder | `customer_id` empty – e.g. unknown address number in the import |
 
