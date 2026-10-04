@@ -1,10 +1,10 @@
+import { CourtesyCarSettings } from '../courtesy-cars/CourtesyCarSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
 import styles from './SettingsPage.module.css'
 
 /**
- * Master data that is rarely changed. Every area is its own section;
- * courtesy cars (4c) will be added here.
+ * Master data that is rarely changed. Every area is its own section.
  */
 export function SettingsPage() {
   return (
@@ -15,6 +15,9 @@ export function SettingsPage() {
       </section>
       <section className={styles.section}>
         <ServiceItemSettings />
+      </section>
+      <section className={styles.section}>
+        <CourtesyCarSettings />
       </section>
     </>
   )

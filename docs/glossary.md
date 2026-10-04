@@ -52,6 +52,12 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Lieferant | `supplier` | |
 | Ersatzwagen | `CourtesyCar` | the loan car given to customers |
 | Ersatzwagen-Buchung | `CourtesyCarBooking` | |
+| ↳ Bezeichnung (des Ersatzwagens) | `name` | e.g. "Ersatzwagen 1" |
+| ↳ Modell | `model` | e.g. "VW Polo" |
+| ↳ Service fällig | `serviceDue` | |
+| ↳ Versicherung bis | `insuranceUntil` | |
+| ↳ bald fällig / überfällig (abgelaufen) | `DUE_SOON` / `OVERDUE` (`DueStatus`) | "soon" = within 30 days |
+| ausser Betrieb nehmen | `deactivate` | |
 | Pinnwand | `Pinboard` | |
 | Notiz | `Note` | |
 | To-do | `Todo` | |
