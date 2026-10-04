@@ -111,6 +111,22 @@ class CustomerSearchApiTest {
     }
 
     @Test
+    void customersComeFirstThenVehiclesWithoutHolderByPlate() {
+        Customer fiatFan = customers.save(CustomerTestData.local("Fiatfan"));
+        vehicles.save(Vehicle.local(fiatFan, vehicle("TG 5", "Fiat", "500")));
+        vehicles.save(Vehicle.local(null, vehicle("SG 9", "Fiat", "Uno")));
+        vehicles.save(Vehicle.local(null, vehicle("SG 1", "Fiat", "Panda")));
+        vehicles.save(Vehicle.local(null, vehicle("SG 5", "Fiat", "Punto")));
+
+        MvcTestResult response = mvc.get().uri("/api/customer-search?q=fiat&limit=3").exchange();
+
+        assertThat(response).bodyJson().extractingPath("$.hits[0].customer.lastName").isEqualTo("Fiatfan");
+        assertThat(response).bodyJson().extractingPath("$.hits[1].vehicles[0].licensePlate").isEqualTo("SG 1");
+        assertThat(response).bodyJson().extractingPath("$.hits[2].vehicles[0].licensePlate").isEqualTo("SG 5");
+        assertThat(response).bodyJson().extractingPath("$.more").isEqualTo(true);
+    }
+
+    @Test
     void inactiveCustomersAreNotFound() {
         Customer gone = CustomerTestData.local("Weg");
         gone.deactivate();

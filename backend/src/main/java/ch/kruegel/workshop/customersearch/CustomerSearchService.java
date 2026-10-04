@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -60,8 +61,10 @@ public class CustomerSearchService {
         boolean more = customerIds.size() + vehicleIds.size() > limit;
 
         List<CustomerSearchHitDto> hits = new ArrayList<>(customerHits(customerIds.stream().limit(limit).toList(), words));
-        vehicleIds.stream().limit(limit - hits.size())
-                .forEach(id -> hits.add(new CustomerSearchHitDto(null, List.of(VehicleDto.of(vehicles.getReferenceById(id))))));
+        // fill up the remaining places with vehicles without holder
+        List<UUID> remaining = vehicleIds.stream().limit(limit - hits.size()).toList();
+        inSearchOrder(vehicles.findAllById(remaining), Vehicle::getId, remaining)
+                .forEach(v -> hits.add(new CustomerSearchHitDto(null, List.of(VehicleDto.of(v)))));
         return new CustomerSearchResultDto(hits, more);
     }
 
@@ -69,9 +72,6 @@ public class CustomerSearchService {
         if (ids.isEmpty()) {
             return List.of();
         }
-        // findAllById does not keep the order → map, then in the order of the search
-        Map<UUID, Customer> byId = customers.findAllById(ids).stream()
-                .collect(Collectors.toMap(Customer::getId, Function.identity()));
 
         // all vehicles of all hits in one query instead of one per customer
         List<Vehicle> all = vehicles.findByCustomerIdInAndActiveTrueOrderByLicensePlateAsc(ids);
@@ -81,11 +81,17 @@ public class CustomerSearchService {
                 .sorted(Comparator.comparing(v -> !matching.contains(v.getId())))
                 .collect(Collectors.groupingBy(v -> v.getCustomer().getId()));
 
-        return ids.stream()
-                .map(id -> new CustomerSearchHitDto(
-                        CustomerDto.of(byId.get(id)),
-                        byCustomer.getOrDefault(id, List.of()).stream().map(VehicleDto::of).toList()))
+        return inSearchOrder(customers.findAllById(ids), Customer::getId, ids).stream()
+                .map(c -> new CustomerSearchHitDto(
+                        CustomerDto.of(c),
+                        byCustomer.getOrDefault(c.getId(), List.of()).stream().map(VehicleDto::of).toList()))
                 .toList();
+    }
+
+    /** findAllById loads everything in one query but does not keep the order → sort back into the search order. */
+    private static <T> List<T> inSearchOrder(List<T> loaded, Function<T, UUID> id, List<UUID> order) {
+        Map<UUID, T> byId = loaded.stream().collect(Collectors.toMap(id, Function.identity()));
+        return order.stream().map(byId::get).filter(Objects::nonNull).toList();
     }
 
     /** "  Huber  ZH 12 " → [huber, zh, 12]. Lower case like the search text in the view. */
