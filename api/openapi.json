@@ -2583,6 +2583,164 @@
         "tags" : [ "Service items" ]
       }
     },
+    "/api/swissgarage-imports" : {
+      "get" : {
+        "operationId" : "list_4",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ImportRunDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Last 20 imports, newest first",
+        "tags" : [ "SwissGarage import" ]
+      }
+    },
+    "/api/swissgarage-imports/customers" : {
+      "post" : {
+        "description" : "Only \"Garage-Kunde\", not \"gesperrt\". Customers missing from the file are deactivated.",
+        "operationId" : "importCustomers",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportRunDto"
+                }
+              }
+            },
+            "description" : "Imported – the result is in the log entry"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Import the SwissGarage address list (xlsx)",
+        "tags" : [ "SwissGarage import" ]
+      }
+    },
     "/api/vehicles" : {
       "get" : {
         "operationId" : "ofCustomer",
@@ -3434,6 +3592,64 @@
           }
         },
         "required" : [ "color", "hasPinboardColumn", "name", "role", "selectableAsMechanic", "selectableForTodos", "vacationDaysPerYear" ]
+      },
+      "ImportRunDto" : {
+        "type" : "object",
+        "properties" : {
+          "created" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "deactivated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "importedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When the import ran"
+          },
+          "importedBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who imported (person of the device)"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "CUSTOMERS", "VEHICLES" ]
+          },
+          "problems" : {
+            "type" : "array",
+            "description" : "One German line per problem, e.g. \"Zeile 17: kein Name\"",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "rowsRead" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "skipped" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "unchanged" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "updated" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "created", "deactivated", "fileName", "id", "importedAt", "importedBy", "kind", "problems", "rowsRead", "skipped", "unchanged", "updated" ]
       },
       "LiftDto" : {
         "type" : "object",
