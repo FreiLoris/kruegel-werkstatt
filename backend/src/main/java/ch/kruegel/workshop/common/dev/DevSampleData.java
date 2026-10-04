@@ -10,6 +10,19 @@ import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeDetails;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.Role;
+import ch.kruegel.workshop.lift.Lift;
+import ch.kruegel.workshop.lift.LiftRepository;
+import ch.kruegel.workshop.serviceitem.ServiceItem;
+import ch.kruegel.workshop.serviceitem.ServiceItemRepository;
+import ch.kruegel.workshop.task.Appointment;
+import ch.kruegel.workshop.task.PartsOrder;
+import ch.kruegel.workshop.task.PartsStatus;
+import ch.kruegel.workshop.task.Task;
+import ch.kruegel.workshop.task.TaskDetails;
+import ch.kruegel.workshop.task.TaskRepository;
+import ch.kruegel.workshop.task.TaskStatus;
+import ch.kruegel.workshop.task.TaskWork;
+import ch.kruegel.workshop.task.TireChangeKind;
 import ch.kruegel.workshop.vehicle.Vehicle;
 import ch.kruegel.workshop.vehicle.VehicleDetails;
 import ch.kruegel.workshop.vehicle.VehicleRepository;
@@ -23,7 +36,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Sample data for local development – ONLY in the Spring profile "dev"
@@ -47,14 +67,21 @@ class DevSampleData implements ApplicationRunner {
     private final CourtesyCarRepository courtesyCars;
     private final CustomerRepository customers;
     private final VehicleRepository vehicles;
+    private final LiftRepository lifts;
+    private final ServiceItemRepository serviceItems;
+    private final TaskRepository tasks;
     private final Clock clock;
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
-                  VehicleRepository vehicles, Clock clock) {
+                  VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
+                  TaskRepository tasks, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
         this.vehicles = vehicles;
+        this.lifts = lifts;
+        this.serviceItems = serviceItems;
+        this.tasks = tasks;
         this.clock = clock;
     }
 
@@ -69,6 +96,9 @@ class DevSampleData implements ApplicationRunner {
         }
         if (customers.count() == 0) {
             createCustomersAndVehicles();
+        }
+        if (tasks.count() == 0) {
+            createTasks();
         }
     }
 
@@ -127,5 +157,87 @@ class DevSampleData implements ApplicationRunner {
         vehicles.save(Vehicle.local(walkIn, new VehicleDetails(
                 "ZH 900004", "Toyota", "Yaris", null, null, 2015, null, null, "Rot", "Hybrid")));
         log.info("Dev sample data created: 3 customers, 4 vehicles");
+    }
+
+    /**
+     * Tasks yesterday, today and tomorrow – every status, a waiting customer, parts on order,
+     * a task without vehicle and one without lift. Relative to today, so the views always show something.
+     */
+    private void createTasks() {
+        Map<String, Vehicle> byPlate = vehicles.findAll().stream()
+                .filter(v -> v.getDetails().licensePlate() != null)
+                .collect(Collectors.toMap(v -> v.getDetails().licensePlate(), Function.identity(), (a, b) -> a));
+        List<Employee> mechanics = employees.findAll().stream()
+                .filter(e -> e.isActive() && e.isSelectableAsMechanic())
+                .toList();
+        List<Lift> activeLifts = lifts.findByActiveTrueOrderBySortOrderAscNameAsc();
+        List<ServiceItem> items = serviceItems.findByActiveTrueOrderBySortOrderAscNameAsc();
+        Vehicle golf = byPlate.get("ZH 900001");
+        Vehicle sprinter = byPlate.get("ZH 900002");
+        Vehicle octavia = byPlate.get("ZH 900003");
+        Vehicle yaris = byPlate.get("ZH 900004");
+        if (golf == null || sprinter == null || octavia == null || yaris == null
+                || mechanics.isEmpty() || activeLifts.isEmpty()) {
+            log.info("Dev sample data: no tasks – the sample vehicles, mechanics or lifts are missing");
+            return;
+        }
+
+        LocalDate today = LocalDate.now(clock);
+        Positions positions = new Positions();
+        Function<Integer, Employee> mechanic = i -> mechanics.get(i % mechanics.size());
+        Function<Integer, Lift> lift = i -> activeLifts.get(i % activeLifts.size());
+        Set<ServiceItem> oilAndBrakes = items.size() > 3 ? Set.of(items.get(0), items.get(3)) : Set.copyOf(items);
+
+        Task wheels = positions.add(golf, new Appointment(today, LocalTime.of(7, 30), null, null, true),
+                mechanic.apply(0), lift.apply(0),
+                new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, "Winterräder montieren"), null);
+        wheels.changeStatus(TaskStatus.IN_PROGRESS);
+
+        positions.add(sprinter, Appointment.at(today, LocalTime.of(8, 0)), mechanic.apply(1), lift.apply(1),
+                new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null, null), "Schlüssel im Briefkasten");
+
+        Task waiting = positions.add(octavia, Appointment.at(today, LocalTime.of(10, 0)), mechanic.apply(2), lift.apply(2),
+                new TaskWork(false, null, false, null, Set.of(),
+                        new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", today.minusDays(1)),
+                        "Bremsen vorne ersetzen"), null);
+        waiting.changeStatus(TaskStatus.WAITING_FOR_PARTS);
+
+        Task done = positions.add(yaris, Appointment.at(today, LocalTime.of(13, 30)), mechanic.apply(3), lift.apply(0),
+                new TaskWork(true, TireChangeKind.TIRES_BROUGHT, false, null, Set.of(), null, null), null);
+        done.changeStatus(TaskStatus.DONE);
+
+        // tomorrow: one with the vehicle still open, one without lift that arrives the evening before
+        positions.add(golf.getCustomer(), null, Appointment.at(today.plusDays(1), LocalTime.of(8, 0)), null, lift.apply(1),
+                TaskWork.described("Service am neuen Auto"), "Neues Fahrzeug, noch nicht in SwissGarage");
+        positions.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.atTime(17, 30),
+                today.plusDays(1).atTime(16, 0), false), mechanic.apply(1), null, TaskWork.described("Klimaanlage prüfen"), null);
+
+        Task yesterday = positions.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
+                lift.apply(0), TaskWork.described("Grosser Service"), null);
+        yesterday.changeStatus(TaskStatus.DONE);
+        yesterday.assignTaskNumber("A-90001");
+
+        tasks.saveAll(positions.created);
+        log.info("Dev sample data created: {} tasks", positions.created.size());
+    }
+
+    /** Hands out the next position per lift column and day, like the service does. */
+    private static final class Positions {
+
+        private final Map<String, Integer> next = new HashMap<>();
+        private final List<Task> created = new ArrayList<>();
+
+        Task add(Vehicle vehicle, Appointment appointment, Employee mechanic, Lift lift, TaskWork work, String notes) {
+            return add(vehicle.getCustomer(), vehicle, appointment, mechanic, lift, work, notes);
+        }
+
+        Task add(Customer customer, Vehicle vehicle, Appointment appointment, Employee mechanic, Lift lift,
+                 TaskWork work, String notes) {
+            String column = appointment.date() + "/" + (lift == null ? "-" : lift.getId());
+            int position = next.merge(column, 1, Integer::sum) - 1;
+            Task task = new Task(new TaskDetails(customer, vehicle, appointment, mechanic, lift, work, notes), position);
+            created.add(task);
+            return task;
+        }
     }
 }

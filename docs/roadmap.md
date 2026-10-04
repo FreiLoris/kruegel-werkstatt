@@ -134,9 +134,10 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   (received, in progress, waiting for parts, done) and **waiting customer as a separate flag**
   (→ bug #4, status/flag mix-up); arrives earlier / ready by; tire change, MFK, service items,
   parts incl. supplier; task number (external, optional, unique); order per lift/day.
-- [ ] **6b – Task API**
-  Create, edit, change status, add task number, delete (with "changed by").
-  Optimistic locking on concurrent edits.
+- [x] **6b – Task API**
+  Create, edit, change status, add task number, delete (logged with the person), list a period
+  (max. 92 days). Optimistic locking on edit; status/task number without version. Newly chosen
+  references must be active, existing ones stay valid. Sample tasks in the dev data.
 - [ ] **6c – Wizard step 1: customer & vehicle**
   Customer search (bigger hit list), placeholders clearly placeholders, MFK-expired warning,
   customer history on the right instead of an empty area.
