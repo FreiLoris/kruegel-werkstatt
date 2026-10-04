@@ -7,15 +7,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // Im Entwicklungsmodus leitet Vite alle /api-Aufrufe ans Backend weiter.
-    // So ruft das Frontend immer relative URLs auf ("/api/health") –
-    // genau wie später im Betrieb, wo nginx diese Weiterleitung übernimmt.
+    // In development mode Vite forwards all /api calls to the backend.
+    // That way the frontend always calls relative URLs ("/api/health") –
+    // exactly like later in production, where nginx does the forwarding.
     proxy: {
       '/api': 'http://localhost:8080',
     },
   },
   test: {
-    // Simulierter Browser (DOM) für Komponenten-Tests
+    // Simulated browser (DOM) for component tests
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
   },

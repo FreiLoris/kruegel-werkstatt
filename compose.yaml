@@ -1,13 +1,13 @@
-# Docker Compose für die Werkstatt-App: Datenbank, Backend, Frontend.
+# Docker Compose for the workshop app: database, backend, frontend.
 #
-#   docker compose up -d --build    alles bauen und starten → http://localhost:8090
-#   docker compose up -d db         nur die Datenbank (für Entwicklung mit lokalem Backend)
-#   docker compose down             stoppen (Daten bleiben im Volume erhalten)
+#   docker compose up -d --build    build and start everything → http://localhost:8090
+#   docker compose up -d db         only the database (for development with a local backend)
+#   docker compose down             stop (data stays in the volume)
 #
-# Konfiguration kommt aus der Datei .env (Vorlage: .env.example).
-# Ohne .env gelten die Standardwerte hinter ":-".
+# Configuration comes from the file .env (template: .env.example).
+# Without .env the defaults after ":-" apply.
 #
-# Speicherlimits: Ziel-NAS hat 2 GB RAM, davon braucht DSM selbst einen grossen Teil.
+# Memory limits: the target NAS has 2 GB RAM, DSM itself needs a large part of it.
 
 services:
   db:
@@ -18,8 +18,8 @@ services:
       POSTGRES_USER: ${DB_USER:-werkstatt}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-werkstatt}
     ports:
-      # Nur vom eigenen Rechner aus erreichbar (127.0.0.1), nicht aus dem Netzwerk.
-      # Gebraucht, wenn das Backend lokal ausserhalb von Docker läuft.
+      # Only reachable from this computer (127.0.0.1), not from the network.
+      # Needed when the backend runs locally outside of Docker.
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql
@@ -42,10 +42,10 @@ services:
       DB_NAME: ${DB_NAME:-werkstatt}
       DB_USER: ${DB_USER:-werkstatt}
       DB_PASSWORD: ${DB_PASSWORD:-werkstatt}
-      # Java soll höchstens 60 % des Container-Limits als Heap nutzen
-      # (Rest: Metaspace, Threads, ...). SerialGC braucht am wenigsten Speicher.
+      # Java may use at most 60 % of the container limit as heap
+      # (rest: metaspace, threads, ...). SerialGC needs the least memory.
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
-    # Kein "ports": Das Backend ist nur intern erreichbar – von aussen geht alles über nginx.
+    # No "ports": the backend is only reachable internally – from outside everything goes through nginx.
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
       interval: 10s

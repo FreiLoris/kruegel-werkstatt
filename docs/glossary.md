@@ -119,3 +119,5 @@ If a term is missing: add it here in the same pull request that introduces it.
 - **Merged Flyway migrations V1–V5**: Flyway stores a checksum of every applied migration;
   changing even a comment would stop the app from starting on existing databases.
   The rename happens in `V6__english_names.sql`.
+- **The analysis of the old app** (`docs/analysis/`): a historical record that quotes the old UI
+  and its screenshots.

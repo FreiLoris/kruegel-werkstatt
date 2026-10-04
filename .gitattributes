@@ -1,13 +1,13 @@
-# Alle Textdateien im Repo mit LF speichern.
-# Wichtig, weil die Dateien später in Linux-Containern laufen
-# (Shell-Skripte mit CRLF brechen dort ab).
+# Store all text files in the repository with LF.
+# Important because the files later run in Linux containers
+# (shell scripts with CRLF break there).
 * text=auto eol=lf
 
-# Windows-Skripte brauchen CRLF
+# Windows scripts need CRLF
 *.cmd text eol=crlf
 *.bat text eol=crlf
 
-# Binärdateien nie anfassen
+# Never touch binary files
 *.png binary
 *.jpg binary
 *.jar binary

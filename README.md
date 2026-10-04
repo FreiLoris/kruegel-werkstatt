@@ -2,17 +2,19 @@
 
 [![CI](https://github.com/FreiLoris/kruegel-werkstatt/actions/workflows/ci.yml/badge.svg)](https://github.com/FreiLoris/kruegel-werkstatt/actions/workflows/ci.yml)
 
-Dispositions-Tool für die Werkstatt von Krügel Fahrzeugtechnik:
-Termine & Aufträge, Lift-Belegung, Ersatzwagen, Pinnwand, To-dos und Mitarbeiterkalender.
+Scheduling tool for the workshop of Krügel Fahrzeugtechnik:
+appointments & tasks, lift occupancy, courtesy cars, pinboard, to-dos and employee calendar.
 
-Neubau der bestehenden Werkstatt-App (Node.js + eine HTML-Datei) als sauber strukturierte
-Anwendung. Läuft im internen Netzwerk auf dem Synology-NAS, das Dashboard wird zusätzlich
-auf einem TV in der Werkstatt angezeigt.
+Rebuild of the existing workshop app (Node.js + one HTML file) as a cleanly structured
+application. Runs in the internal network on the Synology NAS; the dashboard is also shown
+on a TV in the workshop.
 
-## Architektur
+The app speaks German to its users; the code is English – see the [glossary](docs/glossary.md).
+
+## Architecture
 
 ```
-Browser / Tablet / TV
+Browser / tablet / TV
         │
         ▼
 ┌───────────────┐      /api/*      ┌───────────────┐      JDBC      ┌───────────────┐
@@ -21,54 +23,55 @@ Browser / Tablet / TV
 └───────────────┘                  └───────────────┘                └───────────────┘
 ```
 
-Drei Container in einem Docker Compose. Begründung der Technologie-Wahl:
+Three containers in one Docker Compose setup. Why these technologies:
 [`docs/adr/0001-tech-stack.md`](docs/adr/0001-tech-stack.md).
 
-## Projektstruktur
+## Project structure
 
-| Ordner | Inhalt |
+| Folder | Content |
 |---|---|
-| `backend/` | Spring Boot (Java, Maven) – REST-API, Geschäftslogik, Datenbankzugriff |
-| `frontend/` | React + TypeScript (Vite) – Weboberfläche |
-| `api/` | `openapi.json` – API-Vertrag zwischen Backend und Frontend (generiert, eingecheckt) |
-| `docs/roadmap.md` | Plan aller Pakete + Nachverfolgung der Bugs aus der Analyse |
-| `docs/konventionen.md` | Verbindliche Regeln für Code, Datenbank, Zeit, Tests |
-| `docs/adr/` | Architektur-Entscheide (*Architecture Decision Records*) |
-| `docs/analyse/` | Analyse der alten App: Funktionsumfang, Bugs, UI-Review mit Screenshots |
+| `backend/` | Spring Boot (Java, Maven) – REST API, business logic, database access |
+| `frontend/` | React + TypeScript (Vite) – web interface |
+| `api/` | `openapi.json` – API contract between backend and frontend (generated, committed) |
+| `docs/roadmap.md` | Plan of all packages + tracking of the bugs from the analysis |
+| `docs/conventions.md` | Binding rules for code, database, time, tests |
+| `docs/glossary.md` | German domain terms ↔ English code names |
+| `docs/adr/` | Architecture Decision Records |
+| `docs/analysis/` | Analysis of the old app: features, bugs, UI review with screenshots (German) |
 
-## Lokal starten
+## Running locally
 
-Voraussetzung: **JDK 25** (in IntelliJ: *File → Project Structure → SDK*). Maven muss nicht
-installiert sein – der Maven Wrapper (`mvnw`) lädt die richtige Version selbst.
+Requirement: **JDK 25** (in IntelliJ: *File → Project Structure → SDK*). Maven does not need
+to be installed – the Maven wrapper (`mvnw`) downloads the right version itself.
 
-Zusätzlich: **Docker Desktop** muss laufen (für die Datenbank und für die Tests).
+Also: **Docker Desktop** must be running (for the database and for the tests).
 
-Konfiguration: Standardwerte reichen lokal. Zum Anpassen `.env.example` nach `.env` kopieren.
+Configuration: the defaults are enough locally. To change them, copy `.env.example` to `.env`.
 
-Es gibt zwei Arten, die App zu starten:
+There are two ways to start the app:
 
-### Variante A – Alles in Docker (wie später auf dem NAS)
+### Option A – everything in Docker (like later on the NAS)
 
 ```bash
-docker compose up -d --build    # bauen + starten
-docker compose ps               # Status der Container
-docker compose logs -f backend  # Logs eines Containers verfolgen
-docker compose down             # stoppen – Daten bleiben erhalten
-docker compose down -v          # stoppen UND Daten löschen (frische DB)
+docker compose up -d --build    # build + start
+docker compose ps               # container status
+docker compose logs -f backend  # follow the logs of a container
+docker compose down             # stop – data is kept
+docker compose down -v          # stop AND delete data (fresh database)
 ```
 
-App: **http://localhost:8090** (aus dem Netzwerk: `http://<rechnername>:8090`).
-Das Backend ist nur intern erreichbar – alle Aufrufe gehen über nginx (`/api/*`).
+App: **http://localhost:8090** (from the network: `http://<computer-name>:8090`).
+The backend is only reachable internally – all calls go through nginx (`/api/*`).
 
-### Variante B – Entwicklung (Hot Reload)
+### Option B – development (hot reload)
 
-Nur die Datenbank läuft in Docker, Backend und Frontend direkt auf dem Rechner.
-Änderungen am Code sind so sofort sichtbar, ohne Images neu zu bauen.
+Only the database runs in Docker, backend and frontend run directly on the computer.
+Code changes are visible immediately without rebuilding images.
 
-#### 1. Datenbank
+#### 1. Database
 
 ```bash
-docker compose up -d db     # nur PostgreSQL starten (Port 5432, nur lokal erreichbar)
+docker compose up -d db     # only start PostgreSQL (port 5432, only reachable locally)
 ```
 
 #### 2. Backend
@@ -76,50 +79,54 @@ docker compose up -d db     # nur PostgreSQL starten (Port 5432, nur lokal errei
 ```bash
 cd backend
 ./mvnw spring-boot:run      # Windows: mvnw.cmd spring-boot:run
-./mvnw test                 # Tests – starten eigenes Postgres via Testcontainers
+./mvnw test                 # tests – start their own Postgres via Testcontainers
 ```
 
-Läuft auf http://localhost:8080 – Health-Check: http://localhost:8080/api/health,
-API-Dokumentation (Swagger UI): http://localhost:8080/api/docs
-(zeigt auch, ob die Datenbank erreichbar ist).
+Runs on http://localhost:8080 – health check: http://localhost:8080/api/health,
+API documentation (Swagger UI): http://localhost:8080/api/docs
+(also shows whether the database is reachable).
 
-Beim Start führt **Flyway** automatisch alle neuen Migrationen aus
-`backend/src/main/resources/db/migration` aus.
+On startup **Flyway** automatically runs all new migrations from
+`backend/src/main/resources/db/migration`.
 
-`spring-boot:run` startet im Profil **dev** und legt bei leerer Datenbank Testdaten an
-(z. B. 5 Mitarbeiter). Das Docker-Image (Variante A / NAS) startet ohne Testdaten.
+`spring-boot:run` starts in the **dev** profile and creates sample data in an empty database
+(e.g. 5 employees). The Docker image (option A / NAS) starts without sample data.
+
+> The local Docker stack (option A) and the development backend share the same database.
+> A migration of an unmerged branch applied by the development backend ends up in it too.
 
 #### 3. Frontend
 
-Voraussetzung: **Node.js 22** (oder neuer).
+Requirement: **Node.js 22** (or newer).
 
 ```bash
 cd frontend
-npm install                 # einmalig bzw. nach Änderungen an package.json
-npm run dev                 # Entwicklungsserver mit Hot Reload
-npm run lint                # Code-Prüfung (oxlint)
-npm test                    # Tests (Vitest)
-npm run build               # Typprüfung + Produktions-Build nach dist/
+npm install                 # once, or after changes to package.json
+npm run dev                 # development server with hot reload
+npm run lint                # code check (oxlint)
+npm test                    # tests (Vitest)
+npm run build               # type check + production build into dist/
 ```
 
-Läuft auf http://localhost:5173. Aufrufe nach `/api/*` leitet Vite ans Backend
-(`localhost:8080`) weiter – das Backend muss also laufen.
+Runs on http://localhost:5173. Calls to `/api/*` are forwarded by Vite to the backend
+(`localhost:8080`) – so the backend has to be running.
 
 ## Roadmap
 
-Detaillierter Plan mit allen Paketen: [`docs/roadmap.md`](docs/roadmap.md)
+Detailed plan with all packages: [`docs/roadmap.md`](docs/roadmap.md)
 
-| Phase | Thema | Status |
+| Phase | Topic | Status |
 |---|---|---|
-| 1 | Grundgerüst | ✅ |
-| 2 | Fundament (CI, Konventionen, UI-Bausteine, Live-Updates) | ✅ |
-| 3–10 | Fachmodule: Mitarbeiter, Stammdaten, Kunden/Import, Aufträge, Ersatzwagen, To-dos/Pinnwand, Abwesenheiten, Dashboard | |
-| 11 | Migration & Go-Live auf dem NAS | |
+| 1 | Skeleton | ✅ |
+| 2 | Foundation (CI, conventions, UI components, live updates) | ✅ |
+| 3 | Employees | ✅ |
+| 4–10 | Business modules: master data, customers/import, tasks, courtesy cars, to-dos/pinboard, absences, dashboard | in progress |
+| 11 | Migration & go-live on the NAS | |
 
-## Arbeitsweise
+## Way of working
 
-- `main` ist immer lauffähig.
-- Jede Änderung in einem eigenen Branch, Merge über Pull Request.
-- Branch-Namen: `feat/…`, `fix/…`, `chore/…`, `docs/…`
-- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) prüft jeden PR:
-  Backend-Tests, Frontend-Lint + Build, Docker-Images. Gemergt wird nur, wenn alles grün ist.
+- `main` is always runnable.
+- Every change in its own branch, merged through a pull request.
+- Branch names: `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`
+- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) checks every PR:
+  backend tests, frontend lint + tests + build, Docker images. Merge only when everything is green.

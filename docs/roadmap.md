@@ -1,249 +1,254 @@
 # Roadmap
 
-Plan für den Neubau in kleinen Paketen. Jedes Paket = ein Branch + ein Pull Request,
-`main` bleibt immer lauffähig. Reihenfolge innerhalb einer Phase ist verbindlich,
-Phasen bauen aufeinander auf.
+Plan for the rebuild in small packages. Every package = one branch + one pull request,
+`main` always stays runnable. The order within a phase is binding,
+phases build on each other.
 
-Quellen: [`analyse/TIEFENANALYSE_NEUBAU.md`](analyse/TIEFENANALYSE_NEUBAU.md) (Funktionsumfang, Bugs #1–#15),
-[`analyse/UI_REVIEW.md`](analyse/UI_REVIEW.md) (Funde F1–F12, UI-Verbesserungen).
+Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) (feature scope, bugs #1–#15),
+[`analysis/UI_REVIEW.md`](analysis/UI_REVIEW.md) (findings F1–F12, UI improvements) – both in German.
 
-**Grundsatz:** Alle Funktionen der alten App bleiben erhalten – alle Bugs nicht.
+**Principle:** every feature of the old app is kept – none of its bugs.
 
 ---
 
-## Übersicht
+## Overview
 
-| Phase | Thema | Ergebnis |
+| Phase | Topic | Result |
 |---|---|---|
-| 1 | Grundgerüst ✅ | Repo, Backend, DB, Frontend, Docker Compose |
-| 2 | Fundament ✅ | CI, Konventionen, API-Vertrag, UI-Grundbausteine, Live-Updates |
-| 3 | Mitarbeiter | Erstes Fachmodul = Vorlage für alle weiteren |
-| 4 | Stammdaten | Lifts, Service-Leistungen, Ersatzwagen-Fahrzeuge, Feiertage |
-| 5 | Kunden, Fahrzeuge, Import | SwissGarage-Import serverseitig, Kundensuche |
-| 6 | Aufträge & Termine | Kern der App: Wizard, Tages-/Wochenansicht, Drag&Drop, Druck |
-| 7 | Ersatzwagen-Buchungen | Eine Datenquelle, Doppelbuchung unmöglich |
-| 8 | To-dos & Pinnwand | Team-Kommunikation |
-| 9 | Abwesenheiten | Mitarbeiterkalender + korrekte Statistik |
-| 10 | Dashboard (TV) | Kiosk-Ansicht für den Werkstatt-TV |
-| 11 | Migration & Go-Live | Daten übernehmen, Backup, NAS, Umschaltung |
+| 1 | Skeleton ✅ | Repository, backend, database, frontend, Docker Compose |
+| 2 | Foundation ✅ | CI, conventions, API contract, basic UI components, live updates |
+| 3 | Employees ✅ | First business module = template for all others |
+| 4 | Master data | Lifts, service items, courtesy cars, public holidays |
+| 5 | Customers, vehicles, import | SwissGarage import on the server, customer search |
+| 6 | Tasks & appointments | Core of the app: wizard, day/week view, drag & drop, printing |
+| 7 | Courtesy car bookings | One data source, double booking impossible |
+| 8 | To-dos & pinboard | Team communication |
+| 9 | Absences | Employee calendar + correct statistics |
+| 10 | Dashboard (TV) | Kiosk view for the workshop TV |
+| 11 | Migration & go-live | Take over data, backup, NAS, switch-over |
 
 ---
 
-## Phase 1 – Grundgerüst ✅
+## Phase 1 – Skeleton ✅
 
-- [x] 1a – Repository & Struktur
-- [x] 1b – Backend-Grundgerüst (Health-Endpoint)
+- [x] 1a – Repository & structure
+- [x] 1b – Backend skeleton (health endpoint)
 - [x] 1c – PostgreSQL + Flyway
-- [x] 1d – Frontend-Grundgerüst
-- [x] 1e – Alles in Docker Compose
+- [x] 1d – Frontend skeleton
+- [x] 1e – Everything in Docker Compose
 
-## Phase 2 – Fundament ✅
+## Phase 2 – Foundation ✅
 
-Querschnitt-Themen, die jedes Fachmodul braucht. Einmal sauber lösen statt in jedem Modul neu.
+Cross-cutting topics every business module needs. Solved once properly instead of in every module.
 
-- [x] **2a – CI mit GitHub Actions**
-  Bei jedem PR: Backend-Tests (inkl. Testcontainers), Frontend Lint + Build, Docker-Images bauen.
-  PR kann erst gemergt werden, wenn alles grün ist.
-- [x] **2b – Backend-Konventionen**
-  JPA einführen; Basis für Entitäten (UUID-ID, `erstelltAm`/`geaendertAm`, `@Version` für
-  Optimistic Locking); Zeitzone `Europe/Zurich`; JSON-Datumsformat ISO.
-- [x] **2c – Fehlerbehandlung & Validierung**
-  Einheitliche Fehlerantworten (RFC 9457 *Problem Details*), Bean Validation für Eingaben,
-  409 bei gleichzeitiger Bearbeitung (Optimistic Locking). Tests dafür.
-- [x] **2d – API-Vertrag**
-  OpenAPI-Beschreibung aus dem Backend (springdoc), daraus TypeScript-Typen fürs Frontend
-  generieren – keine handgeschriebenen API-Typen.
-- [x] **2e – Frontend-Fundament: Routing & Datenabfragen**
-  React Router (eine URL pro Seite), TanStack Query (Laden, Caching, Neuladen),
-  App-Layout mit Navigation. Formatierung zentral: Datum immer `dd.mm.yyyy` (→ F7).
-- [x] **2f – UI-Grundbausteine**
-  Design-Tokens (Farben, Abstände, Schrift), Button, Eingabefelder mit Label, Select, Modal
-  (Esc schliesst, Sticky-Footer), Toast (nicht hinter anderen Elementen), Bestätigungsdialog.
-  Touch-taugliche Grössen (min. 44 px). Schrift + Icons lokal statt CDN (läuft ohne Internet).
-  Dropdowns schliessen bei Esc/Klick daneben (→ F9).
-- [x] **2g – Live-Updates (SSE)**
-  Backend sendet „X hat sich geändert" an alle Geräte, Frontend lädt betroffene Daten neu.
-  Ersetzt Socket.IO der alten App. Verbindungsstatus im UI sichtbar.
+- [x] **2a – CI with GitHub Actions**
+  On every PR: backend tests (incl. Testcontainers), frontend lint + build, build Docker images.
+  A PR can only be merged when everything is green.
+- [x] **2b – Backend conventions**
+  Introduce JPA; base class for entities (UUID ID, `createdAt`/`updatedAt`, `@Version` for
+  optimistic locking); time zone `Europe/Zurich`; ISO JSON date format.
+- [x] **2c – Error handling & validation**
+  Uniform error responses (RFC 9457 *Problem Details*), Bean Validation for input,
+  409 on concurrent edits (optimistic locking). Tests for it.
+- [x] **2d – API contract**
+  OpenAPI description from the backend (springdoc), TypeScript types for the frontend
+  generated from it – no hand-written API types.
+- [x] **2e – Frontend foundation: routing & data queries**
+  React Router (one URL per page), TanStack Query (loading, caching, reloading),
+  app layout with navigation. Central formatting: dates always `dd.mm.yyyy` (→ F7).
+- [x] **2f – Basic UI components**
+  Design tokens (colors, spacing, font), button, input fields with label, select, modal
+  (Esc closes, sticky footer), toast (not behind other elements), confirmation dialog.
+  Touch-friendly sizes (min. 44 px). Font + icons local instead of CDN (works without internet).
+  Dropdowns close on Esc/click outside (→ F9).
+- [x] **2g – Live updates (SSE)**
+  The backend tells all devices "X has changed", the frontend reloads the affected data.
+  Replaces Socket.IO of the old app. Connection status visible in the UI.
 
-## Phase 3 – Mitarbeiter
+## Phase 3 – Employees ✅
 
-Einfachstes Fachmodul. Hier entsteht das Muster (DB → Entity → Service → API → UI → Tests),
-nach dem alle weiteren Module gebaut werden.
+Simplest business module. This is where the pattern (DB → entity → service → API → UI → tests)
+is created that all further modules follow.
 
-- [x] **3a – Datenmodell Mitarbeiter**
-  Tabelle + Entity: Name, Rolle (Mechaniker/Büro/Praktikum/Lernender/Geschäftsführung),
-  Farbe, Geburtstag, Ferienanspruch, Flags (als Mechaniker wählbar / für To-dos & Notizen /
-  eigene Pinnwand-Spalte), aktiv. Testdaten nur im Entwicklungsprofil (→ Bug #9).
-- [x] **3b – Mitarbeiter-API**
-  CRUD-Endpoints, Validierung, Integrationstests. Löschen = deaktivieren (Historie bleibt).
-- [x] **3c – Mitarbeiter-Seite**
-  Liste + Formular (Label/Platzhalter stimmig, gut unterscheidbare Farben, Rolle
-  Geschäftsführung wählbar). Textfarbe automatisch aus Hintergrund.
-- [x] **3d – „Wer bin ich?" pro Gerät**
-  Kein Login, aber jedes Gerät wählt einmal eine Person. Wird bei Änderungen mitgespeichert
-  („geändert von"). TV-Gerät = „nur ansehen". (→ Bug #11, bewusst ohne Passwort)
+- [x] **3a – Employee data model**
+  Table + entity: name, role (mechanic/office/intern/apprentice/management),
+  color, birthday, vacation days, flags (selectable as mechanic / for to-dos & notes /
+  own pinboard column), active. Sample data only in the development profile (→ bug #9).
+- [x] **3b – Employee API**
+  CRUD endpoints, validation, integration tests. Delete = deactivate (history stays).
+- [x] **3c – Employee page**
+  List + form (consistent labels/placeholders, distinguishable colors, role
+  management selectable). Text color derived from the background automatically.
+- [x] **3d – "Who am I?" per device**
+  No login, but every device picks a person once. Stored with every change
+  ("changed by"). TV device = "view only". (→ bug #11, deliberately without password)
 
-## Phase 4 – Stammdaten
+## Phase 4 – Master data
 
-- [x] **4a – Lifts konfigurierbar**
-  Tabelle statt 3 hartcodierter Lifts; Anzahl/Namen änderbar. (→ Bug #13)
-- [x] **4b – Service-Leistungen konfigurierbar**
-  Ölwechsel, Wischblätter, Klimaservice, … als pflegbare Liste statt 8 fixer Checkboxen.
-- [ ] **4c – Ersatzwagen-Fahrzeuge**
-  Stammdaten (Bezeichnung, Modell, Kennzeichen, Service fällig, Versicherung bis) mit
-  Warnung bei fälligem Service. Formular mit Labels. (→ UI-Review Ersatzwagen)
-- [ ] **4d – Feiertage Kanton Zürich**
-  Serverseitige Berechnung (inkl. Ostern-abhängiger Feiertage) + Endpoint + Tests.
+- [x] **4a – Configurable lifts**
+  Table instead of 3 hard-coded lifts; number/names changeable. (→ bug #13)
+- [x] **4b – Configurable service items**
+  Ölwechsel, Wischblätter, Klimaservice, … as a maintainable list instead of 8 fixed checkboxes.
+- [x] **4r – Refactoring: English code** *(inserted before 4c)*
+  The code language becomes English, **the app stays German** (all UI texts and user-facing
+  error messages). No new behaviour – all tests stay green, only renamed.
+  Glossary ([`glossary.md`](glossary.md)), migration V6 renames tables/columns/constraints,
+  English API, frontend, docs. Decision: [ADR 0002](adr/0002-english-code.md).
+- [ ] **4c – Courtesy cars**
+  Master data (label, model, license plate, service due, insurance until) with a
+  warning when service is due. Form with labels. (→ UI review courtesy cars)
+- [ ] **4d – Public holidays canton Zurich**
+  Calculation on the server (incl. Easter-dependent holidays) + endpoint + tests.
 
-## Phase 5 – Kunden, Fahrzeuge, SwissGarage-Import
+## Phase 5 – Customers, vehicles, SwissGarage import
 
-- [ ] **5a – ADR 0002: Kunden als Stammdaten oder nur als Import-Kopie?**
-  Grundsatzentscheid vor dem Datenmodell (siehe Tiefenanalyse §15 Punkt 2).
-- [ ] **5b – Datenmodell Kunde & Fahrzeug**
-  Inkl. Firmenkunden (eigenes Feld statt „Nachname"), SwissGarage-Adressnummer als Bezug.
-- [ ] **5c – Import Adressliste (serverseitig)**
-  Excel-Upload ans Backend, Filter „Garage-Kunde"/nicht gesperrt, Aktualisieren statt
-  alles ersetzen, Import-Protokoll (Datum, Anzahl neu/geändert).
-- [ ] **5d – Import Fahrzeugliste**
-  Fahrzeuge dem Kunden zuordnen, Excel-Datumswerte (MFK) korrekt umrechnen.
-- [ ] **5e – Kundensuche-API**
-  Suche nach Name, Firma, Kennzeichen; Treffer mit Fahrzeugen.
-- [ ] **5f – Import-Seite**
-  Upload, Vorschau (lädt zuverlässig → F4), „zuletzt importiert am …", Löschen in Gefahrenzone.
+- [ ] **5a – ADR 0003: customers as master data or only as an import copy?**
+  Fundamental decision before the data model (see deep analysis §15 point 2).
+- [ ] **5b – Customer & vehicle data model**
+  Incl. company customers (own field instead of "last name"), SwissGarage address number as reference.
+- [ ] **5c – Import address list (server side)**
+  Excel upload to the backend, filter "garage customer"/not blocked, update instead of
+  replacing everything, import log (date, number new/changed).
+- [ ] **5d – Import vehicle list**
+  Assign vehicles to the customer, convert Excel date values (MFK) correctly.
+- [ ] **5e – Customer search API**
+  Search by name, company, license plate; hits with vehicles.
+- [ ] **5f – Import page**
+  Upload, preview (loads reliably → F4), "last imported on …", delete in a danger zone.
 
-## Phase 6 – Aufträge & Termine
+## Phase 6 – Tasks & appointments
 
-Kern der App, darum feiner aufgeteilt.
+Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glossary.)
 
-- [ ] **6a – Datenmodell Auftrag**
-  Bezug Kunde/Fahrzeug/Mechaniker/Lift; Status als Enum (Eingang, In Arbeit, Wartet auf
-  Material, Fertig) und **Wartekunde als separates Flag** (→ Bug #4, Status/Flag-Vermischung);
-  kommt früher / fertig bis; Radwechsel, MFK, Service-Leistungen, Material inkl. Lieferant;
-  Auftragsnummer (extern, optional); Reihenfolge pro Lift/Tag.
-- [ ] **6b – Auftrags-API**
-  Anlegen, Bearbeiten, Status ändern, Auftragsnummer nachtragen, Löschen (mit „geändert von").
-  Optimistic Locking bei gleichzeitiger Bearbeitung.
-- [ ] **6c – Wizard Schritt 1: Kunde & Fahrzeug**
-  Kundensuche (grössere Trefferliste), Platzhalter klar als Platzhalter, MFK-abgelaufen-Warnung,
-  rechts Kundenhistorie statt leerer Fläche.
-- [ ] **6d – Wizard Schritt 2: Termin & Arbeiten**
-  Sinnvolle Defaults (kommt früher = Vorabend), Kapazitätsübersicht sticky,
-  Klick auf Slot übernimmt Datum + Zeit, Buttons nicht abgeschnitten.
-- [ ] **6e – Wizard Schritt 3/4 + Auftragszettel**
-  Klare „gespeichert"-Bestätigung; Druck mit Briefkopf Krügel, weisses Papier-Layout,
-  **alle angekreuzten Arbeiten auf dem Zettel** (→ F1), Kundenadresse.
-- [ ] **6f – Termine: Tagesansicht nach Lift**
-  Karten mit Mechaniker + Ersatzwagen-Symbol, Drag&Drop zwischen Lifts und innerhalb der
-  Spalte – Reihenfolge wird für **alle** betroffenen Aufträge gespeichert (→ Bug #5).
-- [ ] **6g – Termine: Wochenansicht**
-  Drag&Drop aufs Datum, Abwesenheiten sichtbar, Suche über alle Termine statt nur aktuelle
-  Woche (→ F11). Optional: Uhrzeit beim Verschieben übernehmen (→ Bug #6, totes Feature).
-- [ ] **6h – Auftrags-Detail**
-  Ansicht als lesbarer Text (kein Fake-Formular), Bearbeiten als Formular mit Sticky-Footer,
-  Kunden-/Fahrzeugdaten änderbar, Notiz/To-do direkt anlegen, korrektes Label „Mechaniker".
-- [ ] **6i – Aufträge-Liste**
-  Sortierbare Spalten, Filter (Status, Zeitraum), Arbeiten-Spalte vollständig (→ F1),
-  Statusfarben aus **einer** zentralen Definition (→ F10), Löschen nur mit Bestätigung.
+- [ ] **6a – Task data model**
+  References customer/vehicle/mechanic/lift; status as enum (received, in progress, waiting for
+  parts, done) and **waiting customer as a separate flag** (→ bug #4, status/flag mix-up);
+  arrives earlier / ready by; tire change, MFK, service items, parts incl. supplier;
+  task number (external, optional); order per lift/day.
+- [ ] **6b – Task API**
+  Create, edit, change status, add task number, delete (with "changed by").
+  Optimistic locking on concurrent edits.
+- [ ] **6c – Wizard step 1: customer & vehicle**
+  Customer search (bigger hit list), placeholders clearly placeholders, MFK-expired warning,
+  customer history on the right instead of an empty area.
+- [ ] **6d – Wizard step 2: appointment & work**
+  Sensible defaults (arrives earlier = evening before), capacity overview sticky,
+  click on a slot takes over date + time, buttons not cut off.
+- [ ] **6e – Wizard step 3/4 + task sheet**
+  Clear "saved" confirmation; print with Krügel letterhead, white paper layout,
+  **all ticked work on the sheet** (→ F1), customer address.
+- [ ] **6f – Appointments: day view by lift**
+  Cards with mechanic + courtesy car symbol, drag & drop between lifts and within the
+  column – the order is saved for **all** affected tasks (→ bug #5).
+- [ ] **6g – Appointments: week view**
+  Drag & drop onto a date, absences visible, search over all appointments instead of only the
+  current week (→ F11). Optional: take over the time when moving (→ bug #6, dead feature).
+- [ ] **6h – Task detail**
+  View as readable text (no fake form), edit as form with sticky footer,
+  customer/vehicle data editable, create note/to-do directly, correct label "Mechaniker".
+- [ ] **6i – Task list**
+  Sortable columns, filters (status, period), work column complete (→ F1),
+  status colors from **one** central definition (→ F10), delete only with confirmation.
 
-## Phase 7 – Ersatzwagen-Buchungen
+## Phase 7 – Courtesy car bookings
 
-- [ ] **7a – Datenmodell Buchung**
-  Eine Tabelle für alle Buchungen (mit oder ohne Auftrag). Datenbank verhindert
-  überlappende Buchungen desselben Fahrzeugs (Exclusion Constraint). (→ Bug #2, F2)
-- [ ] **7b – Verfügbarkeit & Buchungs-API**
-  Eine einzige Verfügbarkeitsprüfung für Wizard, Auftrag und Ersatzwagen-Seite. Rückgabe erfassen.
-- [ ] **7c – Buchung im Auftrag**
-  Auswahl im Wizard/Auftrag mit verständlicher Verfügbarkeitstabelle.
-- [ ] **7d – Ersatzwagen-Seite**
-  Karten mit korrektem Status, Belegungskalender (frei/belegt klar erkennbar),
-  Drag-Buchung, Zeitraum im Panel änderbar (→ F12).
+- [ ] **7a – Booking data model**
+  One table for all bookings (with or without task). The database prevents
+  overlapping bookings of the same car (exclusion constraint). (→ bug #2, F2)
+- [ ] **7b – Availability & booking API**
+  One single availability check for wizard, task and courtesy car page. Record the return.
+- [ ] **7c – Booking in a task**
+  Selection in wizard/task with an understandable availability table.
+- [ ] **7d – Courtesy car page**
+  Cards with correct status, occupancy calendar (free/booked clearly visible),
+  drag booking, period changeable in the panel (→ F12).
 
-## Phase 8 – To-dos & Pinnwand
+## Phase 8 – To-dos & pinboard
 
-- [ ] **8a – Datenmodell & API To-do**
-  Person als Bezug (statt Name), Deadline, Einkaufsliste-Flag, Bezug zu Auftrag/Notiz
-  über ID statt Auftragsnummer-Text (→ Bug #14).
-- [ ] **8b – To-do-Seite**
-  Personen-Filter aus Mitarbeiterliste (→ Bug #3), aktiver Filter erkennbar,
-  eigener Tab Einkaufsliste, Erledigen nur per Checkbox mit „Rückgängig" (→ F5).
-- [ ] **8c – Datenmodell & API Notiz**
-  Mehrfach-Zuweisung, Bezug zu Auftrag (→ F8), Aufgaben sind ausschliesslich To-dos
-  (keine zweite Liste → Bug #10), Archivieren erledigt verknüpfte To-dos, Reaktivieren symmetrisch.
-- [ ] **8d – Pinnwand-Seite**
-  Spalten aus Mitarbeiterliste (→ Bug #3), gleiche Reihenfolge wie Dashboard, Drag zwischen
-  Spalten, Detail-Modal (grosses Textfeld, sichtbares Speichern), Archiv mit Suche.
+- [ ] **8a – To-do data model & API**
+  Person as reference (instead of name), deadline, shopping list flag, reference to task/note
+  by ID instead of task number text (→ bug #14).
+- [ ] **8b – To-do page**
+  Person filter from the employee list (→ bug #3), active filter recognisable,
+  own tab shopping list, done only via checkbox with "undo" (→ F5).
+- [ ] **8c – Note data model & API**
+  Multiple assignment, reference to task (→ F8), sub-tasks are to-dos only
+  (no second list → bug #10), archiving completes linked to-dos, reactivating symmetric.
+- [ ] **8d – Pinboard page**
+  Columns from the employee list (→ bug #3), same order as dashboard, drag between
+  columns, detail modal (large text field, visible save), archive with search.
 
-## Phase 9 – Abwesenheiten & Mitarbeiterkalender
+## Phase 9 – Absences & employee calendar
 
-- [ ] **9a – Datenmodell & API Abwesenheit**
-  Kategorie als Enum (Ferien, Krank, Fremdarbeit + Firma, Kurs) (→ Bug #1).
-- [ ] **9b – Kalender-Seite**
-  Durchgehende Balken statt Einzelkästchen, feste Spaltenbreite, 4 unterscheidbare Farben,
-  Wochenenden + Feiertage markiert, Drag-Auswahl → Eintrag, lädt immer (→ F3).
-- [ ] **9c – Statistik serverseitig**
-  Ferientage = Arbeitstage (ohne Wochenende/Feiertage) (→ F6), Saldo pro Person,
-  Fremdarbeit pro Firma.
+- [ ] **9a – Absence data model & API**
+  Category as enum (vacation, sick, external work + company, training) (→ bug #1).
+- [ ] **9b – Calendar page**
+  Continuous bars instead of single boxes, fixed column width, 4 distinguishable colors,
+  weekends + public holidays marked, drag selection → entry, always loads (→ F3).
+- [ ] **9c – Statistics on the server**
+  Vacation days = working days (without weekends/holidays) (→ F6), balance per person,
+  external work per company.
 
-## Phase 10 – Dashboard (TV-Kiosk)
+## Phase 10 – Dashboard (TV kiosk)
 
-- [ ] **10a – Layout & Wochenraster**
-  Mit Tagesköpfen (→ UI-Review Dashboard), Termine + Abwesenheiten pro Tag, Navigation unten.
-- [ ] **10b – Heute nach Lift, Mini-Pinnwand, To-dos**
-  Leer-Zustand „nächster Termin …", lesbare Spaltennamen, überfällige To-dos mit Datum.
-- [ ] **10c – Kiosk-Modus für den TV**
-  Grosse Schrift, hoher Kontrast, Uhr + Verbindungsstatus, Datum aktualisiert sich selbst
-  (→ Bug #15), keine versehentlichen Aktionen per Touch (→ F5).
+- [ ] **10a – Layout & week grid**
+  With day headers (→ UI review dashboard), appointments + absences per day, navigation at the bottom.
+- [ ] **10b – Today by lift, mini pinboard, to-dos**
+  Empty state "next appointment …", readable column names, overdue to-dos with date.
+- [ ] **10c – Kiosk mode for the TV**
+  Large font, high contrast, clock + connection status, date updates itself
+  (→ bug #15), no accidental actions by touch (→ F5).
 
-## Phase 11 – Migration & Go-Live (Version 1)
+## Phase 11 – Migration & go-live (version 1)
 
-- [ ] **11a – Migrationsskript**
-  Alte SQLite-Daten (Mitarbeiter, Ersatzwagen, Aufträge, To-dos, Notizen, Abwesenheiten,
-  Belegungen) ins neue Schema; Namen → IDs auflösen; Protokoll was nicht zugeordnet werden konnte.
-- [ ] **11b – Probelauf & Abgleich**
-  Migration auf Kopie, Stichproben gegen alte App.
-- [ ] **11c – Backup & Restore**
-  Täglicher `pg_dump` in `Datensicherung/`, Aufbewahrung, getestete Wiederherstellung.
-- [ ] **11d – Deployment auf das NAS**
-  Container Manager, Images (über GitHub Container Registry), `.env` mit eigenem Passwort,
-  Speicherlimits prüfen.
-- [ ] **11e – Parallelbetrieb & Umschaltung**
-  Beide Apps parallel (8080 alt / 8090 neu), finale Migration, alte App abschalten.
+- [ ] **11a – Migration script**
+  Old SQLite data (employees, courtesy cars, tasks, to-dos, notes, absences,
+  bookings) into the new schema; resolve names → IDs; log what could not be assigned.
+- [ ] **11b – Trial run & comparison**
+  Migration on a copy, spot checks against the old app.
+- [ ] **11c – Backup & restore**
+  Daily `pg_dump` into `Datensicherung/`, retention, tested restore.
+- [ ] **11d – Deployment to the NAS**
+  Container Manager, images (via GitHub Container Registry), `.env` with its own password,
+  check memory limits.
+- [ ] **11e – Parallel operation & switch-over**
+  Both apps in parallel (8080 old / 8090 new), final migration, switch off the old app.
 
 ---
 
-## Bewusst NICHT übernommen
+## Deliberately NOT taken over
 
-| Alte App | Grund |
+| Old app | Reason |
 |---|---|
-| `GET /api/reset` (löscht alles) | Gefährlich, kein Bedarf (→ Bug #12) |
-| Offline-Modus (`file://` + `localStorage`) | Entschieden: nur internes Netz |
-| Leere Funktionen `autoSave`/`startPolling`, doppelter Code | Überreste (→ Bug #7, #8) |
-| Zwei verschiedene Demo-Datensätze | Ein Testdaten-Set im Entwicklungsprofil (→ Bug #9) |
+| `GET /api/reset` (deletes everything) | Dangerous, not needed (→ bug #12) |
+| Offline mode (`file://` + `localStorage`) | Decided: internal network only |
+| Empty functions `autoSave`/`startPolling`, duplicated code | Leftovers (→ bug #7, #8) |
+| Two different demo data sets | One sample data set in the development profile (→ bug #9) |
 
-## Nachverfolgung: Bugs & Funde → Paket
+## Tracking: bugs & findings → package
 
-| Fund | Paket | | Fund | Paket |
+| Finding | Package | | Finding | Package |
 |---|---|---|---|---|
-| Bug #1 Statistik immer 0 | 9a, 9c | | F1 Arbeiten fehlen auf Zettel/Liste | 6e, 6i |
-| Bug #2 Ersatzwagen 2 Datenquellen | 7a, 7b | | F2 Ersatzwagen doppelt buchbar | 7a |
-| Bug #3 Namen hartcodiert | 8b, 8d | | F3 Kalender leer | 9b |
-| Bug #4 Status-Texte uneinheitlich | 6a | | F4 Import-Vorschau leer | 5f |
-| Bug #5 Reihenfolge nur teilweise gespeichert | 6f | | F5 To-do per Zeilenklick erledigt | 8b, 10c |
-| Bug #6 Toter Drag-Code (Uhrzeit) | 6g | | F6 Ferien zählen Wochenende | 9c |
-| Bug #7/#8 Duplikate, leere Funktionen | – | | F7 Datumsformate gemischt | 2e |
-| Bug #9 Zwei Demo-Datensätze | 3a | | F8 Notiz-Auftragsbezug fehlt | 8c |
-| Bug #10 Notiz-Aufgaben doppelt | 8c | | F9 Dropdown bleibt offen | 2f |
-| Bug #11 Keine Nachvollziehbarkeit | 3d | | F10 Statusfarben widersprüchlich | 6i |
-| Bug #12 `/api/reset` | – | | F11 Suche nur aktuelle Woche | 6g |
-| Bug #13 3 Lifts hartcodiert | 4a | | F12 EW-Zeitraum nicht änderbar | 7d |
-| Bug #14 Bezug über Auftragsnummer-Text | 8a | | | |
-| Bug #15 Datum aktualisiert nie | 10c | | | |
+| Bug #1 statistics always 0 | 9a, 9c | | F1 work missing on sheet/list | 6e, 6i |
+| Bug #2 courtesy cars 2 data sources | 7a, 7b | | F2 courtesy car double bookable | 7a |
+| Bug #3 names hard-coded | 8b, 8d | | F3 calendar empty | 9b |
+| Bug #4 status texts inconsistent | 6a | | F4 import preview empty | 5f |
+| Bug #5 order only partly saved | 6f | | F5 to-do done by row click | 8b, 10c |
+| Bug #6 dead drag code (time) | 6g | | F6 vacation counts weekends | 9c |
+| Bug #7/#8 duplicates, empty functions | – | | F7 mixed date formats | 2e |
+| Bug #9 two demo data sets | 3a | | F8 note task reference missing | 8c |
+| Bug #10 note sub-tasks twice | 8c | | F9 dropdown stays open | 2f |
+| Bug #11 no traceability | 3d | | F10 contradictory status colors | 6i |
+| Bug #12 `/api/reset` | – | | F11 search only current week | 6g |
+| Bug #13 3 lifts hard-coded | 4a | | F12 courtesy car period not changeable | 7d |
+| Bug #14 reference via task number text | 8a | | | |
+| Bug #15 date never updates | 10c | | | |
 
-## Offene Entscheide (werden im jeweiligen Paket geklärt)
+## Open decisions (settled in the respective package)
 
-| Frage | Wann |
+| Question | When |
 |---|---|
-| Kunden als eigene Stammdaten oder nur Import-Kopie? | 5a |
-| Format der Auftragsnummer erzwingen oder Freitext? | 6a |
-| Uhrzeit beim Verschieben in der Wochenansicht übernehmen? | 6g |
-| Später echte Anbindung an SwissGarage/C16 möglich? | nach Version 1 |
+| Customers as own master data or only an import copy? | 5a |
+| Enforce the format of the task number or free text? | 6a |
+| Take over the time when moving in the week view? | 6g |
+| Real connection to SwissGarage/C16 possible later? | after version 1 |

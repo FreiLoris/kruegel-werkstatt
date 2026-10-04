@@ -1,5 +1,5 @@
-# CI: Prüft bei jedem Pull Request und jedem Push auf main,
-# ob Backend, Frontend und Docker-Images sauber bauen.
+# CI: checks on every pull request and every push to main
+# whether backend, frontend and Docker images build cleanly.
 
 name: CI
 
@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
 
-# Neuer Push auf denselben Branch bricht den alten, noch laufenden Lauf ab.
+# A new push to the same branch cancels the old run that is still going.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   backend:
-    name: Backend (Tests)
+    name: Backend (tests)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,22 +32,22 @@ jobs:
           java-version: '25'
           cache: maven
 
-      # "verify" kompiliert, führt alle Tests aus (Testcontainers nutzt das
-      # Docker des GitHub-Runners) und baut das JAR.
+      # "verify" compiles, runs all tests (Testcontainers uses the
+      # GitHub runner's Docker) and builds the JAR.
       - name: Build & Test
         run: ./mvnw -B verify
 
-      # Die Tests schreiben api/openapi.json neu. Weicht sie von der eingecheckten
-      # Datei ab, wurde die API geändert, ohne den Vertrag mitzuliefern.
-      - name: API-Vertrag aktuell?
+      # The tests rewrite api/openapi.json. If it differs from the committed
+      # file, the API was changed without delivering the contract.
+      - name: API contract up to date?
         run: |
           git diff --exit-code ../api/openapi.json || {
-            echo "::error::api/openapi.json ist veraltet. Lokal './mvnw test' ausführen und die Datei committen."
+            echo "::error::api/openapi.json is outdated. Run './mvnw test' locally and commit the file."
             exit 1
           }
 
   frontend:
-    name: Frontend (Lint, Tests & Build)
+    name: Frontend (lint, tests & build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -61,15 +61,15 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Abhängigkeiten installieren
+      - name: Install dependencies
         run: npm ci
 
-      # Typen neu aus api/openapi.json erzeugen – müssen der eingecheckten Datei entsprechen.
-      - name: API-Typen aktuell?
+      # Generate the types from api/openapi.json again – they must match the committed file.
+      - name: API types up to date?
         run: |
           npm run api:generate
           git diff --exit-code src/api/schema.d.ts || {
-            echo "::error::src/api/schema.d.ts ist veraltet. Lokal 'npm run api:generate' ausführen und die Datei committen."
+            echo "::error::src/api/schema.d.ts is outdated. Run 'npm run api:generate' locally and commit the file."
             exit 1
           }
 
@@ -79,16 +79,16 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Build (inkl. Typprüfung)
+      - name: Build (incl. type check)
         run: npm run build
 
   docker:
-    name: Docker-Images
+    name: Docker images
     runs-on: ubuntu-latest
-    # Erst wenn Code und Tests ok sind – spart Zeit bei Fehlern.
+    # Only when code and tests are ok – saves time on errors.
     needs: [backend, frontend]
     steps:
       - uses: actions/checkout@v7
 
-      - name: Images bauen
+      - name: Build images
         run: docker compose build
