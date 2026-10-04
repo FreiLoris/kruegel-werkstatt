@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ public class Task extends BaseEntity implements Sortable {
     private LocalDateTime mfkAppointment;
 
     @ManyToMany
+    @BatchSize(size = 50)
     @JoinTable(name = "task_service_item",
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "service_item_id"))

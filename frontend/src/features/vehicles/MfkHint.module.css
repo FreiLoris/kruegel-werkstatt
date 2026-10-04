@@ -1,0 +1,26 @@
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+.hint svg {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.unknown,
+.ok {
+  color: var(--color-text-muted);
+}
+
+.soon {
+  color: var(--color-warning);
+}
+
+.overdue {
+  color: var(--color-danger);
+  font-weight: 600;
+}

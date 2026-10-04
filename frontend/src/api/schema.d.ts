@@ -588,6 +588,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The last 10 tasks of a customer, newest first
+         * @description History in the wizard.
+         */
+        get: operations["history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks/{id}": {
         parameters: {
             query?: never;
@@ -1182,6 +1202,11 @@ export interface components {
             model: string | null;
             /** Format: int32 */
             modelYear: number | null;
+            /**
+             * Format: date
+             * @description ESTIMATED next inspection (4-3-2-2 rule, see MfkSchedule)
+             */
+            nextMfk: string | null;
             /** @enum {string} */
             source: "SWISSGARAGE" | "LOCAL";
             /** @description SwissGarage internal number (only for source SWISSGARAGE) */
@@ -3840,6 +3865,73 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    history: {
+        parameters: {
+            query: {
+                customerId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"][];
                 };
             };
             /** @description Bad Request */

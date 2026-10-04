@@ -68,6 +68,10 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Jahrgang | `modelYear` | |
 | Kilometerstand | `mileageKm` | |
 | letzte MFK | `lastMfk` | the SwissGarage export only contains the date of the LAST inspection |
+| nächste MFK (voraussichtlich) | `nextMfk` (`MfkSchedule`) | estimate: 4 years after first registration, then 3, then every 2 |
+| Fahrzeug noch offen | vehicle open (`VehicleChoice` `open`) | task without vehicle yet |
+| Bisherige Aufträge | customer history (`/api/tasks/history`) | last 10 tasks of a customer |
+| Assistent (Neuer Auftrag) | wizard (`TaskWizardPage`) | |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
 | Radwechsel | `tireChange` | |
 | Material / Bestellung | `parts` / `PartsOrder` | |

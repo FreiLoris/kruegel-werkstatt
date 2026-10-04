@@ -1,0 +1,72 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-3);
+}
+
+/* Each vehicle is one big choice (radio): plate left, details right */
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option:hover {
+  border-color: var(--color-border-strong);
+}
+
+.selected,
+.selected:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-raised);
+}
+
+.text {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* plate and model on one line, details below – the card stays readable when narrow */
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.openIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}

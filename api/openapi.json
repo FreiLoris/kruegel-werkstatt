@@ -3151,6 +3151,88 @@
         "tags" : [ "Tasks" ]
       }
     },
+    "/api/tasks/history" : {
+      "get" : {
+        "description" : "History in the wizard.",
+        "operationId" : "history",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "customerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TaskDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The last 10 tasks of a customer, newest first",
+        "tags" : [ "Tasks" ]
+      }
+    },
     "/api/tasks/{id}" : {
       "delete" : {
         "operationId" : "delete",
@@ -5030,6 +5112,11 @@
             "type" : [ "integer", "null" ],
             "format" : "int32"
           },
+          "nextMfk" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "ESTIMATED next inspection (4-3-2-2 rule, see MfkSchedule)"
+          },
           "source" : {
             "type" : "string",
             "enum" : [ "SWISSGARAGE", "LOCAL" ]
@@ -5055,7 +5142,7 @@
             "type" : [ "string", "null" ]
           }
         },
-        "required" : [ "active", "color", "customerId", "description", "editable", "firstRegistration", "fuel", "id", "lastMfk", "licensePlate", "make", "mileageKm", "model", "modelYear", "source", "swissgarageNumber", "updatedAt", "updatedBy", "version", "vin" ]
+        "required" : [ "active", "color", "customerId", "description", "editable", "firstRegistration", "fuel", "id", "lastMfk", "licensePlate", "make", "mileageKm", "model", "modelYear", "nextMfk", "source", "swissgarageNumber", "updatedAt", "updatedBy", "version", "vin" ]
       },
       "VehicleRequest" : {
         "type" : "object",

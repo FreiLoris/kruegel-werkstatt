@@ -84,6 +84,14 @@ public class TaskService {
         return repository.findByAppointmentDateBetween(from, to, CALENDAR_ORDER).stream().map(TaskDto::of).toList();
     }
 
+    /** The last 10 tasks of a customer, newest first. */
+    @Transactional(readOnly = true)
+    public List<TaskDto> history(UUID customerId) {
+        return repository.findTop10ByCustomerIdOrderByAppointmentDateDescAppointmentTimeDesc(customerId).stream()
+                .map(TaskDto::of)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public TaskDto get(UUID id) {
         return TaskDto.of(find(id));

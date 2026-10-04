@@ -23,6 +23,7 @@ public record VehicleDto(
         @Schema(types = {"integer", "null"}) Integer modelYear,
         @Schema(types = {"integer", "null"}) Integer mileageKm,
         @Schema(types = {"string", "null"}, format = "date", description = "Date of the LAST official inspection") LocalDate lastMfk,
+        @Schema(types = {"string", "null"}, format = "date", description = "ESTIMATED next inspection (4-3-2-2 rule, see MfkSchedule)") LocalDate nextMfk,
         @Schema(types = {"string", "null"}) String color,
         @Schema(types = {"string", "null"}) String fuel,
         @Schema(description = "False for SwissGarage vehicles – they are changed in SwissGarage") boolean editable,
@@ -36,7 +37,7 @@ public record VehicleDto(
         UUID customerId = v.getCustomer() == null ? null : v.getCustomer().getId();
         return new VehicleDto(v.getId(), v.getVersion(), v.getSource(), v.getSwissgarageNumber(), customerId,
                 d.description(), d.licensePlate(), d.make(), d.model(), d.vin(), d.firstRegistration(),
-                d.modelYear(), d.mileageKm(), d.lastMfk(), d.color(), d.fuel(), !v.isFromSwissGarage(),
+                d.modelYear(), d.mileageKm(), d.lastMfk(), MfkSchedule.nextDue(d.firstRegistration(), d.lastMfk()), d.color(), d.fuel(), !v.isFromSwissGarage(),
                 v.isActive(), v.getUpdatedAt(), v.getUpdatedBy());
     }
 }

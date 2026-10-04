@@ -16,7 +16,7 @@ import java.time.LocalDate;
  * @param firstRegistration first registration (SwissGarage "1.Inv")
  * @param modelYear         SwissGarage "Jahrg."
  * @param mileageKm         last known mileage
- * @param lastMfk           date of the LAST official inspection (MFK) – the next one is computed later (6c)
+ * @param lastMfk           date of the LAST official inspection (MFK) – the next one: {@link MfkSchedule}
  */
 public record VehicleDetails(
         String licensePlate,
