@@ -38,9 +38,18 @@ If a term is missing: add it here in the same pull request that introduces it.
 | German (UI) | English (code) | Notes |
 |---|---|---|
 | Auftrag / Termin | `Task` | one entity for both, like in the old app |
-| Auftragsnummer | `taskNumber` | external, optional |
-| Status Eingang / In Arbeit / Wartet auf Material / Fertig | `RECEIVED` / `IN_PROGRESS` / `WAITING_FOR_PARTS` / `DONE` | |
-| Wartekunde | `waitingCustomer` | flag: customer waits on site |
+| Auftragsnummer | `taskNumber` | SwissGarage order number, added by hand, unique |
+| Status Eingang / In Arbeit / Wartet auf Material / Fertig | `TaskStatus`: `RECEIVED` / `IN_PROGRESS` / `WAITING_FOR_PARTS` / `DONE` | |
+| Termin (Datum, Uhrzeit) | `Appointment` (`date`, `time`) | Swiss local time, no time zone |
+| Fahrzeug kommt früher | `arrivesEarlier` | before the appointment, e.g. the evening before |
+| fertig bis | `readyBy` | after the appointment |
+| Wartekunde | `waitingCustomer` | flag on the appointment, NOT a status (bug #4) |
+| Arbeiten (am Auftrag) | `TaskWork`; free text `description` | everything ticked + free text |
+| Radwechsel-Art: Räder/Reifen eingelagert/mitgebracht | `TireChangeKind`: `WHEELS_STORED` / `TIRES_STORED` / `WHEELS_BROUGHT` / `TIRES_BROUGHT` | |
+| MFK-Termin | `mfkAppointment` | appointment at the inspection station |
+| Material-Status: zum bestellen / bestellt / angekommen | `PartsStatus`: `TO_ORDER` / `ORDERED` / `ARRIVED` | on `PartsOrder` |
+| bestellt am | `orderedOn` | |
+| Notizen (am Auftrag) | `notes` | internal |
 | Kunde | `Customer` | source `SWISSGARAGE` or `LOCAL` (ADR 0003) |
 | ↳ Anrede / Vorname / Name / Firma / Zusatz | `salutation` / `firstName` / `lastName` / `company` / `addition` | |
 | ↳ Strasse / PLZ / Ort | `street` / `postalCode` / `city` | |
@@ -61,7 +70,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | letzte MFK | `lastMfk` | the SwissGarage export only contains the date of the LAST inspection |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
 | Radwechsel | `tireChange` | |
-| Material / Bestellung | `parts` / `partsOrder` | |
+| Material / Bestellung | `parts` / `PartsOrder` | |
 | Lieferant | `supplier` | |
 | Ersatzwagen | `CourtesyCar` | the loan car given to customers |
 | Ersatzwagen-Buchung | `CourtesyCarBooking` | |
