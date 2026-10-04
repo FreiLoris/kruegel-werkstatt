@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatTime, formatTimestamp } from './format'
+import { formatCount, formatDate, formatTime, formatTimestamp } from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -41,5 +41,17 @@ describe('formatTimestamp', () => {
 
   it('rejects invalid values', () => {
     expect(() => formatTimestamp('yesterday')).toThrow()
+  })
+})
+
+describe('formatCount', () => {
+  it('groups thousands with the Swiss apostrophe', () => {
+    expect(formatCount(1480)).toBe('1’480')
+    expect(formatCount(1234567)).toBe('1’234’567')
+  })
+
+  it('leaves small numbers alone', () => {
+    expect(formatCount(0)).toBe('0')
+    expect(formatCount(999)).toBe('999')
   })
 })

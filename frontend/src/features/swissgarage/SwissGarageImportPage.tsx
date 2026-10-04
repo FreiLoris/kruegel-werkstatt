@@ -1,5 +1,6 @@
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
+import { formatCount } from '../../lib/format'
 import { ImportCard } from './ImportCard'
 import { ImportedDataSearch } from './ImportedDataSearch'
 import { ImportLog } from './ImportLog'
@@ -29,10 +30,10 @@ export function SwissGarageImportPage() {
 
       {status.data && (
         <p className={styles.status}>
-          <strong>{status.data.customers.toLocaleString('de-CH')}</strong> Kunden ·{' '}
-          <strong>{status.data.vehicles.toLocaleString('de-CH')}</strong> Fahrzeuge aus SwissGarage
+          <strong>{formatCount(status.data.customers)}</strong> Kunden ·{' '}
+          <strong>{formatCount(status.data.vehicles)}</strong> Fahrzeuge aus SwissGarage
           {status.data.vehiclesWithoutHolder > 0 && (
-            <span className="muted"> (davon {status.data.vehiclesWithoutHolder.toLocaleString('de-CH')} ohne bekannten Halter)</span>
+            <span className="muted"> (davon {formatCount(status.data.vehiclesWithoutHolder)} ohne bekannten Halter)</span>
           )}
         </p>
       )}

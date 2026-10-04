@@ -1,3 +1,4 @@
+import { formatCount } from '../../lib/format'
 import { countsText } from './importCounts'
 import styles from './ImportResult.module.css'
 import type { ImportRun } from './swissGarageApi'
@@ -13,7 +14,7 @@ export function ImportResult({ run }: { run: ImportRun }) {
   return (
     <div className={styles.result}>
       <p className={styles.counts}>
-        {run.rowsRead.toLocaleString('de-CH')} Zeilen gelesen: {countsText(run)}
+        {formatCount(run.rowsRead)} Zeilen gelesen: {countsText(run)}
       </p>
       {run.problems.length > 0 && (
         <div className={styles.problems}>

@@ -1,3 +1,4 @@
+import { formatCount } from '../../lib/format'
 import type { ImportRun } from './swissGarageApi'
 
 /** "12 neu · 30 geändert · …" – only the numbers that are not 0. */
@@ -11,7 +12,7 @@ export function countsText(run: Pick<ImportRun, 'created' | 'updated' | 'unchang
   ]
   const text = parts
     .filter(([count]) => count > 0)
-    .map(([count, label]) => `${count.toLocaleString('de-CH')} ${label}`)
+    .map(([count, label]) => `${formatCount(count)} ${label}`)
     .join(' · ')
   return text || 'keine Einträge'
 }
