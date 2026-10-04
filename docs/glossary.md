@@ -72,6 +72,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Fahrzeug noch offen | vehicle open (`VehicleChoice` `open`) | task without vehicle yet |
 | Bisherige Aufträge | customer history (`/api/tasks/history`) | last 10 tasks of a customer |
 | Assistent (Neuer Auftrag) | wizard (`TaskWizardPage`) | |
+| Kapazitätsübersicht | capacity overview (`CapacityOverview`) | week grid, a planning aid – no capacity check |
+| Werktag | working day (`previousWorkingDay`) | Monday–Friday without public holidays (also in the frontend: `lib/calendar.ts`) |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
 | Radwechsel | `tireChange` | |
 | Material / Bestellung | `parts` / `PartsOrder` | |

@@ -143,9 +143,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   vehicle chooses customer and vehicle; walk-in customer/vehicle in a dialog (labels, placeholders
   only "z. B."); vehicle may stay open; MFK estimate (4-3-2-2 rule) with warning; the customer's
   last tasks on the right.
-- [ ] **6d – Wizard step 2: appointment & work**
-  Sensible defaults (arrives earlier = evening before), capacity overview sticky,
-  click on a slot takes over date + time, buttons not cut off.
+- [x] **6d – Wizard step 2: appointment & work**
+  Defaults: arrives earlier = evening of the previous working day, ready by = same evening,
+  MFK on the appointment day – they move along when the date changes. Week overview sticky
+  (07:00–17:30, holidays, "n Termine"), click on a slot takes over date + time; footer with
+  the buttons always visible. Saving follows in 6e.
 - [ ] **6e – Wizard step 3/4 + task sheet**
   Clear "saved" confirmation; print with Krügel letterhead, white paper layout,
   **all ticked work on the sheet** (→ F1), customer address.

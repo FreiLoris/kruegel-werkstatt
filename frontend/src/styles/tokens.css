@@ -61,6 +61,8 @@
 
   /* ── Layers (what lies above what) ───────────────────────── */
   --layer-header: 10;
+  /* Height of the sticky app header – sticky elements below it start here */
+  --header-height: 3.75rem;
   --layer-menu: 50;
   --layer-toast: 100;
 }
