@@ -5,6 +5,9 @@ import type { components } from '../../api/schema'
 
 export type Task = components['schemas']['TaskDto']
 export type TaskStatus = Task['status']
+export type TaskRequest = components['schemas']['TaskRequest']
+export type TireChangeKind = NonNullable<Task['tireChangeKind']>
+export type PartsStatus = NonNullable<Task['parts']>['status']
 
 /** Topic for query keys and live updates – same text as in the backend. */
 const TOPIC = 'tasks'
@@ -18,6 +21,28 @@ export const TASK_STATUS: Record<TaskStatus, string> = {
   IN_PROGRESS: 'In Arbeit',
   WAITING_FOR_PARTS: 'Wartet auf Material',
   DONE: 'Fertig',
+}
+
+/** Radwechsel-Art – wording of the old app */
+export const TIRE_CHANGE_KINDS: Record<TireChangeKind, string> = {
+  WHEELS_STORED: 'Räder eingelagert',
+  TIRES_STORED: 'Reifen eingelagert',
+  WHEELS_BROUGHT: 'Räder mitgebracht',
+  TIRES_BROUGHT: 'Reifen mitgebracht',
+}
+
+export const PARTS_STATUS: Record<PartsStatus, string> = {
+  TO_ORDER: 'Zum bestellen',
+  ORDERED: 'Bestellt',
+  ARRIVED: 'Angekommen',
+}
+
+/** Tasks of a period (both inclusive) – calendar and capacity overview. */
+export function useTasksBetween(from: string, to: string) {
+  return useQuery({
+    queryKey: [TOPIC, 'between', from, to],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })),
+  })
 }
 
 /** The last 10 tasks of a customer, newest first (wizard step 1). */
