@@ -93,6 +93,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/customer-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search customers and vehicles
+         * @description Every word must occur (name, company, address, phone, e-mail, plate, make, VIN, SwissGarage number). Plates also without space. At least 2 characters. Only active customers and vehicles.
+         */
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/customers": {
         parameters: {
             query?: never;
@@ -706,6 +726,18 @@ export interface components {
              */
             version?: number;
         };
+        CustomerSearchHitDto: {
+            /** @description Empty for a vehicle without known holder */
+            customer: components["schemas"]["CustomerDto"] | null;
+            /** @description Active vehicles; the ones matching the search first */
+            vehicles: components["schemas"]["VehicleDto"][];
+        };
+        CustomerSearchResultDto: {
+            /** @description Customers by name, then vehicles without holder */
+            hits: components["schemas"]["CustomerSearchHitDto"][];
+            /** @description True if there are more hits than delivered – the user should type more */
+            more: boolean;
+        };
         DataChanged: {
             /** @example employees */
             topic: string;
@@ -1300,6 +1332,74 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CourtesyCarDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerSearchResultDto"];
                 };
             };
             /** @description Bad Request */

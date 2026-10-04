@@ -84,6 +84,9 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Adressliste / Fahrzeugliste (Export) | address list / vehicle list | `Adrliste.xlsx`, `Fahrzeug.xlsx` |
 | Adressart „Garage-Kunde“ / „gesperrt“ | address kind | only garage customers that are not blocked are imported |
 | Import-Protokoll | import log (`ImportRun`) | who, when, file, new/changed/unchanged/deactivated/skipped |
+| Kundensuche | customer search (`CustomerSearchService`) | wizard step 1; every word must occur |
+| Treffer | hit (`CustomerSearchHitDto`) | a customer with vehicles, or a vehicle without holder |
+| Fahrzeug ohne Halter | vehicle without holder | `customer_id` empty – e.g. unknown address number in the import |
 
 ## Technical (common)
 

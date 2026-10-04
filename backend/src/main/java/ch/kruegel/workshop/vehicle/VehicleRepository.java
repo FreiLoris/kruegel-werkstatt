@@ -3,11 +3,12 @@ package ch.kruegel.workshop.vehicle;
 import ch.kruegel.workshop.common.RecordSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Database access for vehicles. Search follows in 5e. */
+/** Database access for vehicles. Search: see {@code customersearch}. */
 public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
     /** For the import: the vehicle with this SwissGarage internal number, if known. */
@@ -18,4 +19,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
     /** All vehicles of a holder, active ones first, then by plate. */
     List<Vehicle> findByCustomerIdOrderByActiveDescLicensePlateAsc(UUID customerId);
+
+    /** Active vehicles of several holders at once, by plate – for the search result. */
+    List<Vehicle> findByCustomerIdInAndActiveTrueOrderByLicensePlateAsc(Collection<UUID> customerIds);
 }

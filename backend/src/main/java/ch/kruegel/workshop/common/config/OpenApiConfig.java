@@ -2,6 +2,7 @@ package ch.kruegel.workshop.common.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Header data of the API description (OpenAPI).
@@ -45,5 +48,31 @@ public class OpenApiConfig {
                 schema.setRequired(new ArrayList<>(schema.getProperties().keySet()));
             }
         });
+    }
+
+    /**
+     * A DTO field that refers to another DTO and may be empty
+     * ({@code @Schema(types = {"object", "null"})}) becomes {@code oneOf: [reference, null]}.
+     *
+     * <p>springdoc writes the "null" next to the {@code $ref}, where it is ignored – TypeScript
+     * would then claim the field is never null.
+     */
+    @Bean
+    OpenApiCustomizer nullableReferences() {
+        return openApi -> openApi.getComponents().getSchemas().values().forEach(OpenApiConfig::nullableReferences);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"}) // the swagger model only has raw Map<String, Schema>
+    private static void nullableReferences(Schema schema) {
+        Map<String, Schema> properties = schema.getProperties();
+        if (properties == null) {
+            return;
+        }
+        properties.replaceAll((field, property) ->
+                property.get$ref() != null && property.getTypes() != null && property.getTypes().contains("null")
+                        ? new Schema<>()
+                                .oneOf(List.of(new Schema<>().$ref(property.get$ref()), new Schema<>().types(Set.of("null"))))
+                                .description(property.getDescription())
+                        : property);
     }
 }

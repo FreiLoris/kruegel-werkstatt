@@ -20,7 +20,7 @@ import java.util.UUID;
 
 /**
  * REST API for vehicles. Create/edit/deactivate only for LOCAL vehicles;
- * SwissGarage vehicles answer with 409 (ADR 0003). Search follows in 5e.
+ * SwissGarage vehicles answer with 409 (ADR 0003).
  */
 @RestController
 @RequestMapping("/api/vehicles")

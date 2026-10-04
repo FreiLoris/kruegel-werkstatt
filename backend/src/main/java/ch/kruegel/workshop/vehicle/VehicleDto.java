@@ -30,7 +30,7 @@ public record VehicleDto(
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last (empty: import/sample data)") UUID updatedBy) {
 
-    static VehicleDto of(Vehicle v) {
+    public static VehicleDto of(Vehicle v) {
         VehicleDetails d = v.getDetails();
         // getCustomer().getId() does not load the customer: Hibernate knows the ID of a LAZY reference
         UUID customerId = v.getCustomer() == null ? null : v.getCustomer().getId();
