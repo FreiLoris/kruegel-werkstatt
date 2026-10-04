@@ -8,12 +8,573 @@
     "url" : "/"
   } ],
   "paths" : {
-    "/api/lifts" : {
+    "/api/employees" : {
       "get" : {
-        "operationId" : "alle_2",
+        "operationId" : "list_2",
         "parameters" : [ {
           "in" : "query",
-          "name" : "inklusiveInaktive",
+          "name" : "includeInactive",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EmployeeDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "All employees in fixed order",
+        "tags" : [ "Employees" ]
+      },
+      "post" : {
+        "operationId" : "create_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Create employee (put at the end of the order)",
+        "tags" : [ "Employees" ]
+      }
+    },
+    "/api/employees/order" : {
+      "put" : {
+        "operationId" : "reorder_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmployeeOrder"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/EmployeeDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Set order (first ID = front)",
+        "tags" : [ "Employees" ]
+      }
+    },
+    "/api/employees/{id}" : {
+      "get" : {
+        "operationId" : "get",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Single employee",
+        "tags" : [ "Employees" ]
+      },
+      "put" : {
+        "description" : "Needs the loaded `version` – otherwise 409 if changed in the meantime.",
+        "operationId" : "update",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Edit employee",
+        "tags" : [ "Employees" ]
+      }
+    },
+    "/api/employees/{id}/activate" : {
+      "post" : {
+        "operationId" : "activate_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Activate again",
+        "tags" : [ "Employees" ]
+      }
+    },
+    "/api/employees/{id}/deactivate" : {
+      "post" : {
+        "operationId" : "deactivate_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Deactivate (instead of delete)",
+        "tags" : [ "Employees" ]
+      }
+    },
+    "/api/lifts" : {
+      "get" : {
+        "operationId" : "list_1",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "includeInactive",
           "required" : false,
           "schema" : {
             "type" : "boolean",
@@ -85,16 +646,16 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Alle Lifts in fester Reihenfolge (Standard: nur aktive)",
+        "summary" : "All lifts in fixed order (default: only active ones)",
         "tags" : [ "Lifts" ]
       },
       "post" : {
-        "operationId" : "anlegen_2",
+        "operationId" : "create_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/LiftEingabe"
+                "$ref" : "#/components/schemas/LiftRequest"
               }
             }
           },
@@ -109,7 +670,7 @@
                 }
               }
             },
-            "description" : "Angelegt"
+            "description" : "Created"
           },
           "400" : {
             "content" : {
@@ -162,18 +723,18 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Lift anlegen (wird ans Ende gesetzt)",
+        "summary" : "Create lift (put at the end)",
         "tags" : [ "Lifts" ]
       }
     },
-    "/api/lifts/reihenfolge" : {
+    "/api/lifts/order" : {
       "put" : {
-        "operationId" : "reihenfolge_2",
+        "operationId" : "reorder_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/LiftReihenfolge"
+                "$ref" : "#/components/schemas/LiftOrder"
               }
             }
           },
@@ -244,14 +805,14 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Reihenfolge setzen (erste ID = ganz links)",
+        "summary" : "Set order (first ID = leftmost)",
         "tags" : [ "Lifts" ]
       }
     },
     "/api/lifts/{id}" : {
       "put" : {
-        "description" : "Braucht die geladene `version` – sonst 409.",
-        "operationId" : "umbenennen_1",
+        "description" : "Needs the loaded `version` – otherwise 409.",
+        "operationId" : "rename_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -265,7 +826,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/LiftEingabe"
+                "$ref" : "#/components/schemas/LiftRequest"
               }
             }
           },
@@ -333,13 +894,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Lift umbenennen",
+        "summary" : "Rename lift",
         "tags" : [ "Lifts" ]
       }
     },
-    "/api/lifts/{id}/aktivieren" : {
+    "/api/lifts/{id}/activate" : {
       "post" : {
-        "operationId" : "aktivieren_2",
+        "operationId" : "activate_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -411,13 +972,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Wieder in Betrieb nehmen",
+        "summary" : "Put back into service",
         "tags" : [ "Lifts" ]
       }
     },
-    "/api/lifts/{id}/deaktivieren" : {
+    "/api/lifts/{id}/deactivate" : {
       "post" : {
-        "operationId" : "deaktivieren_2",
+        "operationId" : "deactivate_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -489,20 +1050,20 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Stilllegen (statt löschen) – der letzte aktive Lift bleibt",
+        "summary" : "Decommission (instead of delete) – the last active lift stays",
         "tags" : [ "Lifts" ]
       }
     },
     "/api/live" : {
       "get" : {
-        "description" : "Ereignisse: 'verbunden' (direkt nach dem Verbinden) und 'aenderung' (Daten eines Bereichs haben sich geändert → neu laden).",
+        "description" : "Events: 'connected' (right after connecting) and 'change' (data of a topic has changed → reload).",
         "operationId" : "live",
         "responses" : {
           "200" : {
             "content" : {
               "text/event-stream" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/DatenGeaendert"
+                  "$ref" : "#/components/schemas/DataChanged"
                 }
               }
             },
@@ -559,16 +1120,16 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Live-Verbindung für Änderungen (Server-Sent Events)",
+        "summary" : "Live connection for changes (Server-Sent Events)",
         "tags" : [ "live-controller" ]
       }
     },
-    "/api/mitarbeiter" : {
+    "/api/service-items" : {
       "get" : {
-        "operationId" : "alle_1",
+        "operationId" : "list",
         "parameters" : [ {
           "in" : "query",
-          "name" : "inklusiveInaktive",
+          "name" : "includeInactive",
           "required" : false,
           "schema" : {
             "type" : "boolean",
@@ -582,7 +1143,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/MitarbeiterDto"
+                    "$ref" : "#/components/schemas/ServiceItemDto"
                   }
                 }
               }
@@ -640,16 +1201,16 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Alle Mitarbeiter in fester Reihenfolge",
-        "tags" : [ "Mitarbeiter" ]
+        "summary" : "All service items in fixed order (default: only active ones)",
+        "tags" : [ "Service items" ]
       },
       "post" : {
-        "operationId" : "anlegen_1",
+        "operationId" : "create",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/MitarbeiterEingabe"
+                "$ref" : "#/components/schemas/ServiceItemRequest"
               }
             }
           },
@@ -660,11 +1221,11 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/MitarbeiterDto"
+                  "$ref" : "#/components/schemas/ServiceItemDto"
                 }
               }
             },
-            "description" : "Angelegt"
+            "description" : "Created"
           },
           "400" : {
             "content" : {
@@ -717,18 +1278,18 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Mitarbeiter anlegen (wird ans Ende der Reihenfolge gesetzt)",
-        "tags" : [ "Mitarbeiter" ]
+        "summary" : "Create service item (put at the end)",
+        "tags" : [ "Service items" ]
       }
     },
-    "/api/mitarbeiter/reihenfolge" : {
+    "/api/service-items/order" : {
       "put" : {
-        "operationId" : "reihenfolge_1",
+        "operationId" : "reorder",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Reihenfolge"
+                "$ref" : "#/components/schemas/ServiceItemOrder"
               }
             }
           },
@@ -741,7 +1302,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/MitarbeiterDto"
+                    "$ref" : "#/components/schemas/ServiceItemDto"
                   }
                 }
               }
@@ -799,90 +1360,14 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Reihenfolge setzen (erste ID = ganz vorne)",
-        "tags" : [ "Mitarbeiter" ]
+        "summary" : "Set order (first ID = top)",
+        "tags" : [ "Service items" ]
       }
     },
-    "/api/mitarbeiter/{id}" : {
-      "get" : {
-        "operationId" : "laden",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MitarbeiterDto"
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Einzelner Mitarbeiter",
-        "tags" : [ "Mitarbeiter" ]
-      },
+    "/api/service-items/{id}" : {
       "put" : {
-        "description" : "Braucht die geladene `version` – sonst 409, falls inzwischen geändert.",
-        "operationId" : "aendern",
+        "description" : "Needs the loaded `version` – otherwise 409.",
+        "operationId" : "rename",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -896,7 +1381,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/MitarbeiterEingabe"
+                "$ref" : "#/components/schemas/ServiceItemRequest"
               }
             }
           },
@@ -907,7 +1392,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/MitarbeiterDto"
+                  "$ref" : "#/components/schemas/ServiceItemDto"
                 }
               }
             },
@@ -964,13 +1449,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Mitarbeiter bearbeiten",
-        "tags" : [ "Mitarbeiter" ]
+        "summary" : "Rename service item",
+        "tags" : [ "Service items" ]
       }
     },
-    "/api/mitarbeiter/{id}/aktivieren" : {
+    "/api/service-items/{id}/activate" : {
       "post" : {
-        "operationId" : "aktivieren_1",
+        "operationId" : "activate",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -985,7 +1470,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/MitarbeiterDto"
+                  "$ref" : "#/components/schemas/ServiceItemDto"
                 }
               }
             },
@@ -1042,13 +1527,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Wieder aktivieren",
-        "tags" : [ "Mitarbeiter" ]
+        "summary" : "Offer again",
+        "tags" : [ "Service items" ]
       }
     },
-    "/api/mitarbeiter/{id}/deaktivieren" : {
+    "/api/service-items/{id}/deactivate" : {
       "post" : {
-        "operationId" : "deaktivieren_1",
+        "operationId" : "deactivate",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1063,7 +1548,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/MitarbeiterDto"
+                  "$ref" : "#/components/schemas/ServiceItemDto"
                 }
               }
             },
@@ -1120,522 +1605,38 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Deaktivieren (statt löschen)",
-        "tags" : [ "Mitarbeiter" ]
-      }
-    },
-    "/api/serviceleistungen" : {
-      "get" : {
-        "operationId" : "alle",
-        "parameters" : [ {
-          "in" : "query",
-          "name" : "inklusiveInaktive",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean",
-            "default" : false
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/ServiceleistungDto"
-                  }
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Alle Serviceleistungen in fester Reihenfolge (Standard: nur aktive)",
-        "tags" : [ "Serviceleistungen" ]
-      },
-      "post" : {
-        "operationId" : "anlegen",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ServiceleistungEingabe"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "201" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ServiceleistungDto"
-                }
-              }
-            },
-            "description" : "Angelegt"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Serviceleistung anlegen (wird ans Ende gesetzt)",
-        "tags" : [ "Serviceleistungen" ]
-      }
-    },
-    "/api/serviceleistungen/reihenfolge" : {
-      "put" : {
-        "operationId" : "reihenfolge",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ServiceleistungReihenfolge"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/ServiceleistungDto"
-                  }
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Reihenfolge setzen (erste ID = ganz oben)",
-        "tags" : [ "Serviceleistungen" ]
-      }
-    },
-    "/api/serviceleistungen/{id}" : {
-      "put" : {
-        "description" : "Braucht die geladene `version` – sonst 409.",
-        "operationId" : "umbenennen",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ServiceleistungEingabe"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ServiceleistungDto"
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Serviceleistung umbenennen",
-        "tags" : [ "Serviceleistungen" ]
-      }
-    },
-    "/api/serviceleistungen/{id}/aktivieren" : {
-      "post" : {
-        "operationId" : "aktivieren",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ServiceleistungDto"
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Wieder anbieten",
-        "tags" : [ "Serviceleistungen" ]
-      }
-    },
-    "/api/serviceleistungen/{id}/deaktivieren" : {
-      "post" : {
-        "operationId" : "deaktivieren",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ServiceleistungDto"
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Nicht mehr anbieten (statt löschen)",
-        "tags" : [ "Serviceleistungen" ]
+        "summary" : "No longer offer (instead of delete)",
+        "tags" : [ "Service items" ]
       }
     }
   },
   "components" : {
     "schemas" : {
-      "DatenGeaendert" : {
+      "DataChanged" : {
         "type" : "object",
         "properties" : {
-          "bereich" : {
+          "topic" : {
             "type" : "string",
-            "example" : "mitarbeiter"
+            "example" : "employees"
           }
         },
-        "required" : [ "bereich" ]
+        "required" : [ "topic" ]
       },
-      "LiftDto" : {
+      "EmployeeDto" : {
         "type" : "object",
         "properties" : {
-          "aktiv" : {
+          "active" : {
             "type" : "boolean"
           },
-          "geaendertAm" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "geaendertVon" : {
+          "birthday" : {
             "type" : [ "string", "null" ],
-            "format" : "uuid",
-            "description" : "Wer zuletzt geändert hat (leer: Ausgangsdaten)"
+            "format" : "date"
+          },
+          "color" : {
+            "type" : "string"
+          },
+          "hasPinboardColumn" : {
+            "type" : "boolean"
           },
           "id" : {
             "type" : "string",
@@ -1644,7 +1645,30 @@
           "name" : {
             "type" : "string"
           },
-          "reihenfolge" : {
+          "role" : {
+            "type" : "string",
+            "enum" : [ "MANAGEMENT", "MECHANIC", "OFFICE", "APPRENTICE", "INTERN" ]
+          },
+          "selectableAsMechanic" : {
+            "type" : "boolean"
+          },
+          "selectableForTodos" : {
+            "type" : "boolean"
+          },
+          "sortOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who changed it last (empty: sample data/initial setup)"
+          },
+          "vacationDaysPerYear" : {
             "type" : "integer",
             "format" : "int32"
           },
@@ -1653,25 +1677,9 @@
             "format" : "int64"
           }
         },
-        "required" : [ "aktiv", "geaendertAm", "geaendertVon", "id", "name", "reihenfolge", "version" ]
+        "required" : [ "active", "birthday", "color", "hasPinboardColumn", "id", "name", "role", "selectableAsMechanic", "selectableForTodos", "sortOrder", "updatedAt", "updatedBy", "vacationDaysPerYear", "version" ]
       },
-      "LiftEingabe" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "type" : "string",
-            "maxLength" : 30,
-            "minLength" : 0
-          },
-          "version" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Nur beim Bearbeiten nötig"
-          }
-        },
-        "required" : [ "name" ]
-      },
-      "LiftReihenfolge" : {
+      "EmployeeOrder" : {
         "type" : "object",
         "properties" : {
           "ids" : {
@@ -1685,37 +1693,54 @@
         },
         "required" : [ "ids" ]
       },
-      "MitarbeiterDto" : {
+      "EmployeeRequest" : {
         "type" : "object",
         "properties" : {
-          "aktiv" : {
-            "type" : "boolean"
-          },
-          "alsMechanikerWaehlbar" : {
-            "type" : "boolean"
-          },
-          "farbe" : {
-            "type" : "string"
-          },
-          "ferienanspruch" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "fuerAufgabenWaehlbar" : {
-            "type" : "boolean"
-          },
-          "geaendertAm" : {
+          "birthday" : {
             "type" : "string",
-            "format" : "date-time"
-          },
-          "geaendertVon" : {
-            "type" : [ "string", "null" ],
-            "format" : "uuid",
-            "description" : "Wer zuletzt geändert hat (leer: Testdaten/Ersteinrichtung)"
-          },
-          "geburtstag" : {
-            "type" : [ "string", "null" ],
             "format" : "date"
+          },
+          "color" : {
+            "type" : "string",
+            "pattern" : "^#[0-9a-fA-F]{6}$"
+          },
+          "hasPinboardColumn" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "role" : {
+            "type" : "string",
+            "enum" : [ "MANAGEMENT", "MECHANIC", "OFFICE", "APPRENTICE", "INTERN" ]
+          },
+          "selectableAsMechanic" : {
+            "type" : "boolean"
+          },
+          "selectableForTodos" : {
+            "type" : "boolean"
+          },
+          "vacationDaysPerYear" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 60,
+            "minimum" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Only needed when editing"
+          }
+        },
+        "required" : [ "color", "hasPinboardColumn", "name", "role", "selectableAsMechanic", "selectableForTodos", "vacationDaysPerYear" ]
+      },
+      "LiftDto" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean"
           },
           "id" : {
             "type" : "string",
@@ -1724,66 +1749,55 @@
           "name" : {
             "type" : "string"
           },
-          "pinnwandSpalte" : {
-            "type" : "boolean"
-          },
-          "reihenfolge" : {
+          "sortOrder" : {
             "type" : "integer",
             "format" : "int32"
           },
-          "rolle" : {
+          "updatedAt" : {
             "type" : "string",
-            "enum" : [ "GESCHAEFTSFUEHRUNG", "MECHANIKER", "BUERO", "LERNENDER", "PRAKTIKUM" ]
+            "format" : "date-time"
+          },
+          "updatedBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who changed it last (empty: initial data)"
           },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "aktiv", "alsMechanikerWaehlbar", "farbe", "ferienanspruch", "fuerAufgabenWaehlbar", "geaendertAm", "geaendertVon", "geburtstag", "id", "name", "pinnwandSpalte", "reihenfolge", "rolle", "version" ]
+        "required" : [ "active", "id", "name", "sortOrder", "updatedAt", "updatedBy", "version" ]
       },
-      "MitarbeiterEingabe" : {
+      "LiftOrder" : {
         "type" : "object",
         "properties" : {
-          "alsMechanikerWaehlbar" : {
-            "type" : "boolean"
-          },
-          "farbe" : {
-            "type" : "string",
-            "pattern" : "^#[0-9a-fA-F]{6}$"
-          },
-          "ferienanspruch" : {
-            "type" : "integer",
-            "format" : "int32",
-            "maximum" : 60,
-            "minimum" : 0
-          },
-          "fuerAufgabenWaehlbar" : {
-            "type" : "boolean"
-          },
-          "geburtstag" : {
-            "type" : "string",
-            "format" : "date"
-          },
+          "ids" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "ids" ]
+      },
+      "LiftRequest" : {
+        "type" : "object",
+        "properties" : {
           "name" : {
             "type" : "string",
-            "maxLength" : 40,
+            "maxLength" : 30,
             "minLength" : 0
-          },
-          "pinnwandSpalte" : {
-            "type" : "boolean"
-          },
-          "rolle" : {
-            "type" : "string",
-            "enum" : [ "GESCHAEFTSFUEHRUNG", "MECHANIKER", "BUERO", "LERNENDER", "PRAKTIKUM" ]
           },
           "version" : {
             "type" : "integer",
             "format" : "int64",
-            "description" : "Nur beim Bearbeiten nötig"
+            "description" : "Only needed when editing"
           }
         },
-        "required" : [ "alsMechanikerWaehlbar", "farbe", "ferienanspruch", "fuerAufgabenWaehlbar", "name", "pinnwandSpalte", "rolle" ]
+        "required" : [ "name" ]
       },
       "ProblemDetail" : {
         "type" : "object",
@@ -1812,7 +1826,40 @@
           }
         }
       },
-      "Reihenfolge" : {
+      "ServiceItemDto" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "sortOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who changed it last (empty: initial data)"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "active", "id", "name", "sortOrder", "updatedAt", "updatedBy", "version" ]
+      },
+      "ServiceItemOrder" : {
         "type" : "object",
         "properties" : {
           "ids" : {
@@ -1826,40 +1873,7 @@
         },
         "required" : [ "ids" ]
       },
-      "ServiceleistungDto" : {
-        "type" : "object",
-        "properties" : {
-          "aktiv" : {
-            "type" : "boolean"
-          },
-          "geaendertAm" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "geaendertVon" : {
-            "type" : [ "string", "null" ],
-            "format" : "uuid",
-            "description" : "Wer zuletzt geändert hat (leer: Ausgangsdaten)"
-          },
-          "id" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "reihenfolge" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "version" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        },
-        "required" : [ "aktiv", "geaendertAm", "geaendertVon", "id", "name", "reihenfolge", "version" ]
-      },
-      "ServiceleistungEingabe" : {
+      "ServiceItemRequest" : {
         "type" : "object",
         "properties" : {
           "name" : {
@@ -1870,24 +1884,10 @@
           "version" : {
             "type" : "integer",
             "format" : "int64",
-            "description" : "Nur beim Bearbeiten nötig"
+            "description" : "Only needed when editing"
           }
         },
         "required" : [ "name" ]
-      },
-      "ServiceleistungReihenfolge" : {
-        "type" : "object",
-        "properties" : {
-          "ids" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid"
-            },
-            "minItems" : 1
-          }
-        },
-        "required" : [ "ids" ]
       }
     }
   }

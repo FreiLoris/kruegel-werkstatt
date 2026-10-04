@@ -14,7 +14,7 @@
     <artifactId>werkstatt</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>werkstatt</name>
-    <description>Werkstatt-Backend Krügel Fahrzeugtechnik</description>
+    <description>Workshop backend for Krügel Fahrzeugtechnik</description>
 
     <properties>
         <java.version>25</java.version>
