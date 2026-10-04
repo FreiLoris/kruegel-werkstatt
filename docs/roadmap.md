@@ -18,7 +18,7 @@ Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) 
 | 1 | Skeleton ✅ | Repository, backend, database, frontend, Docker Compose |
 | 2 | Foundation ✅ | CI, conventions, API contract, basic UI components, live updates |
 | 3 | Employees ✅ | First business module = template for all others |
-| 4 | Master data | Lifts, service items, courtesy cars, public holidays |
+| 4 | Master data ✅ | Lifts, service items, courtesy cars, public holidays |
 | 5 | Customers, vehicles, import | SwissGarage import on the server, customer search |
 | 6 | Tasks & appointments | Core of the app: wizard, day/week view, drag & drop, printing |
 | 7 | Courtesy car bookings | One data source, double booking impossible |
@@ -83,7 +83,7 @@ is created that all further modules follow.
   No login, but every device picks a person once. Stored with every change
   ("changed by"). TV device = "view only". (→ bug #11, deliberately without password)
 
-## Phase 4 – Master data
+## Phase 4 – Master data ✅
 
 - [x] **4a – Configurable lifts**
   Table instead of 3 hard-coded lifts; number/names changeable. (→ bug #13)
@@ -97,7 +97,7 @@ is created that all further modules follow.
 - [x] **4c – Courtesy cars**
   Master data (label, model, license plate, service due, insurance until) with a
   warning when service is due. Form with labels. (→ UI review courtesy cars)
-- [ ] **4d – Public holidays canton Zurich**
+- [x] **4d – Public holidays canton Zurich**
   Calculation on the server (incl. Easter-dependent holidays) + endpoint + tests.
 
 ## Phase 5 – Customers, vehicles, SwissGarage import
