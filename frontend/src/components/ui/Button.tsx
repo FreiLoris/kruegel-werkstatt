@@ -3,39 +3,39 @@ import { LoaderCircle } from 'lucide-react'
 import type { ButtonHTMLAttributes } from 'react'
 import styles from './Button.module.css'
 
-export type ButtonVariante = 'primaer' | 'sekundaer' | 'gefahr' | 'ghost'
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variante?: ButtonVariante
-  klein?: boolean
-  /** Symbol links vom Text (aus lucide-react) */
+  variant?: ButtonVariant
+  small?: boolean
+  /** Icon left of the text (from lucide-react) */
   icon?: LucideIcon
-  /** Zeigt einen Lade-Kreisel und sperrt den Button (z. B. während gespeichert wird) */
-  laedt?: boolean
+  /** Shows a spinner and disables the button (e.g. while saving) */
+  loading?: boolean
 }
 
 /**
- * Standard-Button der App.
+ * The app's standard button.
  *
- * `type="button"` ist Standard – ein Button in einem Formular sendet es also NICHT
- * versehentlich ab. Für Absende-Buttons ausdrücklich `type="submit"` setzen.
+ * `type="button"` is the default – a button inside a form does NOT submit it by accident.
+ * For submit buttons set `type="submit"` explicitly.
  */
 export function Button({
-  variante = 'sekundaer',
-  klein = false,
+  variant = 'secondary',
+  small = false,
   icon: Icon,
-  laedt = false,
+  loading = false,
   type = 'button',
   disabled,
   className,
   children,
   ...rest
 }: ButtonProps) {
-  const klassen = [styles.button, styles[variante], klein && styles.klein, className].filter(Boolean).join(' ')
+  const classes = [styles.button, styles[variant], small && styles.small, className].filter(Boolean).join(' ')
 
   return (
-    <button type={type} className={klassen} disabled={disabled || laedt} aria-busy={laedt || undefined} {...rest}>
-      {laedt ? <LoaderCircle className={styles.kreisel} aria-hidden /> : Icon && <Icon aria-hidden />}
+    <button type={type} className={classes} disabled={disabled || loading} aria-busy={loading || undefined} {...rest}>
+      {loading ? <LoaderCircle className={styles.spinner} aria-hidden /> : Icon && <Icon aria-hidden />}
       {children}
     </button>
   )

@@ -1,79 +1,78 @@
 import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import styles from './Toast.module.css'
-import { ToastKontext, type ToastApi, type ToastArt } from './toastKontext'
+import { ToastContext, type ToastApi, type ToastKind } from './toastContext'
 
-interface ToastEintrag {
+interface ToastEntry {
   id: number
   text: string
-  art: ToastArt
+  kind: ToastKind
 }
 
-/** Anzeigedauer – Fehler etwas länger, damit man sie lesen kann */
-const DAUER_MS: Record<ToastArt, number> = { erfolg: 3000, info: 4000, fehler: 7000 }
+/** Display time – errors a bit longer so they can be read */
+const DURATION_MS: Record<ToastKind, number> = { success: 3000, info: 4000, error: 7000 }
 
-const ICONS = { erfolg: CircleCheck, fehler: CircleAlert, info: Info }
+const ICONS = { success: CircleCheck, error: CircleAlert, info: Info }
 
 /**
- * Stellt `useToast()` bereit und zeigt die Meldungen an.
- * Position oben rechts – dort verdeckt nichts die Meldung
- * (UI-Review: Toasts lagen hinter dem schwebenden Dashboard-Button).
+ * Provides `useToast()` and shows the messages.
+ * Position top right – nothing covers the message there
+ * (UI review: toasts were hidden behind the floating dashboard button).
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<ToastEintrag[]>([])
-  const naechsteId = useRef(1)
-  const bereichRef = useRef<HTMLDivElement>(null)
+  const [toasts, setToasts] = useState<ToastEntry[]>([])
+  const nextId = useRef(1)
+  const regionRef = useRef<HTMLDivElement>(null)
 
-  // Ein offenes Modal (<dialog>) liegt in der obersten Browser-Ebene ("top layer") über allem.
-  // Damit Meldungen trotzdem sichtbar sind (z. B. Fehler beim Speichern IM Modal), ist der
-  // Toast-Bereich ein Popover – und wird bei jeder neuen Meldung neu geöffnet, wodurch er
-  // wieder ganz nach oben kommt.
+  // An open modal (<dialog>) lies in the browser's top layer above everything.
+  // So that messages are still visible (e.g. a save error IN the modal), the toast region is
+  // a popover – and is reopened on every new message, which puts it on top again.
   useEffect(() => {
-    const bereich = bereichRef.current
-    if (!bereich || typeof bereich.showPopover !== 'function') return // z. B. in Tests (jsdom)
-    if (bereich.matches(':popover-open')) bereich.hidePopover()
-    if (toasts.length > 0) bereich.showPopover()
+    const region = regionRef.current
+    if (!region || typeof region.showPopover !== 'function') return // e.g. in tests (jsdom)
+    if (region.matches(':popover-open')) region.hidePopover()
+    if (toasts.length > 0) region.showPopover()
   }, [toasts])
 
-  const entfernen = useCallback((id: number) => {
-    setToasts((alle) => alle.filter((t) => t.id !== id))
+  const remove = useCallback((id: number) => {
+    setToasts((all) => all.filter((t) => t.id !== id))
   }, [])
 
-  const zeigen = useCallback(
-    (art: ToastArt, text: string) => {
-      const id = naechsteId.current++
-      setToasts((alle) => [...alle, { id, text, art }])
-      setTimeout(() => entfernen(id), DAUER_MS[art])
+  const show = useCallback(
+    (kind: ToastKind, text: string) => {
+      const id = nextId.current++
+      setToasts((all) => [...all, { id, text, kind }])
+      setTimeout(() => remove(id), DURATION_MS[kind])
     },
-    [entfernen],
+    [remove],
   )
 
   const api = useMemo<ToastApi>(
     () => ({
-      erfolg: (text) => zeigen('erfolg', text),
-      fehler: (text) => zeigen('fehler', text),
-      info: (text) => zeigen('info', text),
+      success: (text) => show('success', text),
+      error: (text) => show('error', text),
+      info: (text) => show('info', text),
     }),
-    [zeigen],
+    [show],
   )
 
   return (
-    <ToastKontext.Provider value={api}>
+    <ToastContext.Provider value={api}>
       {children}
-      <div ref={bereichRef} popover="manual" className={styles.bereich} aria-live="polite">
+      <div ref={regionRef} popover="manual" className={styles.region} aria-live="polite">
         {toasts.map((toast) => {
-          const Icon = ICONS[toast.art]
+          const Icon = ICONS[toast.kind]
           return (
-            <div key={toast.id} className={`${styles.toast} ${styles[toast.art]}`} role={toast.art === 'fehler' ? 'alert' : 'status'}>
+            <div key={toast.id} className={`${styles.toast} ${styles[toast.kind]}`} role={toast.kind === 'error' ? 'alert' : 'status'}>
               <Icon className={styles.icon} aria-hidden />
               <span className={styles.text}>{toast.text}</span>
-              <button type="button" className={styles.schliessen} onClick={() => entfernen(toast.id)} aria-label="Meldung schliessen">
+              <button type="button" className={styles.close} onClick={() => remove(toast.id)} aria-label="Meldung schliessen">
                 <X aria-hidden />
               </button>
             </div>
           )
         })}
       </div>
-    </ToastKontext.Provider>
+    </ToastContext.Provider>
   )
 }

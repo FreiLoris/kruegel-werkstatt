@@ -1,65 +1,64 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { beiAenderung } from './liveEreignis'
+import { onDataChanged } from './liveEvent'
 
-export type LiveStatus = 'verbinde' | 'verbunden' | 'getrennt'
+export type LiveStatus = 'connecting' | 'connected' | 'disconnected'
 
-const ERSTE_WARTEZEIT_MS = 1_000
-const MAX_WARTEZEIT_MS = 30_000
+const FIRST_DELAY_MS = 1_000
+const MAX_DELAY_MS = 30_000
 
 /**
- * Hält die Live-Verbindung zum Server (Server-Sent Events) und lädt geänderte Daten neu.
- * Wird genau einmal in der App verwendet (AppLayout).
+ * Keeps the live connection to the server (Server-Sent Events) and reloads changed data.
+ * Used exactly once in the app (AppLayout).
  *
- * Neuverbinden: `EventSource` verbindet sich nur bei reinen Netzwerkfehlern von selbst neu.
- * Antwortet stattdessen nginx mit einem Fehler (z. B. 502, während das Backend nach einem
- * Update neu startet), gibt `EventSource` endgültig auf. Darum verbinden wir in diesem Fall
- * selbst neu – mit wachsender Wartezeit (1 s, 2 s, 4 s … max. 30 s), um den Server nicht
- * zu überfluten.
+ * Reconnecting: `EventSource` only reconnects on its own after pure network errors.
+ * If nginx answers with an error instead (e.g. 502 while the backend restarts after an
+ * update), `EventSource` gives up for good. In that case we reconnect ourselves – with a
+ * growing delay (1 s, 2 s, 4 s … max. 30 s) so as not to flood the server.
  */
 export function useLiveUpdates(): LiveStatus {
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<LiveStatus>('verbinde')
+  const [status, setStatus] = useState<LiveStatus>('connecting')
 
   useEffect(() => {
-    let quelle: EventSource | undefined
-    let neuVerbindenTimer: ReturnType<typeof setTimeout> | undefined
-    let wartezeit = ERSTE_WARTEZEIT_MS
-    let warSchonVerbunden = false
-    let beendet = false
+    let source: EventSource | undefined
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let delay = FIRST_DELAY_MS
+    let wasConnected = false
+    let stopped = false
 
-    function verbinden() {
-      quelle = new EventSource('/api/live')
+    function connect() {
+      source = new EventSource('/api/live')
 
-      quelle.addEventListener('verbunden', () => {
-        // Nach einer Unterbrechung könnten Änderungen verpasst worden sein → alles neu laden.
-        if (warSchonVerbunden) {
+      source.addEventListener('connected', () => {
+        // After an interruption changes may have been missed → reload everything.
+        if (wasConnected) {
           void queryClient.invalidateQueries()
         }
-        warSchonVerbunden = true
-        wartezeit = ERSTE_WARTEZEIT_MS
-        setStatus('verbunden')
+        wasConnected = true
+        delay = FIRST_DELAY_MS
+        setStatus('connected')
       })
 
-      quelle.addEventListener('aenderung', (event) => {
-        beiAenderung((event as MessageEvent<string>).data, queryClient)
+      source.addEventListener('change', (event) => {
+        onDataChanged((event as MessageEvent<string>).data, queryClient)
       })
 
-      quelle.addEventListener('error', () => {
-        setStatus('getrennt')
-        if (quelle?.readyState === EventSource.CLOSED && !beendet) {
-          neuVerbindenTimer = setTimeout(verbinden, wartezeit)
-          wartezeit = Math.min(wartezeit * 2, MAX_WARTEZEIT_MS)
+      source.addEventListener('error', () => {
+        setStatus('disconnected')
+        if (source?.readyState === EventSource.CLOSED && !stopped) {
+          reconnectTimer = setTimeout(connect, delay)
+          delay = Math.min(delay * 2, MAX_DELAY_MS)
         }
       })
     }
 
-    verbinden()
+    connect()
 
     return () => {
-      beendet = true
-      clearTimeout(neuVerbindenTimer)
-      quelle?.close()
+      stopped = true
+      clearTimeout(reconnectTimer)
+      source?.close()
     }
   }, [queryClient])
 

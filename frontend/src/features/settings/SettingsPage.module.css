@@ -1,0 +1,4 @@
+.section {
+  max-width: 48rem;
+  margin-top: var(--space-5);
+}

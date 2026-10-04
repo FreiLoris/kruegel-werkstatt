@@ -1,29 +1,29 @@
 import { createBrowserRouter } from 'react-router'
-import { EinstellungenSeite } from '../features/einstellungen/EinstellungenSeite'
-import { MitarbeiterSeite } from '../features/mitarbeiter/MitarbeiterSeite'
-import { StartSeite } from '../features/start/StartSeite'
-import { KomponentenSeite } from '../features/system/KomponentenSeite'
-import { SystemSeite } from '../features/system/SystemSeite'
+import { EmployeesPage } from '../features/employees/EmployeesPage'
+import { HomePage } from '../features/home/HomePage'
+import { SettingsPage } from '../features/settings/SettingsPage'
+import { ComponentsPage } from '../features/system/ComponentsPage'
+import { SystemPage } from '../features/system/SystemPage'
 import { AppLayout } from './AppLayout'
-import { AbsturzSeite, NichtGefundenSeite } from './FehlerSeiten'
+import { CrashPage, NotFoundPage } from './ErrorPages'
 
 /**
- * Alle Seiten der App mit ihrer URL.
- * Jede Seite hat eine eigene Adresse → Browser-Zurück funktioniert, Links sind teilbar,
- * ein Tablet kann direkt eine bestimmte Seite als Startseite haben.
+ * All pages of the app with their URL.
+ * Every page has its own address → browser back works, links can be shared,
+ * a tablet can have a specific page as its start page.
  */
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppLayout />,
-    errorElement: <AbsturzSeite />,
+    errorElement: <CrashPage />,
     children: [
-      { index: true, element: <StartSeite /> },
-      { path: 'mitarbeiter', element: <MitarbeiterSeite /> },
-      { path: 'einstellungen', element: <EinstellungenSeite /> },
-      { path: 'system', element: <SystemSeite /> },
-      { path: 'system/komponenten', element: <KomponentenSeite /> },
-      { path: '*', element: <NichtGefundenSeite /> },
+      { index: true, element: <HomePage /> },
+      { path: 'employees', element: <EmployeesPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'system', element: <SystemPage /> },
+      { path: 'system/components', element: <ComponentsPage /> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])

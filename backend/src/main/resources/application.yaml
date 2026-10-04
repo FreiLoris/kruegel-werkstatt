@@ -1,35 +1,36 @@
 spring:
   application:
+    # Product name (also used for the database and the Docker project) – stays German.
     name: werkstatt
 
-  # Verbindung zur PostgreSQL-Datenbank.
-  # Werte kommen aus Umgebungsvariablen, sonst gelten die Standardwerte
-  # (passend zu compose.yaml für die lokale Entwicklung).
+  # Connection to the PostgreSQL database.
+  # Values come from environment variables, otherwise the defaults apply
+  # (matching compose.yaml for local development).
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:werkstatt}
     username: ${DB_USER:werkstatt}
     password: ${DB_PASSWORD:werkstatt}
 
-  # Flyway führt beim Start alle neuen Skripte aus src/main/resources/db/migration aus.
+  # On startup Flyway runs all new scripts from src/main/resources/db/migration.
   flyway:
     locations: classpath:db/migration
 
   jpa:
-    # Das Schema gehört Flyway. Hibernate prüft beim Start nur, ob Entitäten und
-    # Tabellen zusammenpassen – und verweigert den Start, wenn nicht.
+    # The schema belongs to Flyway. On startup Hibernate only checks that entities and
+    # tables match – and refuses to start if they do not.
     hibernate:
       ddl-auto: validate
-    # Keine Datenbankzugriffe mehr, nachdem der Controller fertig ist
-    # (sonst entstehen unbemerkt langsame Nachlade-Abfragen beim JSON-Erzeugen).
+    # No database access after the controller has finished
+    # (otherwise slow lazy-loading queries sneak in while the JSON is written).
     open-in-view: false
     properties:
       hibernate:
-        # Zeitpunkte immer in UTC an die Datenbank übergeben.
+        # Always pass points in time to the database in UTC.
         jdbc:
           time_zone: UTC
 
-  # Die App ist nur deutschsprachig: Validierungsmeldungen ("darf nicht leer sein")
-  # immer auf Deutsch, unabhängig von der Spracheinstellung des Browsers.
+  # The app is German only: validation messages ("darf nicht leer sein") are always German,
+  # regardless of the browser's language setting.
   web:
     locale: de
     locale-resolver: fixed
@@ -37,33 +38,33 @@ spring:
 server:
   port: 8080
 
-# OpenAPI-Beschreibung der API (springdoc).
-#   /api/openapi    Beschreibung als JSON (daraus entstehen die Frontend-Typen)
-#   /api/docs       Swagger UI – API im Browser ansehen und ausprobieren
+# OpenAPI description of the API (springdoc).
+#   /api/openapi    description as JSON (the frontend types are generated from it)
+#   /api/docs       Swagger UI – view and try the API in the browser
 springdoc:
   api-docs:
     path: /api/openapi
   swagger-ui:
     path: /api/docs
-  # Nur unsere API beschreiben (keine Test-Endpoints, kein Actuator)
+  # Only describe our API (no test endpoints, no actuator)
   paths-to-match: /api/**
-  # Stabile, gut lesbare Ausgabe → saubere Diffs im Pull Request
+  # Stable, readable output → clean diffs in pull requests
   writer-with-default-pretty-printer: true
   writer-with-order-by-keys: true
 
-# Actuator: Betriebs-Endpoints von Spring Boot.
-# Wir veröffentlichen nur "health" und legen ihn unter /api,
-# damit später alles Backend-seitige unter einem Pfad liegt (nginx leitet /api weiter).
+# Actuator: operational endpoints of Spring Boot.
+# We only publish "health" and put it under /api,
+# so everything backend-related lives under one path (nginx forwards /api).
 management:
   endpoints:
     web:
       base-path: /api
       exposure:
         include: health
-      # Keine Übersichtsseite aller Actuator-Endpoints unter /api
+      # No overview page of all actuator endpoints under /api
       discovery:
         enabled: false
   endpoint:
     health:
-      # Internes Tool: Details (z.B. Datenbank-Status ab Schritt 1c) immer anzeigen.
+      # Internal tool: always show details (e.g. database status).
       show-details: always

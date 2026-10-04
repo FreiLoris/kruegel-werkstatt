@@ -1,0 +1,58 @@
+.picker {
+  max-width: 48rem;
+  margin: var(--space-6) auto 0;
+  text-align: center;
+}
+
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Whole tile is clickable, well above the minimum size – tapped while standing */
+.person {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 5rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+}
+
+.person:hover {
+  border-color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+}
+
+.viewOnly {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.viewOnly:hover {
+  border-color: var(--color-text-muted);
+}
+
+.viewOnly svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}

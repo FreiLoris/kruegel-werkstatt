@@ -1,4 +1,4 @@
-/* Grundgestaltung für das ganze Dokument (keine Komponenten). */
+/* Base styling for the whole document (no components). */
 
 *,
 *::before,
@@ -7,11 +7,11 @@
 }
 
 html {
-  font-family: var(--schrift);
+  font-family: var(--font);
   font-size: 100%;
-  color: var(--farbe-text);
-  background: var(--farbe-hintergrund);
-  color-scheme: dark; /* Browser-eigene Elemente (Scrollbalken, Datumsauswahl) dunkel */
+  color: var(--color-text);
+  background: var(--color-background);
+  color-scheme: dark; /* browser's own elements (scrollbars, date picker) dark */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -23,32 +23,32 @@ body {
 h1,
 h2,
 h3 {
-  margin: 0 0 var(--abstand-2);
+  margin: 0 0 var(--space-2);
   line-height: 1.25;
 }
 
 h1 {
-  font-size: var(--schrift-seitentitel);
+  font-size: var(--font-size-page-title);
 }
 
 h2 {
-  font-size: var(--schrift-titel);
+  font-size: var(--font-size-title);
 }
 
 p {
-  margin: 0 0 var(--abstand-3);
+  margin: 0 0 var(--space-3);
 }
 
 a {
-  color: var(--farbe-akzent);
+  color: var(--color-accent);
 }
 
-/* Sichtbarer Fokus für Tastaturbedienung – überall gleich */
+/* Visible focus for keyboard use – the same everywhere */
 :focus-visible {
-  outline: 2px solid var(--farbe-fokus);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-.gedaempft {
-  color: var(--farbe-text-gedaempft);
+.muted {
+  color: var(--color-text-muted);
 }

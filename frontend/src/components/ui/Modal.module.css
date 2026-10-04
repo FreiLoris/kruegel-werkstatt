@@ -1,44 +1,44 @@
 .dialog {
-  width: min(32rem, calc(100vw - 2 * var(--abstand-4)));
-  max-height: calc(100dvh - 2 * var(--abstand-6));
+  width: min(32rem, calc(100vw - 2 * var(--space-4)));
+  max-height: calc(100dvh - 2 * var(--space-6));
   padding: 0;
-  border: 1px solid var(--farbe-rand);
-  border-radius: var(--radius-gross);
-  background: var(--farbe-flaeche);
-  color: var(--farbe-text);
-  box-shadow: var(--schatten);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow);
 }
 
 .dialog::backdrop {
   background: rgb(0 0 0 / 0.6);
 }
 
-.breit {
-  width: min(56rem, calc(100vw - 2 * var(--abstand-4)));
+.wide {
+  width: min(56rem, calc(100vw - 2 * var(--space-4)));
 }
 
-/* Kopf und Fuss fix, Inhalt scrollt */
-.rahmen {
+/* Header and footer fixed, body scrolls */
+.frame {
   display: flex;
   flex-direction: column;
   max-height: inherit;
 }
 
-.kopf {
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--abstand-3);
-  padding: var(--abstand-3) var(--abstand-3) var(--abstand-3) var(--abstand-5);
-  border-bottom: 1px solid var(--farbe-rand);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.titel {
+.title {
   margin: 0;
-  font-size: var(--schrift-gross);
+  font-size: var(--font-size-lg);
 }
 
-.schliessen {
+.close {
   display: grid;
   place-items: center;
   width: var(--touch-min);
@@ -46,24 +46,24 @@
   border: none;
   border-radius: var(--radius);
   background: transparent;
-  color: var(--farbe-text-gedaempft);
+  color: var(--color-text-muted);
   cursor: pointer;
 }
 
-.schliessen:hover {
-  background: var(--farbe-flaeche-erhoeht);
-  color: var(--farbe-text);
+.close:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
 }
 
-.inhalt {
+.body {
   overflow-y: auto;
-  padding: var(--abstand-5);
+  padding: var(--space-5);
 }
 
-.fuss {
+.footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--abstand-2);
-  padding: var(--abstand-3) var(--abstand-5);
-  border-top: 1px solid var(--farbe-rand);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
 }

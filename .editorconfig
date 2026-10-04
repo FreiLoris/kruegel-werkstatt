@@ -1,4 +1,4 @@
-# Einheitliche Formatierung über alle Editoren (IntelliJ, VS Code, ...)
+# Uniform formatting across all editors (IntelliJ, VS Code, ...)
 root = true
 
 [*]

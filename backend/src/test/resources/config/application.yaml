@@ -1,8 +1,8 @@
-# Ergänzt die Haupt-Konfiguration (src/main/resources/application.yaml) NUR in Tests.
-# Spring lädt beide Dateien; Werte von hier überschreiben die gleichnamigen von dort.
+# Adds to the main configuration (src/main/resources/application.yaml) ONLY in tests.
+# Spring loads both files; values from here override the ones with the same name from there.
 
 spring:
   flyway:
-    # Zusätzliche Migrationen mit Tabellen, die es nur für Tests gibt
-    # (z.B. für die Test-Entität in common.persistence).
+    # Additional migrations with tables that only exist for tests
+    # (e.g. for the test entity in common.persistence).
     locations: classpath:db/migration, classpath:db/test-migration

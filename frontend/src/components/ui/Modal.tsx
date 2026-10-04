@@ -3,65 +3,74 @@ import { useEffect, useId, useRef, type ReactNode } from 'react'
 import styles from './Modal.module.css'
 
 export interface ModalProps {
-  offen: boolean
-  /** Wird bei Esc, Klick auf den Hintergrund oder das X aufgerufen */
-  onSchliessen: () => void
-  titel: string
+  open: boolean
+  /** Called on Esc, click on the backdrop or the X */
+  onClose: () => void
+  title: string
   children: ReactNode
-  /** Buttons unten – bleiben beim Scrollen immer sichtbar */
-  fuss?: ReactNode
-  breit?: boolean
+  /** Buttons at the bottom – always stay visible while scrolling */
+  footer?: ReactNode
+  wide?: boolean
 }
 
 /**
- * Dialogfenster auf Basis des nativen HTML-Elements `<dialog>`.
+ * Dialog window based on the native HTML element `<dialog>`.
  *
- * Der Browser übernimmt: Fokus bleibt im Dialog, Hintergrund ist gesperrt,
- * Esc schliesst. Kopf und Fuss bleiben fix, nur der Inhalt scrollt
- * (UI-Review: Speichern-Button war nur nach Scrollen erreichbar).
+ * The browser takes care of: focus stays inside the dialog, background is blocked,
+ * Esc closes. Header and footer stay fixed, only the body scrolls
+ * (UI review: the save button was only reachable after scrolling).
+ *
+ * Focus on open: the element with `data-autofocus`, otherwise the first input field.
+ * Do not use React's `autoFocus` inside a modal – it has no effect there.
  */
-export function Modal({ offen, onSchliessen, titel, children, fuss, breit = false }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, wide = false }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  // Eindeutige ID – es können mehrere Dialoge gleichzeitig offen sein (z. B. Bestätigung über Formular)
-  const titelId = useId()
+  // Unique ID – several dialogs can be open at once (e.g. confirmation above a form)
+  const titleId = useId()
 
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (offen && !dialog.open) {
+    if (open && !dialog.open) {
       dialog.showModal()
-    } else if (!offen && dialog.open) {
+      // The browser focuses the first focusable element – that would be the X, and Enter would
+      // close the dialog. React's `autoFocus` does not help: it runs while the dialog is still
+      // closed. So: focus the element marked with `data-autofocus`, otherwise the first field.
+      const target =
+        dialog.querySelector<HTMLElement>('[data-autofocus]') ?? dialog.querySelector<HTMLElement>('input, select, textarea')
+      target?.focus()
+    } else if (!open && dialog.open) {
       dialog.close()
     }
-  }, [offen])
+  }, [open])
 
   return (
     <dialog
       ref={dialogRef}
-      className={[styles.dialog, breit && styles.breit].filter(Boolean).join(' ')}
-      aria-labelledby={titelId}
-      // Esc: Browser würde selbst schliessen – wir lassen React den Zustand steuern.
+      className={[styles.dialog, wide && styles.wide].filter(Boolean).join(' ')}
+      aria-labelledby={titleId}
+      // Esc: the browser would close on its own – we let React control the state.
       onCancel={(event) => {
         event.preventDefault()
-        onSchliessen()
+        onClose()
       }}
-      // Klick auf den abgedunkelten Hintergrund (= das dialog-Element selbst, nicht sein Inhalt)
+      // Click on the dimmed backdrop (= the dialog element itself, not its content)
       onClick={(event) => {
-        if (event.target === event.currentTarget) onSchliessen()
+        if (event.target === event.currentTarget) onClose()
       }}
     >
-      {offen && (
-        <div className={styles.rahmen}>
-          <header className={styles.kopf}>
-            <h2 id={titelId} className={styles.titel}>
-              {titel}
+      {open && (
+        <div className={styles.frame}>
+          <header className={styles.header}>
+            <h2 id={titleId} className={styles.title}>
+              {title}
             </h2>
-            <button type="button" className={styles.schliessen} onClick={onSchliessen} aria-label="Schliessen">
+            <button type="button" className={styles.close} onClick={onClose} aria-label="Schliessen">
               <X aria-hidden />
             </button>
           </header>
-          <div className={styles.inhalt}>{children}</div>
-          {fuss && <footer className={styles.fuss}>{fuss}</footer>}
+          <div className={styles.body}>{children}</div>
+          {footer && <footer className={styles.footer}>{footer}</footer>}
         </div>
       )}
     </dialog>

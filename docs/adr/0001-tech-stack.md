@@ -1,54 +1,54 @@
-# ADR 0001 – Technologie-Stack
+# ADR 0001 – Technology stack
 
-- **Status:** Angenommen
-- **Datum:** 2026-10-02
+- **Status:** Accepted
+- **Date:** 2026-10-02
 
-## Kontext
+## Context
 
-Die bestehende Werkstatt-App besteht aus einem Node.js-Server und einer einzigen HTML-Datei
-(~5800 Zeilen). Daten liegen als JSON-Blobs in SQLite, ohne Schema und ohne Beziehungen.
-Das führt zu Fehlern wie doppelt buchbaren Ersatzwagen und schwer wartbarem Code
-(Details: [`docs/analyse/TIEFENANALYSE_NEUBAU.md`](../analyse/TIEFENANALYSE_NEUBAU.md)).
+The existing workshop app consists of a Node.js server and a single HTML file
+(~5800 lines). Data lives as JSON blobs in SQLite, without schema and without relations.
+That leads to bugs such as double-bookable courtesy cars and hard-to-maintain code
+(details, in German: [`docs/analysis/TIEFENANALYSE_NEUBAU.md`](../analysis/TIEFENANALYSE_NEUBAU.md)).
 
-Rahmenbedingungen:
+Constraints:
 
-- Betrieb auf Synology DS224+ (Intel x86, 4 Kerne, 2 GB RAM) mit Docker.
-- Nur internes Netzwerk, kein Login, keine Offline-Fähigkeit nötig.
-- Mehrere Geräte gleichzeitig (PCs, Tablets, TV) – Änderungen sollen live erscheinen.
-- Wartung durch einen Junior-Java-Entwickler → Verständlichkeit vor Raffinesse.
+- Runs on a Synology DS224+ (Intel x86, 4 cores, 2 GB RAM) with Docker.
+- Internal network only, no login, no offline capability needed.
+- Several devices at the same time (PCs, tablets, TV) – changes should appear live.
+- Maintained by a junior Java developer → understandability over sophistication.
 
-## Entscheid
+## Decision
 
-| Bereich | Wahl |
+| Area | Choice |
 |---|---|
-| Datenbank | **PostgreSQL** |
-| Backend | **Java 25 + Spring Boot 4** (Start mit 4.1.1), Build mit **Maven** |
-| DB-Migrationen | **Flyway** (Schema nur über versionierte SQL-Skripte) |
-| Frontend | **React + TypeScript mit Vite**, ausgeliefert als statische Dateien über **nginx** |
-| Live-Updates | **Server-Sent Events (SSE)** |
-| Betrieb | **Docker Compose** mit drei Containern: `frontend`, `backend`, `db` |
+| Database | **PostgreSQL** |
+| Backend | **Java 25 + Spring Boot 4** (starting with 4.1.1), build with **Maven** |
+| Database migrations | **Flyway** (schema only through versioned SQL scripts) |
+| Frontend | **React + TypeScript with Vite**, served as static files by **nginx** |
+| Live updates | **Server-Sent Events (SSE)** |
+| Operation | **Docker Compose** with three containers: `frontend`, `backend`, `db` |
 
-## Begründung
+## Rationale
 
-**PostgreSQL statt MongoDB.** Die Daten sind klar relational (Auftrag → Kunde, Fahrzeug,
-Mechaniker, Ersatzwagen). Fast alle Abfragen sind Zeitraum-Abfragen (Kalender, Kapazität,
-Verfügbarkeit). Fremdschlüssel und Constraints verhindern genau die Fehler der alten App –
-z. B. kann eine Doppelbuchung eines Ersatzwagens direkt in der Datenbank ausgeschlossen werden.
+**PostgreSQL instead of MongoDB.** The data is clearly relational (task → customer, vehicle,
+mechanic, courtesy car). Almost all queries are period queries (calendar, capacity,
+availability). Foreign keys and constraints prevent exactly the bugs of the old app –
+e.g. a double booking of a courtesy car can be ruled out directly in the database.
 
-**React + Vite statt Next.js.** SEO und Server-Side-Rendering bringen in einem internen Tool
-keinen Nutzen. Next.js würde einen zusätzlichen Node-Server zum Betreiben bedeuten – also
-zwei Backends. Ein statischer Build in nginx ist einfacher, braucht kaum RAM, und nginx
-leitet `/api` an das Backend weiter (eine URL, keine CORS-Probleme).
+**React + Vite instead of Next.js.** SEO and server-side rendering bring no benefit in an
+internal tool. Next.js would mean an additional Node server to operate – that is, two
+backends. A static build in nginx is simpler, needs hardly any RAM, and nginx forwards
+`/api` to the backend (one URL, no CORS problems).
 
-**SSE statt WebSocket/STOMP.** Geschrieben wird über normale REST-Aufrufe. Der Server muss
-den anderen Geräten nur mitteilen „hat sich geändert". Dafür reicht eine Einweg-Verbindung;
-SSE ist einfacher als STOMP und braucht keine zusätzliche Bibliothek im Browser.
+**SSE instead of WebSocket/STOMP.** Writes go through normal REST calls. The server only has to
+tell the other devices "has changed". A one-way connection is enough for that;
+SSE is simpler than STOMP and needs no additional library in the browser.
 
-**Maven statt Gradle.** Deklarativ und gut dokumentiert – für den Einstieg leichter lesbar.
+**Maven instead of Gradle.** Declarative and well documented – easier to read when starting out.
 
-## Konsequenzen
+## Consequences
 
-- RAM ist knapp: Container bekommen feste Speicherlimits (Postgres ~150 MB, Backend ~350 MB).
-- Ohne Login hat jedes Gerät im Netz vollen Zugriff. Die Struktur bleibt so, dass ein Login
-  später ohne Umbau ergänzt werden kann.
-- Lokale Entwicklung und NAS sind beide x86 → Docker-Images laufen ohne Anpassung auf dem NAS.
+- RAM is scarce: containers get fixed memory limits (Postgres ~150 MB, backend ~350 MB).
+- Without login every device in the network has full access. The structure stays such that a
+  login can be added later without rebuilding.
+- Local development and the NAS are both x86 → Docker images run on the NAS without changes.
