@@ -254,6 +254,20 @@ class TaskApiTest {
     }
 
     @Test
+    void historyShowsTheLastTasksOfACustomerNewestFirst() {
+        Customer meier = customers.save(CustomerTestData.local("Meier"));
+        send("POST", "/api/tasks", body(null).replace(DAY, "2026-09-01"));
+        send("POST", "/api/tasks", body("\"vehicleId\": \"%s\"".formatted(golf.getId())));
+        send("POST", "/api/tasks", """
+                { "customerId": "%s", "date": "%s", "time": "08:00" }""".formatted(meier.getId(), DAY));
+
+        MvcTestResult response = mvc.get().uri("/api/tasks/history?customerId=" + huber.getId()).exchange();
+
+        assertThat(response).bodyJson().extractingPath("$[*].date").asArray().containsExactly(DAY, "2026-09-01");
+        assertThat(response).bodyJson().extractingPath("$[0].vehicle.licensePlate").isEqualTo("ZH 123456");
+    }
+
+    @Test
     void periodIsLimited() {
         LocalDate from = LocalDate.parse(DAY);
         assertFieldError(mvc.get().uri("/api/tasks?from=%s&to=%s".formatted(from, from.minusDays(1))).exchange(), "to");

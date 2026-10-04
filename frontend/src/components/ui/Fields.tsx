@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import { useId, type InputHTMLAttributes, type ReactNode, type Ref, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import styles from './Fields.module.css'
 
 /**
@@ -56,7 +56,15 @@ function fieldAttributes(id: string, props: FieldFrameProps) {
   }
 }
 
-export function TextField({ label, hint, error, required, className, ...rest }: FieldFrameProps & InputHTMLAttributes<HTMLInputElement>) {
+/** `ref` reaches the input (React 19: a normal prop) – e.g. to focus a search field. */
+export function TextField({
+  label,
+  hint,
+  error,
+  required,
+  className,
+  ...rest
+}: FieldFrameProps & InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   const id = useId()
   return (
     <FieldFrame id={id} label={label} hint={hint} error={error} required={required}>

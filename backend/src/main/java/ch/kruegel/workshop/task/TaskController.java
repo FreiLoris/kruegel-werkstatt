@@ -43,6 +43,12 @@ class TaskController {
         return service.between(from, to);
     }
 
+    @Operation(summary = "The last 10 tasks of a customer, newest first", description = "History in the wizard.")
+    @GetMapping("/history")
+    List<TaskDto> history(@RequestParam UUID customerId) {
+        return service.history(customerId);
+    }
+
     @Operation(summary = "Single task")
     @GetMapping("/{id}")
     TaskDto get(@PathVariable UUID id) {

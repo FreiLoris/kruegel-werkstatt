@@ -6,6 +6,7 @@
  *   Time       "08:00:00"              → "08:00"
  *   Timestamp  "2026-10-15T06:00:00Z"  → "15.10.2026, 08:00"  (in Swiss time)
  *   Count      1480                    → "1’480"
+ *   Month      "2026-03-15"            → "03.2026"
  *
  * Rule: nowhere else in the frontend format date values yourself.
  */
@@ -68,4 +69,37 @@ export function formatCount(count: number): string {
   return Math.trunc(count)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '’')
+}
+
+/** Month of a business date, for estimates such as the next MFK. */
+export function formatMonth(isoDate: string): string {
+  return formatDate(isoDate).slice(3)
+}
+
+const datePartsInZurich = new Intl.DateTimeFormat('de-CH', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/**
+ * Today in Swiss time as ISO date ("2026-10-15") – also correct shortly after midnight.
+ * Built from the parts: the formatted text differs between ICU versions (see formatCount).
+ */
+export function todayIso(now: Date = new Date()): string {
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    datePartsInZurich.formatToParts(now).find((p) => p.type === type)?.value ?? ''
+  return `${part('year')}-${part('month')}-${part('day')}`
+}
+
+/** ISO date plus/minus days, without time zone traps (calculated in UTC). */
+export function addDays(isoDate: string, days: number): string {
+  const match = ISO_DATE.exec(isoDate)
+  if (!match) {
+    throw new Error(`Not a valid ISO date: "${isoDate}"`)
+  }
+  const [, year, month, day] = match
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) + days))
+  return date.toISOString().slice(0, 10)
 }

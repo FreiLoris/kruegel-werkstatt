@@ -27,4 +27,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     int maxSortOrder(LocalDate date, UUID liftId);
 
     boolean existsByTaskNumberAndIdNot(String taskNumber, UUID id);
+
+    /**
+     * The last 10 tasks of a customer, newest first – history in the wizard.
+     * Service items are not in the graph: a collection fetch together with a limit would be
+     * limited in memory instead of in the database; they are loaded in batches instead.
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle"})
+    List<Task> findTop10ByCustomerIdOrderByAppointmentDateDescAppointmentTimeDesc(UUID customerId);
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatCount, formatDate, formatTime, formatTimestamp } from './format'
+import { addDays, formatCount, formatDate, formatMonth, formatTime, formatTimestamp, todayIso } from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -53,5 +53,25 @@ describe('formatCount', () => {
   it('leaves small numbers alone', () => {
     expect(formatCount(0)).toBe('0')
     expect(formatCount(999)).toBe('999')
+  })
+})
+
+describe('formatMonth', () => {
+  it('shows month and year', () => {
+    expect(formatMonth('2026-03-15')).toBe('03.2026')
+  })
+})
+
+describe('todayIso', () => {
+  it('uses Swiss time – 23:30 UTC is already the next day in summer', () => {
+    expect(todayIso(new Date('2026-07-14T23:30:00Z'))).toBe('2026-07-15')
+  })
+})
+
+describe('addDays', () => {
+  it('crosses month and year ends', () => {
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01')
+    expect(addDays('2026-03-01', -1)).toBe('2026-02-28')
+    expect(addDays('2026-03-28', 2)).toBe('2026-03-30')
   })
 })

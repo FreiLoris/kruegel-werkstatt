@@ -138,9 +138,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   Create, edit, change status, add task number, delete (logged with the person), list a period
   (max. 92 days). Optimistic locking on edit; status/task number without version. Newly chosen
   references must be active, existing ones stay valid. Sample tasks in the dev data.
-- [ ] **6c – Wizard step 1: customer & vehicle**
-  Customer search (bigger hit list), placeholders clearly placeholders, MFK-expired warning,
-  customer history on the right instead of an empty area.
+- [x] **6c – Wizard step 1: customer & vehicle**
+  `/tasks/new` (not in the navigation until 6e): customer search with up to 50 hits, a click on a
+  vehicle chooses customer and vehicle; walk-in customer/vehicle in a dialog (labels, placeholders
+  only "z. B."); vehicle may stay open; MFK estimate (4-3-2-2 rule) with warning; the customer's
+  last tasks on the right.
 - [ ] **6d – Wizard step 2: appointment & work**
   Sensible defaults (arrives earlier = evening before), capacity overview sticky,
   click on a slot takes over date + time, buttons not cut off.

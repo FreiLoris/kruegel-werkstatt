@@ -1,0 +1,108 @@
+/* Chosen customer: details + vehicles on the left, history on the right (stacked on narrow screens) */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.aside {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cardHeader p {
+  margin: 0;
+}
+
+.customerName {
+  margin: 0;
+  font-size: var(--font-size-title);
+}
+
+.contact address {
+  font-style: normal;
+}
+
+.contact ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.contact svg {
+  width: 1em;
+  height: 1em;
+  color: var(--color-text-muted);
+}
+
+.search {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 72rem;
+}
+
+.searchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.searchField {
+  flex: 1 1 24rem;
+  max-width: 40rem;
+}
+
+/* aligned with the input, not with the label above it */
+.newButton {
+  margin-top: 1.75rem;
+}
+
+.note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-info);
+  background: var(--color-surface-raised);
+}
