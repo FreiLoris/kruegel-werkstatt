@@ -1,15 +1,16 @@
 /**
- * Einträge der Hauptnavigation. Neue Seiten (Mitarbeiter, Termine, ...) werden hier
- * ergänzt, sobald es sie gibt – keine Platzhalter für noch nicht gebaute Module.
+ * Entries of the main navigation. New pages (appointments, …) are added here once they
+ * exist – no placeholders for modules that are not built yet.
  */
-export interface NavEintrag {
-  pfad: string
-  titel: string
+export interface NavEntry {
+  path: string
+  /** Visible label (German) */
+  title: string
 }
 
-export const navigation: NavEintrag[] = [
-  { pfad: '/', titel: 'Start' },
-  { pfad: '/mitarbeiter', titel: 'Mitarbeiter' },
-  { pfad: '/einstellungen', titel: 'Einstellungen' },
-  { pfad: '/system', titel: 'System' },
+export const navigation: NavEntry[] = [
+  { path: '/', title: 'Start' },
+  { path: '/employees', title: 'Mitarbeiter' },
+  { path: '/settings', title: 'Einstellungen' },
+  { path: '/system', title: 'System' },
 ]

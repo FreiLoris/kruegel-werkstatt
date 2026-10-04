@@ -1,26 +1,26 @@
 import createClient from 'openapi-fetch'
-import { personIdFuerAnfragen } from '../lib/geraetPerson'
+import { personIdForRequests } from '../lib/devicePerson'
 import type { paths } from './schema'
 
 /**
- * Typisierter Zugriff auf die Backend-API.
+ * Typed access to the backend API.
  *
- * Alle Pfade, Parameter und Antworten kommen aus `schema.d.ts`, das aus der
- * OpenAPI-Beschreibung des Backends generiert wird. Ändert sich die API, meldet
- * TypeScript jede Stelle im Frontend, die nicht mehr passt.
+ * All paths, parameters and responses come from `schema.d.ts`, which is generated from the
+ * backend's OpenAPI description. If the API changes, TypeScript reports every place in the
+ * frontend that no longer fits.
  *
- *   const { data, error } = await api.GET('/api/mitarbeiter')
+ *   const { data, error } = await api.GET('/api/employees')
  *
- * Kein baseUrl nötig: Aufrufe gehen relativ an denselben Server
- * (lokal leitet Vite /api weiter, im Betrieb nginx).
+ * No baseUrl needed: calls go relative to the same server
+ * (locally Vite forwards /api, in production nginx does).
  */
 export const api = createClient<paths>()
 
-// Jede Anfrage bekommt die gewählte Person mit (siehe lib/geraetPerson.ts) –
-// so speichert das Backend «geändert von» und lehnt Änderungen ohne Person ab.
+// Every request carries the selected person (see lib/devicePerson.ts) –
+// so the backend stores "changed by" and rejects changes without a person.
 api.use({
   onRequest({ request }) {
-    const person = personIdFuerAnfragen()
+    const person = personIdForRequests()
     if (person) request.headers.set('X-Person', person)
     return request
   },

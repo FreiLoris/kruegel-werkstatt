@@ -1,21 +1,21 @@
 /**
- * Zentrale Formatierung für die Anzeige. Das Backend liefert immer ISO-Werte,
- * Menschen sehen immer das Schweizer Format.
+ * Central formatting for display. The backend always delivers ISO values,
+ * people always see the Swiss format.
  *
- *   Datum      "2026-10-15"            → "15.10.2026"
- *   Uhrzeit    "08:00:00"              → "08:00"
- *   Zeitpunkt  "2026-10-15T06:00:00Z"  → "15.10.2026, 08:00"  (in Schweizer Zeit)
+ *   Date       "2026-10-15"            → "15.10.2026"
+ *   Time       "08:00:00"              → "08:00"
+ *   Timestamp  "2026-10-15T06:00:00Z"  → "15.10.2026, 08:00"  (in Swiss time)
  *
- * Regel: Nirgends sonst im Frontend Datumswerte selbst formatieren.
+ * Rule: nowhere else in the frontend format date values yourself.
  */
 
-const ZEITZONE = 'Europe/Zurich'
+const TIME_ZONE = 'Europe/Zurich'
 
-const ISO_DATUM = /^(\d{4})-(\d{2})-(\d{2})$/
-const ISO_UHRZEIT = /^(\d{2}):(\d{2})(:\d{2}(\.\d+)?)?$/
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
+const ISO_TIME = /^(\d{2}):(\d{2})(:\d{2}(\.\d+)?)?$/
 
-const zeitpunktFormat = new Intl.DateTimeFormat('de-CH', {
-  timeZone: ZEITZONE,
+const timestampFormat = new Intl.DateTimeFormat('de-CH', {
+  timeZone: TIME_ZONE,
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
@@ -24,35 +24,35 @@ const zeitpunktFormat = new Intl.DateTimeFormat('de-CH', {
 })
 
 /**
- * Fachliches Datum (ohne Uhrzeit, ohne Zeitzone).
+ * Business date (no time, no time zone).
  *
- * Bewusst per Text-Zerlegung statt `new Date("2026-10-15")`: Das würde als
- * Mitternacht UTC gelesen und könnte je nach Zeitzone als Vortag angezeigt werden.
+ * Split as text on purpose instead of `new Date("2026-10-15")`: that would be read as
+ * midnight UTC and could be shown as the previous day depending on the time zone.
  */
-export function formatDatum(isoDatum: string): string {
-  const treffer = ISO_DATUM.exec(isoDatum)
-  if (!treffer) {
-    throw new Error(`Kein gültiges ISO-Datum: "${isoDatum}"`)
+export function formatDate(isoDate: string): string {
+  const match = ISO_DATE.exec(isoDate)
+  if (!match) {
+    throw new Error(`Not a valid ISO date: "${isoDate}"`)
   }
-  const [, jahr, monat, tag] = treffer
-  return `${tag}.${monat}.${jahr}`
+  const [, year, month, day] = match
+  return `${day}.${month}.${year}`
 }
 
-/** Fachliche Uhrzeit, ohne Sekunden. */
-export function formatUhrzeit(isoUhrzeit: string): string {
-  const treffer = ISO_UHRZEIT.exec(isoUhrzeit)
-  if (!treffer) {
-    throw new Error(`Keine gültige ISO-Uhrzeit: "${isoUhrzeit}"`)
+/** Business time of day, without seconds. */
+export function formatTime(isoTime: string): string {
+  const match = ISO_TIME.exec(isoTime)
+  if (!match) {
+    throw new Error(`Not a valid ISO time: "${isoTime}"`)
   }
-  const [, stunde, minute] = treffer
-  return `${stunde}:${minute}`
+  const [, hour, minute] = match
+  return `${hour}:${minute}`
 }
 
-/** Zeitpunkt (z. B. "erstellt am"), umgerechnet in Schweizer Zeit inkl. Sommerzeit. */
-export function formatZeitpunkt(isoZeitpunkt: string): string {
-  const datum = new Date(isoZeitpunkt)
-  if (Number.isNaN(datum.getTime())) {
-    throw new Error(`Kein gültiger ISO-Zeitpunkt: "${isoZeitpunkt}"`)
+/** Point in time (e.g. "created at"), converted to Swiss time including daylight saving time. */
+export function formatTimestamp(isoTimestamp: string): string {
+  const date = new Date(isoTimestamp)
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Not a valid ISO timestamp: "${isoTimestamp}"`)
   }
-  return zeitpunktFormat.format(datum)
+  return timestampFormat.format(date)
 }

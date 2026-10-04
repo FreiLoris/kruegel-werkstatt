@@ -1,0 +1,10 @@
+/* "Deactivate" on the left, apart from cancel/save – so it is not hit by accident */
+.left {
+  margin-right: auto;
+}
+
+.lastChanged {
+  margin: var(--space-5) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

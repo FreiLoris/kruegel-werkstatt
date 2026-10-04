@@ -1,50 +1,50 @@
 import { Wrench } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router'
-import { useAktiveMitarbeiter } from '../features/mitarbeiter/mitarbeiterApi'
+import { useActiveEmployees } from '../features/employees/employeeApi'
 import styles from './AppLayout.module.css'
-import { LiveAnzeige } from './live/LiveAnzeige'
+import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
-import { PersonAnzeige } from './person/PersonAnzeige'
-import { PersonWahl } from './person/PersonWahl'
-import { useGeraetPerson } from './person/useGeraetPerson'
+import { PersonMenu } from './person/PersonMenu'
+import { PersonPicker } from './person/PersonPicker'
+import { useDevicePerson } from './person/useDevicePerson'
 
 /**
- * Rahmen jeder Seite: Kopfzeile mit Navigation, darunter der Seiteninhalt.
- * `<Outlet />` ist die Stelle, an der der Router die aktuelle Seite einsetzt.
+ * Frame of every page: header with navigation, below it the page content.
+ * `<Outlet />` is where the router inserts the current page.
  *
- * Hat das Gerät noch nicht gesagt, wer es benutzt, erscheint statt der Seite die Personenwahl.
+ * If the device has not said yet who uses it, the person picker appears instead of the page.
  */
 export function AppLayout() {
   const liveStatus = useLiveUpdates()
-  const geraet = useGeraetPerson()
-  const { data: aktive = [] } = useAktiveMitarbeiter()
+  const device = useDevicePerson()
+  const { data: active = [] } = useActiveEmployees()
 
   return (
     <>
-      <header className={styles.kopfzeile}>
-        <Link to="/" className={styles.titel}>
+      <header className={styles.header}>
+        <Link to="/" className={styles.brand}>
           <Wrench aria-hidden />
           Krügel Werkstatt
         </Link>
-        <nav className={styles.navigation}>
-          {navigation.map((eintrag) => (
+        <nav className={styles.nav}>
+          {navigation.map((entry) => (
             <NavLink
-              key={eintrag.pfad}
-              to={eintrag.pfad}
-              // "end": Start-Link nur bei genau "/" aktiv, nicht bei jeder Unterseite
-              end={eintrag.pfad === '/'}
-              className={({ isActive }) => (isActive ? `${styles.link} ${styles.aktiv}` : styles.link)}
+              key={entry.path}
+              to={entry.path}
+              // "end": home link only active for exactly "/", not for every sub page
+              end={entry.path === '/'}
+              className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
             >
-              {eintrag.titel}
+              {entry.title}
             </NavLink>
           ))}
         </nav>
-        <PersonAnzeige status={geraet} />
-        <LiveAnzeige status={liveStatus} />
+        <PersonMenu status={device} />
+        <LiveIndicator status={liveStatus} />
       </header>
-      <main className={styles.inhalt}>
-        {geraet.art === 'waehlen' ? <PersonWahl aktive={aktive} nichtMehrAktiv={geraet.nichtMehrAktiv !== undefined} /> : <Outlet />}
+      <main className={styles.content}>
+        {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>
     </>
   )

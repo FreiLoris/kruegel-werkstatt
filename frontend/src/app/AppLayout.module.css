@@ -1,33 +1,33 @@
-.kopfzeile {
+.header {
   position: sticky;
   top: 0;
-  z-index: var(--ebene-kopfzeile);
+  z-index: var(--layer-header);
   display: flex;
   align-items: center;
-  gap: var(--abstand-6);
+  gap: var(--space-6);
   min-height: 3.75rem;
-  padding: 0 var(--abstand-5);
-  background: var(--farbe-flaeche);
-  border-bottom: 1px solid var(--farbe-rand);
+  padding: 0 var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.titel {
+.brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--abstand-2);
+  gap: var(--space-2);
   font-weight: 700;
-  color: var(--farbe-akzent);
+  color: var(--color-accent);
   text-decoration: none;
 }
 
-.titel svg {
+.brand svg {
   width: 1.375rem;
   height: 1.375rem;
 }
 
-.navigation {
+.nav {
   display: flex;
-  gap: var(--abstand-1);
+  gap: var(--space-1);
   flex: 1;
 }
 
@@ -35,25 +35,25 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--touch-min);
-  padding: 0 var(--abstand-3);
+  padding: 0 var(--space-3);
   border-radius: var(--radius);
-  color: var(--farbe-text-gedaempft);
+  color: var(--color-text-muted);
   text-decoration: none;
 }
 
 .link:hover {
-  color: var(--farbe-text);
-  background: var(--farbe-flaeche-erhoeht);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
 }
 
-.aktiv,
-.aktiv:hover {
-  color: var(--farbe-auf-akzent);
-  background: var(--farbe-akzent);
+.active,
+.active:hover {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
 }
 
-.inhalt {
+.content {
   max-width: 72rem;
   margin: 0 auto;
-  padding: var(--abstand-6) var(--abstand-5);
+  padding: var(--space-6) var(--space-5);
 }

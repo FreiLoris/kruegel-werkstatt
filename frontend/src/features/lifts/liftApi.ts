@@ -1,51 +1,51 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
-import { datenOderFehler } from '../../api/fehler'
+import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
 
 export type Lift = components['schemas']['LiftDto']
 
-/** Bereich für Query-Keys und Live-Updates – derselbe Text wie im Backend. */
-const BEREICH = 'lifts'
+/** Topic for query keys and live updates – same text as in the backend. */
+const TOPIC = 'lifts'
 
-/** Alle Lifts inkl. stillgelegte, in fester Reihenfolge (für die Verwaltung). */
-export function useAlleLifts() {
+/** All lifts including decommissioned ones, in fixed order (for administration). */
+export function useAllLifts() {
   return useQuery({
-    queryKey: [BEREICH, 'alle'],
+    queryKey: [TOPIC, 'all'],
     queryFn: async ({ signal }) =>
-      datenOderFehler(await api.GET('/api/lifts', { params: { query: { inklusiveInaktive: true } }, signal })),
+      dataOrThrow(await api.GET('/api/lifts', { params: { query: { includeInactive: true } }, signal })),
   })
 }
 
-/** Anlegen (ohne `id`) oder Umbenennen (mit `id` und geladener `version`). */
-export function useLiftSpeichern() {
+/** Create (without `id`) or rename (with `id` and the loaded `version`). */
+export function useSaveLift() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, name, version }: { id?: string; name: string; version?: number }) =>
       id
-        ? datenOderFehler(await api.PUT('/api/lifts/{id}', { params: { path: { id } }, body: { name, version } }))
-        : datenOderFehler(await api.POST('/api/lifts', { body: { name } })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [BEREICH] }),
+        ? dataOrThrow(await api.PUT('/api/lifts/{id}', { params: { path: { id } }, body: { name, version } }))
+        : dataOrThrow(await api.POST('/api/lifts', { body: { name } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
 
-/** Stilllegen oder wieder in Betrieb nehmen. */
-export function useLiftAktivSetzen() {
+/** Decommission or put back into service. */
+export function useSetLiftActive() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, aktiv }: { id: string; aktiv: boolean }) =>
-      aktiv
-        ? datenOderFehler(await api.POST('/api/lifts/{id}/aktivieren', { params: { path: { id } } }))
-        : datenOderFehler(await api.POST('/api/lifts/{id}/deaktivieren', { params: { path: { id } } })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [BEREICH] }),
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) =>
+      active
+        ? dataOrThrow(await api.POST('/api/lifts/{id}/activate', { params: { path: { id } } }))
+        : dataOrThrow(await api.POST('/api/lifts/{id}/deactivate', { params: { path: { id } } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
 
-/** Neue Reihenfolge: erste ID = ganz links (Spalten in Tagesansicht und Dashboard). */
-export function useLiftReihenfolge() {
+/** New order: first ID = leftmost (columns in day view and dashboard). */
+export function useReorderLifts() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (ids: string[]) => datenOderFehler(await api.PUT('/api/lifts/reihenfolge', { body: { ids } })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [BEREICH] }),
+    mutationFn: async (ids: string[]) => dataOrThrow(await api.PUT('/api/lifts/order', { body: { ids } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

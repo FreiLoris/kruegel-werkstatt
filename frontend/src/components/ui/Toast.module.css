@@ -1,56 +1,56 @@
-.bereich {
+.region {
   position: fixed;
-  /* Browser-Standard für Popover (mittig, mit Rahmen) aufheben */
-  inset: var(--abstand-4) var(--abstand-4) auto auto;
+  /* Cancel the browser default for popovers (centered, with border) */
+  inset: var(--space-4) var(--space-4) auto auto;
   margin: 0;
   padding: 0;
   border: none;
   background: transparent;
   overflow: visible;
-  z-index: var(--ebene-toast);
+  z-index: var(--layer-toast);
   display: flex;
   flex-direction: column;
-  gap: var(--abstand-2);
-  width: min(24rem, calc(100vw - 2 * var(--abstand-4)));
-  pointer-events: none; /* leere Fläche blockiert keine Klicks darunter */
+  gap: var(--space-2);
+  width: min(24rem, calc(100vw - 2 * var(--space-4)));
+  pointer-events: none; /* empty area does not block clicks below it */
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: var(--abstand-3);
-  padding: var(--abstand-2) var(--abstand-2) var(--abstand-2) var(--abstand-4);
-  border: 1px solid var(--farbe-rand);
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
   border-left-width: 4px;
   border-radius: var(--radius);
-  background: var(--farbe-flaeche-erhoeht);
-  box-shadow: var(--schatten);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow);
   pointer-events: auto;
   animation: einblenden 0.2s ease-out;
 }
 
-.erfolg {
-  border-left-color: var(--farbe-erfolg);
+.success {
+  border-left-color: var(--color-success);
 }
 
-.erfolg .icon {
-  color: var(--farbe-erfolg);
+.success .icon {
+  color: var(--color-success);
 }
 
-.fehler {
-  border-left-color: var(--farbe-gefahr);
+.error {
+  border-left-color: var(--color-danger);
 }
 
-.fehler .icon {
-  color: var(--farbe-gefahr);
+.error .icon {
+  color: var(--color-danger);
 }
 
 .info {
-  border-left-color: var(--farbe-info);
+  border-left-color: var(--color-info);
 }
 
 .info .icon {
-  color: var(--farbe-info);
+  color: var(--color-info);
 }
 
 .icon {
@@ -63,20 +63,20 @@
   flex: 1;
 }
 
-.schliessen {
+.close {
   display: grid;
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
   border: none;
-  border-radius: var(--radius-klein);
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--farbe-text-gedaempft);
+  color: var(--color-text-muted);
   cursor: pointer;
 }
 
-.schliessen:hover {
-  color: var(--farbe-text);
+.close:hover {
+  color: var(--color-text);
 }
 
 @keyframes einblenden {

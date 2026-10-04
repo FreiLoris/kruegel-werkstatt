@@ -4,12 +4,12 @@ import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLiveUpdates } from './useLiveUpdates'
 
-/** Nachbildung von EventSource (gibt es in jsdom nicht) – Tests lösen Ereignisse selbst aus. */
+/** Imitation of EventSource (jsdom has none) – tests fire the events themselves. */
 class FakeEventSource extends EventTarget {
   static readonly CONNECTING = 0
   static readonly OPEN = 1
   static readonly CLOSED = 2
-  static instanzen: FakeEventSource[] = []
+  static instances: FakeEventSource[] = []
 
   readyState = FakeEventSource.CONNECTING
   readonly url: string
@@ -17,16 +17,16 @@ class FakeEventSource extends EventTarget {
   constructor(url: string) {
     super()
     this.url = url
-    FakeEventSource.instanzen.push(this)
+    FakeEventSource.instances.push(this)
   }
 
-  verbunden() {
+  connected() {
     this.readyState = FakeEventSource.OPEN
-    this.dispatchEvent(new Event('verbunden'))
+    this.dispatchEvent(new Event('connected'))
   }
 
-  /** Server antwortet mit Fehler (z. B. 502) → Browser gibt endgültig auf */
-  endgueltigerFehler() {
+  /** Server answers with an error (e.g. 502) → the browser gives up for good */
+  fatalError() {
     this.readyState = FakeEventSource.CLOSED
     this.dispatchEvent(new Event('error'))
   }
@@ -42,7 +42,7 @@ function wrapper({ children }: { children: ReactNode }) {
 
 describe('useLiveUpdates', () => {
   beforeEach(() => {
-    FakeEventSource.instanzen = []
+    FakeEventSource.instances = []
     vi.stubGlobal('EventSource', FakeEventSource)
     vi.useFakeTimers()
   })
@@ -52,42 +52,42 @@ describe('useLiveUpdates', () => {
     vi.unstubAllGlobals()
   })
 
-  it('meldet "verbunden", sobald der Server antwortet', () => {
+  it('reports "connected" as soon as the server answers', () => {
     const { result } = renderHook(() => useLiveUpdates(), { wrapper })
-    expect(result.current).toBe('verbinde')
+    expect(result.current).toBe('connecting')
 
-    act(() => FakeEventSource.instanzen[0].verbunden())
+    act(() => FakeEventSource.instances[0].connected())
 
-    expect(result.current).toBe('verbunden')
+    expect(result.current).toBe('connected')
   })
 
-  it('verbindet nach endgültigem Fehler selbst neu – mit wachsender Wartezeit', () => {
+  it('reconnects on its own after a fatal error – with a growing delay', () => {
     const { result } = renderHook(() => useLiveUpdates(), { wrapper })
 
-    act(() => FakeEventSource.instanzen[0].endgueltigerFehler())
-    expect(result.current).toBe('getrennt')
-    expect(FakeEventSource.instanzen).toHaveLength(1)
+    act(() => FakeEventSource.instances[0].fatalError())
+    expect(result.current).toBe('disconnected')
+    expect(FakeEventSource.instances).toHaveLength(1)
 
-    act(() => vi.advanceTimersByTime(1_000)) // 1. Versuch nach 1 s
-    expect(FakeEventSource.instanzen).toHaveLength(2)
+    act(() => vi.advanceTimersByTime(1_000)) // 1st attempt after 1 s
+    expect(FakeEventSource.instances).toHaveLength(2)
 
-    act(() => FakeEventSource.instanzen[1].endgueltigerFehler())
-    act(() => vi.advanceTimersByTime(1_000)) // 2. Versuch erst nach 2 s
-    expect(FakeEventSource.instanzen).toHaveLength(2)
+    act(() => FakeEventSource.instances[1].fatalError())
+    act(() => vi.advanceTimersByTime(1_000)) // 2nd attempt only after 2 s
+    expect(FakeEventSource.instances).toHaveLength(2)
     act(() => vi.advanceTimersByTime(1_000))
-    expect(FakeEventSource.instanzen).toHaveLength(3)
+    expect(FakeEventSource.instances).toHaveLength(3)
 
-    act(() => FakeEventSource.instanzen[2].verbunden())
-    expect(result.current).toBe('verbunden')
+    act(() => FakeEventSource.instances[2].connected())
+    expect(result.current).toBe('connected')
   })
 
-  it('verbindet nach dem Verlassen nicht mehr neu', () => {
+  it('does not reconnect after unmounting', () => {
     const { unmount } = renderHook(() => useLiveUpdates(), { wrapper })
 
-    act(() => FakeEventSource.instanzen[0].endgueltigerFehler())
+    act(() => FakeEventSource.instances[0].fatalError())
     unmount()
     act(() => vi.advanceTimersByTime(60_000))
 
-    expect(FakeEventSource.instanzen).toHaveLength(1)
+    expect(FakeEventSource.instances).toHaveLength(1)
   })
 })

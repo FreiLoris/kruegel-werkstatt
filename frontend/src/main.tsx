@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { queryClient } from './app/queryClient'
 import { router } from './app/router'
-import { BestaetigungProvider } from './components/ui/Bestaetigung'
+import { ConfirmProvider } from './components/ui/Confirm'
 import { ToastProvider } from './components/ui/Toast'
 import './styles/tokens.css'
 import './styles/base.css'
@@ -15,11 +15,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <BestaetigungProvider>
+        <ConfirmProvider>
           <RouterProvider router={router} />
-        </BestaetigungProvider>
+        </ConfirmProvider>
       </ToastProvider>
-      {/* Entwickler-Werkzeug (Symbol unten links) – im Produktions-Build nicht enthalten */}
+      {/* Developer tool (icon bottom left) – not included in the production build */}
       <ReactQueryDevtools buttonPosition="bottom-left" />
     </QueryClientProvider>
   </StrictMode>,

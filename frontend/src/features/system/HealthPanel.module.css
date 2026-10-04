@@ -1,41 +1,41 @@
-.liste {
+.list {
   list-style: none;
-  margin: var(--abstand-5) 0 0;
+  margin: var(--space-5) 0 0;
   padding: 0;
   max-width: 32rem;
-  border: 1px solid var(--farbe-rand);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  background: var(--farbe-flaeche);
+  background: var(--color-surface);
 }
 
-.zeile {
+.row {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--abstand-3);
-  padding: var(--abstand-3) var(--abstand-4);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
 }
 
-.zeile + .zeile {
-  border-top: 1px solid var(--farbe-rand);
+.row + .row {
+  border-top: 1px solid var(--color-border);
 }
 
-.meldung {
+.message {
   display: block;
-  font-size: var(--schrift-klein);
-  color: var(--farbe-text-gedaempft);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
-.punkt {
+.dot {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
 }
 
 .ok {
-  background: var(--farbe-erfolg);
+  background: var(--color-success);
 }
 
-.fehler {
-  background: var(--farbe-gefahr);
+.error {
+  background: var(--color-danger);
 }
