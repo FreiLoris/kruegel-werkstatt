@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Pencil, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useCanEdit } from '../../app/person/useDevicePerson'
+import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastContext'
 import { moved } from '../../lib/sortOrder'
@@ -92,7 +93,7 @@ export function CourtesyCarSettings() {
                     <div className={styles.name}>{car.name}</div>
                     {car.model && <div className="muted">{car.model}</div>}
                   </td>
-                  <td>{car.licensePlate ?? <span className="muted">–</span>}</td>
+                  <td>{car.licensePlate ? <LicensePlate text={car.licensePlate} size="sm" /> : <span className="muted">–</span>}</td>
                   <td>
                     <DueDate date={car.serviceDue} status={car.serviceStatus} kind="service" />
                   </td>

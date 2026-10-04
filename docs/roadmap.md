@@ -108,6 +108,10 @@ is created that all further modules follow.
 - [x] **5b – Customer & vehicle data model**
   `source` SWISSGARAGE/LOCAL, SwissGarage number as key, incl. company customers (own field
   instead of "last name"); local customers editable via API, SwissGarage ones read-only.
+- [x] **5p – License plate input & display** *(inserted after 5b, user request)*
+  Input in parts (country → canton → number, foreign: country code + free number) with live
+  preview; display as a real Swiss plate (flag, "SG·197 052", canton coat of arms). Stored as one
+  normalised text ("SG 197052"). Used for courtesy cars now, later for vehicles in the wizard.
 - [ ] **5c – Import address list (server side)**
   Excel upload to the backend, filter "garage customer"/not blocked, update instead of
   replacing everything, import log (date, number new/changed).

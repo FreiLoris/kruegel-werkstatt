@@ -27,6 +27,12 @@
   --color-info: #4c9aff;
   --color-focus: #7cb7ff;
 
+  /* ── Colors: license plate (given by law – the same in light and dark) ── */
+  --color-plate-background: #ffffff;
+  --color-plate-text: #111111;
+  --color-plate-border: #2b2b2b;
+  --color-swiss-red: #da291c;
+
   /* ── Font ────────────────────────────────────────────────── */
   --font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-size-sm: 0.875rem;
