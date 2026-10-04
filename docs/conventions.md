@@ -115,6 +115,7 @@ Overview of all components with examples: http://localhost:5173/system/component
 | Menu | `components/ui/Menu.tsx` | dropdown menu, closes on Esc/click outside |
 | Name badge | `features/employees/NameBadge.tsx` | a person's name on their color, text color automatic – use wherever people appear |
 | Master data list | `components/masterdata/MasterDataList.tsx` + `NameDialog.tsx` | simple master data (name + order only, e.g. lifts, service items): list with ↑/↓, rename, deactivate |
+| License plate | `components/licenseplate/LicensePlate.tsx` + `LicensePlateField.tsx` | Show plates always as `<LicensePlate text=…>` (Swiss plate with coat of arms); input always with `LicensePlateField`. Stored as one text, normalised by `common/LicensePlates` |
 
 - **No fixed colors/spacing** in CSS – only variables from `styles/tokens.css`
   (`--color-*`, `--space-*`, `--font-*`, `--radius-*`, `--layer-*`).

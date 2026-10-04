@@ -17,3 +17,8 @@
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: var(--space-4);
 }
+
+.plateField {
+  max-width: 36rem;
+  margin-top: var(--space-4);
+}

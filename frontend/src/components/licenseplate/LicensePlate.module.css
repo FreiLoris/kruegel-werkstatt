@@ -1,0 +1,61 @@
+/*
+ * Looks like a real plate: white, thin dark frame, black bold letters.
+ * Sizes via font-size – everything else (flag, arms, padding) scales with "em".
+ */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.18em 0.3em;
+  border: 0.09em solid var(--color-plate-border);
+  border-radius: 0.28em;
+  background: var(--color-plate-background);
+  color: var(--color-plate-text);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sm {
+  font-size: var(--font-size-sm);
+}
+
+.md {
+  font-size: var(--font-size-lg);
+}
+
+.lg {
+  font-size: 2rem;
+}
+
+.flag {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.text {
+  padding-top: 0.05em;
+}
+
+/* Dot between canton and number, slightly raised like on the plate */
+.dot {
+  margin: 0 0.12em;
+}
+
+.arms {
+  height: 1.15em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* Foreign plates: country code in a dark box (we do not imitate every country's design) */
+.country {
+  padding: 0.12em 0.25em;
+  border-radius: 0.15em;
+  background: var(--color-plate-text);
+  color: var(--color-plate-background);
+  font-size: 0.75em;
+}

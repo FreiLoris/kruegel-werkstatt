@@ -1,5 +1,7 @@
 import { Car, Pencil, Plus, Settings, Trash2, Upload, Users } from 'lucide-react'
 import { useState } from 'react'
+import { LicensePlate } from '../../components/licenseplate/LicensePlate'
+import { LicensePlateField } from '../../components/licenseplate/LicensePlateField'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { Checkbox, Select, TextArea, TextField } from '../../components/ui/Fields'
@@ -17,6 +19,7 @@ export function ComponentsPage() {
   const confirm = useConfirm()
   const [modalOpen, setModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [plate, setPlate] = useState('SG 197052')
 
   async function tryDelete() {
     const ok = await confirm({
@@ -73,6 +76,20 @@ export function ComponentsPage() {
           <Checkbox label="Wartekunde" />
           <Checkbox label="Radwechsel" defaultChecked />
         </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2>Kennzeichen</h2>
+        <div className={styles.row}>
+          <LicensePlate text="SG 197052" size="lg" />
+          <LicensePlate text="ZH 123456" />
+          <LicensePlate text="GR 12345" size="sm" />
+          <LicensePlate text="D M AB 1234" />
+        </div>
+        <div className={styles.plateField}>
+          <LicensePlateField value={plate} onChange={setPlate} />
+        </div>
+        <p className="muted">Gespeichert wird: {plate ? `«${plate}»` : '(nichts)'}</p>
       </section>
 
       <section className={styles.section}>

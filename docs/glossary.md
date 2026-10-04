@@ -54,7 +54,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ Chassis-Nr. | `vin` | |
 | ↳ 1. Inverkehrsetzung | `firstRegistration` | |
 | ↳ Treibstoff | `fuel` | |
-| Kennzeichen | `licensePlate` | |
+| Kennzeichen | `licensePlate` | stored as one text: Swiss "SG 197052", foreign "D M AB 1234" |
+| Kanton / Kantonswappen | canton / coat of arms | 26 codes as on the plate |
 | Jahrgang | `modelYear` | |
 | Kilometerstand | `mileageKm` | |
 | letzte MFK | `lastMfk` | the SwissGarage export only contains the date of the LAST inspection |

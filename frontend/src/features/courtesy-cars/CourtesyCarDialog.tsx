@@ -1,6 +1,7 @@
 import { PowerOff } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
+import { LicensePlateField } from '../../components/licenseplate/LicensePlateField'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { TextField } from '../../components/ui/Fields'
@@ -133,26 +134,20 @@ export function CourtesyCarDialog({ car, onClose }: { car?: CourtesyCar; onClose
           onChange={(e) => set('name', e.target.value)}
           error={fieldError('name')}
         />
-        <div className={styles.row}>
-          <TextField
-            label="Modell"
-            placeholder="z. B. VW Polo"
-            maxLength={40}
-            autoComplete="off"
-            value={values.model}
-            onChange={(e) => set('model', e.target.value)}
-            error={fieldError('model')}
-          />
-          <TextField
-            label="Kennzeichen"
-            placeholder="z. B. ZH 123456"
-            maxLength={15}
-            autoComplete="off"
-            value={values.licensePlate}
-            onChange={(e) => set('licensePlate', e.target.value)}
-            error={fieldError('licensePlate')}
-          />
-        </div>
+        <TextField
+          label="Modell"
+          placeholder="z. B. VW Polo"
+          maxLength={40}
+          autoComplete="off"
+          value={values.model}
+          onChange={(e) => set('model', e.target.value)}
+          error={fieldError('model')}
+        />
+        <LicensePlateField
+          value={values.licensePlate}
+          onChange={(plate) => set('licensePlate', plate)}
+          error={fieldError('licensePlate')}
+        />
         <div className={styles.row}>
           <TextField
             label="Service fällig"
