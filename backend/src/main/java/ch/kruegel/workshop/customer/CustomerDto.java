@@ -29,7 +29,7 @@ public record CustomerDto(
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last (empty: import/sample data)") UUID updatedBy) {
 
-    static CustomerDto of(Customer c) {
+    public static CustomerDto of(Customer c) {
         CustomerDetails d = c.getDetails();
         return new CustomerDto(c.getId(), c.getVersion(), c.getSource(), c.getSwissgarageNumber(), d.displayName(),
                 d.salutation(), d.firstName(), d.lastName(), d.company(), d.addition(), d.street(), d.postalCode(),

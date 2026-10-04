@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Database access for customers. Search follows in 5e. */
+/** Database access for customers. Search: see {@code customersearch}. */
 public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
     /** For the import: the customer with this SwissGarage address number, if known. */

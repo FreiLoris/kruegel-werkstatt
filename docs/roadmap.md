@@ -117,8 +117,9 @@ is created that all further modules follow.
   replacing everything, import log (date, number new/changed).
 - [x] **5d – Import vehicle list**
   Assign vehicles to the customer, convert Excel date values (MFK) correctly.
-- [ ] **5e – Customer search API**
-  Search by name, company, license plate; hits with vehicles.
+- [x] **5e – Customer search API**
+  Search by name, company, address, phone, license plate, VIN; every word must match;
+  hits with their active vehicles, vehicles without holder too (`GET /api/customer-search`).
 - [ ] **5f – Import page**
   Upload, preview (loads reliably → F4), "last imported on …", delete in a danger zone.
 

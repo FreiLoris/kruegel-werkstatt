@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * REST API for customers. Create/edit/deactivate only for LOCAL customers;
- * SwissGarage customers answer with 409 (ADR 0003). Search follows in 5e.
+ * SwissGarage customers answer with 409 (ADR 0003).
  */
 @RestController
 @RequestMapping("/api/customers")
