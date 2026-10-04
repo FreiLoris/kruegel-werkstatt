@@ -129,11 +129,11 @@ is created that all further modules follow.
 
 Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glossary.)
 
-- [ ] **6a – Task data model**
-  References customer/vehicle/mechanic/lift; status as enum (received, in progress, waiting for
-  parts, done) and **waiting customer as a separate flag** (→ bug #4, status/flag mix-up);
-  arrives earlier / ready by; tire change, MFK, service items, parts incl. supplier;
-  task number (external, optional); order per lift/day.
+- [x] **6a – Task data model**
+  References customer/vehicle (vehicle may still be open)/mechanic/lift; status as enum
+  (received, in progress, waiting for parts, done) and **waiting customer as a separate flag**
+  (→ bug #4, status/flag mix-up); arrives earlier / ready by; tire change, MFK, service items,
+  parts incl. supplier; task number (external, optional, unique); order per lift/day.
 - [ ] **6b – Task API**
   Create, edit, change status, add task number, delete (with "changed by").
   Optimistic locking on concurrent edits.
