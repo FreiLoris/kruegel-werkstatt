@@ -148,6 +148,10 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   MFK on the appointment day – they move along when the date changes. Week overview sticky
   (07:00–17:30, holidays, "n Termine"), click on a slot takes over date + time; footer with
   the buttons always visible. Saving follows in 6e.
+- [x] **6p – Company profile** *(inserted: the letterhead of 6e needs it)*
+  Settings: company name, address, phone, e-mail, website and logo upload (PNG/JPEG/WebP/SVG,
+  max. 1 MB, type detected from the content). Name and logo appear in the navigation and as
+  letterhead on the task sheet.
 - [ ] **6e – Wizard step 3/4 + task sheet**
   Clear "saved" confirmation; print with Krügel letterhead, white paper layout,
   **all ticked work on the sheet** (→ F1), customer address.
