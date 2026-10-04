@@ -1,0 +1,36 @@
+# Junie (JetBrains AI) reviews every pull request and writes its findings as a comment.
+# A second pair of eyes – it does not block merging, the CI workflow does that.
+#
+# Needs the repository secret JUNIE_API_KEY (Settings → Secrets and variables → Actions).
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Cancel previous runs on the same PR to save resources and avoid race conditions.
+concurrency:
+  group: code-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - uses: JetBrains/junie-github-action@v1
+        with:
+          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          # fast and cheap – uses the least of the All Products Pack quota per review
+          model: gemini-flash
+          # update the same comment on every push instead of adding a new one
+          use_single_comment: true
+          # built-in review instructions of the action
+          prompt: "code-review"
