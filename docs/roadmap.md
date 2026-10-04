@@ -115,7 +115,7 @@ is created that all further modules follow.
 - [x] **5c – Import address list (server side)**
   Excel upload to the backend, filter "garage customer"/not blocked, update instead of
   replacing everything, import log (date, number new/changed).
-- [ ] **5d – Import vehicle list**
+- [x] **5d – Import vehicle list**
   Assign vehicles to the customer, convert Excel date values (MFK) correctly.
 - [ ] **5e – Customer search API**
   Search by name, company, license plate; hits with vehicles.

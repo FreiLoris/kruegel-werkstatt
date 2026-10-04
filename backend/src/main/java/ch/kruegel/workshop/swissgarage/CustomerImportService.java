@@ -2,7 +2,6 @@ package ch.kruegel.workshop.swissgarage;
 
 import ch.kruegel.workshop.common.RecordSource;
 import ch.kruegel.workshop.common.live.DataChanged;
-import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerDetails;
@@ -38,11 +37,6 @@ import java.util.Set;
  */
 @Service
 public class CustomerImportService {
-
-    /** Safety net: refuse an import that would deactivate more than this share of the known customers */
-    static final double MAX_DEACTIVATED_SHARE = 0.5;
-    /** …but only from this number of known customers on (the first imports may differ a lot) */
-    static final int SAFETY_NET_FROM = 20;
 
     private static final String NUMBER = "Adressnummer";
     private static final String LAST_NAME = "Name";
@@ -99,7 +93,8 @@ public class CustomerImportService {
                 details = details(row);
             } catch (IllegalArgumentException e) {
                 skipped++;
-                problems.add("Zeile " + row.number() + " (Adressnummer " + number + "): kein Name");
+                String reason = row.get(LAST_NAME).isEmpty() ? "kein Name" : "ungültige Angaben (z. B. Text zu lang)";
+                problems.add("Zeile " + row.number() + " (Adressnummer " + number + "): " + reason);
                 continue;
             }
 
@@ -122,11 +117,7 @@ public class CustomerImportService {
         List<Customer> missing = known.values().stream()
                 .filter(c -> c.isActive() && !seen.contains(c.getSwissgarageNumber()))
                 .toList();
-        if (knownActive >= SAFETY_NET_FROM && missing.size() > knownActive * MAX_DEACTIVATED_SHARE) {
-            throw new BusinessRuleException("Die Datei enthält nur " + (knownActive - missing.size()) + " von "
-                    + knownActive + " bekannten Kunden. Ist es der vollständige Export aus SwissGarage? "
-                    + "Nichts importiert – sonst würden " + missing.size() + " Kunden deaktiviert.");
-        }
+        ImportGuard.checkDeactivations(knownActive, missing.size(), "Kunden");
         missing.forEach(Customer::deactivate);
 
         customers.saveAll(toSave);
