@@ -14,4 +14,9 @@ public class NotFoundException extends RuntimeException {
     public NotFoundException(String what, Object id) {
         super(what + " mit ID " + id + " wurde nicht gefunden.");
     }
+
+    /** For things without ID, e.g. "Es ist kein Logo hochgeladen." */
+    public NotFoundException(String message) {
+        super(message);
+    }
 }

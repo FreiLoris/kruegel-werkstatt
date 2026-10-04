@@ -1,5 +1,7 @@
 import { Wrench } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router'
+import { useEffect } from 'react'
+import { useCompany } from '../features/company/companyApi'
 import { useActiveEmployees } from '../features/employees/employeeApi'
 import styles from './AppLayout.module.css'
 import { LiveIndicator } from './live/LiveIndicator'
@@ -19,13 +21,20 @@ export function AppLayout() {
   const liveStatus = useLiveUpdates()
   const device = useDevicePerson()
   const { data: active = [] } = useActiveEmployees()
+  const { data: company } = useCompany()
+
+  // Browser tab and bookmarks carry the workshop's name
+  useEffect(() => {
+    if (company) document.title = company.name
+  }, [company])
 
   return (
     <>
       <header className={styles.header}>
+        {/* name and logo from the settings (company profile) */}
         <Link to="/" className={styles.brand}>
-          <Wrench aria-hidden />
-          Krügel Werkstatt
+          {company?.logoUrl ? <img src={company.logoUrl} alt="" className={styles.logo} /> : <Wrench aria-hidden />}
+          {company?.name ?? 'Werkstatt'}
         </Link>
         <nav className={styles.nav}>
           {navigation.map((entry) => (

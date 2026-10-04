@@ -19,6 +19,10 @@ public final class TestDatabase {
     }
 
     public static void clear(JdbcTemplate jdbc) {
-        jdbc.execute("TRUNCATE " + BUSINESS_TABLES);
+        // company_profile refers to employee (changed by) → emptied too and its only row created again
+        jdbc.execute("TRUNCATE company_profile, " + BUSINESS_TABLES);
+        jdbc.execute("""
+                INSERT INTO company_profile (id, version, created_at, updated_at, name)
+                VALUES (uuidv7(), 0, now(), now(), 'Krügel Fahrzeugtechnik')""");
     }
 }

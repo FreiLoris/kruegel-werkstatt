@@ -33,6 +33,12 @@
   --color-plate-border: #2b2b2b;
   --color-swiss-red: #da291c;
 
+  /* Paper: printed task sheet and logo preview – always white, also in the dark app */
+  --color-paper: #ffffff;
+  --color-paper-text: #111111;
+  --color-paper-muted: #666666;
+  --color-paper-line: #cccccc;
+
   /* ── Font ────────────────────────────────────────────────── */
   --font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-size-sm: 0.875rem;

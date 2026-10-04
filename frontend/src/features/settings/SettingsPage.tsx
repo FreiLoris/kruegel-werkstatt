@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { CompanySettings } from '../company/CompanySettings'
 import { CourtesyCarSettings } from '../courtesy-cars/CourtesyCarSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
@@ -11,6 +12,9 @@ export function SettingsPage() {
   return (
     <>
       <h1>Einstellungen</h1>
+      <section className={styles.section}>
+        <CompanySettings />
+      </section>
       <section className={styles.section}>
         <LiftSettings />
       </section>

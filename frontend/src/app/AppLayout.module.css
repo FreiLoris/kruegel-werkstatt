@@ -20,6 +20,16 @@
   text-decoration: none;
 }
 
+/* Logos are made for white – a small white plate keeps them readable on the dark header */
+.logo {
+  height: 2rem;
+  max-width: 8rem;
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  object-fit: contain;
+}
+
 .brand svg {
   width: 1.375rem;
   height: 1.375rem;
