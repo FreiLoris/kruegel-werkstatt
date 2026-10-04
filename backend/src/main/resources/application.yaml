@@ -29,6 +29,13 @@ spring:
         jdbc:
           time_zone: UTC
 
+  # Upload of the SwissGarage Excel exports (a few hundred KB; the default limit is 1 MB).
+  # nginx has the same limit (frontend/nginx.conf: client_max_body_size).
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
   # The app is German only: validation messages ("darf nicht leer sein") are always German,
   # regardless of the browser's language setting.
   web:

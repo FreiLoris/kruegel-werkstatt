@@ -112,7 +112,7 @@ is created that all further modules follow.
   Input in parts (country → canton → number, foreign: country code + free number) with live
   preview; display as a real Swiss plate (flag, "SG·197 052", canton coat of arms). Stored as one
   normalised text ("SG 197052"). Used for courtesy cars now, later for vehicles in the wizard.
-- [ ] **5c – Import address list (server side)**
+- [x] **5c – Import address list (server side)**
   Excel upload to the backend, filter "garage customer"/not blocked, update instead of
   replacing everything, import log (date, number new/changed).
 - [ ] **5d – Import vehicle list**

@@ -13,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public final class TestDatabase {
 
-    private static final String BUSINESS_TABLES = "vehicle, customer, courtesy_car, service_item, lift, employee";
+    private static final String BUSINESS_TABLES = "import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
 
     private TestDatabase() {
     }
