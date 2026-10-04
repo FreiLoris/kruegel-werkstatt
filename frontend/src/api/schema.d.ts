@@ -527,6 +527,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/swissgarage-imports/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many SwissGarage customers and vehicles are active */
+        get: operations["status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/swissgarage-imports/vehicles": {
         parameters: {
             query?: never;
@@ -894,6 +911,23 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
+        };
+        SwissGarageStatusDto: {
+            /**
+             * Format: int64
+             * @description Active customers from SwissGarage
+             */
+            customers: number;
+            /**
+             * Format: int64
+             * @description Active vehicles from SwissGarage
+             */
+            vehicles: number;
+            /**
+             * Format: int64
+             * @description Of these, vehicles whose holder is not among the imported customers
+             */
+            vehiclesWithoutHolder: number;
         };
         VehicleDto: {
             active: boolean;
@@ -3308,6 +3342,71 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ImportRunDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SwissGarageStatusDto"];
                 };
             };
             /** @description Bad Request */

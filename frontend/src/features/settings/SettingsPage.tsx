@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { CourtesyCarSettings } from '../courtesy-cars/CourtesyCarSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
@@ -18,6 +19,11 @@ export function SettingsPage() {
       </section>
       <section className={styles.section}>
         <CourtesyCarSettings />
+      </section>
+      <section className={styles.section}>
+        <h2>Kunden und Fahrzeuge</h2>
+        <p className="muted">Werden in SwissGarage gepflegt und von dort importiert.</p>
+        <Link to="/settings/swissgarage">Zum SwissGarage-Import</Link>
       </section>
     </>
   )

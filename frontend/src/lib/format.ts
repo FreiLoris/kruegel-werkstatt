@@ -5,6 +5,7 @@
  *   Date       "2026-10-15"            → "15.10.2026"
  *   Time       "08:00:00"              → "08:00"
  *   Timestamp  "2026-10-15T06:00:00Z"  → "15.10.2026, 08:00"  (in Swiss time)
+ *   Count      1480                    → "1’480"
  *
  * Rule: nowhere else in the frontend format date values yourself.
  */
@@ -55,4 +56,16 @@ export function formatTimestamp(isoTimestamp: string): string {
     throw new Error(`Not a valid ISO timestamp: "${isoTimestamp}"`)
   }
   return timestampFormat.format(date)
+}
+
+/**
+ * Whole number with Swiss thousands separator.
+ *
+ * Not `toLocaleString('de-CH')`: depending on the ICU version of the browser/Node the separator is
+ * a straight or a typographic apostrophe – the display would differ between devices and tests.
+ */
+export function formatCount(count: number): string {
+  return Math.trunc(count)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '’')
 }

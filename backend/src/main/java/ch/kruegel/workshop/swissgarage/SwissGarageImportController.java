@@ -1,6 +1,9 @@
 package ch.kruegel.workshop.swissgarage;
 
+import ch.kruegel.workshop.common.RecordSource;
 import ch.kruegel.workshop.common.web.InvalidInputException;
+import ch.kruegel.workshop.customer.CustomerRepository;
+import ch.kruegel.workshop.vehicle.VehicleRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +22,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * Upload of the SwissGarage Excel exports and the import log. The import page follows in 5f.
+ * Upload of the SwissGarage Excel exports, the import log and the current data status.
  * Order: address list first, then vehicle list (vehicles are linked to the imported customers).
  */
 @RestController
@@ -32,18 +35,31 @@ class SwissGarageImportController {
     private final CustomerImportService customerImport;
     private final VehicleImportService vehicleImport;
     private final ImportRunRepository runs;
+    private final CustomerRepository customers;
+    private final VehicleRepository vehicles;
 
     SwissGarageImportController(CustomerImportService customerImport, VehicleImportService vehicleImport,
-                                ImportRunRepository runs) {
+                                ImportRunRepository runs, CustomerRepository customers, VehicleRepository vehicles) {
         this.customerImport = customerImport;
         this.vehicleImport = vehicleImport;
         this.runs = runs;
+        this.customers = customers;
+        this.vehicles = vehicles;
     }
 
     @Operation(summary = "Last 20 imports, newest first")
     @GetMapping
     List<ImportRunDto> list() {
         return runs.findTop20ByOrderByCreatedAtDesc().stream().map(ImportRunDto::of).toList();
+    }
+
+    @Operation(summary = "How many SwissGarage customers and vehicles are active")
+    @GetMapping("/status")
+    SwissGarageStatusDto status() {
+        return new SwissGarageStatusDto(
+                customers.countBySourceAndActiveTrue(RecordSource.SWISSGARAGE),
+                vehicles.countBySourceAndActiveTrue(RecordSource.SWISSGARAGE),
+                vehicles.countBySourceAndActiveTrueAndCustomerIsNull(RecordSource.SWISSGARAGE));
     }
 
     @Operation(summary = "Import the SwissGarage address list (xlsx)",

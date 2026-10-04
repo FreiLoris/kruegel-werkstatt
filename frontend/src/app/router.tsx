@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
+import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
 import { SystemPage } from '../features/system/SystemPage'
 import { AppLayout } from './AppLayout'
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'employees', element: <EmployeesPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
       { path: 'system', element: <SystemPage /> },
       { path: 'system/components', element: <ComponentsPage /> },
       { path: '*', element: <NotFoundPage /> },

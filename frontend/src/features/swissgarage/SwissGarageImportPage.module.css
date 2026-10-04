@@ -1,0 +1,19 @@
+.intro {
+  max-width: 56rem;
+}
+
+.status {
+  margin: var(--space-3) 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-4);
+  max-width: 72rem;
+}
+
+.section {
+  max-width: 72rem;
+  margin-top: var(--space-6);
+}

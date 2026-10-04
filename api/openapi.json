@@ -2828,6 +2828,75 @@
         "tags" : [ "SwissGarage import" ]
       }
     },
+    "/api/swissgarage-imports/status" : {
+      "get" : {
+        "operationId" : "status",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SwissGarageStatusDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "How many SwissGarage customers and vehicles are active",
+        "tags" : [ "SwissGarage import" ]
+      }
+    },
     "/api/swissgarage-imports/vehicles" : {
       "post" : {
         "description" : "Import the address list first – holders are matched by address number. Vehicles missing from the file are deactivated.",
@@ -4027,6 +4096,27 @@
           }
         },
         "required" : [ "name" ]
+      },
+      "SwissGarageStatusDto" : {
+        "type" : "object",
+        "properties" : {
+          "customers" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Active customers from SwissGarage"
+          },
+          "vehicles" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Active vehicles from SwissGarage"
+          },
+          "vehiclesWithoutHolder" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Of these, vehicles whose holder is not among the imported customers"
+          }
+        },
+        "required" : [ "customers", "vehicles", "vehiclesWithoutHolder" ]
       },
       "VehicleDto" : {
         "type" : "object",

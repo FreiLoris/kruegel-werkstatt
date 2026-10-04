@@ -1,0 +1,88 @@
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.card h3,
+.card p {
+  margin: 0;
+}
+
+/* The whole zone is the label of the hidden file input → click and keyboard work */
+.dropZone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 7rem;
+  padding: var(--space-4);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropZone:hover,
+.dragging {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.dropZone:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.busy {
+  cursor: progress;
+}
+
+/* Invisible but focusable – the visible part is the zone around it */
+.input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+}
+
+.error {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-danger);
+  background: var(--color-surface-raised);
+}
+
+.last {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.lastTitle {
+  font-weight: 600;
+}

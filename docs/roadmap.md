@@ -120,8 +120,10 @@ is created that all further modules follow.
 - [x] **5e – Customer search API**
   Search by name, company, address, phone, license plate, VIN; every word must match;
   hits with their active vehicles, vehicles without holder too (`GET /api/customer-search`).
-- [ ] **5f – Import page**
-  Upload, preview (loads reliably → F4), "last imported on …", delete in a danger zone.
+- [x] **5f – Import page**
+  `/settings/swissgarage`: drop or choose both exports, result with problems, "last imported
+  on …", counts, search through the data (5e), import log. No delete button: SwissGarage
+  records are real records that orders will refer to – the import deactivates instead (ADR 0003).
 
 ## Phase 6 – Tasks & appointments
 
