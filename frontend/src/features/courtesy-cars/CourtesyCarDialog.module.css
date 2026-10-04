@@ -1,0 +1,17 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Two fields side by side – stacked on narrow devices */
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+/* "Take out of service" on the left, apart from cancel/save – so it is not hit by accident */
+.left {
+  margin-right: auto;
+}

@@ -94,7 +94,7 @@ is created that all further modules follow.
   error messages). No new behaviour – all tests stay green, only renamed.
   Glossary ([`glossary.md`](glossary.md)), migration V6 renames tables/columns/constraints,
   English API, frontend, docs. Decision: [ADR 0002](adr/0002-english-code.md).
-- [ ] **4c – Courtesy cars**
+- [x] **4c – Courtesy cars**
   Master data (label, model, license plate, service due, insurance until) with a
   warning when service is due. Form with labels. (→ UI review courtesy cars)
 - [ ] **4d – Public holidays canton Zurich**
