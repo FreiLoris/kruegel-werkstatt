@@ -156,10 +156,12 @@ Overview of all components with examples: http://localhost:5173/system/component
 | What | Rule |
 |---|---|
 | Output | `…Dto` record, e.g. `EmployeeDto`. **Always contains all fields** (empty ones as `null`) and the `version`. Entities never leave the backend. |
-| Input | `…Request` record with Bean Validation. **Flat** – the same for create and edit; when editing additionally `version`. |
+| Input | `…Request` record with Bean Validation. **Flat** – the same for create and edit; when editing additionally `version`. Exception: a group that is optional as a whole may be a nested record (`TaskRequest.Parts`). |
+| Required vs. optional input | Jackson 3 refuses a missing value for `boolean`/`int`. Primitive = required, mark it `@Schema(requiredMode = REQUIRED)` (`EmployeeRequest`). Optional tick = `Boolean`, normalised to `false` in the compact constructor (`TaskRequest`). |
 | Create | `POST /api/<topic>` → **201** with `Location` header |
 | Edit | `PUT /api/<topic>/{id}` with `version` → 409 for a stale state |
 | Delete | Master data other data refers to is **deactivated** (`POST …/{id}/deactivate`), not deleted |
+| Delete (other data) | `DELETE /api/<topic>/{id}` → **204**, logged with the person (e.g. tasks) |
 | Rule needs the database | check in the service and `throw new InvalidInputException("field", "…")` → appears at the form field |
 | Rule without a field | `throw new BusinessRuleException("Mindestens ein Lift muss in Betrieb bleiben.")` → 409, message appears as toast |
 | Order | entity `implements Sortable`, in the service `SortOrder.reorder(allCurrent, ids, "Lift")`, endpoint `PUT …/order` |

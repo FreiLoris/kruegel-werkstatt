@@ -170,6 +170,10 @@ public class Task extends BaseEntity implements Sortable {
         return lift;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
     public int getSortOrder() {
         return sortOrder;
     }
