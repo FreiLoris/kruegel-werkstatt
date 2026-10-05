@@ -1,31 +1,90 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { ApiError, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { useToast } from '../../../components/ui/toastContext'
 import { todayIso } from '../../../lib/format'
 import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
-import { EMPTY_APPOINTMENT, type AppointmentForm } from './appointmentForm'
+import { useCreateTask, type Task } from '../taskApi'
+import { appointmentErrors, EMPTY_APPOINTMENT, toTaskRequest, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
 import { CustomerStep } from './CustomerStep'
+import { ReviewStep } from './ReviewStep'
+import { SavedStep } from './SavedStep'
 import styles from './TaskWizardPage.module.css'
 import type { CustomerStepValue } from './wizardState'
 
 const STEPS = ['Kunde & Fahrzeug', 'Termin & Arbeiten', 'Prüfen & speichern']
 
-type Step = 1 | 2
+type Step = 1 | 2 | 3
+
+const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
 
 /**
- * New task in steps. Steps 1 and 2 are built (6c/6d), step 3 (check & save) follows in 6e –
- * until then the page is only reachable by its URL and not in the navigation.
- * All input lives here, so going back and forth loses nothing.
+ * New task in three steps, then a clear confirmation. All input lives here, so going back and
+ * forth loses nothing; "Weiteren Auftrag erfassen" starts empty again.
  */
 export function TaskWizardPage() {
   const [step, setStep] = useState<Step>(1)
-  const [customerStep, setCustomerStep] = useState<CustomerStepValue>({ customer: null, vehicle: null })
+  const [customerStep, setCustomerStep] = useState<CustomerStepValue>(EMPTY_CUSTOMER_STEP)
   const [appointment, setAppointment] = useState<AppointmentForm>(EMPTY_APPOINTMENT)
+  const [showRequired, setShowRequired] = useState(false)
+  const [saved, setSaved] = useState<Task | null>(null)
+  const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const holidays = useHolidaysAroundToday()
+  const create = useCreateTask()
+  const toast = useToast()
 
   const customerStepComplete = customerStep.customer !== null && customerStep.vehicle !== null
+  const appointmentComplete = Object.keys(appointmentErrors(appointment)).length === 0
+
+  function toReview() {
+    setShowRequired(true)
+    if (appointmentComplete) {
+      setServerErrors([])
+      setStep(3)
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  function save() {
+    create.mutate(toTaskRequest(customerStep, appointment), {
+      onSuccess: (task) => {
+        setSaved(task)
+        window.scrollTo({ top: 0 })
+      },
+      onError: (error) => {
+        const fieldErrors = error instanceof ApiError ? (error.problem.errors ?? []) : []
+        if (fieldErrors.length > 0) {
+          // e.g. the mechanic was deactivated in the meantime – shown in words on the review
+          setServerErrors(fieldErrors)
+        } else {
+          toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+        }
+      },
+    })
+  }
+
+  function startOver() {
+    setCustomerStep(EMPTY_CUSTOMER_STEP)
+    setAppointment(EMPTY_APPOINTMENT)
+    setShowRequired(false)
+    setServerErrors([])
+    setSaved(null)
+    create.reset()
+    setStep(1)
+  }
+
+  if (saved) {
+    return (
+      <>
+        <h1>Neuer Auftrag</h1>
+        <SavedStep task={saved} onNext={startOver} />
+      </>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -46,23 +105,41 @@ export function TaskWizardPage() {
       {step === 2 && (
         <>
           <ChosenCustomer value={customerStep} onChange={() => setStep(1)} />
-          <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={false} />
+          <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired} />
         </>
       )}
+      {step === 3 && <ReviewStep customerStep={customerStep} appointment={appointment} onEdit={setStep} serverErrors={serverErrors} />}
 
       {/* Always visible at the bottom – the buttons are never cut off or scrolled away (UI review) */}
       <footer className={styles.footer}>
-        {step === 1 ? (
+        {step === 1 && (
           <>
             <span className="muted">{customerStepComplete ? '' : 'Kunde wählen und Fahrzeug festlegen (oder «noch offen»)'}</span>
             <Button variant="primary" icon={ArrowRight} disabled={!customerStepComplete} onClick={() => setStep(2)}>
               Weiter
             </Button>
           </>
-        ) : (
-          <Button icon={ArrowLeft} onClick={() => setStep(1)}>
-            Zurück
-          </Button>
+        )}
+        {step === 2 && (
+          <>
+            <Button icon={ArrowLeft} onClick={() => setStep(1)}>
+              Zurück
+            </Button>
+            {showRequired && !appointmentComplete && <span className={styles.hint}>Bitte die markierten Felder prüfen</span>}
+            <Button variant="primary" icon={ArrowRight} onClick={toReview}>
+              Weiter
+            </Button>
+          </>
+        )}
+        {step === 3 && (
+          <>
+            <Button icon={ArrowLeft} onClick={() => setStep(2)} disabled={create.isPending}>
+              Zurück
+            </Button>
+            <Button variant="primary" icon={Save} onClick={save} loading={create.isPending}>
+              Auftrag speichern
+            </Button>
+          </>
         )}
       </footer>
     </div>
@@ -90,7 +167,7 @@ function ChosenCustomer({ value, onChange }: { value: CustomerStepValue; onChang
   )
 }
 
-/** Holidays of this and next year as date → name – enough for every appointment that is planned. */
+/** Holidays of last, this and next year as date → name – enough for every appointment that is planned. */
 function useHolidaysAroundToday(): ReadonlyMap<string, string> {
   const year = Number(todayIso().slice(0, 4))
   const { data } = usePublicHolidays(`${year - 1}-01-01`, `${year + 1}-12-31`)

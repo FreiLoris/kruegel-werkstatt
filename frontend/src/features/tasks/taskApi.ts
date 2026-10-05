@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -52,5 +52,23 @@ export function useCustomerHistory(customerId: string | undefined) {
     queryFn: async ({ signal }) =>
       dataOrThrow(await api.GET('/api/tasks/history', { params: { query: { customerId: customerId! } }, signal })),
     enabled: customerId !== undefined,
+  })
+}
+
+/** A single task, e.g. for the task sheet. */
+export function useTask(id: string | undefined) {
+  return useQuery({
+    queryKey: [TOPIC, 'one', id],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/{id}', { params: { path: { id: id! } }, signal })),
+    enabled: id !== undefined,
+  })
+}
+
+/** Create a task (wizard). Calendar and history are reloaded afterwards. */
+export function useCreateTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (request: TaskRequest) => dataOrThrow(await api.POST('/api/tasks', { body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

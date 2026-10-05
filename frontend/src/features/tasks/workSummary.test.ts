@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from './taskApi'
-import { workSummary } from './workSummary'
+import { workItems, workSummary } from './workSummary'
 
 function task(overrides: Partial<Task>): Task {
   return {
@@ -36,5 +36,26 @@ describe('workSummary', () => {
 
   it('is empty when nothing is entered', () => {
     expect(workSummary(task({}), names)).toBe('')
+  })
+})
+
+describe('workItems', () => {
+  it('adds the details for the task sheet', () => {
+    const items = workItems(
+      task({
+        tireChange: true,
+        tireChangeKind: 'WHEELS_STORED',
+        mfk: true,
+        mfkAppointment: '2026-10-15T10:00:00',
+        parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: null },
+      }),
+      new Map(),
+    )
+
+    expect(items).toEqual([
+      { label: 'Radwechsel', detail: 'Räder eingelagert' },
+      { label: 'MFK', detail: 'Termin 15.10.2026, 10:00' },
+      { label: 'Material: Bremsscheiben', detail: 'Bestellt · Derendinger' },
+    ])
   })
 })
