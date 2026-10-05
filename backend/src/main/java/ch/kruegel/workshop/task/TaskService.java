@@ -160,7 +160,7 @@ public class TaskService {
         }
         LocalDateTime earlier = current.shiftedToDay(current.arrivesEarlier(), request.date());
         if (earlier != null && !earlier.isBefore(start)) {
-            throw new InvalidInputException("time", "liegt nach \u201eFahrzeug kommt früher\u201c (" + WHEN.format(earlier)
+            throw new InvalidInputException("time", "liegt vor \u201eFahrzeug kommt früher\u201c (" + WHEN.format(earlier)
                     + ") \u2013 bitte im Auftrag anpassen");
         }
         LocalDateTime readyBy = current.shiftedToDay(current.readyBy(), request.date());

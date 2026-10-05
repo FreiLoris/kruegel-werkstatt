@@ -326,6 +326,16 @@ class TaskApiTest {
     }
 
     @Test
+    void schedulingSaysWhichExtraTimeNoLongerFits() {
+        String id = idOf(createAt("13:00", "\"arrivesEarlier\": \"2026-10-15T07:00\", \"readyBy\": \"2026-10-15T16:00\""));
+
+        assertThat(send("PUT", "/api/tasks/" + id + "/schedule", scheduleJson(null, DAY, "06:30", DAY + "T07:30")))
+                .bodyJson().extractingPath("$.errors[0].message").asString().startsWith("liegt vor \u201eFahrzeug kommt früher\u201c (15.10.2026 07:00)");
+        assertThat(send("PUT", "/api/tasks/" + id + "/schedule", scheduleJson(null, DAY, "16:30", DAY + "T17:30")))
+                .bodyJson().extractingPath("$.errors[0].message").asString().startsWith("liegt nach \u201efertig bis\u201c (15.10.2026 16:00)");
+    }
+
+    @Test
     void toAnotherDayTheExtraTimesMoveAlongTheMfkAppointmentStays() {
         String moved = idOf(createAt("09:00", liftJson(lift1) + """
                 , "arrivesEarlier": "2026-10-14T17:00", "readyBy": "2026-10-15T16:30",
