@@ -14,6 +14,8 @@ export interface TodoFilter {
   /** false = open ones by deadline; true = the latest done ones */
   done?: boolean
   assigneeId?: string
+  /** only those nobody takes care of yet */
+  unassigned?: boolean
   shopping?: boolean
   taskId?: string
 }

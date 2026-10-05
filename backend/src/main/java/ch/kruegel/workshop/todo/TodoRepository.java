@@ -20,10 +20,11 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
             SELECT t FROM Todo t LEFT JOIN t.assignee a LEFT JOIN t.task k
             WHERE t.doneAt IS NULL
               AND (:assigneeId IS NULL OR a.id = :assigneeId)
+              AND (:unassigned = false OR a.id IS NULL)
               AND (:shopping IS NULL OR t.shopping = :shopping)
               AND (:taskId IS NULL OR k.id = :taskId)
             ORDER BY CASE WHEN t.dueDate IS NULL THEN 1 ELSE 0 END, t.dueDate, t.createdAt""")
-    List<Todo> open(UUID assigneeId, Boolean shopping, UUID taskId);
+    List<Todo> open(UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId);
 
     /** Done to-dos: the latest first – limited, the list grows forever. */
     @EntityGraph(attributePaths = {"task", "task.customer"})
@@ -31,8 +32,9 @@ public interface TodoRepository extends JpaRepository<Todo, UUID> {
             SELECT t FROM Todo t LEFT JOIN t.assignee a LEFT JOIN t.task k
             WHERE t.doneAt IS NOT NULL
               AND (:assigneeId IS NULL OR a.id = :assigneeId)
+              AND (:unassigned = false OR a.id IS NULL)
               AND (:shopping IS NULL OR t.shopping = :shopping)
               AND (:taskId IS NULL OR k.id = :taskId)
             ORDER BY t.doneAt DESC""")
-    List<Todo> done(UUID assigneeId, Boolean shopping, UUID taskId, Limit limit);
+    List<Todo> done(UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId, Limit limit);
 }
