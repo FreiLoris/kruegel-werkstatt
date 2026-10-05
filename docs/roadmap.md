@@ -175,9 +175,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   editable right there, SwissGarage data with a hint. `/tasks/:id/edit`: the wizard form incl.
   changing customer/vehicle, sticky footer, conflict with "load current state". A click/Enter on a
   card opens the task. Creating notes/to-dos from the task follows with 8a/8c.
-- [ ] **6i – Task list**
-  Sortable columns, filters (status, period), work column complete (→ F1),
-  status colors from **one** central definition (→ F10), delete only with confirmation.
+- [x] **6i – Task list**
+  "Termine" → "Liste" (`/tasks?view=list`, filters in the URL): period presets (today, this week,
+  next 2 weeks, last 30 days) or from/to, status toggles + "Nur offene", mechanic, text filter;
+  sortable columns (empty values last, status in its natural order); work column complete (→ F1);
+  status from the one definition (→ F10); missing task number always "offen". No delete in the
+  rows (misclick) – a row opens the task, deleting is there with confirmation.
 
 ## Phase 7 – Courtesy car bookings
 
