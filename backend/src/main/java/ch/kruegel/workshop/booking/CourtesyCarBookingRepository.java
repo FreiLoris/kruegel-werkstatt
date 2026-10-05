@@ -13,13 +13,16 @@ public interface CourtesyCarBookingRepository extends JpaRepository<CourtesyCarB
     /**
      * Bookings of a car that block the period [from, to) – the same rule as the database
      * constraint (an early return frees the car). Used to say WHICH booking is in the way.
+     *
+     * @param excludeId a booking that is being moved – it must not block itself; empty for a new one
      */
     @Query("""
             SELECT b FROM CourtesyCarBooking b
             WHERE b.courtesyCar.id = :carId
+              AND (:excludeId IS NULL OR b.id <> :excludeId)
               AND b.period.pickupAt < :to
               AND (CASE WHEN b.returnedAt IS NOT NULL AND b.returnedAt < b.period.returnAt
                         THEN b.returnedAt ELSE b.period.returnAt END) > :from
             ORDER BY b.period.pickupAt""")
-    List<CourtesyCarBooking> blocking(UUID carId, LocalDateTime from, LocalDateTime to);
+    List<CourtesyCarBooking> blocking(UUID carId, LocalDateTime from, LocalDateTime to, UUID excludeId);
 }

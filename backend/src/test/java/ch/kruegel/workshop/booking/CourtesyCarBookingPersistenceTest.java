@@ -100,7 +100,7 @@ class CourtesyCarBookingPersistenceTest {
 
         bookings.saveAndFlush(CourtesyCarBooking.forHolder(polo, "Frau Spät", new BookingPeriod(NOON.plusHours(1), FIVE), null));
 
-        assertThat(bookings.blocking(polo.getId(), NOON, FIVE)).extracting(CourtesyCarBooking::getHolder).containsExactly("Frau Spät");
+        assertThat(bookings.blocking(polo.getId(), NOON, FIVE, null)).extracting(CourtesyCarBooking::getHolder).containsExactly("Frau Spät");
     }
 
     @Test
@@ -118,9 +118,17 @@ class CourtesyCarBookingPersistenceTest {
     void blockingNamesTheBookingInTheWay() {
         bookings.saveAndFlush(CourtesyCarBooking.forHolder(polo, "Frau Muster", new BookingPeriod(EIGHT, NOON), null));
 
-        assertThat(bookings.blocking(polo.getId(), DAY.atTime(11, 0), FIVE)).hasSize(1);
-        assertThat(bookings.blocking(polo.getId(), NOON, FIVE)).isEmpty();
-        assertThat(bookings.blocking(fabia.getId(), EIGHT, FIVE)).isEmpty();
+        assertThat(bookings.blocking(polo.getId(), DAY.atTime(11, 0), FIVE, null)).hasSize(1);
+        assertThat(bookings.blocking(polo.getId(), NOON, FIVE, null)).isEmpty();
+        assertThat(bookings.blocking(fabia.getId(), EIGHT, FIVE, null)).isEmpty();
+    }
+
+    @Test
+    void aBookingBeingMovedDoesNotBlockItself() {
+        CourtesyCarBooking booking = bookings.saveAndFlush(CourtesyCarBooking.forHolder(polo, "Frau Muster", new BookingPeriod(EIGHT, NOON), null));
+
+        assertThat(bookings.blocking(polo.getId(), DAY.atTime(10, 0), FIVE, booking.getId())).isEmpty();
+        assertThat(bookings.blocking(polo.getId(), DAY.atTime(10, 0), FIVE, null)).hasSize(1);
     }
 
     @Test
