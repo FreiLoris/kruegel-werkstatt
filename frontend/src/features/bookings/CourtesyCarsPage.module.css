@@ -14,93 +14,139 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
 
-/* The colored top edge says the state at a glance – the badge says it in words */
+/* The colored left edge says the state at a glance – the badge says it in words */
 .card {
   display: grid;
-  align-content: start;
-  justify-items: start;
+  grid-template-rows: auto auto auto 1fr auto;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
-  border-top: 4px solid var(--color-success);
+  border-left: 5px solid var(--color-success);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
 
-.card p {
-  margin: 0;
-}
-
 .cardHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  width: 100%;
 }
 
 .carName {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
   margin: 0;
   font-size: var(--font-size-lg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .carName svg {
-  width: 1.2rem;
-  height: 1.2rem;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
   color: var(--color-text-muted);
 }
 
 .badge {
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-success) 20%, transparent);
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-success) 18%, transparent);
   color: var(--color-success);
   font-size: var(--font-size-sm);
   font-weight: 700;
-  white-space: nowrap;
 }
 
-.out {
-  border-top-color: var(--color-accent);
+.carMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.6rem;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
-.out .badge {
-  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  color: var(--color-accent);
-}
-
-.overdue {
-  border-top-color: var(--color-danger);
-}
-
-.overdue .badge {
-  background: color-mix(in srgb, var(--color-danger) 20%, transparent);
-  color: var(--color-danger);
-}
-
-/* who has it / next reservation – opens it in the panel */
-.where {
-  padding: 0;
+/* who has it / next reservation – a clear box, a click shows the booking */
+.state {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
   border: 0;
-  background: none;
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
   color: inherit;
   font: inherit;
   font-size: var(--font-size-sm);
   text-align: left;
 }
 
-button.where {
+button.state {
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+}
+
+button.state:hover {
+  outline: 1px solid var(--color-border-strong);
+}
+
+.dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.dates dt {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.dates dd {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.out {
+  border-left-color: var(--color-accent);
+}
+
+.out .badge {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent);
+}
+
+.out .state {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.overdue {
+  border-left-color: var(--color-danger);
+}
+
+.overdue .badge {
+  background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  color: var(--color-danger);
+}
+
+.overdue .state {
+  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
 .calendar {
@@ -135,7 +181,8 @@ button.where {
 .panel {
   display: grid;
   gap: var(--space-3);
-  max-width: 48rem;
+  max-width: 52rem;
+  scroll-margin-bottom: var(--space-5);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

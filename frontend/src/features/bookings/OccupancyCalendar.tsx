@@ -6,10 +6,7 @@ import type { Booking } from './bookingApi'
 import styles from './OccupancyCalendar.module.css'
 import { barsOf, type Bar } from './occupancy'
 
-/** Width of one day in pixels – enough for a name and a time */
-const DAY_WIDTH = 104
 const DAY = 24 * 60
-const PX_PER_MINUTE = DAY_WIDTH / DAY
 /** Finger: hold this long before a drag starts (moving earlier = scrolling), as in the day view */
 const HOLD_MS = 350
 /** Mouse: moving less than this is a click, not a drag */
@@ -41,7 +38,21 @@ interface OccupancyCalendarProps {
 
 type Gesture =
   | { kind: 'select'; carId: string; from: number; to: number; pointerId: number; touch: boolean; held: boolean; startX: number; startY: number }
-  | { kind: 'move'; bar: Bar; carId: string; targetCarId: string; dx: number; pointerId: number; touch: boolean; held: boolean; dragged: boolean; startX: number; startY: number }
+  | {
+      kind: 'move'
+      bar: Bar
+      carId: string
+      targetCarId: string
+      dx: number
+      /** width of one day in pixels when the drag started – the calendar fills the page */
+      dayWidth: number
+      pointerId: number
+      touch: boolean
+      held: boolean
+      dragged: boolean
+      startX: number
+      startY: number
+    }
 
 /**
  * Occupancy calendar (7d, bug #2 / F12): one row per car, one column per day, bookings as bars
@@ -98,8 +109,13 @@ export function OccupancyCalendar({
     setGesture(null)
   }
 
-  const dayIndexAt = (clientX: number, track: Element) =>
-    Math.min(Math.max(Math.floor((clientX - track.getBoundingClientRect().left) / DAY_WIDTH), 0), days - 1)
+  const total = days * DAY
+  /** position in the row as percentage – the calendar is as wide as the page */
+  const pct = (minutes: number) => `${(minutes / total) * 100}%`
+  const dayIndexAt = (clientX: number, track: Element) => {
+    const rect = track.getBoundingClientRect()
+    return Math.min(Math.max(Math.floor(((clientX - rect.left) / rect.width) * days), 0), days - 1)
+  }
 
   // ── dragging open free days ─────────────────────────────────────
 
@@ -140,8 +156,18 @@ export function OccupancyCalendar({
     else if (movable) e.currentTarget.setPointerCapture(e.pointerId)
     const carId = bar.booking.courtesyCarId
     setGesture({
-      kind: 'move', bar, carId, targetCarId: carId, dx: 0, pointerId: e.pointerId, touch,
-      held: movable && !touch, dragged: false, startX: e.clientX, startY: e.clientY,
+      kind: 'move',
+      bar,
+      carId,
+      targetCarId: carId,
+      dx: 0,
+      dayWidth: (e.currentTarget.parentElement?.getBoundingClientRect().width ?? days) / days,
+      pointerId: e.pointerId,
+      touch,
+      held: movable && !touch,
+      dragged: false,
+      startX: e.clientX,
+      startY: e.clientY,
     })
   }
 
@@ -166,7 +192,7 @@ export function OccupancyCalendar({
       onOpen(gesture.bar.booking)
       return
     }
-    const shift = Math.round(gesture.dx / DAY_WIDTH)
+    const shift = Math.round(gesture.dx / gesture.dayWidth)
     if (shift === 0 && gesture.targetCarId === gesture.carId) return
     const { bar } = gesture
     if (overlaps(barsFor(gesture.targetCarId), bar.start + shift * DAY, bar.end + shift * DAY, bar.booking.id)) {
@@ -193,7 +219,7 @@ export function OccupancyCalendar({
       return { start, end, label: `${formatDate(dayList[first]).slice(0, 6)} – ${formatDate(dayList[last]).slice(0, 6)}`, taken: overlaps(bars, start, end) }
     }
     if (gesture?.kind === 'move' && gesture.dragged && gesture.targetCarId === carId) {
-      const shift = Math.round(gesture.dx / DAY_WIDTH) * DAY
+      const shift = Math.round(gesture.dx / gesture.dayWidth) * DAY
       const start = gesture.bar.start + shift
       const end = gesture.bar.end + shift
       const moved = addDays(gesture.bar.booking.pickupAt.slice(0, 10), shift / DAY)
@@ -204,17 +230,17 @@ export function OccupancyCalendar({
 
   return (
     <div className={styles.scroller}>
-      <div className={styles.grid} style={{ gridTemplateColumns: `11rem ${days * DAY_WIDTH}px` }}>
+      <div className={styles.grid} style={{ '--days': days } as CSSProperties}>
         <div className={styles.corner}>Fahrzeug</div>
         <div className={styles.days}>
           {dayList.map((d) => (
             <div
               key={d}
               className={[styles.day, d === today && styles.today, (isWeekend(d) || holidays.has(d)) && styles.off].filter(Boolean).join(' ')}
-              style={{ width: DAY_WIDTH }}
               title={holidays.get(d)}
             >
-              {WEEKDAYS_SHORT[weekdayOf(d)]} {formatDate(d).slice(0, 6)}
+              <span className={styles.weekday}>{WEEKDAYS_SHORT[weekdayOf(d)]}</span>
+              <span>{formatDate(d).slice(0, 6)}</span>
             </div>
           ))}
         </div>
@@ -225,13 +251,12 @@ export function OccupancyCalendar({
           return (
             <div key={car.id} className={styles.row}>
               <div className={styles.car}>
-                <strong>{car.name}</strong>
-                <span className="muted">{[car.model, car.licensePlate].filter(Boolean).join(' · ')}</span>
+                <strong className={styles.carName}>{car.name}</strong>
+                <span className={styles.carMeta}>{car.licensePlate ?? car.model}</span>
               </div>
               <div
                 className={[styles.track, canEdit && styles.creatable].filter(Boolean).join(' ')}
                 data-car-row={car.id}
-                style={{ '--day': `${DAY_WIDTH}px` } as CSSProperties}
                 onPointerDown={(e) => startSelect(e, car.id)}
                 onPointerMove={moveSelect}
                 onPointerUp={endSelect}
@@ -240,7 +265,7 @@ export function OccupancyCalendar({
               >
                 {dayList.map((d, i) =>
                   isWeekend(d) || holidays.has(d) ? (
-                    <div key={d} className={styles.offDay} style={{ left: i * DAY_WIDTH, width: DAY_WIDTH }} aria-hidden />
+                    <div key={d} className={styles.offDay} style={{ left: pct(i * DAY), width: pct(DAY) }} aria-hidden />
                   ) : null,
                 )}
                 {bars.map((bar) => (
@@ -258,7 +283,7 @@ export function OccupancyCalendar({
                     ]
                       .filter(Boolean)
                       .join(' ')}
-                    style={{ left: bar.start * PX_PER_MINUTE, width: Math.max((bar.end - bar.start) * PX_PER_MINUTE, 6) }}
+                    style={{ left: pct(bar.start), width: pct(bar.end - bar.start) }}
                     title={`${bar.booking.holderName}: ${formatLocalDateTime(bar.booking.pickupAt)} – ${formatLocalDateTime(bar.booking.returnAt)}`}
                     aria-label={`${car.name}, ${bar.booking.holderName}, ${formatLocalDateTime(bar.booking.pickupAt)} bis ${formatLocalDateTime(bar.booking.returnAt)}`}
                     onPointerDown={(e) => startMove(e, bar)}
@@ -266,21 +291,23 @@ export function OccupancyCalendar({
                     onPointerUp={endMove}
                     onPointerCancel={cancel}
                     onKeyDown={(e) => openByKey(e, bar.booking)}
+                    // screen readers "click" without a pointer (detail 0) – pointer clicks are handled above
+                    onClick={(e) => e.detail === 0 && onOpen(bar.booking)}
                   >
-                    {bar.booking.holderName}
+                    <span className={styles.barText}>{bar.booking.holderName}</span>
                   </div>
                 ))}
                 {ghost && (
                   <div
                     className={[styles.ghost, ghost.taken && styles.taken].filter(Boolean).join(' ')}
-                    style={{ left: ghost.start * PX_PER_MINUTE, width: (ghost.end - ghost.start) * PX_PER_MINUTE }}
+                    style={{ left: pct(ghost.start), width: pct(ghost.end - ghost.start) }}
                     aria-hidden
                   >
                     {ghost.label}
                     {ghost.taken && ' · belegt'}
                   </div>
                 )}
-                {nowOffset >= 0 && nowOffset <= days * DAY && <div className={styles.now} style={{ left: nowOffset * PX_PER_MINUTE }} aria-hidden />}
+                {nowOffset >= 0 && nowOffset <= total && <div className={styles.now} style={{ left: pct(nowOffset) }} aria-hidden />}
               </div>
             </div>
           )

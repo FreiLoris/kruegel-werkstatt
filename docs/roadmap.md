@@ -225,9 +225,14 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 ## Phase 8 – To-dos & pinboard
 
-- [ ] **8a – To-do data model & API**
+- [x] **8a – To-do data model & API**
   Person as reference (instead of name), deadline, shopping list flag, reference to task/note
   by ID instead of task number text (→ bug #14). Then "To-do" directly in the task detail (left open in 6h).
+  `todo` (V16) with done at/by; `/api/todos` (open by deadline, latest done, filters person/shopping/task),
+  tick off without version, undo. Task detail: card "To-dos" (checkbox only – F5, done ones with
+  "Rückgängig"). The note reference follows with 8c (the note does not exist yet).
+  Also in this package: courtesy car on the task sheet and the calendar cards; courtesy car page
+  layout (full-width calendar, clearer cards).
 - [ ] **8b – To-do page**
   Person filter from the employee list (→ bug #3), active filter recognisable,
   own tab shopping list, done only via checkbox with "undo" (→ F5).

@@ -71,3 +71,16 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+.courtesyCar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.courtesyCar svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}

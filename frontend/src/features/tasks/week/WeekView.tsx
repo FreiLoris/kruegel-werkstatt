@@ -23,6 +23,7 @@ import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
 import { movedTo, minutesOf, withSchedule } from '../day/timeGrid'
+import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
 import { tasksBetweenKey, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
 import { WeekCard } from './WeekCard'
 import { weekDays } from './weekDays'
@@ -49,6 +50,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const { data: employees } = useAllEmployees()
   const { data: holidays } = usePublicHolidays(monday, sunday)
   const schedule = useScheduleTask(viewKey)
+  const courtesyCars = useCourtesyCarsByTask(`${monday}T00:00`, `${addDays(monday, 7)}T00:00`)
   const canEdit = useCanEdit()
   const toast = useToast()
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -125,14 +127,23 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
             onOpen={() => onOpenDay(day.date)}
           >
             {day.tasks.map((task) => (
-              <DraggableCard key={task.id} task={task} mechanic={mechanicOf(task)} liftName={liftNameOf(task)} disabled={!canEdit} />
+              <DraggableCard
+                key={task.id}
+                task={task}
+                mechanic={mechanicOf(task)}
+                liftName={liftNameOf(task)}
+                courtesyCar={courtesyCars.get(task.id)}
+                disabled={!canEdit}
+              />
             ))}
           </DayColumn>
         ))}
       </div>
       {/* no fly-back animation: the card is already shown on its new day */}
       <DragOverlay dropAnimation={null}>
-        {active && <WeekCard task={active} mechanic={mechanicOf(active)} liftName={liftNameOf(active)} dragging />}
+        {active && (
+          <WeekCard task={active} mechanic={mechanicOf(active)} liftName={liftNameOf(active)} courtesyCar={courtesyCars.get(active.id)} dragging />
+        )}
       </DragOverlay>
     </DndContext>
   )
@@ -174,11 +185,13 @@ function DraggableCard({
   task,
   mechanic,
   liftName,
+  courtesyCar,
   disabled,
 }: {
   task: Task
   mechanic: Employee | undefined
   liftName: string | undefined
+  courtesyCar: string | undefined
   disabled: boolean
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id, disabled })
@@ -188,6 +201,7 @@ function DraggableCard({
       task={task}
       mechanic={mechanic}
       liftName={liftName}
+      courtesyCar={courtesyCar}
       style={{ opacity: isDragging ? 0.35 : undefined, cursor: disabled ? undefined : 'grab' }}
       {...attributes}
       {...listeners}

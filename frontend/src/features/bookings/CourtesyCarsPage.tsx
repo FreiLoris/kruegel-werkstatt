@@ -1,10 +1,11 @@
 import { CarFront, ChevronLeft, ChevronRight, ClipboardList, Pencil, Plus, RotateCcw, Settings, Undo2, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { Facts } from '../../components/ui/Facts'
+import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { useToast } from '../../components/ui/toastContext'
 import { addDays, formatLocalDateTime, todayIso } from '../../lib/format'
 import { useAllCourtesyCars, type CourtesyCar } from '../courtesy-cars/courtesyCarApi'
@@ -49,6 +50,12 @@ export function CourtesyCarsPage() {
   const calendar = useBookingsBetween(`${from}T00:00`, `${addDays(from, DAYS)}T00:00`)
   const around = useBookingsBetween(`${addDays(today, -STATE_DAYS_BACK)}T00:00`, `${addDays(today, STATE_DAYS_AHEAD)}T00:00`)
   const save = useSaveBooking()
+  const panelRef = useRef<HTMLElement>(null)
+  // the panel opens below the calendar – bring it into view (on a tablet it would be off screen)
+  const panelKey = panel ? `${panel.kind}-${panel.kind === 'new' ? JSON.stringify(panel.initial) : panel.bookingId}` : null
+  useEffect(() => {
+    if (panelKey) panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [panelKey])
 
   const cars = (allCars ?? []).filter((car) => car.active)
   const carName = (id: string) => allCars?.find((c) => c.id === id)?.name ?? 'Ersatzwagen'
@@ -145,7 +152,7 @@ export function CourtesyCarsPage() {
       </section>
 
       {panel && (
-        <section className={styles.panel} aria-labelledby="booking-panel-heading">
+        <section ref={panelRef} className={styles.panel} aria-labelledby="booking-panel-heading">
           {panel.kind === 'new' && (
             <>
               <h2 id="booking-panel-heading">Ersatzwagen buchen</h2>
@@ -223,7 +230,7 @@ export function CourtesyCarsPage() {
   )
 }
 
-/** One car: where it is right now, service and insurance, book it */
+/** One car: where it is right now (in words and color), service and insurance, book it */
 function CarCard({
   car,
   state,
@@ -238,41 +245,54 @@ function CarCard({
   onOpen: (booking: Booking) => void
 }) {
   const label = state.kind === 'overdue' ? 'Überfällig' : state.kind === 'out' ? 'Unterwegs' : 'Frei'
+  const booking = state.kind === 'free' ? state.next : state.booking
+  const text =
+    state.kind === 'overdue'
+      ? `${state.booking.holderName} – sollte seit ${formatLocalDateTime(state.booking.returnAt)} zurück sein`
+      : state.kind === 'out'
+        ? `${state.booking.holderName} – zurück ${formatLocalDateTime(state.booking.returnAt)}`
+        : state.next
+          ? `Reserviert ab ${formatLocalDateTime(state.next.pickupAt)} – ${state.next.holderName}`
+          : 'Keine Reservation'
   return (
-    <article className={[styles.card, styles[state.kind]].filter(Boolean).join(' ')}>
+    <article className={[styles.card, styles[state.kind]].join(' ')}>
       <div className={styles.cardHeader}>
-        <div>
-          <h2 className={styles.carName}>
-            <CarFront aria-hidden /> {car.name}
-          </h2>
-          <p className="muted">{[car.model, car.licensePlate].filter(Boolean).join(' · ') || '–'}</p>
-        </div>
+        <h2 className={styles.carName}>
+          <CarFront aria-hidden /> {car.name}
+        </h2>
         <span className={styles.badge}>{label}</span>
       </div>
-      {state.kind !== 'free' ? (
-        <button type="button" className={styles.where} onClick={() => onOpen(state.booking)}>
-          {state.booking.holderName}
-          {state.kind === 'overdue'
-            ? `, sollte zurück sein seit ${formatLocalDateTime(state.booking.returnAt)}`
-            : ` bis ${formatLocalDateTime(state.booking.returnAt)}`}
-        </button>
-      ) : state.next ? (
-        <button type="button" className={styles.where} onClick={() => onOpen(state.next!)}>
-          Reserviert ab {formatLocalDateTime(state.next.pickupAt)} ({state.next.holderName})
+      <p className={styles.carMeta}>
+        {car.licensePlate && <LicensePlate text={car.licensePlate} size="sm" />}
+        {car.model && <span>{car.model}</span>}
+      </p>
+      {booking ? (
+        <button type="button" className={styles.state} onClick={() => onOpen(booking)} title="Buchung anzeigen">
+          {text}
         </button>
       ) : (
-        <p className={styles.where}>Keine Reservation</p>
+        <p className={styles.state}>{text}</p>
       )}
-      <Facts
-        rows={[
-          ['Service fällig', <DueDate key="s" date={car.serviceDue} status={car.serviceStatus} kind="service" />],
-          ['Versicherung bis', <DueDate key="i" date={car.insuranceUntil} status={car.insuranceStatus} kind="insurance" />],
-        ]}
-      />
+      <dl className={styles.dates}>
+        <div>
+          <dt>Service fällig</dt>
+          <dd>
+            <DueDate date={car.serviceDue} status={car.serviceStatus} kind="service" />
+          </dd>
+        </div>
+        <div>
+          <dt>Versicherung bis</dt>
+          <dd>
+            <DueDate date={car.insuranceUntil} status={car.insuranceStatus} kind="insurance" />
+          </dd>
+        </div>
+      </dl>
       {canEdit && (
-        <Button small icon={Plus} onClick={onBook}>
-          Buchen
-        </Button>
+        <div className={styles.cardActions}>
+          <Button small icon={Plus} onClick={onBook}>
+            Buchen
+          </Button>
+        </div>
       )}
     </article>
   )

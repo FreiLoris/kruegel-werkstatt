@@ -1,4 +1,4 @@
-/* Scrolls sideways itself; car names stay visible (sticky) */
+/* As wide as the page; on a narrow screen it scrolls sideways (min. width per day) */
 .scroller {
   overflow-x: auto;
   border: 1px solid var(--color-border);
@@ -11,7 +11,7 @@
 
 .grid {
   display: grid;
-  min-width: max-content;
+  grid-template-columns: minmax(8.5rem, 11rem) minmax(calc(var(--days) * 4.25rem), 1fr);
 }
 
 .corner,
@@ -33,22 +33,38 @@
 }
 
 .days {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(var(--days), 1fr);
   border-bottom: 1px solid var(--color-border);
 }
 
+/* weekday above the date – fits narrow days */
 .day {
-  box-sizing: border-box;
-  padding: var(--space-2) var(--space-1);
+  display: grid;
+  padding: var(--space-1);
   border-left: 1px solid var(--color-border);
   text-align: center;
   font-size: var(--font-size-sm);
   font-weight: 600;
   white-space: nowrap;
+  overflow: hidden;
+}
+
+.weekday {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.today .weekday {
+  color: var(--color-accent);
 }
 
 .today {
   color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
   box-shadow: inset 0 -3px 0 var(--color-accent);
 }
 
@@ -63,19 +79,41 @@
 .car {
   display: grid;
   align-content: center;
+  gap: 2px;
+  min-width: 0;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border);
+}
+
+.carName,
+.carMeta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.carMeta {
   font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 /* One car: day lines, the bars positioned inside */
 .track {
   position: relative;
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   border-bottom: 1px solid var(--color-border);
-  background-image: repeating-linear-gradient(to right, var(--color-border) 0 1px, transparent 1px var(--day));
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-border) 0 1px,
+    transparent 1px calc(100% / var(--days))
+  );
   /* free days are dragged open with the mouse; fingers still scroll */
   touch-action: pan-x pan-y;
+}
+
+.row:last-child .track,
+.row:last-child .car {
+  border-bottom: 0;
 }
 
 .creatable {
@@ -92,20 +130,31 @@
 
 .bar {
   position: absolute;
-  top: 0.5rem;
-  bottom: 0.5rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
   z-index: 1;
   display: flex;
   align-items: center;
+  min-width: 8px;
   box-sizing: border-box;
   overflow: hidden;
   padding: 0 var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   font-size: var(--font-size-sm);
   font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+
+.barText {
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  cursor: pointer;
+}
+
+.bar:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
 }
 
 /* not picked up yet: can be dragged */
@@ -130,6 +179,7 @@
   background: var(--color-surface-raised);
   color: var(--color-text-muted);
   font-weight: 400;
+  box-shadow: none;
 }
 
 /* goes on before/after the shown days */
@@ -154,15 +204,15 @@
 
 .ghost {
   position: absolute;
-  top: 0.35rem;
-  bottom: 0.35rem;
+  top: 0.45rem;
+  bottom: 0.45rem;
   z-index: 2;
   display: flex;
   align-items: center;
   box-sizing: border-box;
   padding: 0 var(--space-2);
   border: 2px dashed var(--color-accent);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: color-mix(in srgb, var(--color-accent) 15%, transparent);
   font-size: var(--font-size-sm);
   font-weight: 700;

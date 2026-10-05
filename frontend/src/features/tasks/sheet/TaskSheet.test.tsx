@@ -71,5 +71,15 @@ describe('TaskSheet', () => {
     expect(screen.getByText('Reto')).toBeTruthy()
     // lift not chosen yet
     expect(screen.getByText('noch offen')).toBeTruthy()
+    // no courtesy car → no line
+    expect(screen.queryByText('Ersatzwagen')).toBeNull()
+  })
+
+  it('tells the mechanic about the courtesy car', () => {
+    const courtesyCar = 'Ersatzwagen 2 (Skoda Fabia, ZH 10002), 15.10.2026, 08:00 – 15.10.2026, 17:00'
+    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map(), courtesyCar }} />)
+
+    expect(screen.getByText('Ersatzwagen')).toBeTruthy()
+    expect(screen.getByText(courtesyCar)).toBeTruthy()
   })
 })

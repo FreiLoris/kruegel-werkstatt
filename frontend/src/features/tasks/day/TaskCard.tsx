@@ -1,4 +1,4 @@
-import { ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
+import { CarFront, ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
@@ -17,6 +17,8 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
   serviceItemNames: ReadonlyMap<string, string>
   /** the card that is being dragged (shown under the pointer) */
   dragging?: boolean
+  /** name of the courtesy car the customer has for this task */
+  courtesyCar?: string
   ref?: Ref<HTMLDivElement>
 }
 
@@ -25,7 +27,7 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
  * and all work in readable contrast. Click or Enter opens the task; the rest of the props make it
  * draggable (keyboard: space picks it up).
  */
-export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, className, onKeyDown, ...rest }: TaskCardProps) {
+export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, courtesyCar, className, onKeyDown, ...rest }: TaskCardProps) {
   const navigate = useNavigate()
   const work = workSummary(task, serviceItemNames)
   const open = () => navigate(`/tasks/${task.id}`)
@@ -47,7 +49,16 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
         <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
         <TaskStatusBadge status={task.status} />
       </div>
-      <p className={styles.customer}>{task.customer.displayName}</p>
+      <p className={styles.customer}>
+        {/* next to the name: short blocks in the time grid cut off the lower lines */}
+        {courtesyCar && (
+          <span className={styles.courtesyCar} title={`Ersatzwagen: ${courtesyCar}`}>
+            <CarFront aria-hidden />
+            <span className="visually-hidden">Ersatzwagen {courtesyCar}</span>
+          </span>
+        )}
+        {task.customer.displayName}
+      </p>
       <p className={styles.vehicle}>
         {task.vehicle ? (
           <>

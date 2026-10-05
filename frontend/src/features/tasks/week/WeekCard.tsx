@@ -1,4 +1,4 @@
-import { Hourglass } from 'lucide-react'
+import { CarFront, Hourglass } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
@@ -15,6 +15,8 @@ interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
   mechanic: Employee | undefined
   liftName: string | undefined
   dragging?: boolean
+  /** name of the courtesy car the customer has for this task */
+  courtesyCar?: string
   ref?: Ref<HTMLDivElement>
 }
 
@@ -22,7 +24,7 @@ interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
  * Compact card for the week: time, customer, plate, lift and mechanic. Status as colored bar +
  * tooltip. Click or Enter opens the task; keyboard dragging starts with space.
  */
-export function WeekCard({ task, mechanic, liftName, dragging = false, className, onKeyDown, ...rest }: WeekCardProps) {
+export function WeekCard({ task, mechanic, liftName, dragging = false, courtesyCar, className, onKeyDown, ...rest }: WeekCardProps) {
   const navigate = useNavigate()
   const open = () => navigate(`/tasks/${task.id}`)
   return (
@@ -57,6 +59,11 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, className
         {task.mfk && (
           <span className={styles.mfk} title={task.mfkAppointment ? `MFK ${timeSeenFrom(task.date, task.mfkAppointment)}` : 'MFK, Termin offen'}>
             MFK{task.mfkAppointment ? ` ${timeSeenFrom(task.date, task.mfkAppointment)}` : ''}
+          </span>
+        )}
+        {courtesyCar && (
+          <span className={styles.courtesyCar} title={`Ersatzwagen: ${courtesyCar}`}>
+            <CarFront aria-label="Ersatzwagen" /> {courtesyCar}
           </span>
         )}
       </div>
