@@ -1,0 +1,39 @@
+.saved {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin: var(--space-6) auto;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.saved h2,
+.saved p {
+  margin: 0;
+}
+
+.icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  color: var(--color-success);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}

@@ -152,9 +152,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   Settings: company name, address, phone, e-mail, website and logo upload (PNG/JPEG/WebP/SVG,
   max. 1 MB, type detected from the content). Name and logo appear in the navigation and as
   letterhead on the task sheet.
-- [ ] **6e – Wizard step 3/4 + task sheet**
-  Clear "saved" confirmation; print with Krügel letterhead, white paper layout,
-  **all ticked work on the sheet** (→ F1), customer address.
+- [x] **6e – Wizard step 3/4 + task sheet**
+  Step 3 "Prüfen & speichern" (every block can be changed, server errors in words), clear
+  "saved" confirmation with print / next task / start; task sheet `/tasks/:id/sheet`: A4 white
+  paper, letterhead from the company profile, customer address, **all ticked work as a
+  checklist** (→ F1). "Neuer Auftrag" in the navigation.
 - [ ] **6f – Appointments: day view by lift**
   Cards with mechanic + courtesy car symbol, drag & drop between lifts and within the
   column – the order is saved for **all** affected tasks (→ bug #5).

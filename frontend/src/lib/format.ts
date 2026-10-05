@@ -7,6 +7,7 @@
  *   Timestamp  "2026-10-15T06:00:00Z"  → "15.10.2026, 08:00"  (in Swiss time)
  *   Count      1480                    → "1’480"
  *   Month      "2026-03-15"            → "03.2026"
+ *   Local      "2026-10-14T18:00:00"   → "14.10.2026, 18:00"  (business date-time, no time zone)
  *
  * Rule: nowhere else in the frontend format date values yourself.
  */
@@ -102,4 +103,13 @@ export function addDays(isoDate: string, days: number): string {
   const [, year, month, day] = match
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) + days))
   return date.toISOString().slice(0, 10)
+}
+
+/**
+ * Business date-time without time zone ("kommt früher", MFK appointment) – split as text like
+ * {@link formatDate}, because it is local time in the workshop, not a point in time.
+ */
+export function formatLocalDateTime(isoDateTime: string): string {
+  const [date, time] = isoDateTime.split('T')
+  return `${formatDate(date)}, ${formatTime(time)}`
 }

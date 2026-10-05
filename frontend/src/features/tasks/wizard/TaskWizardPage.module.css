@@ -71,3 +71,8 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
+
+.hint {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}

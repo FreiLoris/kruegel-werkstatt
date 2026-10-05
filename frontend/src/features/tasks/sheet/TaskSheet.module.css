@@ -1,0 +1,181 @@
+/*
+ * A4 paper: white with black text also in the dark app – it is what comes out of the printer.
+ * Sizes in mm/pt on purpose (exception to the token rule): the sheet has physical dimensions.
+ */
+.sheet {
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 15mm 15mm 12mm;
+  background: var(--color-paper);
+  color: var(--color-paper-text);
+  font-size: 11pt;
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+}
+
+.sheet h1,
+.sheet h2,
+.sheet p {
+  margin: 0;
+}
+
+.letterhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8mm;
+  padding-bottom: 4mm;
+  border-bottom: 1px solid var(--color-paper-text);
+}
+
+.logo {
+  max-height: 20mm;
+  max-width: 60mm;
+  object-fit: contain;
+}
+
+.company {
+  display: grid;
+  margin-left: auto;
+  text-align: right;
+  font-size: 9.5pt;
+}
+
+.company strong {
+  font-size: 13pt;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 6mm 0 4mm;
+}
+
+.titleRow h1 {
+  font-size: 18pt;
+}
+
+.number {
+  display: grid;
+  text-align: right;
+}
+
+.number span {
+  font-size: 9pt;
+  color: var(--color-paper-muted);
+}
+
+.number strong {
+  font-size: 16pt;
+  letter-spacing: 0.05em;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+}
+
+.block {
+  margin-bottom: 5mm;
+  break-inside: avoid;
+}
+
+.block h2 {
+  margin-bottom: 1.5mm;
+  padding-bottom: 1mm;
+  border-bottom: 1px solid var(--color-paper-line);
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-paper-muted);
+}
+
+.strong {
+  font-weight: 700;
+}
+
+.facts {
+  display: grid;
+  gap: 0.5mm;
+  margin: 1.5mm 0 0;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: 30mm 1fr;
+}
+
+.facts dt {
+  color: var(--color-paper-muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.block .writeIn {
+  margin-top: 2mm;
+  color: var(--color-paper-muted);
+}
+
+/* Checklist: the mechanic ticks off by hand */
+.checklist {
+  display: grid;
+  gap: 2mm;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 3mm;
+  font-size: 12pt;
+}
+
+.box {
+  flex-shrink: 0;
+  width: 4.5mm;
+  height: 4.5mm;
+  margin-top: 0.6mm;
+  border: 1.5px solid var(--color-paper-text);
+}
+
+.detail {
+  color: var(--color-paper-muted);
+}
+
+.block .freeText {
+  margin-top: 2mm;
+  white-space: pre-wrap;
+}
+
+/* Empty lines to write on */
+.lines {
+  height: 24mm;
+  background: repeating-linear-gradient(to bottom, transparent 0, transparent 7.5mm, var(--color-paper-line) 7.5mm, var(--color-paper-line) 8mm);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8mm;
+  font-size: 9pt;
+  color: var(--color-paper-muted);
+}
+
+/* On paper: no shadow, the printer's margins are set by @page */
+@media print {
+  .sheet {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}

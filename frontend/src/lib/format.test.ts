@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, formatCount, formatDate, formatMonth, formatTime, formatTimestamp, todayIso } from './format'
+import { addDays, formatCount, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, todayIso } from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -73,5 +73,12 @@ describe('addDays', () => {
     expect(addDays('2026-12-31', 1)).toBe('2027-01-01')
     expect(addDays('2026-03-01', -1)).toBe('2026-02-28')
     expect(addDays('2026-03-28', 2)).toBe('2026-03-30')
+  })
+})
+
+describe('formatLocalDateTime', () => {
+  it('shows date and time as entered, without time zone conversion', () => {
+    expect(formatLocalDateTime('2026-10-14T18:00:00')).toBe('14.10.2026, 18:00')
+    expect(formatLocalDateTime('2026-03-29T02:30')).toBe('29.03.2026, 02:30')
   })
 })

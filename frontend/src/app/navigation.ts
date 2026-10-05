@@ -10,6 +10,7 @@ export interface NavEntry {
 
 export const navigation: NavEntry[] = [
   { path: '/', title: 'Start' },
+  { path: '/tasks/new', title: 'Neuer Auftrag' },
   { path: '/employees', title: 'Mitarbeiter' },
   { path: '/settings', title: 'Einstellungen' },
   { path: '/system', title: 'System' },

@@ -74,6 +74,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Assistent (Neuer Auftrag) | wizard (`TaskWizardPage`) | |
 | Firma / Firmenprofil | company profile (`CompanyProfile`, `/api/company`) | name, address, logo – one row |
 | Briefkopf | letterhead | from the company profile |
+| Auftragszettel | task sheet (`TaskSheet`, `/tasks/:id/sheet`) | printed A4 sheet for the mechanic |
 | Kapazitätsübersicht | capacity overview (`CapacityOverview`) | week grid, a planning aid – no capacity check |
 | Werktag | working day (`previousWorkingDay`) | Monday–Friday without public holidays (also in the frontend: `lib/calendar.ts`) |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
@@ -96,7 +97,6 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
 | Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |
 | Ostersonntag | `EasterSunday` | basis for the moving holidays |
-| Auftragszettel | task sheet | printed sheet for the mechanic |
 | SwissGarage-Import | SwissGarage import | product name stays |
 | Adressliste / Fahrzeugliste (Export) | address list / vehicle list | `Adrliste.xlsx`, `Fahrzeug.xlsx` |
 | Adressart „Garage-Kunde“ / „gesperrt“ | address kind | only garage customers that are not blocked are imported |

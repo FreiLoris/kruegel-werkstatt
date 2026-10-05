@@ -61,7 +61,7 @@ frontend/src/
 ```
 
 - **Pages** are called `…Page.tsx` and are mapped to a URL in `app/router.tsx`.
-  Also add new pages to `app/navigation.ts`.
+  Also add new pages to `app/navigation.ts`. Print views (task sheet) are routes outside `AppLayout`.
 - **Server data only through TanStack Query** (`useQuery`/`useMutation`), never with your own
   `useEffect` + `fetch`. Query functions return `dataOrThrow(await api.GET(…))`.
 - **API errors** are always `ApiError` (`api/errors.ts`) – with `messageForField()` for forms
