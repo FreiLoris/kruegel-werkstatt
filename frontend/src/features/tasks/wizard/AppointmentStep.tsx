@@ -11,6 +11,7 @@ import {
   withDate,
   withMfk,
   withReadyBy,
+  withSlot,
   type AppointmentForm,
 } from './appointmentForm'
 import styles from './AppointmentStep.module.css'
@@ -62,7 +63,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
               required
               value={form.date}
               onChange={(e) => onChange(withDate(form, e.target.value, form.time, holidayDates))}
-              hint="oder rechts in der Übersicht klicken"
+              hint="oder rechts im Raster ziehen"
               error={form.date ? errors.date : required("date")}
             />
             <TextField
@@ -282,10 +283,10 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
 
       <aside className={styles.aside}>
         <CapacityOverview
-          date={form.date}
-          time={form.time}
+          picked={{ liftId: form.liftId || null, date: form.date, time: form.time, endAt: `${form.endDate}T${form.endTime}` }}
           holidays={holidays}
-          onPick={(date, time) => onChange(withDate(form, date, time, holidayDates))}
+          onPickDay={(date) => onChange(withDate(form, date, form.time, holidayDates))}
+          onPickSlot={(slot) => onChange(withSlot(form, slot, holidayDates))}
         />
       </aside>
     </div>

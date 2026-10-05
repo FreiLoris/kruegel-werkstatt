@@ -41,7 +41,6 @@ public record TaskDto(
         @Schema(types = {"object", "null"}, description = "Empty = no parts needed") PartsOrderDto parts,
         @Schema(types = {"string", "null"}, description = "Further work as free text") String workDescription,
         @Schema(types = {"string", "null"}, description = "Internal notes") String notes,
-        @Schema(description = "Position within the lift column of the day") int sortOrder,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy,
         Instant updatedAt,
@@ -61,7 +60,7 @@ public record TaskDto(
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), serviceItemIds,
-                PartsOrderDto.of(w.parts()), w.description(), task.getNotes(), task.getSortOrder(),
+                PartsOrderDto.of(w.parts()), w.description(), task.getNotes(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());
     }
 }

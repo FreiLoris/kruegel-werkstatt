@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { Button } from '../../../components/ui/Button'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
@@ -6,21 +7,24 @@ import { addDays, formatDate, formatTime } from '../../../lib/format'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
-import { tasksBetweenKey, useTasksBetween } from '../taskApi'
-import { DayBoard } from './DayBoard'
-import { dayColumns } from './dayColumns'
+import { tasksOfDayKey, useTasksBetween, useTasksOfDay } from '../taskApi'
+import { newTaskUrl } from '../wizard/appointmentForm'
+import { DayGrid } from './DayGrid'
 import styles from './DayView.module.css'
 
-/** One day, one column per lift (6f). */
+/** Pixels per minute in the day view – one hour = 90 px, enough for customer, vehicle and work */
+const SCALE = 1.5
+
+/** One day as a time grid per lift (6k). Dragging open the empty grid starts a new task there. */
 export function DayView({ date, onGo }: { date: string; onGo: (date: string) => void }) {
-  const tasks = useTasksBetween(date, date)
+  const tasks = useTasksOfDay(date)
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: serviceItems } = useAllServiceItems()
   const canEdit = useCanEdit()
+  const navigate = useNavigate()
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
-  const columns = useMemo(() => dayColumns(tasks.data ?? [], lifts ?? []), [tasks.data, lifts])
 
   if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
   if (!tasks.data || !lifts || !employees) return <p className="muted">Lade Termine …</p>
@@ -28,14 +32,19 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   return (
     <>
       {tasks.data.length === 0 && <NextAppointment after={date} onGo={onGo} />}
-      <DayBoard
-        columns={columns}
+      <DayGrid
+        date={date}
         tasks={tasks.data}
-        dayKey={tasksBetweenKey(date, date)}
+        lifts={lifts}
+        mode="plan"
+        scale={SCALE}
+        canEdit={canEdit}
+        onPick={(slot) => navigate(newTaskUrl(slot))}
+        viewKey={tasksOfDayKey(date)}
         employees={employees}
         serviceItemNames={serviceItemNames}
-        canEdit={canEdit}
       />
+      {canEdit && <p className={styles.hint}>Im leeren Raster ziehen (oder tippen) legt dort einen neuen Auftrag an.</p>}
     </>
   )
 }

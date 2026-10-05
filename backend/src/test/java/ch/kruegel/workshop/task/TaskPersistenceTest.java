@@ -67,7 +67,7 @@ class TaskPersistenceTest {
         TaskWork work = new TaskWork(true, TireChangeKind.WHEELS_STORED, true, DAY.atTime(10, 0),
                 Set.of(oil, wipers), new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", DAY.minusDays(3)),
                 "Bremsen vorne ersetzen");
-        Task task = new Task(new TaskDetails(huber, golf, appointment, reto, lift, work, "Kunde ruft an"), 2);
+        Task task = new Task(new TaskDetails(huber, golf, appointment, reto, lift, work, "Kunde ruft an"));
         task.assignTaskNumber("A-17");
         task.changeStatus(TaskStatus.WAITING_FOR_PARTS);
 
@@ -76,7 +76,6 @@ class TaskPersistenceTest {
         assertThat(loaded.getId().version()).isEqualTo(7);
         assertThat(loaded.getTaskNumber()).isEqualTo("A-17");
         assertThat(loaded.getStatus()).isEqualTo(TaskStatus.WAITING_FOR_PARTS);
-        assertThat(loaded.getSortOrder()).isEqualTo(2);
         assertThat(loaded.getAppointment()).isEqualTo(appointment);
         assertThat(loaded.getCustomer().getId()).isEqualTo(huber.getId());
         assertThat(loaded.getVehicle().getId()).isEqualTo(golf.getId());
@@ -89,7 +88,7 @@ class TaskPersistenceTest {
     @Test
     void minimalTaskHasNoPartsAndNoVehicle() {
         Task task = new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(7, 30)), null, null,
-                TaskWork.described(null), null), 0);
+                TaskWork.described(null), null));
 
         Task loaded = saveAndReload(task);
 
@@ -113,7 +112,7 @@ class TaskPersistenceTest {
     @Test
     void deletingATaskRemovesItsTickedServiceItemsButNotTheServiceItems() {
         Task task = new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(8, 0)), null, null,
-                new TaskWork(false, null, false, null, Set.of(oil), null, null), null), 0);
+                new TaskWork(false, null, false, null, Set.of(oil), null, null), null));
         tasks.saveAndFlush(task);
 
         tasks.delete(task);
@@ -161,12 +160,12 @@ class TaskPersistenceTest {
 
     private Task onLift(LocalTime start, LocalTime end) {
         return new Task(new TaskDetails(huber, null, new Appointment(DAY, start, DAY.atTime(end), null, null, false),
-                null, lift, TaskWork.described(null), null), 0);
+                null, lift, TaskWork.described(null), null));
     }
 
     private Task minimalTask() {
         return new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(8, 0)), null, null,
-                TaskWork.described(null), null), 0);
+                TaskWork.described(null), null));
     }
 
     private Task saveAndReload(Task task) {

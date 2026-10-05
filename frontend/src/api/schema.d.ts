@@ -713,15 +713,35 @@ export interface paths {
         };
         /**
          * Tasks from `from` to `to` (both inclusive, max. 92 days)
-         * @description Sorted by day, time and position in the lift column.
+         * @description By the day of their start, sorted by day and time.
          */
         get: operations["between"];
         put?: never;
         /**
          * Create task
-         * @description Starts as RECEIVED, at the end of its lift column.
+         * @description Starts as RECEIVED. The lift must be free for the whole time.
          */
         post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tasks/day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tasks that take time on a day
+         * @description Those starting that day and those of earlier days that are still on their lift (e.g. waiting for parts) – the day view. Sorted by start.
+         */
+        get: operations["onDay"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -790,7 +810,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/tasks/{id}/move": {
+    "/api/tasks/{id}/schedule": {
         parameters: {
             query?: never;
             header?: never;
@@ -799,10 +819,10 @@ export interface paths {
         };
         get?: never;
         /**
-         * Move into a lift column at a position (drag & drop)
-         * @description Both affected columns are renumbered and saved. Returns the target column in its new order.
+         * New lift, start and end (drag & drop)
+         * @description No version needed. The lift must be free; "kommt früher"/"fertig bis" move along to another day.
          */
-        put: operations["move"];
+        put: operations["schedule"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1393,11 +1413,6 @@ export interface components {
             readyBy: string | null;
             /** @description Ticked service items, in the order of the service item list */
             serviceItemIds: string[];
-            /**
-             * Format: int32
-             * @description Position within the lift column of the day
-             */
-            sortOrder: number;
             /** @enum {string} */
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
             /** @description SwissGarage order number */
@@ -1422,14 +1437,6 @@ export interface components {
             waitingCustomer: boolean;
             /** @description Further work as free text */
             workDescription: string | null;
-        };
-        TaskMoveRequest: {
-            /** Format: date */
-            date?: string | null;
-            /** Format: uuid */
-            liftId?: string | null;
-            /** Format: int32 */
-            position: number;
         };
         TaskNumberRequest: {
             taskNumber?: string | null;
@@ -1488,6 +1495,19 @@ export interface components {
             /** @description Missing = false */
             waitingCustomer?: boolean;
             workDescription?: string;
+        };
+        TaskScheduleRequest: {
+            /** Format: date */
+            date: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T09:30
+             */
+            endAt: string;
+            /** Format: uuid */
+            liftId?: string | null;
+            /** @example 08:00 */
+            time: string;
         };
         TaskSearchResultDto: {
             /** @description Upcoming appointments first (nearest first), then past ones (newest first) */
@@ -5123,6 +5143,73 @@ export interface operations {
             };
         };
     };
+    onDay: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     history: {
         parameters: {
             query: {
@@ -5461,7 +5548,7 @@ export interface operations {
             };
         };
     };
-    move: {
+    schedule: {
         parameters: {
             query?: never;
             header?: never;
@@ -5472,7 +5559,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TaskMoveRequest"];
+                "application/json": components["schemas"]["TaskScheduleRequest"];
             };
         };
         responses: {
@@ -5482,7 +5569,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TaskDto"][];
+                    "*/*": components["schemas"]["TaskDto"];
                 };
             };
             /** @description Bad Request */

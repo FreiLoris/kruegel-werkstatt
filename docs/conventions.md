@@ -114,7 +114,8 @@ Overview of all components with examples: http://localhost:5173/system/component
 | Confirm | `useConfirm()` | `if (await confirm({ title, text, dangerous: true })) …` – never `window.confirm()` |
 | Menu | `components/ui/Menu.tsx` | dropdown menu, closes on Esc/click outside |
 | Task status | `features/tasks/TaskStatusBadge.tsx` + `taskStatusStyle.ts` | the ONLY place for status texts and colors (F10): badge, card accent, legend |
-| Drag & drop | `@dnd-kit` (see `features/tasks/day/DayBoard.tsx`) | mouse + touch (press briefly) + keyboard; drop target = under the pointer |
+| Drag & drop | `@dnd-kit` (see `features/tasks/day/DayGrid.tsx`, `week/WeekView.tsx`) | mouse + touch (press briefly) + keyboard; drop target = under the pointer |
+| Time grid | `features/tasks/day/timeGrid.ts` (pure, tested) + `DayGrid` (`plan` / `pick`) | 15-min snap; resize/create with pointer events, touch = tap |
 | Name badge | `features/employees/NameBadge.tsx` | a person's name on their color, text color automatic – use wherever people appear |
 | Master data list | `components/masterdata/MasterDataList.tsx` + `NameDialog.tsx` | simple master data (name + order only, e.g. lifts, service items): list with ↑/↓, rename, deactivate |
 | License plate | `components/licenseplate/LicensePlate.tsx` + `LicensePlateField.tsx` | Show plates always as `<LicensePlate text=…>` (Swiss plate with coat of arms); input always with `LicensePlateField`. Stored as one text, normalised by `common/LicensePlates` |

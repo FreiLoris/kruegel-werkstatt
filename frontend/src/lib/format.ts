@@ -95,6 +95,19 @@ export function todayIso(now: Date = new Date()): string {
   return `${part('year')}-${part('month')}-${part('day')}`
 }
 
+const timePartsInZurich = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+/** The current time in Swiss time ("08:05") – the "now" line in the day view. */
+export function nowTimeIso(now: Date = new Date()): string {
+  const part = (type: Intl.DateTimeFormatPartTypes) => timePartsInZurich.formatToParts(now).find((p) => p.type === type)?.value ?? ''
+  return `${part('hour')}:${part('minute')}`
+}
+
 /** ISO date plus/minus days, without time zone traps (calculated in UTC). */
 export function addDays(isoDate: string, days: number): string {
   const match = ISO_DATE.exec(isoDate)

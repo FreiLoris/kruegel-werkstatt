@@ -1,5 +1,6 @@
 import { previousWorkingDay } from '../../../lib/calendar'
 import { addDays, addMinutes, minutesBetween } from '../../../lib/format'
+import type { Schedule } from '../day/timeGrid'
 import type { PartsStatus, Task, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
@@ -137,6 +138,35 @@ export function withDate(form: AppointmentForm, date: string, time: string, holi
   }
 }
 
+/**
+ * Lift, start and end chosen in a time grid (day view or the wizard's overview) – taken over like
+ * a new date, plus end and lift.
+ */
+export function withSlot(form: AppointmentForm, slot: Schedule, holidays: ReadonlySet<string>): AppointmentForm {
+  const [endDate, endTime] = slot.endAt.split('T')
+  return { ...withDate(form, slot.date, slot.time, holidays), endDate, endTime: endTime.slice(0, 5), liftId: slot.liftId ?? '' }
+}
+
+const SLOT_DATE = /^\d{4}-\d{2}-\d{2}$/
+const SLOT_TIME = /^\d{2}:\d{2}$/
+const SLOT_END = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/
+
+/** The wizard prefilled with a slot dragged open in the day view */
+export function newTaskUrl(slot: Schedule): string {
+  const params = new URLSearchParams({ date: slot.date, time: slot.time, end: slot.endAt })
+  if (slot.liftId) params.set('lift', slot.liftId)
+  return `/tasks/new?${params}`
+}
+
+/** The slot from the wizard's address – only when complete and well-formed (a bookmark may be anything) */
+export function slotFromUrl(params: URLSearchParams): Schedule | null {
+  const date = params.get('date') ?? ''
+  const time = params.get('time') ?? ''
+  const endAt = params.get('end') ?? ''
+  if (!SLOT_DATE.test(date) || !SLOT_TIME.test(time) || !SLOT_END.test(endAt)) return null
+  return { date, time, endAt, liftId: params.get('lift') }
+}
+
 /** "MFK" ticked: the inspection is usually on the day of the appointment. */
 export function withMfk(form: AppointmentForm, on: boolean): AppointmentForm {
   if (!on) return { ...form, mfk: false }
@@ -151,7 +181,7 @@ export type AppointmentErrors = Partial<Record<keyof AppointmentForm, string>>
  */
 export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   const errors: AppointmentErrors = {}
-  if (!form.date) errors.date = 'Datum wählen – oder rechts in der Übersicht klicken'
+  if (!form.date) errors.date = 'Datum wählen – oder rechts im Raster ziehen'
   if (!form.time) errors.time = 'Uhrzeit wählen'
   const start = form.date && form.time ? `${form.date}T${form.time}` : null
 

@@ -38,11 +38,19 @@ class TaskController {
     }
 
     @Operation(summary = "Tasks from `from` to `to` (both inclusive, max. 92 days)",
-            description = "Sorted by day, time and position in the lift column.")
+            description = "By the day of their start, sorted by day and time.")
     @GetMapping
     List<TaskDto> between(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return service.between(from, to);
+    }
+
+    @Operation(summary = "Tasks that take time on a day",
+            description = "Those starting that day and those of earlier days that are still on their lift "
+                    + "(e.g. waiting for parts) – the day view. Sorted by start.")
+    @GetMapping("/day")
+    List<TaskDto> onDay(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return service.onDay(date);
     }
 
     @Operation(summary = "The last 10 tasks of a customer, newest first", description = "History in the wizard.")
@@ -65,7 +73,7 @@ class TaskController {
         return service.get(id);
     }
 
-    @Operation(summary = "Create task", description = "Starts as RECEIVED, at the end of its lift column.")
+    @Operation(summary = "Create task", description = "Starts as RECEIVED. The lift must be free for the whole time.")
     @ApiResponse(responseCode = "201", description = "Created")
     @PostMapping
     ResponseEntity<TaskDto> create(@Valid @RequestBody TaskRequest request) {
@@ -85,11 +93,11 @@ class TaskController {
         return service.changeStatus(id, request.status());
     }
 
-    @Operation(summary = "Move into a lift column at a position (drag & drop)",
-            description = "Both affected columns are renumbered and saved. Returns the target column in its new order.")
-    @PutMapping("/{id}/move")
-    List<TaskDto> move(@PathVariable UUID id, @Valid @RequestBody TaskMoveRequest request) {
-        return service.move(id, request);
+    @Operation(summary = "New lift, start and end (drag & drop)",
+            description = "No version needed. The lift must be free; \"kommt früher\"/\"fertig bis\" move along to another day.")
+    @PutMapping("/{id}/schedule")
+    TaskDto schedule(@PathVariable UUID id, @Valid @RequestBody TaskScheduleRequest request) {
+        return service.schedule(id, request);
     }
 
     @Operation(summary = "Set or remove the SwissGarage order number", description = "Must be unique.")

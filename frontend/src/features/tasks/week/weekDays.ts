@@ -1,5 +1,5 @@
 import { isWeekend } from '../../../lib/calendar'
-import { addDays, minutesBetween } from '../../../lib/format'
+import { addDays } from '../../../lib/format'
 import type { Task } from '../taskApi'
 
 export interface WeekDay {
@@ -9,7 +9,7 @@ export interface WeekDay {
 
 /**
  * The days of a week: Monday to Friday always, Saturday and Sunday only when there are tasks
- * (like the capacity overview). Within a day by time; same time → lift order.
+ * (like the capacity overview). Within a day by time.
  */
 export function weekDays(monday: string, tasks: Task[]): WeekDay[] {
   const byDate = new Map<string, Task[]>()
@@ -20,27 +20,6 @@ export function weekDays(monday: string, tasks: Task[]): WeekDay[] {
     .filter((date) => !isWeekend(date) || byDate.has(date))
     .map((date) => ({
       date,
-      tasks: [...(byDate.get(date) ?? [])].sort((a, b) => a.time.localeCompare(b.time) || a.sortOrder - b.sortOrder),
+      tasks: [...(byDate.get(date) ?? [])].sort((a, b) => a.time.localeCompare(b.time)),
     }))
 }
-
-/**
- * The tasks after moving one of them to another day – shown right away while the server saves.
- * End, "kommt früher" and "fertig bis" move by the same number of days, like on the server.
- */
-export function withDate(tasks: Task[], taskId: string, date: string): Task[] {
-  return tasks.map((task) => {
-    if (task.id !== taskId) return task
-    const days = minutesBetween(`${task.date}T00:00`, `${date}T00:00`) / MINUTES_PER_DAY
-    const shift = (dateTime: string) => `${addDays(dateTime.slice(0, 10), days)}${dateTime.slice(10)}`
-    return {
-      ...task,
-      date,
-      endAt: shift(task.endAt),
-      arrivesEarlier: task.arrivesEarlier && shift(task.arrivesEarlier),
-      readyBy: task.readyBy && shift(task.readyBy),
-    }
-  })
-}
-
-const MINUTES_PER_DAY = 24 * 60

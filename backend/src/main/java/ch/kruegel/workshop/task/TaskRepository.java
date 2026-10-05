@@ -22,20 +22,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
     List<Task> findByAppointmentDateBetween(LocalDate from, LocalDate to, Sort sort);
 
-    /** Highest position in a lift column of a day (lift empty = "not assigned yet" column); -1 if empty. */
-    @Query("""
-            SELECT coalesce(max(t.sortOrder), -1) FROM Task t
-            WHERE t.appointment.date = :date
-              AND ((:liftId IS NULL AND t.lift IS NULL) OR t.lift.id = :liftId)""")
-    int maxSortOrder(LocalDate date, UUID liftId);
-
-    /** One lift column of a day in its order (lift empty = "not assigned yet" column). */
+    /**
+     * Tasks that take time on {@code day}: started that day or earlier and not yet ended at its start.
+     *
+     * @param dayStart {@code day} at 00:00
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
     @Query("""
             SELECT t FROM Task t
-            WHERE t.appointment.date = :date
-              AND ((:liftId IS NULL AND t.lift IS NULL) OR t.lift.id = :liftId)
-            ORDER BY t.sortOrder, t.id""")
-    List<Task> column(LocalDate date, UUID liftId);
+            WHERE t.appointment.date <= :day AND t.appointment.end > :dayStart
+            ORDER BY t.appointment.date, t.appointment.time""")
+    List<Task> occupying(LocalDate day, LocalDateTime dayStart);
 
     /**
      * Tasks on a lift that overlap [start, end) – the same rule as the database constraint (V14).

@@ -2,7 +2,6 @@ package ch.kruegel.workshop.task;
 
 import ch.kruegel.workshop.common.Texts;
 import ch.kruegel.workshop.common.persistence.BaseEntity;
-import ch.kruegel.workshop.common.persistence.Sortable;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.lift.Lift;
@@ -20,7 +19,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.BatchSize;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -37,7 +35,7 @@ import java.util.Set;
  * <p>References are LAZY: lists and calendars usually only need the IDs.
  */
 @Entity
-public class Task extends BaseEntity implements Sortable {
+public class Task extends BaseEntity {
 
     static final int TASK_NUMBER_MAX = 30;
 
@@ -85,17 +83,13 @@ public class Task extends BaseEntity implements Sortable {
     private String workDescription;
     private String notes;
 
-    /** Position within the lift column of the day */
-    private int sortOrder;
-
     protected Task() {
         // for JPA
     }
 
     /** New task – always starts as {@link TaskStatus#RECEIVED}. */
-    public Task(TaskDetails details, int sortOrder) {
+    public Task(TaskDetails details) {
         this.status = TaskStatus.RECEIVED;
-        this.sortOrder = sortOrder;
         apply(details);
     }
 
@@ -113,21 +107,12 @@ public class Task extends BaseEntity implements Sortable {
         this.taskNumber = Texts.checkMaxLength(Texts.emptyToNull(number), TASK_NUMBER_MAX, "Task number");
     }
 
-    @Override
-    public void moveTo(int sortOrder) {
-        this.sortOrder = sortOrder;
-    }
-
     /**
-     * To another day (drag & drop in the week view), see {@link Appointment#onDay}. The MFK
-     * appointment stays: it is booked at the inspection station, not in the workshop.
+     * New time and lift (drag & drop in the day and week view). The MFK appointment stays: it is
+     * booked at the inspection station, not in the workshop.
      */
-    public void moveToDay(LocalDate day) {
-        this.appointment = appointment.onDay(day);
-    }
-
-    /** Into another lift column (drag & drop in the day view); the position is set by the service. */
-    public void moveToLift(Lift lift) {
+    public void schedule(Appointment appointment, Lift lift) {
+        this.appointment = Objects.requireNonNull(appointment, "appointment");
         this.lift = lift;
     }
 
@@ -188,9 +173,5 @@ public class Task extends BaseEntity implements Sortable {
 
     public String getNotes() {
         return notes;
-    }
-
-    public int getSortOrder() {
-        return sortOrder;
     }
 }

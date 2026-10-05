@@ -58,7 +58,7 @@ class CourtesyCarBookingPersistenceTest {
         fabia = persist(new CourtesyCar(new CourtesyCarDetails("Test Fabia", "Skoda Fabia", null, null, null), 91));
         var huber = persist(CustomerTestData.local("Huber"));
         task = tasks.save(new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(8, 0)), null, null,
-                TaskWork.described(null), null), 0));
+                TaskWork.described(null), null)));
     }
 
     @Test

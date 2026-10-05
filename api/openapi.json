@@ -4020,7 +4020,7 @@
     },
     "/api/tasks" : {
       "get" : {
-        "description" : "Sorted by day, time and position in the lift column.",
+        "description" : "By the day of their start, sorted by day and time.",
         "operationId" : "between",
         "parameters" : [ {
           "in" : "query",
@@ -4108,7 +4108,7 @@
         "tags" : [ "Tasks" ]
       },
       "post" : {
-        "description" : "Starts as RECEIVED, at the end of its lift column.",
+        "description" : "Starts as RECEIVED. The lift must be free for the whole time.",
         "operationId" : "create_1",
         "requestBody" : {
           "content" : {
@@ -4183,6 +4183,88 @@
           }
         },
         "summary" : "Create task",
+        "tags" : [ "Tasks" ]
+      }
+    },
+    "/api/tasks/day" : {
+      "get" : {
+        "description" : "Those starting that day and those of earlier days that are still on their lift (e.g. waiting for parts) – the day view. Sorted by start.",
+        "operationId" : "onDay",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "date",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TaskDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Tasks that take time on a day",
         "tags" : [ "Tasks" ]
       }
     },
@@ -4589,10 +4671,10 @@
         "tags" : [ "Tasks" ]
       }
     },
-    "/api/tasks/{id}/move" : {
+    "/api/tasks/{id}/schedule" : {
       "put" : {
-        "description" : "Both affected columns are renumbered and saved. Returns the target column in its new order.",
-        "operationId" : "move",
+        "description" : "No version needed. The lift must be free; \"kommt früher\"/\"fertig bis\" move along to another day.",
+        "operationId" : "schedule",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4606,7 +4688,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/TaskMoveRequest"
+                "$ref" : "#/components/schemas/TaskScheduleRequest"
               }
             }
           },
@@ -4617,10 +4699,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/TaskDto"
-                  }
+                  "$ref" : "#/components/schemas/TaskDto"
                 }
               }
             },
@@ -4677,7 +4756,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Move into a lift column at a position (drag & drop)",
+        "summary" : "New lift, start and end (drag & drop)",
         "tags" : [ "Tasks" ]
       }
     },
@@ -6340,11 +6419,6 @@
               "format" : "uuid"
             }
           },
-          "sortOrder" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "Position within the lift column of the day"
-          },
           "status" : {
             "type" : "string",
             "enum" : [ "RECEIVED", "IN_PROGRESS", "WAITING_FOR_PARTS", "DONE" ]
@@ -6394,26 +6468,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "sortOrder", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
-      },
-      "TaskMoveRequest" : {
-        "type" : "object",
-        "properties" : {
-          "date" : {
-            "type" : [ "string", "null" ],
-            "format" : "date"
-          },
-          "liftId" : {
-            "type" : [ "string", "null" ],
-            "format" : "uuid"
-          },
-          "position" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 0
-          }
-        },
-        "required" : [ "position" ]
+        "required" : [ "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -6523,6 +6578,29 @@
           }
         },
         "required" : [ "customerId", "date", "time" ]
+      },
+      "TaskScheduleRequest" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-10-15T09:30"
+          },
+          "liftId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
+          "time" : {
+            "type" : "string",
+            "example" : "08:00"
+          }
+        },
+        "required" : [ "date", "endAt", "time" ]
       },
       "TaskSearchResultDto" : {
         "type" : "object",

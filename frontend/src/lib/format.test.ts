@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, addMinutes, formatCount, formatDuration, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, minutesBetween, todayIso } from './format'
+import { addDays, addMinutes, formatCount, formatDuration, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, minutesBetween, nowTimeIso, todayIso } from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -100,5 +100,12 @@ describe('formatDuration', () => {
     expect(formatDuration(90)).toBe('1 Std. 30 Min.')
     expect(formatDuration(1560)).toBe('1 Tag 2 Std.')
     expect(formatDuration(2880)).toBe('2 Tage')
+  })
+})
+
+describe('nowTimeIso', () => {
+  it('is Swiss time, also in summer and just after midnight', () => {
+    expect(nowTimeIso(new Date('2026-10-15T06:05:00Z'))).toBe('08:05')
+    expect(nowTimeIso(new Date('2026-12-31T23:30:00Z'))).toBe('00:30')
   })
 })

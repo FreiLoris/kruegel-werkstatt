@@ -1,0 +1,200 @@
+/* Scrolls in both directions itself, so lift names and hours stay visible (sticky) */
+.scroller {
+  max-height: calc(100dvh - var(--header-height) - 11rem);
+  min-height: 24rem;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.compact {
+  max-height: calc(100dvh - var(--header-height) - 16rem);
+  min-height: 16rem;
+}
+
+.grid {
+  display: grid;
+  min-width: max-content;
+}
+
+.corner,
+.columnTitle {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.corner {
+  left: 0;
+  z-index: 4;
+}
+
+.columnTitle {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 1px solid var(--color-border);
+  font-size: var(--font-size-lg);
+  white-space: nowrap;
+}
+
+.compact .columnTitle {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+/* Hours on the left, stays visible when scrolling sideways */
+.axis {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+}
+
+.hour {
+  position: absolute;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The first hour label sits at the top edge, not half above it */
+.hour:first-child {
+  transform: none;
+}
+
+/* One lift: hour lines, the blocks positioned inside */
+.body {
+  position: relative;
+  border-left: 1px solid var(--color-border);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-border) 0 1px,
+    transparent 1px calc(var(--hour) / 2),
+    color-mix(in srgb, var(--color-border) 45%, transparent) calc(var(--hour) / 2) calc(var(--hour) / 2 + 1px),
+    transparent calc(var(--hour) / 2 + 1px) var(--hour)
+  );
+  /* the empty grid is dragged open with the mouse; fingers still scroll */
+  touch-action: pan-x pan-y;
+}
+
+.creatable {
+  cursor: crosshair;
+}
+
+.over {
+  background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.block {
+  position: absolute;
+  padding: 1px 2px;
+  box-sizing: border-box;
+}
+
+.card {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  align-content: start;
+}
+
+.movable {
+  cursor: grab;
+}
+
+/* goes on from the day before / into the next day */
+.startsBefore .card {
+  border-top: 2px dashed var(--color-text-muted);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.endsAfter .card {
+  border-bottom: 2px dashed var(--color-text-muted);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Lower edge: drag to change the end */
+.handle {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  height: 10px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.handle::after {
+  content: '';
+  position: absolute;
+  left: 35%;
+  right: 35%;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.block:hover .handle::after,
+.handle:active::after {
+  opacity: 1;
+}
+
+/* The card under the pointer while dragging: as wide as a column */
+.overlay {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Where a dragged block / a new task would land */
+.ghost {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  z-index: 1;
+  padding: var(--space-1) var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.collides {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+}
+
+/* Wizard: tasks only shown, smaller */
+.chip {
+  position: absolute;
+  overflow: hidden;
+  padding: 1px var(--space-1);
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-sm);
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 2px;
+  background: var(--color-danger);
+  pointer-events: none;
+}
