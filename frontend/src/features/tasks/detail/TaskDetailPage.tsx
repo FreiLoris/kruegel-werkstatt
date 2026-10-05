@@ -15,6 +15,7 @@ import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { TaskTodos } from '../../todos/TaskTodos'
 import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
 import { TASK_STATUS, useChangeTaskStatus, useDeleteTask, useTask, type Task, type TaskStatus } from '../taskApi'
@@ -237,6 +238,10 @@ function TaskDetail({ task }: { task: Task }) {
             </ul>
           )}
           {task.workDescription && <p className={styles.freeText}>{task.workDescription}</p>}
+        </Card>
+
+        <Card title="To-dos">
+          <TaskTodos taskId={task.id} canEdit={canEdit} />
         </Card>
 
         <Card title="Auftragsnummer">

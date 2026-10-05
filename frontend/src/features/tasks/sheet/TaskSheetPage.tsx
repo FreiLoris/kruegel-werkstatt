@@ -2,7 +2,10 @@ import { ArrowLeft, Printer } from 'lucide-react'
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '../../../components/ui/Button'
+import { formatLocalDateTime } from '../../../lib/format'
+import { useTaskBookings } from '../../bookings/bookingApi'
 import { useCompany } from '../../company/companyApi'
+import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -22,12 +25,22 @@ export function TaskSheetPage() {
   const { data: employees } = useAllEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
+  const bookings = useTaskBookings(id ?? '')
+  const { data: cars } = useAllCourtesyCars()
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
   const error = task.error ?? company.error
   // all lists loaded – otherwise a quick print would say "Mechaniker: noch offen" although one is assigned
-  const ready = task.data && company.data && serviceItems && employees && lifts
+  const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars
+  // the car still out (or not yet picked up) – a returned one is history, not for the mechanic
+  const booking = bookings.data?.find((b) => !b.returnedAt)
+  const car = booking && cars?.find((c) => c.id === booking.courtesyCarId)
+  const courtesyCar =
+    booking && car
+      ? `${car.name}${car.model || car.licensePlate ? ` (${[car.model, car.licensePlate].filter(Boolean).join(', ')})` : ''}, ` +
+        `${formatLocalDateTime(booking.pickupAt)} – ${formatLocalDateTime(booking.returnAt)}`
+      : undefined
 
   return (
     <div className={styles.desk}>
@@ -51,6 +64,7 @@ export function TaskSheetPage() {
             serviceItemNames,
             mechanicName: employees?.find((e) => e.id === task.data.mechanicId)?.name,
             liftName: lifts?.find((l) => l.id === task.data.liftId)?.name,
+            courtesyCar,
           }}
         />
       )}

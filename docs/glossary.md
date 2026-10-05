@@ -109,8 +109,11 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ausser Betrieb nehmen | `deactivate` | |
 | Pinnwand | `Pinboard` | |
 | Notiz | `Note` | |
-| To-do | `Todo` | |
-| Einkaufsliste | `shoppingList` | |
+| To-do | `Todo` (package `todo`) | text, person, deadline, task by reference |
+| Einkaufsliste | `shopping` (flag on the to-do) | not its own module |
+| verantwortlich (To-do) | `assignee` | an employee "für To-dos wählbar" |
+| Frist (To-do) | `dueDate` | |
+| erledigt (am / von) | `doneAt` / `doneBy` | undo = open again |
 | Abwesenheit (Ferien, Krank, Kurs, Fremdarbeit) | `Absence` (`VACATION`, `SICK`, `TRAINING`, `EXTERNAL_WORK`) | |
 | Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
 | Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |

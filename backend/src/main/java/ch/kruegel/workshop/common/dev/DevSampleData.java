@@ -22,6 +22,9 @@ import ch.kruegel.workshop.task.TaskDetails;
 import ch.kruegel.workshop.task.TaskRepository;
 import ch.kruegel.workshop.task.TaskStatus;
 import ch.kruegel.workshop.task.TaskWork;
+import ch.kruegel.workshop.todo.Todo;
+import ch.kruegel.workshop.todo.TodoDetails;
+import ch.kruegel.workshop.todo.TodoRepository;
 import ch.kruegel.workshop.task.TireChangeKind;
 import ch.kruegel.workshop.vehicle.Vehicle;
 import ch.kruegel.workshop.vehicle.VehicleDetails;
@@ -69,11 +72,12 @@ class DevSampleData implements ApplicationRunner {
     private final LiftRepository lifts;
     private final ServiceItemRepository serviceItems;
     private final TaskRepository tasks;
+    private final TodoRepository todos;
     private final Clock clock;
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
                   VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
-                  TaskRepository tasks, Clock clock) {
+                  TaskRepository tasks, TodoRepository todos, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
@@ -81,6 +85,7 @@ class DevSampleData implements ApplicationRunner {
         this.lifts = lifts;
         this.serviceItems = serviceItems;
         this.tasks = tasks;
+        this.todos = todos;
         this.clock = clock;
     }
 
@@ -99,6 +104,32 @@ class DevSampleData implements ApplicationRunner {
         if (tasks.count() == 0) {
             createTasks();
         }
+        if (todos.count() == 0) {
+            createTodos();
+        }
+    }
+
+    /** A few to-dos: overdue, for a task, on the shopping list, without person, one done. */
+    private void createTodos() {
+        LocalDate today = LocalDate.now(clock);
+        List<Employee> forTodos = employees.findByActiveTrueOrderBySortOrderAscNameAsc().stream()
+                .filter(Employee::isSelectableForTodos)
+                .toList();
+        if (forTodos.isEmpty()) {
+            return;
+        }
+        Function<Integer, Employee> person = i -> forTodos.get(i % forTodos.size());
+        Task firstTask = tasks.findAll().stream().findFirst().orElse(null);
+
+        List<Todo> sample = List.of(
+                new Todo(new TodoDetails("Kunde wegen Offerte zurückrufen", person.apply(0), today.minusDays(1), false, null)),
+                new Todo(new TodoDetails("Bremsscheiben bestellen", person.apply(1), today, false, firstTask)),
+                new Todo(new TodoDetails("Kaffee und Milch", null, null, true, null)),
+                new Todo(new TodoDetails("Altöl entsorgen lassen", null, today.plusDays(5), false, null)),
+                new Todo(new TodoDetails("Hebebühne 2 prüfen lassen", person.apply(2), today.minusDays(3), false, null)));
+        sample.get(4).markDone(clock.instant(), person.apply(0).getId());
+        todos.saveAll(sample);
+        log.info("Dev sample data created: {} to-dos", sample.size());
     }
 
     private void createEmployees() {

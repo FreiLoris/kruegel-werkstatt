@@ -77,6 +77,8 @@ interface DayGridProps {
   viewKey?: QueryKey
   employees?: Employee[]
   serviceItemNames?: ReadonlyMap<string, string>
+  /** task ID → courtesy car name, shown on the blocks */
+  courtesyCars?: ReadonlyMap<string, string>
 }
 
 /** Finger: hold this long before dragging opens a time (moving earlier = scrolling) */
@@ -112,6 +114,7 @@ export function DayGrid({
   viewKey = [],
   employees = [],
   serviceItemNames = new Map(),
+  courtesyCars,
 }: DayGridProps) {
   const toast = useToast()
   const schedule = useScheduleTask(viewKey)
@@ -376,6 +379,7 @@ export function DayGrid({
                       dimmed={dragging?.id === p.task.id}
                       mechanic={employees.find((e) => e.id === p.task.mechanicId)}
                       serviceItemNames={serviceItemNames}
+                      courtesyCar={courtesyCars?.get(p.task.id)}
                       onResizeStart={(e) => startResize(e, p.task)}
                       onResizeMove={(e) => moveResize(e, p.task)}
                       onResizeEnd={() => endResize(p.task)}
@@ -408,6 +412,7 @@ export function DayGrid({
             task={activeTask}
             mechanic={employees.find((e) => e.id === activeTask.mechanicId)}
             serviceItemNames={serviceItemNames}
+            courtesyCar={courtesyCars?.get(activeTask.id)}
             className={styles.overlay}
             dragging
           />
@@ -508,6 +513,7 @@ function Block({
   dimmed,
   mechanic,
   serviceItemNames,
+  courtesyCar,
   onResizeStart,
   onResizeMove,
   onResizeEnd,
@@ -521,6 +527,7 @@ function Block({
   dimmed: boolean
   mechanic: Employee | undefined
   serviceItemNames: ReadonlyMap<string, string>
+  courtesyCar: string | undefined
   onResizeStart: (e: PointerEvent<HTMLDivElement>) => void
   onResizeMove: (e: PointerEvent<HTMLDivElement>) => void
   onResizeEnd: () => void
@@ -539,6 +546,7 @@ function Block({
         task={task}
         mechanic={mechanic}
         serviceItemNames={serviceItemNames}
+        courtesyCar={courtesyCar}
         className={[styles.card, movable && styles.movable].filter(Boolean).join(' ')}
         {...attributes}
         {...listeners}

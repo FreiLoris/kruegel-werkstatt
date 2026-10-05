@@ -7,6 +7,7 @@ import { addDays, formatDate, formatTime } from '../../../lib/format'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
 import { tasksOfDayKey, useTasksBetween, useTasksOfDay } from '../taskApi'
 import { newTaskUrl } from '../wizard/appointmentForm'
 import { DayGrid } from './DayGrid'
@@ -23,6 +24,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   const { data: serviceItems } = useAllServiceItems()
   const canEdit = useCanEdit()
   const navigate = useNavigate()
+  const courtesyCars = useCourtesyCarsByTask(`${date}T00:00`, `${addDays(date, 1)}T00:00`)
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
@@ -43,6 +45,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
         viewKey={tasksOfDayKey(date)}
         employees={employees}
         serviceItemNames={serviceItemNames}
+        courtesyCars={courtesyCars}
       />
       {canEdit && <p className={styles.hint}>Im leeren Raster ziehen (oder tippen) legt dort einen neuen Auftrag an.</p>}
     </>
