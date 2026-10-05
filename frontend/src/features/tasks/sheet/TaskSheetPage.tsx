@@ -26,7 +26,8 @@ export function TaskSheetPage() {
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
   const error = task.error ?? company.error
-  const ready = task.data && company.data && serviceItems
+  // all lists loaded – otherwise a quick print would say "Mechaniker: noch offen" although one is assigned
+  const ready = task.data && company.data && serviceItems && employees && lifts
 
   return (
     <div className={styles.desk}>
