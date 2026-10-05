@@ -3,34 +3,17 @@ import type { ReactNode } from 'react'
 import type { FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { Facts } from '../../../components/ui/Facts'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { formatDate, formatLocalDateTime } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { ServerErrors } from '../ServerErrors'
 import { workItems } from '../workSummary'
 import type { AppointmentForm } from './appointmentForm'
 import styles from './ReviewStep.module.css'
 import type { CustomerStepValue } from './wizardState'
-
-/** Field names of the backend → words the user knows from the form */
-const FIELD_LABELS: Record<string, string> = {
-  customerId: 'Kunde',
-  vehicleId: 'Fahrzeug',
-  date: 'Datum',
-  time: 'Uhrzeit',
-  arrivesEarlier: 'Kommt früher',
-  readyBy: 'Fertig bis',
-  mechanicId: 'Mechaniker',
-  liftId: 'Lift',
-  tireChangeKind: 'Radwechsel',
-  mfkAppointment: 'MFK-Termin',
-  serviceItemIds: 'Service',
-  'parts.description': 'Material',
-  'parts.supplier': 'Lieferant',
-  workDescription: 'Weitere Arbeiten',
-  notes: 'Notizen',
-}
 
 interface ReviewStepProps {
   customerStep: CustomerStepValue
@@ -65,18 +48,9 @@ export function ReviewStep({ customerStep, appointment: f, onEdit, serverErrors 
 
   return (
     <div className={styles.review}>
-      {serverErrors.length > 0 && (
-        <div className={styles.errors} role="alert">
-          <p>Der Auftrag konnte nicht gespeichert werden:</p>
-          <ul>
-            {serverErrors.map((e) => (
-              <li key={e.field + e.message}>
-                {FIELD_LABELS[e.field] ?? e.field}: {e.message}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className={styles.full}>
+        <ServerErrors errors={serverErrors} />
+      </div>
 
       <Block title="Kunde & Fahrzeug" onEdit={() => onEdit(1)}>
         <p className={styles.strong}>{customer.displayName}</p>
@@ -145,20 +119,5 @@ function Block({ title, onEdit, children }: { title: string; onEdit: () => void;
       </div>
       {children}
     </section>
-  )
-}
-
-function Facts({ rows }: { rows: [string, string | null][] }) {
-  return (
-    <dl className={styles.facts}>
-      {rows
-        .filter((row): row is [string, string] => row[1] !== null)
-        .map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-    </dl>
   )
 }

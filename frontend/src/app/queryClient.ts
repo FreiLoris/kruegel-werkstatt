@@ -22,8 +22,9 @@ export const queryClient = new QueryClient({
       // Data counts as fresh for 30 s. Changes from other devices additionally arrive
       // immediately via live update.
       staleTime: 30_000,
-      // A failed attempt is retried once (e.g. short Wi-Fi drop-out).
-      retry: 1,
+      // A failed attempt is retried once (e.g. short Wi-Fi drop-out) – but not when the server
+      // clearly answered "no" (4xx: not found, not allowed …): asking again gives the same answer.
+      retry: (failureCount, error) => failureCount < 1 && !(error instanceof ApiError && error.problem.status < 500),
     },
   },
 })

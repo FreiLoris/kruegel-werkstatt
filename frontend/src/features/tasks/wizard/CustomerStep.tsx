@@ -5,7 +5,7 @@ import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { TextField } from '../../../components/ui/Fields'
 import { useDebouncedValue } from '../../../lib/useDebouncedValue'
-import { NewCustomerDialog } from '../../customers/NewCustomerDialog'
+import { CustomerDialog } from '../../customers/CustomerDialog'
 import { MIN_SEARCH_LENGTH, useCustomerSearch, type Customer, type Vehicle } from '../../customers/customerSearchApi'
 import { CustomerHistory } from './CustomerHistory'
 import { CustomerHitList } from './CustomerHitList'
@@ -132,9 +132,9 @@ export function CustomerStep({ value, onChange }: { value: CustomerStepValue; on
       )}
 
       {newCustomerOpen && (
-        <NewCustomerDialog
+        <CustomerDialog
           initialName={/\d/.test(query) ? '' : query}
-          onCreated={(created) => {
+          onSaved={(created) => {
             setNewCustomerOpen(false)
             choose(created)
           }}

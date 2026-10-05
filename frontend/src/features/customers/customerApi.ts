@@ -16,3 +16,14 @@ export function useCreateCustomer() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
+
+/** Edit a local customer (SwissGarage customers → 409, they are changed in SwissGarage). */
+export function useUpdateCustomer() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, request }: { id: string; request: CustomerRequest }) =>
+      dataOrThrow(await api.PUT('/api/customers/{id}', { params: { path: { id } }, body: request })),
+    // tasks show customer data too
+    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: [TOPIC] }), queryClient.invalidateQueries({ queryKey: ['tasks'] })]),
+  })
+}

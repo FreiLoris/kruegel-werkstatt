@@ -4,6 +4,8 @@ import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
 import { AppointmentsPage } from '../features/tasks/AppointmentsPage'
+import { TaskDetailPage } from '../features/tasks/detail/TaskDetailPage'
+import { TaskEditPage } from '../features/tasks/detail/TaskEditPage'
 import { TaskSheetPage } from '../features/tasks/sheet/TaskSheetPage'
 import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
@@ -28,6 +30,8 @@ export const router = createBrowserRouter([
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
+      { path: 'tasks/:id', element: <TaskDetailPage /> },
+      { path: 'tasks/:id/edit', element: <TaskEditPage /> },
       { path: 'system', element: <SystemPage /> },
       { path: 'system/components', element: <ComponentsPage /> },
       { path: '*', element: <NotFoundPage /> },

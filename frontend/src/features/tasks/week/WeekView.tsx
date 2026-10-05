@@ -57,7 +57,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
-    useSensor(KeyboardSensor),
+    // Enter opens the task – only space picks a card up
+    useSensor(KeyboardSensor, { keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space'] } }),
   )
 
   const days = useMemo(() => weekDays(monday, tasks.data ?? []), [monday, tasks.data])

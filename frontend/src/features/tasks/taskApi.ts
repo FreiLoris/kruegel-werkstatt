@@ -118,3 +118,48 @@ export function useTaskSearch(query: string) {
     placeholderData: keepPreviousData,
   })
 }
+
+/** Edit with the loaded `version` (409 if someone else saved in between). */
+export function useUpdateTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, request }: { id: string; request: TaskRequest }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}', { params: { path: { id } }, body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** Status on its own – no version, it must not fail because of an unrelated edit. */
+export function useChangeTaskStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/status', { params: { path: { id } }, body: { status } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** SwissGarage order number; empty removes it. */
+export function useAssignTaskNumber() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, taskNumber }: { id: string; taskNumber: string }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/task-number', { params: { path: { id } }, body: { taskNumber } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+export function useDeleteTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error, response } = await api.DELETE('/api/tasks/{id}', { params: { path: { id } } })
+      if (!response.ok) dataOrThrow({ error, response })
+    },
+    onSuccess: (_result, id) => {
+      // the deleted task itself is gone – reloading it would only give "not found"
+      queryClient.removeQueries({ queryKey: [TOPIC, 'one', id] })
+      void queryClient.invalidateQueries({ queryKey: [TOPIC] })
+    },
+  })
+}

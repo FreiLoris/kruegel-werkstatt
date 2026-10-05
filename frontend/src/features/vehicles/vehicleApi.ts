@@ -27,3 +27,14 @@ export function useCreateVehicle() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
+
+/** Edit a local vehicle (SwissGarage vehicles → 409, they are changed in SwissGarage). */
+export function useUpdateVehicle() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, request }: { id: string; request: VehicleRequest }) =>
+      dataOrThrow(await api.PUT('/api/vehicles/{id}', { params: { path: { id } }, body: request })),
+    // tasks show vehicle data too
+    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: [TOPIC] }), queryClient.invalidateQueries({ queryKey: ['tasks'] })]),
+  })
+}

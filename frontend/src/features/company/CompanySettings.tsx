@@ -40,8 +40,7 @@ export function CompanySettings() {
       <h2>Firma</h2>
       <p className="muted">Erscheint oben in der Navigation und als Briefkopf auf dem Auftragszettel.</p>
       <div className={styles.layout}>
-        {/* key: after saving (new version) the form starts from the saved values */}
-        <CompanyForm key={company.version} company={company} />
+        <CompanyForm company={company} />
         <LogoEditor company={company} />
       </div>
     </>
@@ -53,6 +52,10 @@ function CompanyForm({ company }: { company: Company }) {
   const toast = useToast()
   const update = useUpdateCompany()
   const [values, setValues] = useState(() => initialValues(company))
+  // The version the form is based on: from opening, then from our own saves. Not the live one –
+  // a change from another device must give a conflict instead of being overwritten (and a live
+  // update must not reset what is being typed).
+  const [baseVersion, setBaseVersion] = useState(company.version)
 
   const fieldError = (field: Field) => (update.error instanceof ApiError ? update.error.messageForField(field) : undefined)
 
@@ -73,10 +76,13 @@ function CompanyForm({ company }: { company: Company }) {
         phone: text(values.phone),
         email: text(values.email),
         website: text(values.website),
-        version: company.version,
+        version: baseVersion,
       },
       {
-        onSuccess: () => toast.success('Firmendaten gespeichert'),
+        onSuccess: (saved) => {
+          setBaseVersion(saved.version)
+          toast.success('Firmendaten gespeichert')
+        },
         onError: (e) => {
           if (e instanceof ApiError && e.isConflict) {
             toast.error('Die Firmendaten wurden inzwischen auf einem anderen Gerät geändert. Bitte Seite neu laden.')

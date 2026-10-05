@@ -169,9 +169,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   Drag & drop onto another day: same time, same lift, end of the lift column; "kommt früher" /
   "fertig bis" move along, the MFK appointment (booked at the station) stays (→ bug #6: no time
   guessing). Search over all appointments, upcoming first (→ F11). Absences follow with 9a.
-- [ ] **6h – Task detail**
-  View as readable text (no fake form), edit as form with sticky footer,
-  customer/vehicle data editable, create note/to-do directly, correct label "Mechaniker".
+- [x] **6h – Task detail**
+  `/tasks/:id` as readable text (no fake form): status buttons, task number inline, sheet, delete
+  with confirmation, history (created/changed by). Label "Mechaniker". Local customer/vehicle data
+  editable right there, SwissGarage data with a hint. `/tasks/:id/edit`: the wizard form incl.
+  changing customer/vehicle, sticky footer, conflict with "load current state". A click/Enter on a
+  card opens the task. Creating notes/to-dos from the task follows with 8a/8c.
 - [ ] **6i – Task list**
   Sortable columns, filters (status, period), work column complete (→ F1),
   status colors from **one** central definition (→ F10), delete only with confirmation.
@@ -193,13 +196,14 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 - [ ] **8a – To-do data model & API**
   Person as reference (instead of name), deadline, shopping list flag, reference to task/note
-  by ID instead of task number text (→ bug #14).
+  by ID instead of task number text (→ bug #14). Then "To-do" directly in the task detail (left open in 6h).
 - [ ] **8b – To-do page**
   Person filter from the employee list (→ bug #3), active filter recognisable,
   own tab shopping list, done only via checkbox with "undo" (→ F5).
 - [ ] **8c – Note data model & API**
   Multiple assignment, reference to task (→ F8), sub-tasks are to-dos only
   (no second list → bug #10), archiving completes linked to-dos, reactivating symmetric.
+  Then "Notiz" directly in the task detail (left open in 6h, UI review: no modal-in-modal).
 - [ ] **8d – Pinboard page**
   Columns from the employee list (→ bug #3), same order as dashboard, drag between
   columns, detail modal (large text field, visible save), archive with search.
