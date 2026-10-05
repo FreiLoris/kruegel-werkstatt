@@ -2,13 +2,12 @@ import { Hourglass } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
-import { formatTime } from '../../../lib/format'
 import type { Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TASK_STATUS } from '../taskApi'
 import { statusAccentClass } from '../taskStatusStyle'
-import { timeSeenFrom } from '../taskTime'
+import { timeRange, timeSeenFrom } from '../taskTime'
 import styles from './WeekCard.module.css'
 
 interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -41,7 +40,7 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, className
       {...rest}
     >
       <div className={styles.top}>
-        <span className={styles.time}>{formatTime(task.time)}</span>
+        <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
         <span className={styles.lift}>{liftName ?? 'ohne Lift'}</span>
       </div>
       <p className={styles.customer}>

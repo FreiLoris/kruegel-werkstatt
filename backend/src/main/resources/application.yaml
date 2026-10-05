@@ -25,9 +25,10 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        # Always pass points in time to the database in UTC.
+        # No jdbc.time_zone: Instant is stored as UTC anyway (timestamptz), and the setting would
+        # also shift LocalTime/LocalDateTime – Swiss wall-clock times – whenever the JVM does not
+        # run in UTC (tests on a Swiss laptop: 08:00 stored as 07:00, constraints compared garbage).
         jdbc:
-          time_zone: UTC
           # Send inserts/updates in groups of 50 instead of one by one – the SwissGarage
           # import writes thousands of rows (IDs are assigned in Java, so batching works).
           batch_size: 50

@@ -14,6 +14,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { useMemo, useState, type ReactNode } from 'react'
+import { reasonOf } from '../../../api/errors'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { useToast } from '../../../components/ui/toastContext'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
@@ -89,7 +90,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
         onSuccess: () => toast.success(`${task.customer.displayName} auf ${dayLabel(date)} verschoben`),
         onError: (error) => {
           setDropped(null)
-          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`)
+          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${reasonOf(error)}`)
         },
       },
     )

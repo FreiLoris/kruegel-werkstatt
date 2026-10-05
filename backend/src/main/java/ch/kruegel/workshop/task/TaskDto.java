@@ -27,6 +27,7 @@ public record TaskDto(
         @Schema(types = {"object", "null"}, description = "Still open if empty") VehicleDto vehicle,
         @Schema(format = "date") LocalDate date,
         @Schema(type = "string", example = "08:00:00") LocalTime time,
+        @Schema(example = "2026-10-15T09:00:00", description = "Until when the task takes its lift") LocalDateTime endAt,
         @Schema(types = {"string", "null"}, example = "2026-10-14T18:00:00", description = "Fahrzeug kommt früher") LocalDateTime arrivesEarlier,
         @Schema(types = {"string", "null"}, example = "2026-10-15T16:30:00", description = "fertig bis") LocalDateTime readyBy,
         @Schema(description = "Customer waits on site – a flag, not a status") boolean waitingCustomer,
@@ -58,7 +59,7 @@ public record TaskDto(
                 .toList();
         return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
-                a.date(), a.time(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId,
+                a.date(), a.time(), a.end(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), serviceItemIds,
                 PartsOrderDto.of(w.parts()), w.description(), task.getNotes(), task.getSortOrder(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());

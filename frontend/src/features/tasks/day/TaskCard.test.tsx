@@ -10,6 +10,7 @@ const task = {
   id: 't1',
   status: 'IN_PROGRESS',
   time: '07:30:00',
+  endAt: '2026-10-15T09:00:00',
   date: '2026-10-15',
   customer: { displayName: 'Huber Peter' },
   vehicle: null,

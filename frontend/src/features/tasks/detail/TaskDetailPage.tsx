@@ -18,6 +18,7 @@ import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
 import { TASK_STATUS, useChangeTaskStatus, useDeleteTask, useTask, type Task, type TaskStatus } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
+import { timeRange } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
@@ -206,7 +207,7 @@ function TaskDetail({ task }: { task: Task }) {
         <Card title="Termin">
           <Facts
             rows={[
-              ['Termin', `${formatDate(task.date)}, ${formatTime(task.time)}`],
+              ['Termin', `${formatDate(task.date)}, ${timeRange(task.date, task.time, task.endAt)}`],
               ['Kommt früher', task.arrivesEarlier && formatLocalDateTime(task.arrivesEarlier)],
               ['Fertig bis', task.readyBy && formatLocalDateTime(task.readyBy)],
               ['Wartekunde', task.waitingCustomer && 'Ja – Kunde wartet vor Ort'],

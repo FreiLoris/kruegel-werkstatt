@@ -18,6 +18,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useMemo, useState, type ReactNode } from 'react'
+import { reasonOf } from '../../../api/errors'
 import { useToast } from '../../../components/ui/toastContext'
 import type { Employee } from '../../employees/employeeApi'
 import { useMoveTask, type Task, type tasksBetweenKey } from '../taskApi'
@@ -116,7 +117,7 @@ export function DayBoard({ columns, tasks, dayKey, employees, serviceItemNames, 
         onError: (error) => {
           // the query goes back to the old list – the SAME object as before, so drop the kept arrangement explicitly
           setDropped(null)
-          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`)
+          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${reasonOf(error)}`)
         },
       },
     )

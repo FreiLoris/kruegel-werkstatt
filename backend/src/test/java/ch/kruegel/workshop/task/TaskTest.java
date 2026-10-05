@@ -47,7 +47,7 @@ class TaskTest {
 
     @Test
     void waitingCustomerIsAFlagIndependentOfTheStatus() {
-        Appointment waiting = new Appointment(DAY, EIGHT, null, null, true);
+        Appointment waiting = new Appointment(DAY, EIGHT, DAY.atTime(9, 0), null, null, true);
         Task task = new Task(new TaskDetails(huber, null, waiting, null, null, TaskWork.described(null), null), 0);
 
         task.changeStatus(TaskStatus.WAITING_FOR_PARTS);
@@ -74,9 +74,18 @@ class TaskTest {
         LocalDateTime eveningBefore = DAY.minusDays(1).atTime(18, 0);
         LocalDateTime noon = DAY.atTime(12, 0);
 
-        assertThat(new Appointment(DAY, EIGHT, eveningBefore, noon, false).start()).isEqualTo(DAY.atTime(EIGHT));
-        assertThatThrownBy(() -> new Appointment(DAY, EIGHT, noon, null, false)).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new Appointment(DAY, EIGHT, null, eveningBefore, false)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(new Appointment(DAY, EIGHT, noon, eveningBefore, noon, false).start()).isEqualTo(DAY.atTime(EIGHT));
+        assertThatThrownBy(() -> new Appointment(DAY, EIGHT, noon, noon, null, false)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Appointment(DAY, EIGHT, noon, null, eveningBefore, false)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void endMustBeAfterTheStartAndMovesAlongToAnotherDay() {
+        assertThatThrownBy(() -> new Appointment(DAY, EIGHT, DAY.atTime(EIGHT), null, null, false)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(Appointment.at(DAY, EIGHT).end()).isEqualTo(DAY.atTime(9, 0));
+
+        Appointment twoDays = new Appointment(DAY, EIGHT, DAY.plusDays(1).atTime(12, 0), null, null, false);
+        assertThat(twoDays.onDay(DAY.plusDays(7)).end()).isEqualTo(DAY.plusDays(8).atTime(12, 0));
     }
 
     @Test

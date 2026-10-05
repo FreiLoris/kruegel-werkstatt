@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, formatCount, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, todayIso } from './format'
+import { addDays, addMinutes, formatCount, formatDuration, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, minutesBetween, todayIso } from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -80,5 +80,25 @@ describe('formatLocalDateTime', () => {
   it('shows date and time as entered, without time zone conversion', () => {
     expect(formatLocalDateTime('2026-10-14T18:00:00')).toBe('14.10.2026, 18:00')
     expect(formatLocalDateTime('2026-03-29T02:30')).toBe('29.03.2026, 02:30')
+  })
+})
+
+describe('addMinutes and minutesBetween', () => {
+  it('calculate with wall-clock time, also over midnight and the daylight saving change', () => {
+    expect(addMinutes('2026-10-15T08:00', 90)).toBe('2026-10-15T09:30')
+    expect(addMinutes('2026-10-15T23:30', 60)).toBe('2026-10-16T00:30')
+    // night of 24/25 Oct 2026: clocks go back – the workshop still counts 1 hour
+    expect(minutesBetween('2026-10-24T23:00', '2026-10-25T00:00')).toBe(60)
+    expect(minutesBetween('2026-10-15T09:00', '2026-10-15T08:00')).toBe(-60)
+  })
+})
+
+describe('formatDuration', () => {
+  it('shows days, hours and minutes as far as needed', () => {
+    expect(formatDuration(45)).toBe('45 Min.')
+    expect(formatDuration(60)).toBe('1 Std.')
+    expect(formatDuration(90)).toBe('1 Std. 30 Min.')
+    expect(formatDuration(1560)).toBe('1 Tag 2 Std.')
+    expect(formatDuration(2880)).toBe('2 Tage')
   })
 })

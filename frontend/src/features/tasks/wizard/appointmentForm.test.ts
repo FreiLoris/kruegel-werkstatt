@@ -16,7 +16,7 @@ import {
 
 const NO_HOLIDAYS = new Set<string>()
 // Thursday
-const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00' }
+const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '09:00' }
 
 describe('defaults', () => {
   it('arrives earlier = evening of the previous working day', () => {
@@ -44,6 +44,18 @@ describe('withDate', () => {
     expect(form).toMatchObject({ date: '2026-10-20', time: '09:00', arrivesEarlierDate: '2026-10-19', readyByDate: '2026-10-20', mfkDate: '2026-10-20' })
   })
 
+  it('the end moves along with the same duration – also over midnight', () => {
+    const twoHours = { ...THURSDAY, endTime: '10:00' }
+
+    expect(withDate(twoHours, '2026-10-20', '13:30', NO_HOLIDAYS)).toMatchObject({ endDate: '2026-10-20', endTime: '15:30' })
+    expect(withDate(twoHours, '2026-10-20', '23:00', NO_HOLIDAYS)).toMatchObject({ endDate: '2026-10-21', endTime: '01:00' })
+  })
+
+  it('the first date gives the default hour, an invalid end is replaced by it', () => {
+    expect(withDate(EMPTY_APPOINTMENT, '2026-10-15', '08:00', NO_HOLIDAYS)).toMatchObject({ endDate: '2026-10-15', endTime: '09:00' })
+    expect(withDate({ ...THURSDAY, endTime: '07:00' }, '2026-10-15', '10:00', NO_HOLIDAYS).endTime).toBe('11:00')
+  })
+
   it('dates set by hand stay', () => {
     const form = { ...withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS), arrivesEarlierDate: '2026-10-12' }
 
@@ -62,6 +74,13 @@ describe('appointmentErrors', () => {
       readyBy: true, readyByDate: '2026-10-15', readyByTime: '07:00' }
 
     expect(appointmentErrors(form)).toMatchObject({ arrivesEarlierDate: 'muss vor dem Termin liegen', readyByDate: 'muss nach dem Termin liegen' })
+  })
+
+  it('end after the start', () => {
+    expect(appointmentErrors({ ...THURSDAY, endTime: '08:00' }).endTime).toBe('muss nach dem Beginn liegen')
+    expect(appointmentErrors({ ...THURSDAY, endDate: '' }).endTime).toBe('Ende angeben')
+    // a car waiting for parts stays until the next day
+    expect(appointmentErrors({ ...THURSDAY, endDate: '2026-10-16', endTime: '07:00' })).toEqual({})
   })
 
   it('parts need a description', () => {
@@ -95,6 +114,7 @@ describe('toTaskRequest', () => {
       vehicleId: 'v1',
       date: '2026-10-15',
       time: '08:00',
+      endAt: '2026-10-15T09:00',
       arrivesEarlier: '2026-10-14T17:00',
       readyBy: undefined,
       waitingCustomer: false,
@@ -125,6 +145,7 @@ describe('formFromTask', () => {
     vehicle: null,
     date: '2026-10-15',
     time: '08:00:00',
+    endAt: '2026-10-16T12:00:00',
     arrivesEarlier: '2026-10-14T17:00:00',
     readyBy: null,
     waitingCustomer: true,
@@ -149,6 +170,7 @@ describe('formFromTask', () => {
       vehicleId: undefined,
       date: '2026-10-15',
       time: '08:00',
+      endAt: '2026-10-16T12:00',
       arrivesEarlier: '2026-10-14T17:00',
       waitingCustomer: true,
       mechanicId: 'm1',

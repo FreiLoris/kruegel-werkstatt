@@ -6288,6 +6288,12 @@
             "type" : "string",
             "format" : "date"
           },
+          "endAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Until when the task takes its lift",
+            "example" : "2026-10-15T09:00:00"
+          },
           "id" : {
             "type" : "string",
             "format" : "uuid"
@@ -6388,7 +6394,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "sortOrder", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "sortOrder", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskMoveRequest" : {
         "type" : "object",
@@ -6434,6 +6440,12 @@
           "date" : {
             "type" : "string",
             "format" : "date"
+          },
+          "endAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Until when the lift is taken; empty = 1 hour after the start",
+            "example" : "2026-10-15T09:00"
           },
           "liftId" : {
             "type" : "string",

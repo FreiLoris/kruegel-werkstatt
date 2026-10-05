@@ -62,7 +62,7 @@ class TaskPersistenceTest {
 
     @Test
     void storesAndLoadsAllFields() {
-        Appointment appointment = new Appointment(DAY, LocalTime.of(8, 0),
+        Appointment appointment = new Appointment(DAY, LocalTime.of(8, 0), DAY.atTime(11, 30),
                 DAY.minusDays(1).atTime(18, 0), DAY.atTime(16, 30), true);
         TaskWork work = new TaskWork(true, TireChangeKind.WHEELS_STORED, true, DAY.atTime(10, 0),
                 Set.of(oil, wipers), new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", DAY.minusDays(3)),
@@ -133,6 +133,35 @@ class TaskPersistenceTest {
                 .setParameter("id", task.getId())
                 .executeUpdate())
                 .hasMessageContaining("task_check");
+    }
+
+    @Test
+    void localTimesAreStoredAsWallClockTimes() {
+        // whatever zone the JVM runs in (surefire: Europe/Zurich) – 08:00 is 08:00 in the database too,
+        // otherwise the constraints compare shifted times
+        Task task = tasks.saveAndFlush(onLift(LocalTime.of(8, 0), LocalTime.of(9, 30)));
+
+        Object[] row = (Object[]) em.createNativeQuery("SELECT appointment_time::text, appointment_end::text FROM task WHERE id = :id")
+                .setParameter("id", task.getId())
+                .getSingleResult();
+
+        assertThat(row).containsExactly("08:00:00", "2026-10-15 09:30:00");
+    }
+
+    @Test
+    void databaseRejectsTwoTasksOnOneLiftAtTheSameTime() {
+        tasks.saveAndFlush(onLift(LocalTime.of(8, 0), LocalTime.of(10, 0)));
+        // directly after is fine: the ranges are half open
+        tasks.saveAndFlush(onLift(LocalTime.of(10, 0), LocalTime.of(11, 0)));
+
+        assertThatThrownBy(() -> tasks.saveAndFlush(onLift(LocalTime.of(9, 0), LocalTime.of(9, 30))))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("task_no_lift_overlap");
+    }
+
+    private Task onLift(LocalTime start, LocalTime end) {
+        return new Task(new TaskDetails(huber, null, new Appointment(DAY, start, DAY.atTime(end), null, null, false),
+                null, lift, TaskWork.described(null), null), 0);
     }
 
     private Task minimalTask() {

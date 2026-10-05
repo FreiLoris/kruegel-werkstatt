@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ApiError, dataOrThrow } from './errors'
+import { ApiError, dataOrThrow, reasonOf } from './errors'
 
 function response(status: number): Response {
   return new Response(null, { status })
@@ -36,6 +36,20 @@ describe('dataOrThrow', () => {
     expect(error.messageForField('name')).toBe('darf nicht leer sein')
     expect(error.messageForField('firstName')).toBeUndefined()
     expect(error.isConflict).toBe(false)
+  })
+
+  it('gives the first field message as reason, the detail otherwise', () => {
+    const lift = catchApiError(() =>
+      dataOrThrow({
+        error: { status: 400, detail: 'Bitte die markierten Felder korrigieren.', errors: [{ field: 'liftId', message: 'Lift 1 ist belegt' }] },
+        response: response(400),
+      }),
+    )
+    const conflict = catchApiError(() => dataOrThrow({ error: { status: 409, detail: 'Nicht gespeichert' }, response: response(409) }))
+
+    expect(reasonOf(lift)).toBe('Lift 1 ist belegt')
+    expect(reasonOf(conflict)).toBe('Nicht gespeichert')
+    expect(reasonOf(new Error('Netzwerk'))).toBe('Netzwerk')
   })
 
   it('recognises conflicts (409)', () => {
