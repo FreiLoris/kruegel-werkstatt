@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { ApiError, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
@@ -7,7 +8,7 @@ import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyF
 import { useToast } from '../../../components/ui/toastContext'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTask, type Task } from '../taskApi'
-import { appointmentErrors, EMPTY_APPOINTMENT, toTaskRequest, type AppointmentForm } from './appointmentForm'
+import { appointmentErrors, EMPTY_APPOINTMENT, slotFromUrl, toTaskRequest, withSlot, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
 import { CustomerStep } from './CustomerStep'
 import { ReviewStep } from './ReviewStep'
@@ -28,7 +29,12 @@ const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
 export function TaskWizardPage() {
   const [step, setStep] = useState<Step>(1)
   const [customerStep, setCustomerStep] = useState<CustomerStepValue>(EMPTY_CUSTOMER_STEP)
-  const [appointment, setAppointment] = useState<AppointmentForm>(EMPTY_APPOINTMENT)
+  const [params] = useSearchParams()
+  // dragged open in the day view → date, time, end and lift are already there
+  const [appointment, setAppointment] = useState<AppointmentForm>(() => {
+    const slot = slotFromUrl(params)
+    return slot ? withSlot(EMPTY_APPOINTMENT, slot, new Set()) : EMPTY_APPOINTMENT
+  })
   const [showRequired, setShowRequired] = useState(false)
   const [saved, setSaved] = useState<Task | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])

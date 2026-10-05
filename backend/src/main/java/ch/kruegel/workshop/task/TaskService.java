@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +58,7 @@ public class TaskService {
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
-    private static final Sort CALENDAR_ORDER = Sort.by("appointment.date", "appointment.time", "sortOrder");
+    private static final Sort CALENDAR_ORDER = Sort.by("appointment.date", "appointment.time");
 
     private final TaskRepository repository;
     private final CustomerRepository customers;
@@ -93,6 +92,12 @@ public class TaskService {
         return repository.findByAppointmentDateBetween(from, to, CALENDAR_ORDER).stream().map(TaskDto::of).toList();
     }
 
+    /** The day view: tasks starting that day plus those of earlier days still on their lift. */
+    @Transactional(readOnly = true)
+    public List<TaskDto> onDay(LocalDate day) {
+        return repository.occupying(day, day.atStartOfDay()).stream().map(TaskDto::of).toList();
+    }
+
     /** The last 10 tasks of a customer, newest first. */
     @Transactional(readOnly = true)
     public List<TaskDto> history(UUID customerId) {
@@ -106,17 +111,15 @@ public class TaskService {
         return TaskDto.of(find(id));
     }
 
-    /** New task – at the end of its lift column. */
     public TaskDto create(TaskRequest request) {
         TaskDetails details = details(request, null);
         String number = freeTaskNumber(request.taskNumber(), null);
         checkLiftFree(details.lift(), details.appointment(), null);
-        Task task = new Task(details, nextPosition(details));
+        Task task = new Task(details);
         task.assignTaskNumber(number);
         return saved(repository.save(task));
     }
 
-    /** Edit – if day or lift change, the task moves to the end of the new column. */
     public TaskDto update(UUID id, TaskRequest request) {
         if (request.version() == null) {
             throw new InvalidInputException("version", "muss beim Bearbeiten angegeben werden");
@@ -126,13 +129,9 @@ public class TaskService {
         TaskDetails details = details(request, task);
         String number = freeTaskNumber(request.taskNumber(), id);
         checkLiftFree(details.lift(), details.appointment(), id);
-        boolean otherColumn = !details.appointment().date().equals(task.getAppointment().date())
-                || !Objects.equals(details.lift(), task.getLift());
-        int position = otherColumn ? nextPosition(details) : task.getSortOrder();
 
         task.update(details);
         task.assignTaskNumber(number);
-        task.moveTo(position);
         return saved(task);
     }
 
@@ -147,46 +146,33 @@ public class TaskService {
     }
 
     /**
-     * Drag & drop: the task goes into the column of {@code liftId} on {@code date} (default: its day)
-     * at {@code position}. BOTH affected columns are numbered 0, 1, 2 … again and saved – the old app
-     * only saved the dragged card, so the neighbours jumped back after a reload (bug #5).
-     * Time and duration stay when the day changes (bug #6: the old app had an unused "guess the time").
+     * Drag & drop in the time grid (day view) or onto another day (week view): new lift, start and end.
+     * "kommt früher" and "fertig bis" move along to another day; they must still fit the new start.
      * No version needed, like the status: moving must not fail because of an unrelated edit.
      */
-    public List<TaskDto> move(UUID id, TaskMoveRequest request) {
+    public TaskDto schedule(UUID id, TaskScheduleRequest request) {
         Task task = find(id);
-        Lift target = reference(lifts, request.liftId(), task.getLift(), "liftId", "Lift", Lift::isActive, "ist ausser Betrieb");
-        LocalDate fromDay = task.getAppointment().date();
-        LocalDate toDay = request.date() == null ? fromDay : request.date();
-        boolean sameColumn = Objects.equals(target, task.getLift()) && toDay.equals(fromDay);
-        if (!sameColumn) {
-            // the duration moves along – the new place must be free for all of it
-            checkLiftFree(target, task.getAppointment().onDay(toDay), id);
+        Appointment current = task.getAppointment();
+        Lift lift = reference(lifts, request.liftId(), task.getLift(), "liftId", "Lift", Lift::isActive, "ist ausser Betrieb");
+        LocalDateTime start = request.date().atTime(request.time());
+        if (!request.endAt().isAfter(start)) {
+            throw new InvalidInputException("endAt", "muss nach dem Beginn liegen");
         }
-
-        // read both columns BEFORE changing anything (check before change, no auto flush surprises)
-        List<Task> source = new ArrayList<>(repository.column(fromDay, liftId(task.getLift())));
-        List<Task> destination = sameColumn ? source : new ArrayList<>(repository.column(toDay, liftId(target)));
-        source.remove(task);
-        destination.add(Math.min(request.position(), destination.size()), task);
-
-        task.moveToDay(toDay);
-        task.moveToLift(target);
-        renumber(source);
-        renumber(destination);
-        flush(task);
-        events.publishEvent(new DataChanged(TOPIC));
-        return destination.stream().map(TaskDto::of).toList();
-    }
-
-    private static void renumber(List<Task> column) {
-        for (int i = 0; i < column.size(); i++) {
-            column.get(i).moveTo(i);
+        LocalDateTime earlier = current.shiftedToDay(current.arrivesEarlier(), request.date());
+        if (earlier != null && !earlier.isBefore(start)) {
+            throw new InvalidInputException("time", "liegt nach \u201eFahrzeug kommt früher\u201c (" + WHEN.format(earlier)
+                    + ") \u2013 bitte im Auftrag anpassen");
         }
-    }
+        LocalDateTime readyBy = current.shiftedToDay(current.readyBy(), request.date());
+        if (readyBy != null && !readyBy.isAfter(start)) {
+            throw new InvalidInputException("time", "liegt nach \u201efertig bis\u201c (" + WHEN.format(readyBy)
+                    + ") \u2013 bitte im Auftrag anpassen");
+        }
+        Appointment moved = current.movedTo(request.date(), request.time(), request.endAt());
+        checkLiftFree(lift, moved, id);
 
-    private static UUID liftId(Lift lift) {
-        return lift == null ? null : lift.getId();
+        task.schedule(moved, lift);
+        return saved(task);
     }
 
     public TaskDto assignTaskNumber(UUID id, String taskNumber) {
@@ -299,11 +285,6 @@ public class TaskService {
             throw new InvalidInputException(field, what + " " + notUsable);
         }
         return found;
-    }
-
-    private int nextPosition(TaskDetails details) {
-        UUID liftId = details.lift() == null ? null : details.lift().getId();
-        return repository.maxSortOrder(details.appointment().date(), liftId) + 1;
     }
 
     private Task find(UUID id) {

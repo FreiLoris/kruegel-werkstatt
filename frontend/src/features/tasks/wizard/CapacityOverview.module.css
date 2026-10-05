@@ -21,30 +21,31 @@
   gap: var(--space-1);
 }
 
-/* Columns are set inline (number of days varies); rows: header + one per half hour */
-.grid {
+/* The days of the week as buttons; columns set inline (number of days varies) */
+.week {
   display: grid;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  overflow: hidden;
+  gap: var(--space-1);
 }
 
-.corner,
-.dayHeader {
-  background: var(--color-surface-raised);
-  border-bottom: 2px solid var(--color-border);
-}
-
-/* Equal height for all headers – the holiday name does not make one taller */
-.dayHeader {
+/* Equal height for all – the holiday name does not make one taller */
+.day {
   display: grid;
   align-content: center;
   min-height: 3rem;
   padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-bottom-width: 3px;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: inherit;
+  font: inherit;
   text-align: center;
-  border-left: 1px solid var(--color-border);
+  cursor: pointer;
   overflow: hidden;
+}
+
+.day:hover {
+  background: var(--color-surface-raised);
 }
 
 .dayName {
@@ -64,68 +65,19 @@
   color: var(--color-accent);
 }
 
-.selectedDay {
+.shown {
   border-bottom-color: var(--color-accent);
+  background: var(--color-surface-raised);
 }
 
-.holiday .dayInfo {
+.holiday .dayInfo,
+.holidayName {
   color: var(--color-danger);
 }
 
-.time {
-  padding-right: var(--space-1);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  text-align: right;
-  line-height: 1;
-  transform: translateY(-0.4em);
-}
-
-.cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 1.6rem;
-  padding: 2px;
-  border: 0;
-  border-left: 1px solid var(--color-border);
-  border-top: 1px dashed var(--color-border);
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.cell.fullHour {
-  border-top-style: solid;
-}
-
-.cell:hover {
-  background: var(--color-surface-raised);
-}
-
-.holidayCell {
-  background: color-mix(in srgb, var(--color-danger) 6%, transparent);
-}
-
-.selectedCell,
-.selectedCell:hover {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-}
-
-.chip {
-  display: block;
-  padding: 1px var(--space-1);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border-strong);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.dayTitle {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-md);
 }
 
 .legend {

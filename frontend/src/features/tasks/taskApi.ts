@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -37,7 +37,7 @@ export const PARTS_STATUS: Record<PartsStatus, string> = {
   ARRIVED: 'Angekommen',
 }
 
-/** Query key of a period – also used to update the day view right away when moving a card. */
+/** Query key of a period – also used to update the week view right away when moving a card. */
 export function tasksBetweenKey(from: string, to: string) {
   return [TOPIC, 'between', from, to] as const
 }
@@ -47,6 +47,19 @@ export function useTasksBetween(from: string, to: string) {
   return useQuery({
     queryKey: tasksBetweenKey(from, to),
     queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })),
+  })
+}
+
+export function tasksOfDayKey(date: string) {
+  return [TOPIC, 'day', date] as const
+}
+
+/** Tasks that take time on a day – also those of earlier days still on their lift (day view, wizard). */
+export function useTasksOfDay(date: string | undefined) {
+  return useQuery({
+    queryKey: tasksOfDayKey(date ?? ''),
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/day', { params: { query: { date: date! } }, signal })),
+    enabled: !!date,
   })
 }
 
@@ -78,32 +91,24 @@ export function useCreateTask() {
   })
 }
 
-export interface TaskMove {
-  id: string
-  liftId: string | null
-  position: number
-  /** new day (week view); empty = stays on its day */
-  date?: string
-  /** all tasks of the view as they look after the move – shown right away */
-  arranged: Task[]
-}
+export type TaskSchedule = components['schemas']['TaskScheduleRequest']
 
 /**
- * Drag & drop in day and week view: the card is shown at its new place right away; if the
- * server refuses, the view jumps back. The server renumbers both affected columns.
+ * Drag & drop in day and week view: new lift, start and end. The task is shown at its new place
+ * right away (`arranged`); if the server refuses, the view jumps back.
  */
-export function useMoveTask(viewKey: ReturnType<typeof tasksBetweenKey>) {
+export function useScheduleTask(viewKey: QueryKey) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, liftId, position, date }: TaskMove) =>
-      dataOrThrow(await api.PUT('/api/tasks/{id}/move', { params: { path: { id } }, body: { liftId, position, date } })),
+    mutationFn: async ({ id, schedule }: { id: string; schedule: TaskSchedule; arranged: Task[] }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/schedule', { params: { path: { id } }, body: schedule })),
     onMutate: async ({ arranged }) => {
       await queryClient.cancelQueries({ queryKey: viewKey })
       const previous = queryClient.getQueryData<Task[]>(viewKey)
       queryClient.setQueryData(viewKey, arranged)
       return { previous }
     },
-    onError: (_error, _move, context) => queryClient.setQueryData(viewKey, context?.previous),
+    onError: (_error, _variables, context) => queryClient.setQueryData(viewKey, context?.previous),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

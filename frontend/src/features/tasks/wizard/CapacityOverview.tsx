@@ -2,57 +2,59 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../../components/ui/Button'
 import { isoWeek, isWeekend, mondayOf, weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, formatTime, todayIso } from '../../../lib/format'
-import { useTasksBetween, type Task } from '../taskApi'
+import { addDays, formatDate, todayIso } from '../../../lib/format'
+import { useAllLifts } from '../../lifts/liftApi'
+import { DayGrid, type Slot } from '../day/DayGrid'
+import { useTasksBetween, useTasksOfDay } from '../taskApi'
 import styles from './CapacityOverview.module.css'
 
-/** Planning grid 07:00–17:30 in half hours, like the old app – a planning aid, not a capacity check. */
-const FIRST_SLOT = 7 * 60
-const LAST_SLOT = 17 * 60
-const SLOT_MINUTES = 30
-const SLOTS = Array.from({ length: (LAST_SLOT - FIRST_SLOT) / SLOT_MINUTES + 1 }, (_, i) => FIRST_SLOT + i * SLOT_MINUTES)
-
-const toTime = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
-const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5))
-
-/** Slot in which a task appears – earlier/later ones at the edge of the grid. */
-function slotOf(time: string): number {
-  const minutes = Math.min(Math.max(toMinutes(time), FIRST_SLOT), LAST_SLOT)
-  return FIRST_SLOT + Math.floor((minutes - FIRST_SLOT) / SLOT_MINUTES) * SLOT_MINUTES
-}
+/** Pixels per minute – smaller than the day view, it shares the screen with the form */
+const SCALE = 0.9
 
 interface CapacityOverviewProps {
-  date: string
-  time: string
+  /** chosen so far: date '' = none yet */
+  picked: Slot
   /** date → holiday name */
   holidays: ReadonlyMap<string, string>
-  onPick: (date: string, time: string) => void
+  /** a day chosen in the week strip – time and duration stay */
+  onPickDay: (date: string) => void
+  /** dragged open (or tapped) in the day's grid: lift, start and end */
+  onPickSlot: (slot: Slot) => void
 }
 
 /**
- * Week overview of all tasks (UI review: sticky, equal headers, "0 Termine" instead of "0T",
- * a click on a slot takes over date and time). Weekends only appear when there are tasks.
+ * Where is room? (6k) The week with the number of tasks per day, below it the chosen day as a
+ * time grid per lift – dragging open a free area takes over lift, start and end. A lift already
+ * taken at that time shows red ("belegt"). Weekends only appear when there are tasks.
  */
-export function CapacityOverview({ date, time, holidays, onPick }: CapacityOverviewProps) {
+export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot }: CapacityOverviewProps) {
   const today = todayIso()
-  const [monday, setMonday] = useState(() => mondayOf(date || today))
-  // A date typed in the form shows its week ("adjust state while rendering", no effect needed)
-  const [shownFor, setShownFor] = useState(date)
-  if (date !== shownFor) {
-    setShownFor(date)
-    if (date) setMonday(mondayOf(date))
+  const [day, setDay] = useState(picked.date || today)
+  const [monday, setMonday] = useState(() => mondayOf(day))
+  // A date typed in the form shows its day ("adjust state while rendering", no effect needed)
+  const [shownFor, setShownFor] = useState(picked.date)
+  if (picked.date !== shownFor) {
+    setShownFor(picked.date)
+    if (picked.date) {
+      setDay(picked.date)
+      setMonday(mondayOf(picked.date))
+    }
   }
 
   const sunday = addDays(monday, 6)
-  const tasks = useTasksBetween(monday, sunday)
-  const byDay = new Map<string, Task[]>()
-  for (const task of tasks.data ?? []) {
-    byDay.set(task.date, [...(byDay.get(task.date) ?? []), task])
-  }
+  const week = useTasksBetween(monday, sunday)
+  const dayTasks = useTasksOfDay(day)
+  const { data: lifts } = useAllLifts()
+  const counts = new Map<string, number>()
+  for (const task of week.data ?? []) counts.set(task.date, (counts.get(task.date) ?? 0) + 1)
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i)).filter(
-    (day) => !isWeekend(day) || byDay.has(day) || day === date,
+    (d) => !isWeekend(d) || counts.has(d) || d === picked.date,
   )
-  const selectedSlot = date && time ? slotOf(time) : null
+
+  function choose(d: string) {
+    setDay(d)
+    onPickDay(d)
+  }
 
   return (
     <section className={styles.overview} aria-labelledby="capacity-heading">
@@ -68,91 +70,50 @@ export function CapacityOverview({ date, time, holidays, onPick }: CapacityOverv
           <Button small variant="ghost" icon={ChevronRight} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche" />
         </div>
       </div>
-      {tasks.error && <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>}
+      {week.error && <p className="muted">Termine konnten nicht geladen werden: {week.error.message}</p>}
 
-      <div className={styles.grid} style={{ gridTemplateColumns: `3rem repeat(${days.length}, minmax(0, 1fr))` }}>
-        <div className={styles.corner} />
-        {days.map((day) => {
-          const count = byDay.get(day)?.length ?? 0
-          const holiday = holidays.get(day)
+      <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+        {days.map((d) => {
+          const count = counts.get(d) ?? 0
+          const holiday = holidays.get(d)
           return (
-            <div
-              key={day}
-              className={[styles.dayHeader, day === today && styles.today, day === date && styles.selectedDay, holiday && styles.holiday]
+            <button
+              key={d}
+              type="button"
+              className={[styles.day, d === today && styles.today, d === day && styles.shown, holiday && styles.holiday]
                 .filter(Boolean)
                 .join(' ')}
+              onClick={() => choose(d)}
+              aria-pressed={d === picked.date}
             >
               <span className={styles.dayName}>
-                {WEEKDAYS_SHORT[weekdayOf(day)]} {formatDate(day).slice(0, 6)}
+                {WEEKDAYS_SHORT[weekdayOf(d)]} {formatDate(d).slice(0, 6)}
               </span>
               <span className={styles.dayInfo}>{holiday ?? (count === 1 ? '1 Termin' : `${count} Termine`)}</span>
-            </div>
+            </button>
           )
         })}
-
-        {SLOTS.map((slot) => (
-          <Row
-            key={slot}
-            slot={slot}
-            days={days}
-            byDay={byDay}
-            holidays={holidays}
-            selected={(day) => day === date && slot === selectedSlot}
-            onPick={onPick}
-          />
-        ))}
       </div>
-      <p className={styles.legend}>Klick auf ein Feld übernimmt Datum und Uhrzeit.</p>
-    </section>
-  )
-}
 
-function Row({
-  slot,
-  days,
-  byDay,
-  holidays,
-  selected,
-  onPick,
-}: {
-  slot: number
-  days: string[]
-  byDay: Map<string, Task[]>
-  holidays: ReadonlyMap<string, string>
-  selected: (day: string) => boolean
-  onPick: (date: string, time: string) => void
-}) {
-  const time = toTime(slot)
-  return (
-    <>
-      <div className={[styles.time, slot % 60 === 0 && styles.fullHour].filter(Boolean).join(' ')}>{slot % 60 === 0 ? time : ''}</div>
-      {days.map((day) => {
-        const here = (byDay.get(day) ?? []).filter((task) => slotOf(task.time) === slot)
-        return (
-          <button
-            key={day}
-            type="button"
-            className={[styles.cell, slot % 60 === 0 && styles.fullHour, holidays.has(day) && styles.holidayCell, selected(day) && styles.selectedCell]
-              .filter(Boolean)
-              .join(' ')}
-            onClick={() => onPick(day, time)}
-            aria-label={`${WEEKDAYS_SHORT[weekdayOf(day)]} ${formatDate(day)} ${time} wählen${here.length ? `, ${here.length} Termin(e)` : ''}`}
-            aria-pressed={selected(day)}
-          >
-            {here.map((task) => (
-              <span
-                key={task.id}
-                className={styles.chip}
-                title={[formatTime(task.time), task.customer.displayName, task.vehicle?.licensePlate, task.vehicle?.description]
-                  .filter(Boolean)
-                  .join(' · ')}
-              >
-                {formatTime(task.time)} {task.customer.displayName}
-              </span>
-            ))}
-          </button>
-        )
-      })}
-    </>
+      <h3 className={styles.dayTitle}>
+        {WEEKDAYS_SHORT[weekdayOf(day)]} {formatDate(day)}
+        {holidays.has(day) && <span className={styles.holidayName}> · {holidays.get(day)}</span>}
+      </h3>
+      {dayTasks.data && lifts ? (
+        <DayGrid
+          date={day}
+          tasks={dayTasks.data}
+          lifts={lifts}
+          mode="pick"
+          scale={SCALE}
+          canEdit
+          onPick={onPickSlot}
+          picked={picked.date ? picked : null}
+        />
+      ) : (
+        <p className="muted">Lade Termine …</p>
+      )}
+      <p className={styles.legend}>Im Raster ziehen übernimmt Lift, Beginn und Ende – tippen eine Stunde.</p>
+    </section>
   )
 }

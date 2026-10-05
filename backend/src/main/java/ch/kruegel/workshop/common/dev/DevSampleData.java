@@ -38,7 +38,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,42 +182,42 @@ class DevSampleData implements ApplicationRunner {
         }
 
         LocalDate today = LocalDate.now(clock);
-        Positions positions = new Positions();
+        SampleTasks sample = new SampleTasks();
         Function<Integer, Employee> mechanic = i -> mechanics.get(i % mechanics.size());
         Function<Integer, Lift> lift = i -> activeLifts.get(i % activeLifts.size());
         Set<ServiceItem> oilAndBrakes = items.size() > 3 ? Set.of(items.get(0), items.get(3)) : Set.copyOf(items);
 
-        Task wheels = positions.add(golf, new Appointment(today, LocalTime.of(7, 30), today.atTime(8, 30), null, null, true),
+        Task wheels = sample.add(golf, new Appointment(today, LocalTime.of(7, 30), today.atTime(8, 30), null, null, true),
                 mechanic.apply(0), lift.apply(0),
                 new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, "Winterräder montieren"), null);
         wheels.changeStatus(TaskStatus.IN_PROGRESS);
 
-        positions.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
+        sample.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
                 new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null, null), "Schlüssel im Briefkasten");
 
-        Task waiting = positions.add(octavia, until(Appointment.at(today, LocalTime.of(10, 0)), 16, 0), mechanic.apply(2), lift.apply(2),
+        Task waiting = sample.add(octavia, new Appointment(today, LocalTime.of(10, 0), today.plusDays(1).atTime(12, 0), null, null, false), mechanic.apply(2), lift.apply(2),
                 new TaskWork(false, null, false, null, Set.of(),
                         new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", today.minusDays(1)),
                         "Bremsen vorne ersetzen"), null);
         waiting.changeStatus(TaskStatus.WAITING_FOR_PARTS);
 
-        Task done = positions.add(yaris, Appointment.at(today, LocalTime.of(13, 30)), mechanic.apply(3), lift.apply(0),
+        Task done = sample.add(yaris, Appointment.at(today, LocalTime.of(13, 30)), mechanic.apply(3), lift.apply(0),
                 new TaskWork(true, TireChangeKind.TIRES_BROUGHT, false, null, Set.of(), null, null), null);
         done.changeStatus(TaskStatus.DONE);
 
         // tomorrow: one with the vehicle still open, one without lift that arrives the evening before
-        positions.add(golf.getCustomer(), null, Appointment.at(today.plusDays(1), LocalTime.of(8, 0)), null, lift.apply(1),
+        sample.add(golf.getCustomer(), null, Appointment.at(today.plusDays(1), LocalTime.of(8, 0)), null, lift.apply(1),
                 TaskWork.described("Service am neuen Auto"), "Neues Fahrzeug, noch nicht in SwissGarage");
-        positions.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.plusDays(1).atTime(11, 0), today.atTime(17, 30),
+        sample.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.plusDays(1).atTime(11, 0), today.atTime(17, 30),
                 today.plusDays(1).atTime(16, 0), false), mechanic.apply(1), null, TaskWork.described("Klimaanlage prüfen"), null);
 
-        Task yesterday = positions.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
+        Task yesterday = sample.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
                 lift.apply(0), TaskWork.described("Grosser Service"), null);
         yesterday.changeStatus(TaskStatus.DONE);
         yesterday.assignTaskNumber("A-90001");
 
-        tasks.saveAll(positions.created);
-        log.info("Dev sample data created: {} tasks", positions.created.size());
+        tasks.saveAll(sample.created);
+        log.info("Dev sample data created: {} tasks", sample.created.size());
     }
 
     /** The same appointment, ending at the given time of its day – realistic durations in the sample */
@@ -228,13 +227,11 @@ class DevSampleData implements ApplicationRunner {
     }
 
     /**
-     * Hands out the next position per lift column and day, like the service does. A task that would
-     * overlap another one on its lift (few lifts configured) goes to "Ohne Lift" – the database
-     * refuses two cars on one lift at the same time.
+     * Collects the sample tasks. A task that would overlap another one on its lift (few lifts
+     * configured) goes to "Ohne Lift" – the database refuses two cars on one lift at the same time.
      */
-    private static final class Positions {
+    private static final class SampleTasks {
 
-        private final Map<String, Integer> next = new HashMap<>();
         private final List<Task> created = new ArrayList<>();
 
         Task add(Vehicle vehicle, Appointment appointment, Employee mechanic, Lift lift, TaskWork work, String notes) {
@@ -245,10 +242,7 @@ class DevSampleData implements ApplicationRunner {
                  TaskWork work, String notes) {
             boolean taken = lift != null && created.stream()
                     .anyMatch(t -> lift.equals(t.getLift()) && overlap(t.getAppointment(), appointment));
-            Lift free = taken ? null : lift;
-            String column = appointment.date() + "/" + (free == null ? "-" : free.getId());
-            int position = next.merge(column, 1, Integer::sum) - 1;
-            Task task = new Task(new TaskDetails(customer, vehicle, appointment, mechanic, free, work, notes), position);
+            Task task = new Task(new TaskDetails(customer, vehicle, appointment, mechanic, taken ? null : lift, work, notes));
             created.add(task);
             return task;
         }

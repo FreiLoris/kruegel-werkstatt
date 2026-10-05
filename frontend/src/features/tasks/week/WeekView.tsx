@@ -22,13 +22,11 @@ import { addDays, formatDate, todayIso } from '../../../lib/format'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
-import { tasksBetweenKey, useMoveTask, useTasksBetween, type Task } from '../taskApi'
+import { movedTo, minutesOf, withSchedule } from '../day/timeGrid'
+import { tasksBetweenKey, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
 import { WeekCard } from './WeekCard'
-import { weekDays, withDate } from './weekDays'
+import { weekDays } from './weekDays'
 import styles from './WeekView.module.css'
-
-/** Position "at the end" of a lift column – the server puts the task behind the last one */
-const END_OF_COLUMN = 1_000_000
 
 const dayLabel = (date: string) => `${WEEKDAYS_SHORT[weekdayOf(date)]} ${formatDate(date)}`
 
@@ -40,8 +38,8 @@ const dropTarget: CollisionDetection = (args) => {
 
 /**
  * The week of the given Monday: one column per day, cards by time. A card dragged onto another day
- * moves the appointment there – same time, same lift, at the end of the lift column (bug #6:
- * the time is kept, not guessed). Absences of employees follow with phase 9.
+ * moves the appointment there – same time, duration and lift (bug #6: the time is kept, not
+ * guessed). The lift must be free then, otherwise the server says by whom. Absences of employees follow with phase 9.
  */
 export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (date: string) => void }) {
   const sunday = addDays(monday, 6)
@@ -50,7 +48,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: holidays } = usePublicHolidays(monday, sunday)
-  const move = useMoveTask(viewKey)
+  const schedule = useScheduleTask(viewKey)
   const canEdit = useCanEdit()
   const toast = useToast()
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -82,10 +80,11 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
     const task = all.find((t) => t.id === dragged.id)
     if (!task || !over || over.id === task.date) return
     const date = String(over.id)
-    const arranged = withDate(all, task.id, date)
+    const newPlace = movedTo(task, task.liftId, date, minutesOf(task.time))
+    const arranged = withSchedule(all, task.id, newPlace)
     setDropped({ tasks: arranged, basedOn: all })
-    move.mutate(
-      { id: task.id, liftId: task.liftId, position: END_OF_COLUMN, date, arranged },
+    schedule.mutate(
+      { id: task.id, schedule: newPlace, arranged },
       {
         onSuccess: () => toast.success(`${task.customer.displayName} auf ${dayLabel(date)} verschoben`),
         onError: (error) => {

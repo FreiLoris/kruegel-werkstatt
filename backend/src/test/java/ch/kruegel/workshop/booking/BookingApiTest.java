@@ -81,7 +81,7 @@ class BookingApiTest {
         retired = cars.save(old);
         Customer huber = customers.save(CustomerTestData.local("Huber"));
         task = tasks.save(new Task(new TaskDetails(huber, null, Appointment.at(DATE, LocalTime.of(8, 0)), null, null,
-                TaskWork.described(null), null), 0));
+                TaskWork.described(null), null)));
     }
 
     @Test

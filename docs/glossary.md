@@ -82,7 +82,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Auftragsliste | task list (`TaskListView`, `/tasks?view=list`) | table with filters |
 | Wochenansicht | week view (`WeekView`, `/tasks?view=week`) | one column per day |
 | Terminsuche | appointment search (`/api/tasks/search`) | all appointments, upcoming first |
-| Verschieben (Drag & Drop) | move (`PUT /api/tasks/{id}/move`) | both columns are renumbered |
+| Verschieben (Drag & Drop) | schedule (`PUT /api/tasks/{id}/schedule`) | new lift, start and end; the time decides the order |
+| Zeitraster (Tagesansicht) | `DayGrid`, `timeGrid.ts` | one column per lift, blocks as long as the task |
 | Kapazitätsübersicht | capacity overview (`CapacityOverview`) | week grid, a planning aid – no capacity check |
 | Werktag | working day (`previousWorkingDay`) | Monday–Friday without public holidays (also in the frontend: `lib/calendar.ts`) |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |

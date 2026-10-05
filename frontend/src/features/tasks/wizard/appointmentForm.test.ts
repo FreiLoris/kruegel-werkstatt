@@ -6,11 +6,14 @@ import {
   customerStepFromTask,
   EMPTY_APPOINTMENT,
   formFromTask,
+  newTaskUrl,
+  slotFromUrl,
   toTaskRequest,
   withArrivesEarlier,
   withDate,
   withMfk,
   withReadyBy,
+  withSlot,
   type AppointmentForm,
 } from './appointmentForm'
 
@@ -187,5 +190,24 @@ describe('formFromTask', () => {
 
   it('a task without vehicle stays "vehicle open"', () => {
     expect(customerStepFromTask(task).vehicle).toEqual({ kind: 'open' })
+  })
+})
+
+describe('slots from a time grid', () => {
+  const slot = { liftId: 'l2', date: '2026-10-16', time: '13:30', endAt: '2026-10-16T15:00' }
+
+  it('takes over lift, start and end – derived dates move along', () => {
+    const form = withSlot({ ...THURSDAY, mfk: true, mfkDate: '2026-10-15' }, slot, NO_HOLIDAYS)
+
+    expect(form).toMatchObject({ liftId: 'l2', date: '2026-10-16', time: '13:30', endDate: '2026-10-16', endTime: '15:00', mfkDate: '2026-10-16' })
+    expect(withSlot(THURSDAY, { ...slot, liftId: null }, NO_HOLIDAYS).liftId).toBe('')
+  })
+
+  it('travels through the address of the wizard', () => {
+    const url = newTaskUrl(slot)
+
+    expect(slotFromUrl(new URL(url, 'http://x').searchParams)).toEqual(slot)
+    expect(slotFromUrl(new URLSearchParams('date=2026-10-16&time=8&end=x'))).toBeNull()
+    expect(slotFromUrl(new URLSearchParams('date=2026-10-16&time=08:00&end=2026-10-16T09:00'))?.liftId).toBeNull()
   })
 })

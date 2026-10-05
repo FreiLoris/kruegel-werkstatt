@@ -191,10 +191,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   on the same lift at the same time (like the courtesy cars); moving keeps the duration.
   Wizard/edit with "bis" fields and duration, start–end on cards, detail, sheet and list.
   Fixed on the way: `hibernate.jdbc.time_zone: UTC` shifted local times outside UTC JVMs.
-- [ ] **6k – Day view as time grid per lift** *(inserted)*
+- [x] **6k – Day view as time grid per lift** *(inserted)*
   Like Outlook: columns = lifts, rows = time, tasks as blocks as long as their duration; tap and drag
   in the grid = new task with start/end; move a block / drag its end = change the time. The manual
   order of 6f is replaced by the time. Capacity overview in the wizard with durations, select by dragging.
+  `PUT /api/tasks/{id}/schedule` replaces `/move`, V15 drops `sort_order`; `GET /api/tasks/day` also
+  brings tasks of earlier days still on their lift; "now" line; collisions shown red while dragging.
 
 ## Phase 7 – Courtesy car bookings
 

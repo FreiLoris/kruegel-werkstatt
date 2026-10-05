@@ -64,14 +64,17 @@ public record Appointment(
     }
 
     /**
-     * The same appointment on another day (drag & drop in the week view). Time, end, "kommt früher"
-     * and "fertig bis" keep their distance to the appointment – they move by the same number of days.
+     * The appointment at another time (drag & drop). On another day "kommt früher" and "fertig bis"
+     * move by the same number of days (the car still comes the evening before); within the day they
+     * stay. The caller checks first that they still fit (see {@link #shiftedToDay}).
      */
-    public Appointment onDay(LocalDate day) {
-        long days = ChronoUnit.DAYS.between(date, day);
-        return new Appointment(day, time, end.plusDays(days),
-                arrivesEarlier == null ? null : arrivesEarlier.plusDays(days),
-                readyBy == null ? null : readyBy.plusDays(days),
+    public Appointment movedTo(LocalDate newDate, LocalTime newTime, LocalDateTime newEnd) {
+        return new Appointment(newDate, newTime, newEnd, shiftedToDay(arrivesEarlier, newDate), shiftedToDay(readyBy, newDate),
                 waitingCustomer);
+    }
+
+    /** "kommt früher"/"fertig bis" when the appointment moves to {@code newDate}; empty stays empty. */
+    public LocalDateTime shiftedToDay(LocalDateTime dateTime, LocalDate newDate) {
+        return dateTime == null ? null : dateTime.plusDays(ChronoUnit.DAYS.between(date, newDate));
     }
 }

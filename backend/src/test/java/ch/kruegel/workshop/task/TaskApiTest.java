@@ -113,17 +113,6 @@ class TaskApiTest {
     }
 
     @Test
-    void newTasksGoToTheEndOfTheirLiftColumn() {
-        String lift1Json = "\"liftId\": \"%s\"".formatted(lift1.getId());
-
-        assertThat(create(lift1Json)).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
-        assertThat(createAt("09:00", lift1Json)).bodyJson().extractingPath("$.sortOrder").isEqualTo(1);
-        assertThat(create("\"liftId\": \"%s\"".formatted(lift2.getId()))).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
-        // no lift yet: own column
-        assertThat(create(null)).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
-    }
-
-    @Test
     void changesWithoutPersonAreRefused() {
         MvcTestResult response = mvc.post().uri("/api/tasks").contentType(MediaType.APPLICATION_JSON)
                 .content(body(null)).exchange();
@@ -196,14 +185,13 @@ class TaskApiTest {
     }
 
     @Test
-    void movingToAnotherLiftPutsTheTaskAtTheEnd() {
+    void editingCanChangeTheLift() {
         create(liftJson(lift2));
         String id = idOf(createAt("09:00", liftJson(lift1)));
 
         MvcTestResult response = send("PUT", "/api/tasks/" + id, bodyAt("09:00", liftJson(lift2) + ", \"version\": 0"));
 
         assertThat(response).bodyJson().extractingPath("$.liftId").isEqualTo(lift2.getId().toString());
-        assertThat(response).bodyJson().extractingPath("$.sortOrder").isEqualTo(1);
     }
 
     @Test
@@ -280,78 +268,6 @@ class TaskApiTest {
     }
 
     @Test
-    void movingWithinAColumnRenumbersTheWholeColumn() {
-        String a = idOf(create(liftJson(lift1)));
-        String b = idOf(createAt("09:00", liftJson(lift1)));
-        String c = idOf(createAt("10:00", liftJson(lift1)));
-
-        MvcTestResult response = send("PUT", "/api/tasks/" + c + "/move", moveJson(lift1, 0));
-
-        assertThat(response).hasStatusOk();
-        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(c, a, b);
-        assertThat(response).bodyJson().extractingPath("$[*].sortOrder").asArray().containsExactly(0, 1, 2);
-    }
-
-    @Test
-    void movingToAnotherLiftClosesTheGapInTheOldColumn() {
-        String a = idOf(create(liftJson(lift1)));
-        String b = idOf(createAt("09:00", liftJson(lift1)));
-        String x = idOf(createAt("10:00", liftJson(lift2)));
-
-        MvcTestResult response = send("PUT", "/api/tasks/" + a + "/move", moveJson(lift2, 0));
-
-        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(a, x);
-        assertThat(response).bodyJson().extractingPath("$[0].liftId").isEqualTo(lift2.getId().toString());
-        // bug #5: the neighbour in the old column is saved too
-        assertThat(mvc.get().uri("/api/tasks/" + b).exchange()).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
-    }
-
-    @Test
-    void positionBeyondTheEndMeansAtTheEndAndNoLiftIsAColumnToo() {
-        String a = idOf(create(liftJson(lift1)));
-        String open = idOf(create(null));
-
-        MvcTestResult response = send("PUT", "/api/tasks/" + a + "/move", "{ \"liftId\": null, \"position\": 99 }");
-
-        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(open, a);
-        assertThat(response).bodyJson().extractingPath("$[1].liftId").isNull();
-    }
-
-    @Test
-    void cannotMoveToALiftOutOfService() {
-        String a = idOf(create(liftJson(lift1)));
-        lift2.deactivate();
-        lifts.save(lift2);
-
-        assertFieldError(send("PUT", "/api/tasks/" + a + "/move", moveJson(lift2, 0)), "liftId");
-        assertFieldError(send("PUT", "/api/tasks/" + a + "/move", "{ \"position\": -1 }"), "position");
-    }
-
-    @Test
-    void movingToAnotherDayKeepsTheTimeAndTheDistanceOfTheExtraTimes() {
-        String stays = idOf(create(liftJson(lift1)));
-        String moved = idOf(createAt("09:00", liftJson(lift1) + """
-                , "arrivesEarlier": "2026-10-14T17:00", "readyBy": "2026-10-15T16:30",
-                  "mfk": true, "mfkAppointment": "2026-10-15T10:00"
-                """));
-
-        MvcTestResult response = send("PUT", "/api/tasks/" + moved + "/move",
-                "{ \"liftId\": \"%s\", \"position\": 99, \"date\": \"2026-10-20\" }".formatted(lift1.getId()));
-
-        assertThat(response).hasStatusOk();
-        MvcTestResult task = mvc.get().uri("/api/tasks/" + moved).exchange();
-        assertThat(task).bodyJson().extractingPath("$.date").isEqualTo("2026-10-20");
-        assertThat(task).bodyJson().extractingPath("$.time").isEqualTo("09:00:00");
-        assertThat(task).bodyJson().extractingPath("$.endAt").isEqualTo("2026-10-20T10:00:00");
-        assertThat(task).bodyJson().extractingPath("$.arrivesEarlier").isEqualTo("2026-10-19T17:00:00");
-        assertThat(task).bodyJson().extractingPath("$.readyBy").isEqualTo("2026-10-20T16:30:00");
-        // booked at the inspection station – does not move with the workshop appointment
-        assertThat(task).bodyJson().extractingPath("$.mfkAppointment").isEqualTo("2026-10-15T10:00:00");
-        // the old day closed the gap
-        assertThat(mvc.get().uri("/api/tasks/" + stays).exchange()).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
-    }
-
-    @Test
     void endIsOneHourAfterTheStartUnlessGivenAndMustBeAfterIt() {
         assertThat(create(null)).bodyJson().extractingPath("$.endAt").isEqualTo("2026-10-15T09:00:00");
         // a car waiting for parts may take its lift until the next day
@@ -380,15 +296,62 @@ class TaskApiTest {
     }
 
     @Test
-    void movingNeedsTheLiftFreeForTheWholeDuration() {
-        String a = idOf(create(liftJson(lift1) + ", \"endAt\": \"2026-10-15T10:00\""));
-        String b = idOf(createAt("09:00", liftJson(lift2)));
-        send("POST", "/api/tasks", body(liftJson(lift1)).replace(DAY, "2026-10-16").replace("\"08:00\"", "\"09:00\""));
+    void schedulingSetsLiftStartAndEnd() {
+        String id = idOf(create(liftJson(lift1)));
 
-        assertFieldError(send("PUT", "/api/tasks/" + b + "/move", moveJson(lift1, 0)), "liftId");
-        assertFieldError(send("PUT", "/api/tasks/" + a + "/move",
-                "{ \"liftId\": \"%s\", \"position\": 0, \"date\": \"2026-10-16\" }".formatted(lift1.getId())), "liftId");
-        assertThat(send("PUT", "/api/tasks/" + a + "/move", moveJson(lift1, 0))).hasStatusOk();
+        MvcTestResult response = send("PUT", "/api/tasks/" + id + "/schedule", scheduleJson(lift2, DAY, "10:15", DAY + "T12:45"));
+
+        assertThat(response).hasStatusOk();
+        assertThat(response).bodyJson().extractingPath("$.liftId").isEqualTo(lift2.getId().toString());
+        assertThat(response).bodyJson().extractingPath("$.time").isEqualTo("10:15:00");
+        assertThat(response).bodyJson().extractingPath("$.endAt").isEqualTo("2026-10-15T12:45:00");
+        // no lift is a place too
+        assertThat(send("PUT", "/api/tasks/" + id + "/schedule", scheduleJson(null, DAY, "10:15", DAY + "T12:45")))
+                .bodyJson().extractingPath("$.liftId").isNull();
+    }
+
+    @Test
+    void schedulingChecksEndLiftAndTheExtraTimes() {
+        String a = idOf(create(liftJson(lift1) + ", \"endAt\": \"2026-10-15T10:00\""));
+        String b = idOf(createAt("11:00", liftJson(lift2) + ", \"readyBy\": \"2026-10-15T16:00\""));
+        lift2.deactivate();
+        lifts.save(lift2);
+
+        assertFieldError(send("PUT", "/api/tasks/" + b + "/schedule", scheduleJson(lift2, DAY, "11:00", DAY + "T11:00")), "endAt");
+        assertFieldError(send("PUT", "/api/tasks/" + b + "/schedule", scheduleJson(lift1, DAY, "09:00", DAY + "T12:00")), "liftId");
+        assertFieldError(send("PUT", "/api/tasks/" + b + "/schedule", scheduleJson(lift2, DAY, "16:00", DAY + "T17:00")), "time");
+        // its own lift stays usable although it is out of service now
+        assertThat(send("PUT", "/api/tasks/" + b + "/schedule", scheduleJson(lift2, DAY, "12:00", DAY + "T13:00"))).hasStatusOk();
+        assertFieldError(send("PUT", "/api/tasks/" + a + "/schedule", scheduleJson(lift2, DAY, "08:00", DAY + "T09:00")), "liftId");
+    }
+
+    @Test
+    void toAnotherDayTheExtraTimesMoveAlongTheMfkAppointmentStays() {
+        String moved = idOf(createAt("09:00", liftJson(lift1) + """
+                , "arrivesEarlier": "2026-10-14T17:00", "readyBy": "2026-10-15T16:30",
+                  "mfk": true, "mfkAppointment": "2026-10-15T10:00"
+                """));
+
+        MvcTestResult response = send("PUT", "/api/tasks/" + moved + "/schedule", scheduleJson(lift1, "2026-10-20", "09:00", "2026-10-20T10:00"));
+
+        assertThat(response).hasStatusOk();
+        assertThat(response).bodyJson().extractingPath("$.arrivesEarlier").isEqualTo("2026-10-19T17:00:00");
+        assertThat(response).bodyJson().extractingPath("$.readyBy").isEqualTo("2026-10-20T16:30:00");
+        // booked at the inspection station – does not move with the workshop appointment
+        assertThat(response).bodyJson().extractingPath("$.mfkAppointment").isEqualTo("2026-10-15T10:00:00");
+    }
+
+    @Test
+    void theDayShowsTasksOfEarlierDaysThatStillTakeTheirLift() {
+        send("POST", "/api/tasks", body(liftJson(lift1) + ", \"endAt\": \"2026-10-16T12:00\"").replace(DAY, "2026-10-14"));
+        send("POST", "/api/tasks", body(liftJson(lift2) + ", \"endAt\": \"2026-10-15T00:00\"").replace(DAY, "2026-10-14"));
+        send("POST", "/api/tasks", createAtBody("13:00"));
+        send("POST", "/api/tasks", body(null).replace(DAY, "2026-10-16"));
+
+        MvcTestResult response = mvc.get().uri("/api/tasks/day?date=" + DAY).exchange();
+
+        // the one ending at midnight is over, tomorrow's one has not started
+        assertThat(response).bodyJson().extractingPath("$[*].date").asArray().containsExactly("2026-10-14", DAY);
     }
 
     @Test
@@ -426,8 +389,13 @@ class TaskApiTest {
         return "\"liftId\": \"%s\"".formatted(lift.getId());
     }
 
-    private static String moveJson(Lift lift, int position) {
-        return "{ \"liftId\": \"%s\", \"position\": %d }".formatted(lift.getId(), position);
+    private static String scheduleJson(Lift lift, String date, String time, String endAt) {
+        String liftId = lift == null ? "null" : "\"" + lift.getId() + "\"";
+        return "{ \"liftId\": %s, \"date\": \"%s\", \"time\": \"%s\", \"endAt\": \"%s\" }".formatted(liftId, date, time, endAt);
+    }
+
+    private String createAtBody(String time) {
+        return bodyAt(time, null);
     }
 
     /** Task for Huber on {@link #DAY} at 08:00 plus the given JSON fields. */

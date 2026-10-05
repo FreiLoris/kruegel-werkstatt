@@ -27,17 +27,16 @@ class TaskTest {
 
     @Test
     void newTaskIsReceivedAndKeepsWhatWasEntered() {
-        Task task = new Task(details(TaskWork.described("Grosser Service")), 3);
+        Task task = new Task(details(TaskWork.described("Grosser Service")));
 
         assertThat(task.getStatus()).isEqualTo(TaskStatus.RECEIVED);
-        assertThat(task.getSortOrder()).isEqualTo(3);
         assertThat(task.getVehicle()).isNull();
         assertThat(task.getWork().description()).isEqualTo("Grosser Service");
     }
 
     @Test
     void statusCanGoForwardAndBack() {
-        Task task = new Task(details(TaskWork.described(null)), 0);
+        Task task = new Task(details(TaskWork.described(null)));
 
         task.changeStatus(TaskStatus.DONE);
         task.changeStatus(TaskStatus.IN_PROGRESS);
@@ -48,7 +47,7 @@ class TaskTest {
     @Test
     void waitingCustomerIsAFlagIndependentOfTheStatus() {
         Appointment waiting = new Appointment(DAY, EIGHT, DAY.atTime(9, 0), null, null, true);
-        Task task = new Task(new TaskDetails(huber, null, waiting, null, null, TaskWork.described(null), null), 0);
+        Task task = new Task(new TaskDetails(huber, null, waiting, null, null, TaskWork.described(null), null));
 
         task.changeStatus(TaskStatus.WAITING_FOR_PARTS);
 
@@ -58,7 +57,7 @@ class TaskTest {
 
     @Test
     void taskNumberIsTrimmedAndEmptyRemovesIt() {
-        Task task = new Task(details(TaskWork.described(null)), 0);
+        Task task = new Task(details(TaskWork.described(null)));
 
         task.assignTaskNumber("  A-2026-17 ");
         assertThat(task.getTaskNumber()).isEqualTo("A-2026-17");
@@ -84,8 +83,21 @@ class TaskTest {
         assertThatThrownBy(() -> new Appointment(DAY, EIGHT, DAY.atTime(EIGHT), null, null, false)).isInstanceOf(IllegalArgumentException.class);
         assertThat(Appointment.at(DAY, EIGHT).end()).isEqualTo(DAY.atTime(9, 0));
 
-        Appointment twoDays = new Appointment(DAY, EIGHT, DAY.plusDays(1).atTime(12, 0), null, null, false);
-        assertThat(twoDays.onDay(DAY.plusDays(7)).end()).isEqualTo(DAY.plusDays(8).atTime(12, 0));
+    }
+
+    @Test
+    void movedToAnotherDayTheExtraTimesMoveAlongWithinTheDayTheyStay() {
+        LocalDateTime eveningBefore = DAY.minusDays(1).atTime(17, 0);
+        LocalDateTime ready = DAY.atTime(16, 0);
+        Appointment appointment = new Appointment(DAY, EIGHT, DAY.atTime(9, 0), eveningBefore, ready, true);
+
+        Appointment later = appointment.movedTo(DAY, LocalTime.of(10, 0), DAY.atTime(12, 0));
+        assertThat(later).isEqualTo(new Appointment(DAY, LocalTime.of(10, 0), DAY.atTime(12, 0), eveningBefore, ready, true));
+
+        Appointment nextWeek = appointment.movedTo(DAY.plusDays(7), EIGHT, DAY.plusDays(8).atTime(12, 0));
+        assertThat(nextWeek.arrivesEarlier()).isEqualTo(eveningBefore.plusDays(7));
+        assertThat(nextWeek.readyBy()).isEqualTo(ready.plusDays(7));
+        assertThat(nextWeek.end()).isEqualTo(DAY.plusDays(8).atTime(12, 0));
     }
 
     @Test
@@ -111,7 +123,7 @@ class TaskTest {
     void updateReplacesTheTickedServiceItems() {
         ServiceItem oil = new ServiceItem("Ölwechsel", 0);
         ServiceItem wipers = new ServiceItem("Wischblätter", 1);
-        Task task = new Task(details(new TaskWork(false, null, false, null, Set.of(oil), null, null)), 0);
+        Task task = new Task(details(new TaskWork(false, null, false, null, Set.of(oil), null, null)));
 
         task.update(details(new TaskWork(false, null, false, null, Set.of(wipers), null, null)));
 
