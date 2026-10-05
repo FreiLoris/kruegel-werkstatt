@@ -1,12 +1,15 @@
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { ApiError, type FieldError } from '../../../api/errors'
+import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
 import { useToast } from '../../../components/ui/toastContext'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
+import { useCreateTaskWithBooking, type Booking } from '../../bookings/bookingApi'
+import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
+import { CourtesyCarSection } from '../../bookings/CourtesyCarSection'
 import { useCreateTask, type Task } from '../taskApi'
 import { appointmentErrors, EMPTY_APPOINTMENT, slotFromUrl, toTaskRequest, withSlot, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
@@ -36,14 +39,18 @@ export function TaskWizardPage() {
     return slot ? withSlot(EMPTY_APPOINTMENT, slot, new Set()) : EMPTY_APPOINTMENT
   })
   const [showRequired, setShowRequired] = useState(false)
-  const [saved, setSaved] = useState<Task | null>(null)
+  const [courtesyCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
+  const [saved, setSaved] = useState<{ task: Task; booking: Booking | null } | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const holidays = useHolidayNames()
   const create = useCreateTask()
+  const createWithCar = useCreateTaskWithBooking()
+  const saving = create.isPending || createWithCar.isPending
   const toast = useToast()
 
   const customerStepComplete = customerStep.customer !== null && customerStep.vehicle !== null
-  const appointmentComplete = Object.keys(appointmentErrors(appointment)).length === 0
+  const appointmentComplete =
+    Object.keys(appointmentErrors(appointment)).length === 0 && choiceError(courtesyCar, appointment) === null
 
   function toReview() {
     setShowRequired(true)
@@ -56,30 +63,43 @@ export function TaskWizardPage() {
   }
 
   function save() {
-    create.mutate(toTaskRequest(customerStep, appointment), {
-      onSuccess: (task) => {
-        setSaved(task)
-        window.scrollTo({ top: 0 })
-      },
-      onError: (error) => {
-        const fieldErrors = error instanceof ApiError ? (error.problem.errors ?? []) : []
-        if (fieldErrors.length > 0) {
-          // e.g. the mechanic was deactivated in the meantime – shown in words on the review
-          setServerErrors(fieldErrors)
-        } else {
-          toast.error(`Speichern fehlgeschlagen: ${error.message}`)
-        }
-      },
-    })
+    const request = toTaskRequest(customerStep, appointment)
+    const period = periodOf(courtesyCar, appointment)
+    const onSuccess = (task: Task, booking: Booking | null) => {
+      setSaved({ task, booking })
+      window.scrollTo({ top: 0 })
+    }
+    const onError = (error: Error) => {
+      const fieldErrors = error instanceof ApiError ? (error.problem.errors ?? []) : []
+      if (fieldErrors.length > 0) {
+        // e.g. the mechanic was deactivated in the meantime – shown in words on the review
+        setServerErrors(fieldErrors)
+      } else if (error instanceof ApiError && error.isConflict) {
+        // e.g. the courtesy car was booked on another device meanwhile – nothing was saved
+        setServerErrors([{ field: '', message: reasonOf(error) }])
+      } else {
+        toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+      }
+    }
+    if (courtesyCar.wanted && period) {
+      createWithCar.mutate(
+        { task: request, courtesyCar: { courtesyCarId: courtesyCar.courtesyCarId, ...period, notes: courtesyCar.notes.trim() || undefined } },
+        { onSuccess: (result) => onSuccess(result.task, result.booking), onError },
+      )
+    } else {
+      create.mutate(request, { onSuccess: (task) => onSuccess(task, null), onError })
+    }
   }
 
   function startOver() {
     setCustomerStep(EMPTY_CUSTOMER_STEP)
     setAppointment(EMPTY_APPOINTMENT)
+    setCourtesyCar(NO_COURTESY_CAR)
     setShowRequired(false)
     setServerErrors([])
     setSaved(null)
     create.reset()
+    createWithCar.reset()
     setStep(1)
   }
 
@@ -87,7 +107,7 @@ export function TaskWizardPage() {
     return (
       <>
         <h1>Neuer Auftrag</h1>
-        <SavedStep task={saved} onNext={startOver} />
+        <SavedStep task={saved.task} booking={saved.booking} onNext={startOver} />
       </>
     )
   }
@@ -111,10 +131,20 @@ export function TaskWizardPage() {
       {step === 2 && (
         <>
           <ChosenCustomer value={customerStep} onChange={() => setStep(1)} />
-          <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired} />
+          <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired}>
+            <CourtesyCarSection value={courtesyCar} onChange={setCourtesyCar} appointment={appointment} showRequired={showRequired} />
+          </AppointmentStep>
         </>
       )}
-      {step === 3 && <ReviewStep customerStep={customerStep} appointment={appointment} onEdit={setStep} serverErrors={serverErrors} />}
+      {step === 3 && (
+        <ReviewStep
+          customerStep={customerStep}
+          appointment={appointment}
+          courtesyCar={courtesyCar}
+          onEdit={setStep}
+          serverErrors={serverErrors}
+        />
+      )}
 
       <StickyFooterSpacer />
       <StickyFooter>
@@ -139,10 +169,10 @@ export function TaskWizardPage() {
         )}
         {step === 3 && (
           <>
-            <Button icon={ArrowLeft} onClick={() => setStep(2)} disabled={create.isPending}>
+            <Button icon={ArrowLeft} onClick={() => setStep(2)} disabled={saving}>
               Zurück
             </Button>
-            <Button variant="primary" icon={Save} onClick={save} loading={create.isPending}>
+            <Button variant="primary" icon={Save} onClick={save} loading={saving}>
               Auftrag speichern
             </Button>
           </>

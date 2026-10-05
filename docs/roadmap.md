@@ -210,8 +210,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   page (free, or the bookings in the way; a booking being moved does not count against itself).
   Book (task or holder), move, cancel, record the return (empty = now) and undo it. Overlaps → 409
   naming the booking in the way; a race between two devices gets the same friendly message.
-- [ ] **7c – Booking in a task**
+- [x] **7c – Booking in a task**
   Selection in wizard/task with an understandable availability table.
+  Wizard: section "Ersatzwagen", pickup/return follow "kommt früher"/start and "fertig bis"/end until
+  changed; task and booking saved together (`POST /api/tasks/with-courtesy-car`, both or neither).
+  Task detail: book, change, cancel, "ist zurück" (from pickup on) and undo.
 - [ ] **7d – Courtesy car page**
   Cards with correct status, occupancy calendar (free/booked clearly visible),
   drag booking, period changeable in the panel (→ F12).

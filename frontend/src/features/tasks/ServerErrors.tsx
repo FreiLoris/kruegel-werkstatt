@@ -22,6 +22,10 @@ const FIELD_LABELS: Record<string, string> = {
   notes: 'Notizen',
   taskNumber: 'Auftragsnummer',
   version: 'Version',
+  'courtesyCar.courtesyCarId': 'Ersatzwagen',
+  'courtesyCar.pickupAt': 'Abholung Ersatzwagen',
+  'courtesyCar.returnAt': 'Rückgabe Ersatzwagen',
+  'courtesyCar.notes': 'Notiz Ersatzwagen',
 }
 
 /** Why the server refused to save a task – in words (e.g. the mechanic was deactivated meanwhile). */
@@ -33,7 +37,9 @@ export function ServerErrors({ errors }: { errors: FieldError[] }) {
       <ul>
         {errors.map((e) => (
           <li key={e.field + e.message}>
-            {FIELD_LABELS[e.field] ?? e.field}: {e.message}
+            {/* field "" = a rule about the whole save, e.g. the courtesy car was taken meanwhile */}
+            {e.field ? `${FIELD_LABELS[e.field] ?? e.field}: ` : ''}
+            {e.message}
           </li>
         ))}
       </ul>

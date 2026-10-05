@@ -6,6 +6,8 @@ import { Button } from '../../../components/ui/Button'
 import { Facts } from '../../../components/ui/Facts'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { formatDate, formatLocalDateTime } from '../../../lib/format'
+import { periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
+import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -19,14 +21,17 @@ import type { CustomerStepValue } from './wizardState'
 interface ReviewStepProps {
   customerStep: CustomerStepValue
   appointment: AppointmentForm
+  courtesyCar: CourtesyCarChoice
   onEdit: (step: 1 | 2) => void
   /** Field errors of a failed save – shown on top in words */
   serverErrors: FieldError[]
 }
 
 /** Wizard step 3: everything once more in words before it is saved – each block can be changed. */
-export function ReviewStep({ customerStep, appointment: f, onEdit, serverErrors }: ReviewStepProps) {
+export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, serverErrors }: ReviewStepProps) {
   const { data: employees } = useActiveEmployees()
+  const { data: cars } = useAllCourtesyCars()
+  const carPeriod = periodOf(courtesyCar, f)
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
 
@@ -83,6 +88,19 @@ export function ReviewStep({ customerStep, appointment: f, onEdit, serverErrors 
           ]}
         />
       </Block>
+
+      {courtesyCar.wanted && carPeriod && (
+        <Block title="Ersatzwagen" onEdit={() => onEdit(2)}>
+          <p className={styles.strong}>{cars?.find((c) => c.id === courtesyCar.courtesyCarId)?.name}</p>
+          <Facts
+            rows={[
+              ['Abholung', formatLocalDateTime(carPeriod.pickupAt)],
+              ['Rückgabe', formatLocalDateTime(carPeriod.returnAt)],
+              ['Notiz', courtesyCar.notes.trim() || null],
+            ]}
+          />
+        </Block>
+      )}
 
       <Block title="Arbeiten" onEdit={() => onEdit(2)}>
         {items.length === 0 && !f.workDescription.trim() ? (

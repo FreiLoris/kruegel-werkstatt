@@ -9,6 +9,7 @@ import { Facts } from '../../../components/ui/Facts'
 import { useToast } from '../../../components/ui/toastContext'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { formatCount, formatDate, formatLocalDateTime, formatTime, formatTimestamp } from '../../../lib/format'
+import { CourtesyCarPanel } from '../../bookings/CourtesyCarPanel'
 import { CustomerDialog } from '../../customers/CustomerDialog'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
@@ -216,6 +217,10 @@ function TaskDetail({ task }: { task: Task }) {
               ['Lift', lifts?.find((l) => l.id === task.liftId)?.name ?? 'noch offen'],
             ]}
           />
+        </Card>
+
+        <Card title="Ersatzwagen">
+          <CourtesyCarPanel task={task} canEdit={canEdit} />
         </Card>
 
         <Card title="Arbeiten">
