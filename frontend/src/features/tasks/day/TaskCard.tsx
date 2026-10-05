@@ -34,6 +34,9 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
   return (
     <div
       className={[styles.card, statusAccentClass(task.status), dragging && styles.dragging, className].filter(Boolean).join(' ')}
+      // focusable and a button also without drag & drop (view-only device); dnd-kit's attributes come after
+      role="button"
+      tabIndex={0}
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter') open()

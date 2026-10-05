@@ -29,6 +29,9 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, className
     <div
       className={[styles.card, statusAccentClass(task.status), dragging && styles.dragging, className].filter(Boolean).join(' ')}
       title={TASK_STATUS[task.status]}
+      // focusable and a button also without drag & drop (view-only device); dnd-kit's attributes come after
+      role="button"
+      tabIndex={0}
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter') open()

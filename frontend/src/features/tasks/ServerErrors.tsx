@@ -15,6 +15,7 @@ const FIELD_LABELS: Record<string, string> = {
   mfkAppointment: 'MFK-Termin',
   serviceItemIds: 'Service',
   'parts.description': 'Material',
+  'parts.status': 'Material-Status',
   'parts.supplier': 'Lieferant',
   workDescription: 'Weitere Arbeiten',
   notes: 'Notizen',
