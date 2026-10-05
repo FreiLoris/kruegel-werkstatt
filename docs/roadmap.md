@@ -184,9 +184,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 ## Phase 7 – Courtesy car bookings
 
-- [ ] **7a – Booking data model**
-  One table for all bookings (with or without task). The database prevents
-  overlapping bookings of the same car (exclusion constraint). (→ bug #2, F2)
+- [x] **7a – Booking data model**
+  `courtesy_car_booking`: one table for all bookings – for a task (cascade on delete) or with a
+  free-text holder. The database prevents overlapping bookings of the same car (exclusion
+  constraint, `btree_gist`), half-open periods, an early return frees the car, a late return can
+  still be recorded. (→ bug #2, F2)
 - [ ] **7b – Availability & booking API**
   One single availability check for wizard, task and courtesy car page. Record the return.
 - [ ] **7c – Booking in a task**
