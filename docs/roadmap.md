@@ -163,9 +163,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   all work. Drag & drop with mouse, touch (press briefly) and keyboard; `PUT /api/tasks/{id}/move`
   renumbers **both** affected columns (→ bug #5). Empty day: "Nächster Termin …".
   Courtesy car symbol follows with the bookings (7c).
-- [ ] **6g – Appointments: week view**
-  Drag & drop onto a date, absences visible, search over all appointments instead of only the
-  current week (→ F11). Optional: take over the time when moving (→ bug #6, dead feature).
+- [x] **6g – Appointments: week view**
+  `/tasks?view=week` – "Tag | Woche" switch on the "Termine" page; one column per day (Mo–Fr,
+  weekend only with tasks), holidays, equal headers, click on a day opens its day view.
+  Drag & drop onto another day: same time, same lift, end of the lift column; "kommt früher" /
+  "fertig bis" move along, the MFK appointment (booked at the station) stays (→ bug #6: no time
+  guessing). Search over all appointments, upcoming first (→ F11). Absences follow with 9a.
 - [ ] **6h – Task detail**
   View as readable text (no fake form), edit as form with sticky footer,
   customer/vehicle data editable, create note/to-do directly, correct label "Mechaniker".
@@ -205,6 +208,7 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 - [ ] **9a – Absence data model & API**
   Category as enum (vacation, sick, external work + company, training) (→ bug #1).
+  Then show absences in the week view of the appointments (left open in 6g).
 - [ ] **9b – Calendar page**
   Continuous bars instead of single boxes, fixed column width, 4 distinguishable colors,
   weekends + public holidays marked, drag selection → entry, always loads (→ F3).

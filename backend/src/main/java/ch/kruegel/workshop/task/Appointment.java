@@ -6,6 +6,7 @@ import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
@@ -45,5 +46,17 @@ public record Appointment(
 
     public LocalDateTime start() {
         return date.atTime(time);
+    }
+
+    /**
+     * The same appointment on another day (drag & drop in the week view). Time, "kommt früher" and
+     * "fertig bis" keep their distance to the appointment – they move by the same number of days.
+     */
+    public Appointment onDay(LocalDate day) {
+        long days = ChronoUnit.DAYS.between(date, day);
+        return new Appointment(day, time,
+                arrivesEarlier == null ? null : arrivesEarlier.plusDays(days),
+                readyBy == null ? null : readyBy.plusDays(days),
+                waitingCustomer);
     }
 }

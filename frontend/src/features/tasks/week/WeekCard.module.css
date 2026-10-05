@@ -1,0 +1,61 @@
+.card {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow);
+  font-size: var(--font-size-sm);
+  touch-action: manipulation;
+}
+
+.card p {
+  margin: 0;
+}
+
+.dragging {
+  cursor: grabbing;
+  outline: 2px solid var(--color-accent);
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.time {
+  font-weight: 700;
+  font-size: var(--font-size-md);
+}
+
+.lift {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.customer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiting {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  color: var(--color-warning);
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}

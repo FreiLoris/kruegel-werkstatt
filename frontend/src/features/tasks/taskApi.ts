@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -78,22 +78,43 @@ export function useCreateTask() {
   })
 }
 
+export interface TaskMove {
+  id: string
+  liftId: string | null
+  position: number
+  /** new day (week view); empty = stays on its day */
+  date?: string
+  /** all tasks of the view as they look after the move – shown right away */
+  arranged: Task[]
+}
+
 /**
- * Drag & drop: the card is shown at its new place right away (`arranged` = all tasks of the day
- * in their new order); if the server refuses, the day jumps back. The server renumbers both columns.
+ * Drag & drop in day and week view: the card is shown at its new place right away; if the
+ * server refuses, the view jumps back. The server renumbers both affected columns.
  */
-export function useMoveTask(dayKey: ReturnType<typeof tasksBetweenKey>) {
+export function useMoveTask(viewKey: ReturnType<typeof tasksBetweenKey>) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, liftId, position }: { id: string; liftId: string | null; position: number; arranged: Task[] }) =>
-      dataOrThrow(await api.PUT('/api/tasks/{id}/move', { params: { path: { id } }, body: { liftId, position } })),
+    mutationFn: async ({ id, liftId, position, date }: TaskMove) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/move', { params: { path: { id } }, body: { liftId, position, date } })),
     onMutate: async ({ arranged }) => {
-      await queryClient.cancelQueries({ queryKey: dayKey })
-      const previous = queryClient.getQueryData<Task[]>(dayKey)
-      queryClient.setQueryData(dayKey, arranged)
+      await queryClient.cancelQueries({ queryKey: viewKey })
+      const previous = queryClient.getQueryData<Task[]>(viewKey)
+      queryClient.setQueryData(viewKey, arranged)
       return { previous }
     },
-    onError: (_error, _move, context) => queryClient.setQueryData(dayKey, context?.previous),
+    onError: (_error, _move, context) => queryClient.setQueryData(viewKey, context?.previous),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** Search over ALL appointments (F11), from 2 characters; previous hits stay while typing. */
+export function useTaskSearch(query: string) {
+  const q = query.trim()
+  return useQuery({
+    queryKey: [TOPIC, 'search', q],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/search', { params: { query: { q } }, signal })),
+    enabled: q.length >= 2,
+    placeholderData: keepPreviousData,
   })
 }

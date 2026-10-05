@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,10 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> column(LocalDate date, UUID liftId);
 
     boolean existsByTaskNumberAndIdNot(String taskNumber, UUID id);
+
+    /** Several tasks with customer and vehicle in one query – for the search hits. */
+    @EntityGraph(attributePaths = {"customer", "vehicle"})
+    List<Task> findByIdIn(Collection<UUID> ids);
 
     /**
      * The last 10 tasks of a customer, newest first – history in the wizard.

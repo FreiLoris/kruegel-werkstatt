@@ -30,9 +30,11 @@ import java.util.UUID;
 class TaskController {
 
     private final TaskService service;
+    private final TaskSearchService search;
 
-    TaskController(TaskService service) {
+    TaskController(TaskService service, TaskSearchService search) {
         this.service = service;
+        this.search = search;
     }
 
     @Operation(summary = "Tasks from `from` to `to` (both inclusive, max. 92 days)",
@@ -47,6 +49,14 @@ class TaskController {
     @GetMapping("/history")
     List<TaskDto> history(@RequestParam UUID customerId) {
         return service.history(customerId);
+    }
+
+    @Operation(summary = "Search all appointments",
+            description = "Every word must occur in customer, plate, vehicle, task number, work or notes. "
+                    + "Upcoming first (nearest first), then past ones (newest first). At least 2 characters.")
+    @GetMapping("/search")
+    TaskSearchResultDto search(@RequestParam String q, @RequestParam(defaultValue = "30") int limit) {
+        return search.search(q, limit);
     }
 
     @Operation(summary = "Single task")

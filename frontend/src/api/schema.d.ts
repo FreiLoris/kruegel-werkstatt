@@ -144,7 +144,7 @@ export interface paths {
          * Search customers and vehicles
          * @description Every word must occur (name, company, address, phone, e-mail, plate, make, VIN, SwissGarage number). Plates also without space. At least 2 characters. Only active customers and vehicles.
          */
-        get: operations["search"];
+        get: operations["search_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -640,6 +640,26 @@ export interface paths {
          * @description History in the wizard.
          */
         get: operations["history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tasks/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search all appointments
+         * @description Every word must occur in customer, plate, vehicle, task number, work or notes. Upcoming first (nearest first), then past ones (newest first). At least 2 characters.
+         */
+        get: operations["search"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1211,6 +1231,8 @@ export interface components {
             workDescription: string | null;
         };
         TaskMoveRequest: {
+            /** Format: date */
+            date?: string | null;
             /** Format: uuid */
             liftId?: string | null;
             /** Format: int32 */
@@ -1265,6 +1287,12 @@ export interface components {
             /** @description Missing = false */
             waitingCustomer?: boolean;
             workDescription?: string;
+        };
+        TaskSearchResultDto: {
+            /** @description Upcoming appointments first (nearest first), then past ones (newest first) */
+            hits: components["schemas"]["TaskDto"][];
+            /** @description True if there are more hits than delivered */
+            more: boolean;
         };
         TaskStatusRequest: {
             /** @enum {string} */
@@ -2097,7 +2125,7 @@ export interface operations {
             };
         };
     };
-    search: {
+    search_1: {
         parameters: {
             query: {
                 q: string;
@@ -4365,6 +4393,74 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskSearchResultDto"];
                 };
             };
             /** @description Bad Request */
