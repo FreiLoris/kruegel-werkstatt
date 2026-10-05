@@ -124,6 +124,15 @@
                     </profiles>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Tests run in Swiss time also on CI (UTC): a JVM-zone shift of local times
+                         (Docker runs in UTC, a laptop does not) must show up there too -->
+                    <argLine>-Duser.timezone=Europe/Zurich</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

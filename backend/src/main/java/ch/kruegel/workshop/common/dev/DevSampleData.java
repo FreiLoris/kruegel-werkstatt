@@ -188,15 +188,15 @@ class DevSampleData implements ApplicationRunner {
         Function<Integer, Lift> lift = i -> activeLifts.get(i % activeLifts.size());
         Set<ServiceItem> oilAndBrakes = items.size() > 3 ? Set.of(items.get(0), items.get(3)) : Set.copyOf(items);
 
-        Task wheels = positions.add(golf, new Appointment(today, LocalTime.of(7, 30), null, null, true),
+        Task wheels = positions.add(golf, new Appointment(today, LocalTime.of(7, 30), today.atTime(8, 30), null, null, true),
                 mechanic.apply(0), lift.apply(0),
                 new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, "Winterräder montieren"), null);
         wheels.changeStatus(TaskStatus.IN_PROGRESS);
 
-        positions.add(sprinter, Appointment.at(today, LocalTime.of(8, 0)), mechanic.apply(1), lift.apply(1),
+        positions.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
                 new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null, null), "Schlüssel im Briefkasten");
 
-        Task waiting = positions.add(octavia, Appointment.at(today, LocalTime.of(10, 0)), mechanic.apply(2), lift.apply(2),
+        Task waiting = positions.add(octavia, until(Appointment.at(today, LocalTime.of(10, 0)), 16, 0), mechanic.apply(2), lift.apply(2),
                 new TaskWork(false, null, false, null, Set.of(),
                         new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", today.minusDays(1)),
                         "Bremsen vorne ersetzen"), null);
@@ -209,7 +209,7 @@ class DevSampleData implements ApplicationRunner {
         // tomorrow: one with the vehicle still open, one without lift that arrives the evening before
         positions.add(golf.getCustomer(), null, Appointment.at(today.plusDays(1), LocalTime.of(8, 0)), null, lift.apply(1),
                 TaskWork.described("Service am neuen Auto"), "Neues Fahrzeug, noch nicht in SwissGarage");
-        positions.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.atTime(17, 30),
+        positions.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.plusDays(1).atTime(11, 0), today.atTime(17, 30),
                 today.plusDays(1).atTime(16, 0), false), mechanic.apply(1), null, TaskWork.described("Klimaanlage prüfen"), null);
 
         Task yesterday = positions.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
@@ -221,7 +221,17 @@ class DevSampleData implements ApplicationRunner {
         log.info("Dev sample data created: {} tasks", positions.created.size());
     }
 
-    /** Hands out the next position per lift column and day, like the service does. */
+    /** The same appointment, ending at the given time of its day – realistic durations in the sample */
+    private static Appointment until(Appointment appointment, int hour, int minute) {
+        return new Appointment(appointment.date(), appointment.time(), appointment.date().atTime(hour, minute),
+                appointment.arrivesEarlier(), appointment.readyBy(), appointment.waitingCustomer());
+    }
+
+    /**
+     * Hands out the next position per lift column and day, like the service does. A task that would
+     * overlap another one on its lift (few lifts configured) goes to "Ohne Lift" – the database
+     * refuses two cars on one lift at the same time.
+     */
     private static final class Positions {
 
         private final Map<String, Integer> next = new HashMap<>();
@@ -233,11 +243,18 @@ class DevSampleData implements ApplicationRunner {
 
         Task add(Customer customer, Vehicle vehicle, Appointment appointment, Employee mechanic, Lift lift,
                  TaskWork work, String notes) {
-            String column = appointment.date() + "/" + (lift == null ? "-" : lift.getId());
+            boolean taken = lift != null && created.stream()
+                    .anyMatch(t -> lift.equals(t.getLift()) && overlap(t.getAppointment(), appointment));
+            Lift free = taken ? null : lift;
+            String column = appointment.date() + "/" + (free == null ? "-" : free.getId());
             int position = next.merge(column, 1, Integer::sum) - 1;
-            Task task = new Task(new TaskDetails(customer, vehicle, appointment, mechanic, lift, work, notes), position);
+            Task task = new Task(new TaskDetails(customer, vehicle, appointment, mechanic, free, work, notes), position);
             created.add(task);
             return task;
+        }
+
+        private static boolean overlap(Appointment a, Appointment b) {
+            return a.start().isBefore(b.end()) && b.start().isBefore(a.end());
         }
     }
 }

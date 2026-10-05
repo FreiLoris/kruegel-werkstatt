@@ -3,6 +3,7 @@ package ch.kruegel.workshop.task;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.persistence.BaseEntity;
 import ch.kruegel.workshop.common.person.CurrentPerson;
+import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.customer.Customer;
@@ -18,6 +19,7 @@ import ch.kruegel.workshop.vehicle.VehicleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +54,11 @@ public class TaskService {
     static final int MAX_DAYS = 92;
 
     private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+    private static final String LIFT_OVERLAP_CONSTRAINT = "task_no_lift_overlap";
+    // user-facing, hence German format
+    private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
     private static final Sort CALENDAR_ORDER = Sort.by("appointment.date", "appointment.time", "sortOrder");
 
     private final TaskRepository repository;
@@ -102,6 +110,7 @@ public class TaskService {
     public TaskDto create(TaskRequest request) {
         TaskDetails details = details(request, null);
         String number = freeTaskNumber(request.taskNumber(), null);
+        checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details, nextPosition(details));
         task.assignTaskNumber(number);
         return saved(repository.save(task));
@@ -116,6 +125,7 @@ public class TaskService {
         task.checkVersion(request.version());
         TaskDetails details = details(request, task);
         String number = freeTaskNumber(request.taskNumber(), id);
+        checkLiftFree(details.lift(), details.appointment(), id);
         boolean otherColumn = !details.appointment().date().equals(task.getAppointment().date())
                 || !Objects.equals(details.lift(), task.getLift());
         int position = otherColumn ? nextPosition(details) : task.getSortOrder();
@@ -140,7 +150,7 @@ public class TaskService {
      * Drag & drop: the task goes into the column of {@code liftId} on {@code date} (default: its day)
      * at {@code position}. BOTH affected columns are numbered 0, 1, 2 … again and saved – the old app
      * only saved the dragged card, so the neighbours jumped back after a reload (bug #5).
-     * The time stays when the day changes (bug #6: the old app had an unused "guess the time").
+     * Time and duration stay when the day changes (bug #6: the old app had an unused "guess the time").
      * No version needed, like the status: moving must not fail because of an unrelated edit.
      */
     public List<TaskDto> move(UUID id, TaskMoveRequest request) {
@@ -149,6 +159,10 @@ public class TaskService {
         LocalDate fromDay = task.getAppointment().date();
         LocalDate toDay = request.date() == null ? fromDay : request.date();
         boolean sameColumn = Objects.equals(target, task.getLift()) && toDay.equals(fromDay);
+        if (!sameColumn) {
+            // the duration moves along – the new place must be free for all of it
+            checkLiftFree(target, task.getAppointment().onDay(toDay), id);
+        }
 
         // read both columns BEFORE changing anything (check before change, no auto flush surprises)
         List<Task> source = new ArrayList<>(repository.column(fromDay, liftId(task.getLift())));
@@ -160,7 +174,7 @@ public class TaskService {
         task.moveToLift(target);
         renumber(source);
         renumber(destination);
-        repository.flush();
+        flush(task);
         events.publishEvent(new DataChanged(TOPIC));
         return destination.stream().map(TaskDto::of).toList();
     }
@@ -225,13 +239,17 @@ public class TaskService {
 
     private static Appointment appointment(TaskRequest request) {
         LocalDateTime start = request.date().atTime(request.time());
+        LocalDateTime end = request.endAt() != null ? request.endAt() : start.plus(Appointment.DEFAULT_DURATION);
+        if (!end.isAfter(start)) {
+            throw new InvalidInputException("endAt", "muss nach dem Beginn liegen");
+        }
         if (request.arrivesEarlier() != null && !request.arrivesEarlier().isBefore(start)) {
             throw new InvalidInputException("arrivesEarlier", "muss vor dem Termin liegen");
         }
         if (request.readyBy() != null && !request.readyBy().isAfter(start)) {
             throw new InvalidInputException("readyBy", "muss nach dem Termin liegen");
         }
-        return new Appointment(request.date(), request.time(), request.arrivesEarlier(), request.readyBy(),
+        return new Appointment(request.date(), request.time(), end, request.arrivesEarlier(), request.readyBy(),
                 request.waitingCustomer());
     }
 
@@ -292,9 +310,53 @@ public class TaskService {
         return repository.findById(id).orElseThrow(() -> new NotFoundException("Auftrag", id));
     }
 
+    /**
+     * One lift, one car at a time (smoke test: no overlaps). Checked here first to say WHICH task is
+     * in the way; the database constraint (V14) catches two devices in the same second.
+     * Field "liftId": in the form the message appears at the lift.
+     *
+     * @param ownId the task being changed; empty for a new one
+     */
+    private void checkLiftFree(Lift lift, Appointment appointment, UUID ownId) {
+        if (lift == null) {
+            return;
+        }
+        List<Task> overlapping = repository.overlapping(lift.getId(), appointment, ownId);
+        if (!overlapping.isEmpty()) {
+            Task other = overlapping.getFirst();
+            throw new InvalidInputException("liftId", "%s ist %s belegt (%s)".formatted(lift.getName(),
+                    period(other.getAppointment()), other.getCustomer().getDetails().displayName()));
+        }
+    }
+
+    /** "am 15.10.2026 von 08:00 bis 09:30" – or with both dates if the task lasts several days */
+    private static String period(Appointment appointment) {
+        if (appointment.end().toLocalDate().equals(appointment.date())) {
+            return "am %s von %s bis %s".formatted(DAY.format(appointment.date()), TIME.format(appointment.time()),
+                    TIME.format(appointment.end()));
+        }
+        return "von %s bis %s".formatted(WHEN.format(appointment.start()), WHEN.format(appointment.end()));
+    }
+
     private TaskDto saved(Task task) {
-        repository.flush();
+        flush(task);
         events.publishEvent(new DataChanged(TOPIC));
         return TaskDto.of(task);
+    }
+
+    /**
+     * Flush here so the lift constraint fires inside this method: two devices taking the same lift
+     * in the same second → the second one gets a friendly message, not a generic 409.
+     */
+    private void flush(Task task) {
+        try {
+            repository.flush();
+        } catch (DataIntegrityViolationException e) {
+            if (Objects.toString(e.getMostSpecificCause().getMessage(), "").contains(LIFT_OVERLAP_CONSTRAINT)) {
+                throw new BusinessRuleException(task.getLift().getName()
+                        + " wurde gerade auf einem anderen Gerät für diese Zeit belegt. Bitte neu laden.");
+            }
+            throw e;
+        }
     }
 }

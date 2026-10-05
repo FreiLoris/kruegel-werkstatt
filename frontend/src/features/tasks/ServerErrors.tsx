@@ -7,6 +7,7 @@ const FIELD_LABELS: Record<string, string> = {
   vehicleId: 'Fahrzeug',
   date: 'Datum',
   time: 'Uhrzeit',
+  endAt: 'Ende',
   arrivesEarlier: 'Kommt früher',
   readyBy: 'Fertig bis',
   mechanicId: 'Mechaniker',

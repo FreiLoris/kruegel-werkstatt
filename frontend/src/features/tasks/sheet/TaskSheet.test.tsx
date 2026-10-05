@@ -25,6 +25,7 @@ const task = {
   vehicle: { licensePlate: 'ZH 123456', description: 'VW Golf', modelYear: 2019, mileageKm: 86000, vin: null, color: null, fuel: null, lastMfk: null, nextMfk: null },
   date: '2026-10-15',
   time: '08:00:00',
+  endAt: '2026-10-15T11:30:00',
   arrivesEarlier: '2026-10-14T17:00:00',
   readyBy: null,
   waitingCustomer: true,
@@ -64,7 +65,7 @@ describe('TaskSheet', () => {
   it('shows appointment details and what is still open', () => {
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map(), mechanicName: 'Reto' }} />)
 
-    expect(screen.getByText('15.10.2026, 08:00')).toBeTruthy()
+    expect(screen.getByText('15.10.2026, 08:00–11:30')).toBeTruthy()
     expect(screen.getByText('14.10.2026, 17:00')).toBeTruthy()
     expect(screen.getByText('Ja – Kunde wartet vor Ort')).toBeTruthy()
     expect(screen.getByText('Reto')).toBeTruthy()

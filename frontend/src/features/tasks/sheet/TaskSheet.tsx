@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { formatCount, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp } from '../../../lib/format'
+import { formatCount, formatDate, formatLocalDateTime, formatMonth, formatTimestamp } from '../../../lib/format'
 import type { Company } from '../../company/companyApi'
 import type { Task } from '../taskApi'
+import { timeRange } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskSheet.module.css'
 
@@ -90,7 +91,7 @@ export function TaskSheet({ task, company, lookups }: { task: Task; company: Com
       <Block title="Termin">
         <Facts
           rows={[
-            ['Termin', `${formatDate(task.date)}, ${formatTime(task.time)}`],
+            ['Termin', `${formatDate(task.date)}, ${timeRange(task.date, task.time, task.endAt)}`],
             ['Kommt früher', task.arrivesEarlier ? formatLocalDateTime(task.arrivesEarlier) : null],
             ['Fertig bis', task.readyBy ? formatLocalDateTime(task.readyBy) : null],
             ['Wartekunde', task.waitingCustomer ? 'Ja – Kunde wartet vor Ort' : null],

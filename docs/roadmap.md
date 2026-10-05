@@ -186,9 +186,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   Drag & drop: no flash back of the old position after dropping; task number already in the wizard;
   MFK appointment on day/week cards and in the task detail, "Letzte MFK unbekannt" instead of the
   misleading "MFK-Datum unbekannt".
-- [ ] **6j – Task duration (model & API)** *(inserted, from the smoke test)*
+- [x] **6j – Task duration (model & API)** *(inserted, from the smoke test)*
   End time per task (default start + 1 h, also for existing tasks); the database prevents two tasks
   on the same lift at the same time (like the courtesy cars); moving keeps the duration.
+  Wizard/edit with "bis" fields and duration, start–end on cards, detail, sheet and list.
+  Fixed on the way: `hibernate.jdbc.time_zone: UTC` shifted local times outside UTC JVMs.
 - [ ] **6k – Day view as time grid per lift** *(inserted)*
   Like Outlook: columns = lifts, rows = time, tasks as blocks as long as their duration; tap and drag
   in the grid = new task with start/end; move a block / drag its end = change the time. The manual

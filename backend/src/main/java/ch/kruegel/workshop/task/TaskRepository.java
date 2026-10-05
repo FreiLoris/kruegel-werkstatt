@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +36,27 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
               AND ((:liftId IS NULL AND t.lift IS NULL) OR t.lift.id = :liftId)
             ORDER BY t.sortOrder, t.id""")
     List<Task> column(LocalDate date, UUID liftId);
+
+    /**
+     * Tasks on a lift that overlap [start, end) – the same rule as the database constraint (V14).
+     * Used to say WHICH task is in the way.
+     *
+     * @param excludeId the task being changed – it must not block itself; empty for a new one
+     */
+    @EntityGraph(attributePaths = {"customer"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.lift.id = :liftId
+              AND (:excludeId IS NULL OR t.id <> :excludeId)
+              AND t.appointment.end > :start
+              AND (t.appointment.date < :endDate OR (t.appointment.date = :endDate AND t.appointment.time < :endTime))
+            ORDER BY t.appointment.date, t.appointment.time""")
+    List<Task> overlapping(UUID liftId, LocalDateTime start, LocalDate endDate, LocalTime endTime, UUID excludeId);
+
+    /** {@link #overlapping(UUID, LocalDateTime, LocalDate, LocalTime, UUID)} for an appointment. */
+    default List<Task> overlapping(UUID liftId, Appointment appointment, UUID excludeId) {
+        return overlapping(liftId, appointment.start(), appointment.end().toLocalDate(), appointment.end().toLocalTime(), excludeId);
+    }
 
     boolean existsByTaskNumber(String taskNumber);
 

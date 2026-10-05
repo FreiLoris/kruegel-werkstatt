@@ -5,7 +5,7 @@ import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { Select, TextField } from '../../../components/ui/Fields'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, formatTime, todayIso } from '../../../lib/format'
+import { addDays, formatDate, todayIso } from '../../../lib/format'
 import { useDebouncedValue } from '../../../lib/useDebouncedValue'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
@@ -13,6 +13,7 @@ import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TASK_STATUS, useTasksBetween, type Task, type TaskStatus } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
+import { timeRange } from '../taskTime'
 import { workSummary } from '../workSummary'
 import {
   filterTasks,
@@ -261,7 +262,7 @@ function Row({
     <tr className={styles.row} onClick={onOpen}>
       <td className={styles.nowrap}>
         {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}
-        <span className={styles.time}> {formatTime(task.time)}</span>
+        <span className={styles.time}> {timeRange(task.date, task.time, task.endAt)}</span>
       </td>
       <td>
         <Link to={`/tasks/${task.id}`} onClick={(e) => e.stopPropagation()} className={styles.customer}>

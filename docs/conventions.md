@@ -150,6 +150,9 @@ Overview of all components with examples: http://localhost:5173/system/component
   updated_by  uuid         REFERENCES employee (id)
   ```
 - Relations always with a foreign key (`REFERENCES …`), rules preferably as constraints.
+  Overlap rules (courtesy car bookings, tasks per lift) as `EXCLUDE USING gist` with half-open
+  ranges `[)`; the service checks first to name WHAT is in the way and maps the constraint
+  name to a friendly message for the race between two devices.
 - Hibernate never creates tables (`ddl-auto: validate`).
 - Real initial master data (e.g. the three lifts) may be inserted by a migration – sample data may not.
 
@@ -211,9 +214,14 @@ Controllers/DTOs ──./mvnw test──▶ api/openapi.json ──npm run api:g
 | Point in time (when saved, done at …) | `Instant` | `timestamptz` |
 | Business date (appointment on Oct 15) | `LocalDate` | `date` |
 | Business time (at 08:00) | `LocalTime` | `time` |
+| Business date-time (ready by Oct 15, 16:30) | `LocalDateTime` | `timestamp` |
 
 - Current time **always** through the `Clock` bean: `LocalDate.now(clock)`, never `LocalDate.now()`.
 - Application time zone: `Europe/Zurich` (`TimeConfig.TIME_ZONE`).
+- No `hibernate.jdbc.time_zone`: it would shift `LocalTime`/`LocalDateTime` whenever the JVM is
+  not in UTC. Tests run with `-Duser.timezone=Europe/Zurich` (surefire) so such a shift shows up on CI too.
+- Business date-time arithmetic in the frontend only with `addMinutes`/`minutesBetween`/`addDays`
+  (`lib/format.ts`, wall-clock time, no daylight saving jumps).
 - JSON: ISO format (`2026-10-15`, `08:00:00`, `2026-10-15T06:00:00Z`). Formatting for
   humans (`15.10.2026`) is done exclusively by the frontend.
 

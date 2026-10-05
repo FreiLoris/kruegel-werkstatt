@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * Input for creating and editing a task (wizard, task detail). Status and position have their own
  * endpoints; the task number can be given here or later on its own. Rules that need the database or several fields
- * ("kommt früher" before the appointment, …) are checked by {@link TaskService}.
+ * ("kommt früher" before the appointment, end after the start, lift free, …) are checked by {@link TaskService}.
  *
  * <p>The ticks ({@code waitingCustomer}, {@code tireChange}, {@code mfk}) may be missing = not ticked.
  * {@code Boolean} instead of {@code boolean}: Jackson 3 refuses a missing value for a primitive.
@@ -27,6 +27,7 @@ public record TaskRequest(
         UUID vehicleId,
         @NotNull LocalDate date,
         @NotNull @Schema(type = "string", example = "08:00") LocalTime time,
+        @Schema(example = "2026-10-15T09:00", description = "Until when the lift is taken; empty = 1 hour after the start") LocalDateTime endAt,
         @Schema(example = "2026-10-14T18:00") LocalDateTime arrivesEarlier,
         @Schema(example = "2026-10-15T16:30") LocalDateTime readyBy,
         @Schema(description = "Missing = false") Boolean waitingCustomer,

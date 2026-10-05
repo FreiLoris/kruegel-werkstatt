@@ -1,5 +1,5 @@
 import { previousWorkingDay } from '../../../lib/calendar'
-import { addDays } from '../../../lib/format'
+import { addDays, addMinutes, minutesBetween } from '../../../lib/format'
 import type { PartsStatus, Task, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
@@ -10,6 +10,9 @@ import type { CustomerStepValue } from './wizardState'
 export interface AppointmentForm {
   date: string
   time: string
+  /** Until when the lift is taken – usually the same day, a car waiting for parts may stay longer */
+  endDate: string
+  endTime: string
   arrivesEarlier: boolean
   arrivesEarlierDate: string
   arrivesEarlierTime: string
@@ -41,10 +44,15 @@ export interface AppointmentForm {
 /** Drop-off "the evening before" and "ready by" end of the working day */
 export const EVENING = '17:00'
 
+/** Duration of a new task, like the backend default – short enough that it gets noticed and adjusted */
+export const DEFAULT_DURATION_MINUTES = 60
+
 /** No date on purpose: it must be chosen (or clicked in the overview), never taken over by accident. */
 export const EMPTY_APPOINTMENT: AppointmentForm = {
   date: '',
   time: '08:00',
+  endDate: '',
+  endTime: '09:00',
   arrivesEarlier: false,
   arrivesEarlierDate: '',
   arrivesEarlierTime: EVENING,
@@ -91,9 +99,24 @@ function defaultReadyByDate(date: string, time: string): string {
   return time && time >= EVENING ? addDays(date, 1) : date
 }
 
+/** Minutes from start to end, or the default while one of them is incomplete or the end is not after the start. */
+export function durationMinutes(form: AppointmentForm): number {
+  if (!form.date || !form.time || !form.endDate || !form.endTime) return DEFAULT_DURATION_MINUTES
+  const minutes = minutesBetween(`${form.date}T${form.time}`, `${form.endDate}T${form.endTime}`)
+  return minutes > 0 ? minutes : DEFAULT_DURATION_MINUTES
+}
+
+/** The end for a start, keeping the duration – without a date only the time can be shown. */
+function endAfter(date: string, time: string, minutes: number): Pick<AppointmentForm, 'endDate' | 'endTime'> {
+  if (!time) return { endDate: date, endTime: '' }
+  const [endDate, endTime] = addMinutes(`${date || '2000-01-01'}T${time}`, minutes).split('T')
+  return { endDate: date ? endDate : '', endTime }
+}
+
 /**
- * New appointment date (typed or clicked in the overview). Dates that were derived from the old
- * date (evening before, ready by, MFK on the same day) move along; dates typed by hand stay.
+ * New appointment date or time (typed or clicked in the overview). The end moves along with the
+ * same duration – like moving an appointment in Outlook. Dates that were derived from the old date
+ * (evening before, ready by, MFK on the same day) move along; dates typed by hand stay.
  */
 export function withDate(form: AppointmentForm, date: string, time: string, holidays: ReadonlySet<string>): AppointmentForm {
   const old = form.date
@@ -103,6 +126,7 @@ export function withDate(form: AppointmentForm, date: string, time: string, holi
     ...form,
     date,
     time,
+    ...endAfter(date, time, durationMinutes(form)),
     arrivesEarlierDate:
       form.arrivesEarlier && date && (!form.arrivesEarlierDate || form.arrivesEarlierDate === derivedEarlier)
         ? previousWorkingDay(date, holidays)
@@ -131,6 +155,11 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   if (!form.time) errors.time = 'Uhrzeit wählen'
   const start = form.date && form.time ? `${form.date}T${form.time}` : null
 
+  if (!form.endDate || !form.endTime) {
+    errors.endTime = 'Ende angeben'
+  } else if (start && `${form.endDate}T${form.endTime}` <= start) {
+    errors.endTime = 'muss nach dem Beginn liegen'
+  }
   if (form.arrivesEarlier) {
     if (!form.arrivesEarlierDate || !form.arrivesEarlierTime) {
       errors.arrivesEarlierDate = 'Datum und Uhrzeit angeben'
@@ -159,6 +188,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     vehicleId: step1.vehicle?.kind === 'vehicle' ? step1.vehicle.vehicle.id : undefined,
     date: form.date,
     time: form.time,
+    endAt: `${form.endDate}T${form.endTime}`,
     arrivesEarlier: form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
     readyBy: form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
     waitingCustomer: form.waitingCustomer,
@@ -193,12 +223,15 @@ function split(dateTime: string | null): [string, string] {
 
 /** A saved task back into the form – for editing. The opposite of {@link toTaskRequest}. */
 export function formFromTask(task: Task): AppointmentForm {
+  const [endDate, endTime] = split(task.endAt)
   const [arrivesEarlierDate, arrivesEarlierTime] = split(task.arrivesEarlier)
   const [readyByDate, readyByTime] = split(task.readyBy)
   const [mfkDate, mfkTime] = split(task.mfkAppointment)
   return {
     date: task.date,
     time: task.time.slice(0, 5),
+    endDate,
+    endTime,
     arrivesEarlier: task.arrivesEarlier !== null,
     arrivesEarlierDate,
     arrivesEarlierTime: arrivesEarlierTime || EVENING,

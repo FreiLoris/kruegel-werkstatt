@@ -1363,6 +1363,12 @@ export interface components {
             customer: components["schemas"]["CustomerDto"];
             /** Format: date */
             date: string;
+            /**
+             * Format: date-time
+             * @description Until when the task takes its lift
+             * @example 2026-10-15T09:00:00
+             */
+            endAt: string;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -1438,6 +1444,12 @@ export interface components {
             customerId: string;
             /** Format: date */
             date: string;
+            /**
+             * Format: date-time
+             * @description Until when the lift is taken; empty = 1 hour after the start
+             * @example 2026-10-15T09:00
+             */
+            endAt?: string;
             /** Format: uuid */
             liftId?: string;
             /** Format: uuid */

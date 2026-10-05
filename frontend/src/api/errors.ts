@@ -39,6 +39,14 @@ export class ApiError extends Error {
 }
 
 /**
+ * The reason in words for a toast: the first field message ("Lift 1 ist von … belegt") says more
+ * than the general "Bitte die markierten Felder korrigieren." – a drag has no fields to mark.
+ */
+export function reasonOf(error: Error): string {
+  return (error instanceof ApiError && error.problem.errors?.[0]?.message) || error.message
+}
+
+/**
  * Unwraps the result of an API call (`api.GET(...)` etc.):
  * returns the data or throws an {@link ApiError}.
  *

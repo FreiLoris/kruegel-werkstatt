@@ -8,6 +8,7 @@
  *   Count      1480                    → "1’480"
  *   Month      "2026-03-15"            → "03.2026"
  *   Local      "2026-10-14T18:00:00"   → "14.10.2026, 18:00"  (business date-time, no time zone)
+ *   Duration   90 (minutes)            → "1 Std. 30 Min."
  *
  * Rule: nowhere else in the frontend format date values yourself.
  */
@@ -112,4 +113,39 @@ export function addDays(isoDate: string, days: number): string {
 export function formatLocalDateTime(isoDateTime: string): string {
   const [date, time] = isoDateTime.split('T')
   return `${formatDate(date)}, ${formatTime(time)}`
+}
+
+const LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/
+
+/** Business date-time as minutes on a UTC axis – wall-clock arithmetic, no daylight saving jumps. */
+function wallClockMinutes(isoDateTime: string): number {
+  const match = LOCAL_DATE_TIME.exec(isoDateTime)
+  if (!match) {
+    throw new Error(`Not a valid local date-time: "${isoDateTime}"`)
+  }
+  const [, year, month, day, hour, minute] = match.map(Number)
+  return Date.UTC(year, month - 1, day, hour, minute) / 60_000
+}
+
+/** "2026-10-15T08:00" plus/minus minutes → "2026-10-15T09:30" (business time, see {@link addDays}). */
+export function addMinutes(isoDateTime: string, minutes: number): string {
+  return new Date((wallClockMinutes(isoDateTime) + minutes) * 60_000).toISOString().slice(0, 16)
+}
+
+/** Minutes from one business date-time to another – negative if `to` is earlier. */
+export function minutesBetween(from: string, to: string): number {
+  return wallClockMinutes(to) - wallClockMinutes(from)
+}
+
+/** Duration for people: 45 → "45 Min.", 90 → "1 Std. 30 Min.", 1560 → "1 Tag 2 Std." */
+export function formatDuration(minutes: number): string {
+  const days = Math.floor(minutes / 1440)
+  const hours = Math.floor((minutes % 1440) / 60)
+  const rest = minutes % 60
+  const parts = [
+    days > 0 ? `${days} ${days === 1 ? 'Tag' : 'Tage'}` : '',
+    hours > 0 ? `${hours} Std.` : '',
+    rest > 0 ? `${rest} Min.` : '',
+  ]
+  return parts.filter(Boolean).join(' ') || '0 Min.'
 }

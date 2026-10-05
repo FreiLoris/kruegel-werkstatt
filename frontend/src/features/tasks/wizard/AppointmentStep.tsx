@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
+import { formatDuration, minutesBetween } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -44,6 +45,8 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
     set('serviceItemIds', on ? [...form.serviceItemIds, id] : form.serviceItemIds.filter((item) => item !== id))
   }
 
+  const duration = errors.endTime || !form.date ? null : minutesBetween(`${form.date}T${form.time}`, `${form.endDate}T${form.endTime}`)
+
   const mechanics = (employees ?? []).filter((e) => e.selectableAsMechanic)
   const activeLifts = (lifts ?? []).filter((l) => l.active)
   const activeServiceItems = (serviceItems ?? []).filter((s) => s.active)
@@ -70,6 +73,26 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
               value={form.time}
               onChange={(e) => onChange(withDate(form, form.date, e.target.value, holidayDates))}
               error={errors.time}
+            />
+          </div>
+          <div className={styles.row}>
+            <TextField
+              label="Bis (Datum)"
+              type="date"
+              required
+              value={form.endDate}
+              onChange={(e) => set('endDate', e.target.value)}
+              hint="so lange ist der Lift belegt"
+            />
+            <TextField
+              label="bis um"
+              type="time"
+              step={900}
+              required
+              value={form.endTime}
+              onChange={(e) => set('endTime', e.target.value)}
+              hint={duration === null ? undefined : `Dauer ${formatDuration(duration)}`}
+              error={form.date ? errors.endTime : undefined}
             />
           </div>
           <Checkbox

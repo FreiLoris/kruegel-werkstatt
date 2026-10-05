@@ -1,5 +1,5 @@
 import { isWeekend } from '../../../lib/calendar'
-import { addDays } from '../../../lib/format'
+import { addDays, minutesBetween } from '../../../lib/format'
 import type { Task } from '../taskApi'
 
 export interface WeekDay {
@@ -24,7 +24,23 @@ export function weekDays(monday: string, tasks: Task[]): WeekDay[] {
     }))
 }
 
-/** The tasks after moving one of them to another day – shown right away while the server saves. */
+/**
+ * The tasks after moving one of them to another day – shown right away while the server saves.
+ * End, "kommt früher" and "fertig bis" move by the same number of days, like on the server.
+ */
 export function withDate(tasks: Task[], taskId: string, date: string): Task[] {
-  return tasks.map((task) => (task.id === taskId ? { ...task, date } : task))
+  return tasks.map((task) => {
+    if (task.id !== taskId) return task
+    const days = minutesBetween(`${task.date}T00:00`, `${date}T00:00`) / MINUTES_PER_DAY
+    const shift = (dateTime: string) => `${addDays(dateTime.slice(0, 10), days)}${dateTime.slice(10)}`
+    return {
+      ...task,
+      date,
+      endAt: shift(task.endAt),
+      arrivesEarlier: task.arrivesEarlier && shift(task.arrivesEarlier),
+      readyBy: task.readyBy && shift(task.readyBy),
+    }
+  })
 }
+
+const MINUTES_PER_DAY = 24 * 60

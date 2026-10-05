@@ -2,13 +2,12 @@ import { ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
-import { formatTime } from '../../../lib/format'
 import type { Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
 import { statusAccentClass } from '../taskStatusStyle'
-import { timeSeenFrom } from '../taskTime'
+import { timeRange, timeSeenFrom } from '../taskTime'
 import { workSummary } from '../workSummary'
 import styles from './TaskCard.module.css'
 
@@ -45,7 +44,7 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
       {...rest}
     >
       <div className={styles.top}>
-        <span className={styles.time}>{formatTime(task.time)}</span>
+        <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
         <TaskStatusBadge status={task.status} />
       </div>
       <p className={styles.customer}>{task.customer.displayName}</p>
