@@ -24,6 +24,8 @@ interface AppointmentStepProps {
   holidays: ReadonlyMap<string, string>
   /** Show "Datum wählen" as error – only after the user tried to continue */
   showRequired: boolean
+  /** when editing: the task itself, so the overview does not count it as being in its own way */
+  taskId?: string
 }
 
 /**
@@ -31,7 +33,7 @@ interface AppointmentStepProps {
  * stays visible while scrolling through the options – UI review). Defaults: "kommt früher" = the
  * evening of the previous working day, "fertig bis" = the same evening.
  */
-export function AppointmentStep({ value: form, onChange, holidays, showRequired }: AppointmentStepProps) {
+export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -287,6 +289,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
           holidays={holidays}
           onPickDay={(date) => onChange(withDate(form, date, form.time, holidayDates))}
           onPickSlot={(slot) => onChange(withSlot(form, slot, holidayDates))}
+          taskId={taskId}
         />
       </aside>
     </div>

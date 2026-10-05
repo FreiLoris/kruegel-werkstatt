@@ -71,13 +71,23 @@ interface DayGridProps {
   onPick: (slot: Slot) => void
   /** pick: the slot chosen so far (highlighted) */
   picked?: Slot | null
+  /** pick while editing: the task itself is not shown – the chosen slot is its new place */
+  hiddenTaskId?: string
   /** plan: query that holds `tasks` – updated right away when a block is moved */
   viewKey?: QueryKey
   employees?: Employee[]
   serviceItemNames?: ReadonlyMap<string, string>
 }
 
-type Creating = { columnId: string; from: number; to: number; pointerId: number; touch: boolean }
+/** Finger: hold this long before dragging opens a time (moving earlier = scrolling) */
+const HOLD_MS = 350
+const MOVE_TOLERANCE_PX = 8
+
+/**
+ * A time being dragged open. Mouse: right away. Finger: only after holding still ({@link HOLD_MS}),
+ * like in Outlook – before that, a move scrolls and a lift of the finger is a tap (one hour).
+ */
+type Creating = { columnId: string; from: number; to: number; pointerId: number; touch: boolean; held: boolean; startY: number }
 
 /**
  * A day as a time grid like Outlook (6k): one column per lift, time downwards, tasks as blocks as
@@ -85,7 +95,8 @@ type Creating = { columnId: string; from: number; to: number; pointerId: number;
  * a lift is checked by the server, the grid already shows a dragged block red where it would collide.
  *
  * Mouse: drag a block = new time/lift, drag its lower edge = new end, drag in the empty grid = new task.
- * Tablet: hold a block briefly to drag it; tap the empty grid = new task of one hour.
+ * Tablet: hold a block briefly to drag it; hold the empty grid briefly and drag = new task from–to,
+ * tap = new task of one hour.
  * Keyboard: space picks a block up, arrows move it (15 min / one lift), space drops; Shift+arrows change the end.
  */
 export function DayGrid({
@@ -97,6 +108,7 @@ export function DayGrid({
   canEdit,
   onPick,
   picked,
+  hiddenTaskId,
   viewKey = [],
   employees = [],
   serviceItemNames = new Map(),
@@ -106,7 +118,8 @@ export function DayGrid({
   const planning = mode === 'plan' && canEdit
   // After a change: the new place stays on screen until the tasks themselves show it (no flash back)
   const [pending, setPending] = useState<{ tasks: Task[]; basedOn: Task[] } | null>(null)
-  const shown = pending && pending.basedOn === tasks ? pending.tasks : tasks
+  const current = pending && pending.basedOn === tasks ? pending.tasks : tasks
+  const shown = useMemo(() => (hiddenTaskId ? current.filter((t) => t.id !== hiddenTaskId) : current), [current, hiddenTaskId])
 
   const columns = useMemo(() => dayColumns(shown, lifts), [shown, lifts])
   const placedByColumn = useMemo(
@@ -122,6 +135,18 @@ export function DayGrid({
   const [creating, setCreating] = useState<Creating | null>(null)
   const scroller = useRef<HTMLDivElement>(null)
   const columnWidth = useRef(0)
+  const holdTimer = useRef<number | undefined>(undefined)
+
+  // While a finger drags open a time the page must not scroll. touch-action cannot change in the
+  // middle of a gesture, so the touch moves are cancelled (needs a non-passive listener).
+  const fingerHolds = creating?.touch === true && creating.held
+  useEffect(() => {
+    if (!fingerHolds) return
+    const stop = (e: TouchEvent) => e.preventDefault()
+    document.addEventListener('touchmove', stop, { passive: false })
+    return () => document.removeEventListener('touchmove', stop)
+  }, [fingerHolds])
+  useEffect(() => () => window.clearTimeout(holdTimer.current), [])
 
   const y = (minutes: number) => (Math.min(Math.max(minutes, range.start), range.end) - range.start) * scale
   const minutesAt = (clientY: number, body: Element) => range.start + (clientY - body.getBoundingClientRect().top) / scale
@@ -239,21 +264,43 @@ export function DayGrid({
     if (e.target !== e.currentTarget || e.button !== 0 || (mode === 'plan' && !canEdit)) return
     const from = Math.floor(minutesAt(e.clientY, e.currentTarget) / SNAP_MINUTES) * SNAP_MINUTES
     const touch = e.pointerType === 'touch'
-    // touch: the finger may want to scroll – only a tap counts, so no capture
-    if (!touch) e.currentTarget.setPointerCapture(e.pointerId)
-    setCreating({ columnId: column.id, from, to: from, pointerId: e.pointerId, touch })
+    const { pointerId } = e
+    if (touch) {
+      // the finger may want to scroll – it opens a time only after holding still
+      window.clearTimeout(holdTimer.current)
+      holdTimer.current = window.setTimeout(() => {
+        setCreating((c) => (c && c.pointerId === pointerId ? { ...c, held: true } : c))
+        navigator.vibrate?.(15)
+      }, HOLD_MS)
+    } else {
+      e.currentTarget.setPointerCapture(pointerId)
+    }
+    setCreating({ columnId: column.id, from, to: from, pointerId, touch, held: !touch, startY: e.clientY })
   }
 
   function moveCreate(e: PointerEvent<HTMLDivElement>) {
-    if (!creating || creating.touch || e.pointerId !== creating.pointerId) return
+    if (!creating || e.pointerId !== creating.pointerId) return
+    if (!creating.held) {
+      // moved before holding still: the finger scrolls
+      if (Math.abs(e.clientY - creating.startY) > MOVE_TOLERANCE_PX) cancelCreate()
+      return
+    }
     const to = snap(minutesAt(e.clientY, e.currentTarget))
     if (to !== creating.to) setCreating({ ...creating, to })
   }
 
   function endCreate(e: PointerEvent<HTMLDivElement>, column: DayColumn) {
+    window.clearTimeout(holdTimer.current)
     if (!creating || e.pointerId !== creating.pointerId) return
+    // where the pointer is let go counts – the last move may have been earlier; a tap = from only
+    const to = creating.held ? snap(minutesAt(e.clientY, e.currentTarget)) : creating.from
     setCreating(null)
-    onPick({ liftId: column.liftId, ...selection(date, creating.from, creating.to) })
+    onPick({ liftId: column.liftId, ...selection(date, creating.from, to) })
+  }
+
+  function cancelCreate() {
+    window.clearTimeout(holdTimer.current)
+    setCreating(null)
   }
 
   const activeTask = dragging ? byId.get(dragging.id) : undefined
@@ -305,7 +352,7 @@ export function DayGrid({
                 onPointerDown={(e) => startCreate(e, column)}
                 onPointerMove={moveCreate}
                 onPointerUp={(e) => endCreate(e, column)}
-                onPointerCancel={() => setCreating(null)}
+                onPointerCancel={cancelCreate}
               >
                 {placed.map((p) => {
                   const end = resizing?.id === p.task.id ? resizing.end : p.end
@@ -377,7 +424,7 @@ export function DayGrid({
       const span = spanOn(byId.get(dragging.id)!, date)
       return check(dragging.start, Math.min(dragging.start + span.end - span.start, DAY_MINUTES), dragging.id)
     }
-    if (creating && !creating.touch && creating.columnId === column.id) {
+    if (creating && creating.held && creating.columnId === column.id) {
       const { time, endAt } = selection(date, creating.from, creating.to)
       return check(minutesOf(time), endAt.slice(0, 10) > date ? DAY_MINUTES : minutesOf(endAt.slice(11)))
     }
@@ -444,6 +491,8 @@ function ColumnBody({
       data-grid-body
       className={[styles.body, creatable && styles.creatable, isOver && styles.over].filter(Boolean).join(' ')}
       style={{ height, '--hour': `${hourHeight}px` } as CSSProperties}
+      // holding a finger on the grid opens a time, not the browser's menu
+      onContextMenu={(e) => e.preventDefault()}
       {...pointer}
     >
       {children}
