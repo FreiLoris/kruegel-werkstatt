@@ -21,3 +21,7 @@ frontend/dist/
 
 # Local reference image of a Swiss license plate (not part of the project)
 docs/img.png
+
+# Real SwissGarage exports (customer data) – only imported locally, never committed
+*.xlsx
+*.xls
