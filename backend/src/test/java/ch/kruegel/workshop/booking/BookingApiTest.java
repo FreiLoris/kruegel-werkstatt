@@ -69,6 +69,7 @@ class BookingApiTest {
     private CourtesyCar fabia;
     private CourtesyCar retired;
     private Task task;
+    private Customer huber;
 
     @BeforeEach
     void startWithCarsAndATask() {
@@ -79,7 +80,7 @@ class BookingApiTest {
         CourtesyCar old = new CourtesyCar(new CourtesyCarDetails("Alter Golf", null, null, null, null), 2);
         old.deactivate();
         retired = cars.save(old);
-        Customer huber = customers.save(CustomerTestData.local("Huber"));
+        huber = customers.save(CustomerTestData.local("Huber"));
         task = tasks.save(new Task(new TaskDetails(huber, null, Appointment.at(DATE, LocalTime.of(8, 0)), null, null,
                 TaskWork.described(null), null)));
     }
@@ -94,6 +95,37 @@ class BookingApiTest {
         assertThat(response).bodyJson().extractingPath("$.blockedUntil").isEqualTo(DAY + "T17:00:00");
         assertThat(mvc.get().uri("/api/courtesy-car-bookings/task/" + task.getId()).exchange())
                 .bodyJson().extractingPath("$[*].courtesyCarId").asArray().containsExactly(polo.getId().toString());
+    }
+
+    @Test
+    void wizardSavesTaskAndCarTogether() {
+        MvcTestResult response = send("POST", "/api/tasks/with-courtesy-car", taskWithCar(polo, "07:00", "17:00"));
+
+        assertThat(response).hasStatus(HttpStatus.CREATED);
+        String taskId = JsonPath.read(body(response), "$.task.id");
+        assertThat(response).bodyJson().extractingPath("$.booking.taskId").isEqualTo(taskId);
+        assertThat(response).bodyJson().extractingPath("$.booking.holderName").isEqualTo("Huber Test");
+    }
+
+    @Test
+    void aTakenCarSavesNothing() {
+        book(polo, "\"holder\": \"Frau Muster\"", "08:00", "17:00");
+
+        MvcTestResult response = send("POST", "/api/tasks/with-courtesy-car", taskWithCar(polo, "12:00", "14:00"));
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT);
+        assertThat(response).bodyJson().extractingPath("$.detail").asString().contains("Ersatzwagen 1", "Frau Muster");
+        // only the task of the setup – the new one was rolled back with the booking
+        assertThat(mvc.get().uri("/api/tasks?from=%s&to=%s".formatted(DAY, DAY)).exchange())
+                .bodyJson().extractingPath("$").asArray().hasSize(1);
+    }
+
+    @Test
+    void carErrorsAreAtTheCarFieldsAndSaveNothing() {
+        assertFieldError(send("POST", "/api/tasks/with-courtesy-car", taskWithCar(polo, "17:00", "08:00")), "courtesyCar.returnAt");
+        assertFieldError(send("POST", "/api/tasks/with-courtesy-car", taskWithCar(retired, "08:00", "17:00")), "courtesyCar.courtesyCarId");
+        assertThat(mvc.get().uri("/api/tasks?from=%s&to=%s".formatted(DAY, DAY)).exchange())
+                .bodyJson().extractingPath("$").asArray().hasSize(1);
     }
 
     @Test
@@ -201,6 +233,22 @@ class BookingApiTest {
         String fields = moreFields == null ? "" : ", " + moreFields;
         return send("POST", "/api/courtesy-car-bookings", """
                 { "courtesyCarId": "%s", "pickupAt": "%sT%s", "returnAt": "%sT%s"%s }""".formatted(car.getId(), DAY, from, DAY, to, fields));
+    }
+
+    /** A new task for Huber at 07:00 (the setup task is at 08:00 without lift) with a car */
+    private String taskWithCar(CourtesyCar car, String from, String to) {
+        return """
+                { "task": { "customerId": "%s", "date": "%s", "time": "07:00" },
+                  "courtesyCar": { "courtesyCarId": "%s", "pickupAt": "%sT%s", "returnAt": "%sT%s" } }"""
+                .formatted(huber.getId(), DAY, car.getId(), DAY, from, DAY, to);
+    }
+
+    private static String body(MvcTestResult response) {
+        try {
+            return response.getResponse().getContentAsString();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static String bookingJson(CourtesyCar car, String holder, String from, String to, Integer version) {

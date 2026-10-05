@@ -58,7 +58,7 @@ export interface paths {
          * Book a courtesy car
          * @description 409 with a message naming the booking in the way.
          */
-        post: operations["create_7"];
+        post: operations["create_8"];
         delete?: never;
         options?: never;
         head?: never;
@@ -155,7 +155,7 @@ export interface paths {
         get: operations["list_3"];
         put?: never;
         /** Create courtesy car (put at the end) */
-        post: operations["create_6"];
+        post: operations["create_7"];
         delete?: never;
         options?: never;
         head?: never;
@@ -263,7 +263,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create local customer (walk-in) */
-        post: operations["create_5"];
+        post: operations["create_6"];
         delete?: never;
         options?: never;
         head?: never;
@@ -336,7 +336,7 @@ export interface paths {
         get: operations["list_2"];
         put?: never;
         /** Create employee (put at the end of the order) */
-        post: operations["create_4"];
+        post: operations["create_5"];
         delete?: never;
         options?: never;
         head?: never;
@@ -426,7 +426,7 @@ export interface paths {
         get: operations["list_1"];
         put?: never;
         /** Create lift (put at the end) */
-        post: operations["create_3"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -552,7 +552,7 @@ export interface paths {
         get: operations["list"];
         put?: never;
         /** Create service item (put at the end) */
-        post: operations["create_2"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -782,6 +782,26 @@ export interface paths {
         get: operations["search"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tasks/with-courtesy-car": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create task with courtesy car
+         * @description Both or neither: if the car is taken (409, names the booking in the way) or a field is wrong (car fields as `courtesyCar.*`), the task is not saved either.
+         */
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1056,6 +1076,21 @@ export interface components {
              */
             version: number;
             website?: string;
+        };
+        CourtesyCarChoice: {
+            /** Format: uuid */
+            courtesyCarId: string;
+            notes?: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-14T17:00
+             */
+            pickupAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T17:00
+             */
+            returnAt: string;
         };
         CourtesyCarDto: {
             active: boolean;
@@ -1518,6 +1553,14 @@ export interface components {
         TaskStatusRequest: {
             /** @enum {string} */
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
+        };
+        TaskWithBookingDto: {
+            booking: components["schemas"]["BookingDto"];
+            task: components["schemas"]["TaskDto"];
+        };
+        TaskWithBookingRequest: {
+            courtesyCar: components["schemas"]["CourtesyCarChoice"];
+            task: components["schemas"]["TaskRequest"];
         };
         VehicleDto: {
             active: boolean;
@@ -2004,7 +2047,7 @@ export interface operations {
             };
         };
     };
-    create_7: {
+    create_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -2550,7 +2593,7 @@ export interface operations {
             };
         };
     };
-    create_6: {
+    create_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -2961,7 +3004,7 @@ export interface operations {
             };
         };
     };
-    create_5: {
+    create_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -3369,7 +3412,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -3846,7 +3889,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -4389,7 +4432,7 @@ export interface operations {
             };
         };
     };
-    create_2: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -5296,6 +5339,75 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskSearchResultDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskWithBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskWithBookingDto"];
                 };
             };
             /** @description Bad Request */

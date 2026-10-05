@@ -26,6 +26,8 @@ interface AppointmentStepProps {
   showRequired: boolean
   /** when editing: the task itself, so the overview does not count it as being in its own way */
   taskId?: string
+  /** more sections below the form, e.g. the courtesy car in the wizard */
+  children?: ReactNode
 }
 
 /**
@@ -33,7 +35,7 @@ interface AppointmentStepProps {
  * stays visible while scrolling through the options – UI review). Defaults: "kommt früher" = the
  * evening of the previous working day, "fertig bis" = the same evening.
  */
-export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId }: AppointmentStepProps) {
+export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, children }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -281,6 +283,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             onChange={(e) => set('notes', e.target.value)}
           />
         </Section>
+        {children}
       </div>
 
       <aside className={styles.aside}>
@@ -296,7 +299,8 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+/** One block of the form (also used by sections from other features, e.g. the courtesy car) */
+export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className={styles.section}>
       <h2 className={styles.sectionTitle}>{title}</h2>

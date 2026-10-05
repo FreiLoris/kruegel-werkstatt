@@ -96,6 +96,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ zurückgegeben am | `returnedAt` | early return frees the car |
 | ↳ an wen (ohne Auftrag) | `holder` | free text |
 | Verfügbarkeit (Ersatzwagen) | availability (`AvailabilityDto`) | one check for every view |
+| Auftrag mit Ersatzwagen (Wizard) | `TaskWithBookingService`, `POST /api/tasks/with-courtesy-car` | both saved or neither |
 | Rückgabe erfassen | record the return | |
 | stornieren | cancel (a booking) | deletes it |
 | ↳ Bezeichnung (des Ersatzwagens) | `name` | e.g. "Ersatzwagen 1" |
