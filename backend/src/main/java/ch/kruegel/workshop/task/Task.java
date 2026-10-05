@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.BatchSize;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -115,6 +116,14 @@ public class Task extends BaseEntity implements Sortable {
     @Override
     public void moveTo(int sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    /**
+     * To another day (drag & drop in the week view), see {@link Appointment#onDay}. The MFK
+     * appointment stays: it is booked at the inspection station, not in the workshop.
+     */
+    public void moveToDay(LocalDate day) {
+        this.appointment = appointment.onDay(day);
     }
 
     /** Into another lift column (drag & drop in the day view); the position is set by the service. */

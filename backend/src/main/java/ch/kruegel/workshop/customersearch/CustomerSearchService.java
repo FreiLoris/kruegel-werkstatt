@@ -1,5 +1,6 @@
 package ch.kruegel.workshop.customersearch;
 
+import ch.kruegel.workshop.common.SearchWords;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerDto;
@@ -11,11 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -35,8 +34,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CustomerSearchService {
 
-    static final int MIN_LENGTH = 2;
-    static final int MAX_LENGTH = 100;
     static final int MAX_LIMIT = 50;
 
     private final CustomerSearchRepository search;
@@ -50,7 +47,7 @@ public class CustomerSearchService {
     }
 
     public CustomerSearchResultDto search(String query, int limit) {
-        List<String> words = words(query);
+        List<String> words = SearchWords.of(query);
         if (limit < 1 || limit > MAX_LIMIT) {
             throw new InvalidInputException("limit", "muss zwischen 1 und " + MAX_LIMIT + " liegen");
         }
@@ -92,17 +89,5 @@ public class CustomerSearchService {
     private static <T> List<T> inSearchOrder(List<T> loaded, Function<T, UUID> id, List<UUID> order) {
         Map<UUID, T> byId = loaded.stream().collect(Collectors.toMap(id, Function.identity()));
         return order.stream().map(byId::get).filter(Objects::nonNull).toList();
-    }
-
-    /** "  Huber  ZH 12 " → [huber, zh, 12]. Lower case like the search text in the view. */
-    static List<String> words(String query) {
-        String trimmed = query == null ? "" : query.strip();
-        if (trimmed.length() < MIN_LENGTH) {
-            throw new InvalidInputException("q", "mindestens " + MIN_LENGTH + " Zeichen eingeben");
-        }
-        if (trimmed.length() > MAX_LENGTH) {
-            throw new InvalidInputException("q", "höchstens " + MAX_LENGTH + " Zeichen");
-        }
-        return Arrays.stream(trimmed.toLowerCase(Locale.ROOT).split("\\s+")).distinct().toList();
     }
 }

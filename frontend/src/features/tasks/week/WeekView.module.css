@@ -1,0 +1,71 @@
+/* One column per day; on narrow screens the week scrolls sideways */
+.week {
+  display: grid;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.day {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.header {
+  display: grid;
+  min-height: 3.25rem;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--color-surface-raised);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header:hover .dayName {
+  text-decoration: underline;
+}
+
+.today .dayName {
+  color: var(--color-accent);
+}
+
+.dayName {
+  font-weight: 700;
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.holiday {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drop {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  min-height: 16rem;
+  padding: var(--space-1);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.over {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.holidayDrop {
+  background: color-mix(in srgb, var(--color-danger) 5%, transparent);
+}

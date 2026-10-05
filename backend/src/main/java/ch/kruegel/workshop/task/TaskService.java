@@ -133,23 +133,26 @@ public class TaskService {
     }
 
     /**
-     * Drag & drop in the day view: the task goes into the column of {@code liftId} at
-     * {@code position}. BOTH affected columns are numbered 0, 1, 2 … again and saved – the old app
+     * Drag & drop: the task goes into the column of {@code liftId} on {@code date} (default: its day)
+     * at {@code position}. BOTH affected columns are numbered 0, 1, 2 … again and saved – the old app
      * only saved the dragged card, so the neighbours jumped back after a reload (bug #5).
+     * The time stays when the day changes (bug #6: the old app had an unused "guess the time").
      * No version needed, like the status: moving must not fail because of an unrelated edit.
      */
     public List<TaskDto> move(UUID id, TaskMoveRequest request) {
         Task task = find(id);
         Lift target = reference(lifts, request.liftId(), task.getLift(), "liftId", "Lift", Lift::isActive, "ist ausser Betrieb");
-        LocalDate day = task.getAppointment().date();
-        boolean sameColumn = Objects.equals(target, task.getLift());
+        LocalDate fromDay = task.getAppointment().date();
+        LocalDate toDay = request.date() == null ? fromDay : request.date();
+        boolean sameColumn = Objects.equals(target, task.getLift()) && toDay.equals(fromDay);
 
         // read both columns BEFORE changing anything (check before change, no auto flush surprises)
-        List<Task> source = new ArrayList<>(repository.column(day, liftId(task.getLift())));
-        List<Task> destination = sameColumn ? source : new ArrayList<>(repository.column(day, liftId(target)));
+        List<Task> source = new ArrayList<>(repository.column(fromDay, liftId(task.getLift())));
+        List<Task> destination = sameColumn ? source : new ArrayList<>(repository.column(toDay, liftId(target)));
         source.remove(task);
         destination.add(Math.min(request.position(), destination.size()), task);
 
+        task.moveToDay(toDay);
         task.moveToLift(target);
         renumber(source);
         renumber(destination);

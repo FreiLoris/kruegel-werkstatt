@@ -316,6 +316,47 @@ class TaskApiTest {
     }
 
     @Test
+    void movingToAnotherDayKeepsTheTimeAndTheDistanceOfTheExtraTimes() {
+        String stays = idOf(create(liftJson(lift1)));
+        String moved = idOf(create(liftJson(lift1) + """
+                , "arrivesEarlier": "2026-10-14T17:00", "readyBy": "2026-10-15T16:30",
+                  "mfk": true, "mfkAppointment": "2026-10-15T10:00"
+                """));
+
+        MvcTestResult response = send("PUT", "/api/tasks/" + moved + "/move",
+                "{ \"liftId\": \"%s\", \"position\": 99, \"date\": \"2026-10-20\" }".formatted(lift1.getId()));
+
+        assertThat(response).hasStatusOk();
+        MvcTestResult task = mvc.get().uri("/api/tasks/" + moved).exchange();
+        assertThat(task).bodyJson().extractingPath("$.date").isEqualTo("2026-10-20");
+        assertThat(task).bodyJson().extractingPath("$.time").isEqualTo("08:00:00");
+        assertThat(task).bodyJson().extractingPath("$.arrivesEarlier").isEqualTo("2026-10-19T17:00:00");
+        assertThat(task).bodyJson().extractingPath("$.readyBy").isEqualTo("2026-10-20T16:30:00");
+        // booked at the inspection station – does not move with the workshop appointment
+        assertThat(task).bodyJson().extractingPath("$.mfkAppointment").isEqualTo("2026-10-15T10:00:00");
+        // the old day closed the gap
+        assertThat(mvc.get().uri("/api/tasks/" + stays).exchange()).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
+    }
+
+    @Test
+    void searchFindsAllAppointmentsUpcomingFirst() {
+        LocalDate today = LocalDate.now();
+        send("POST", "/api/tasks", body(null).replace(DAY, today.minusDays(30).toString()));
+        send("POST", "/api/tasks", body(null).replace(DAY, today.plusDays(60).toString()));
+        send("POST", "/api/tasks", body("\"vehicleId\": \"%s\"".formatted(golf.getId())).replace(DAY, today.plusDays(10).toString()));
+
+        MvcTestResult response = mvc.get().uri("/api/tasks/search?q=huber").exchange();
+
+        assertThat(response).bodyJson().extractingPath("$.hits[*].date").asArray()
+                .containsExactly(today.plusDays(10).toString(), today.plusDays(60).toString(), today.minusDays(30).toString());
+        assertThat(response).bodyJson().extractingPath("$.more").isEqualTo(false);
+        // plate without space, combined with the name
+        assertThat(mvc.get().uri("/api/tasks/search?q=zh123456 huber").exchange())
+                .bodyJson().extractingPath("$.hits").asArray().hasSize(1);
+        assertFieldError(mvc.get().uri("/api/tasks/search?q=h").exchange(), "q");
+    }
+
+    @Test
     void periodIsLimited() {
         LocalDate from = LocalDate.parse(DAY);
         assertFieldError(mvc.get().uri("/api/tasks?from=%s&to=%s".formatted(from, from.minusDays(1))).exchange(), "to");
