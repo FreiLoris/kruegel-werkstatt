@@ -353,6 +353,9 @@ class TaskApiTest {
         // plate without space, combined with the name
         assertThat(mvc.get().uri("/api/tasks/search?q=zh123456 huber").exchange())
                 .bodyJson().extractingPath("$.hits").asArray().hasSize(1);
+        // phone without spaces (test customers have "052 000 00 00")
+        assertThat(mvc.get().uri("/api/tasks/search?q=0520000000").exchange())
+                .bodyJson().extractingPath("$.hits").asArray().hasSize(3);
         assertFieldError(mvc.get().uri("/api/tasks/search?q=h").exchange(), "q");
     }
 

@@ -9,7 +9,8 @@ import java.util.UUID;
 
 /**
  * Appointment search over ALL tasks (F11: the old search only looked at the week on screen).
- * Every word must occur in customer, vehicle, task number, work or notes – like the customer search.
+ * Every word must occur in customer (name, company, phone, SwissGarage number …), vehicle (plate,
+ * make, VIN …), task number, work or notes – the same fields as the customer search and more.
  *
  * <p>Order: upcoming appointments first (nearest first), then past ones (newest first) – what you
  * look for is usually the next appointment of a customer.
@@ -32,8 +33,10 @@ class TaskSearchRepository {
                         WHERE NOT EXISTS (
                             SELECT 1 FROM unnest(cast(:words AS text[])) AS w(word)
                             WHERE strpos(lower(concat_ws(' ',
-                                      c.last_name, c.first_name, c.company, c.city,
-                                      v.license_plate, replace(v.license_plate, ' ', ''), v.make, v.model,
+                                      c.last_name, c.first_name, c.company, c.addition, c.city, c.swissgarage_number,
+                                      c.phone, replace(c.phone, ' ', ''), c.mobile, replace(c.mobile, ' ', ''),
+                                      v.license_plate, replace(v.license_plate, ' ', ''), v.make, v.model, v.vin,
+                                      v.swissgarage_number,
                                       t.task_number, t.work_description, t.notes, t.parts_description)), w.word) = 0)
                         ORDER BY t.appointment_date < :today,
                                  CASE WHEN t.appointment_date >= :today THEN t.appointment_date END ASC,
