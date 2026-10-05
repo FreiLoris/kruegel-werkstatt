@@ -114,6 +114,8 @@ class TodoApiTest {
                 .containsExactly("Kaffee", "zum Auftrag", "später", "ohne Frist");
         assertThat(mvc.get().uri("/api/todos?assigneeId=" + reto.getId()).exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("später");
+        assertThat(mvc.get().uri("/api/todos?unassigned=true").exchange())
+                .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Kaffee", "zum Auftrag", "ohne Frist");
         assertThat(mvc.get().uri("/api/todos?shopping=true").exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Kaffee");
         assertThat(mvc.get().uri("/api/todos?shopping=false").exchange()).bodyJson().extractingPath("$").asArray().hasSize(3);

@@ -50,14 +50,15 @@ public class TodoService {
     /**
      * @param done       false = open ones by deadline; true = the latest done ones
      * @param assigneeId only this person's; empty = everyone's
+     * @param unassigned only those nobody takes care of yet
      * @param shopping   only the shopping list (true) or only the rest (false); empty = both
      * @param taskId     only those of this task; empty = all
      */
     @Transactional(readOnly = true)
-    public List<TodoDto> list(boolean done, UUID assigneeId, Boolean shopping, UUID taskId) {
+    public List<TodoDto> list(boolean done, UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId) {
         List<Todo> found = done
-                ? repository.done(assigneeId, shopping, taskId, Limit.of(DONE_LIMIT))
-                : repository.open(assigneeId, shopping, taskId);
+                ? repository.done(assigneeId, unassigned, shopping, taskId, Limit.of(DONE_LIMIT))
+                : repository.open(assigneeId, unassigned, shopping, taskId);
         return found.stream().map(TodoDto::of).toList();
     }
 

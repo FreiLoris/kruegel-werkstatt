@@ -39,13 +39,15 @@ class TodoController {
     }
 
     @Operation(summary = "To-dos", description = "Open ones (default) by deadline – without deadline at the end; "
-            + "`done=true`: the latest " + TodoService.DONE_LIMIT + " done ones, newest first. Filters: empty = all.")
+            + "`done=true`: the latest " + TodoService.DONE_LIMIT + " done ones, newest first. Filters: empty = all; "
+            + "`unassigned=true`: only those without person.")
     @GetMapping
     List<TodoDto> list(@RequestParam(defaultValue = "false") boolean done,
                        @RequestParam(required = false) UUID assigneeId,
+                       @RequestParam(defaultValue = "false") boolean unassigned,
                        @RequestParam(required = false) Boolean shopping,
                        @RequestParam(required = false) UUID taskId) {
-        return service.list(done, assigneeId, shopping, taskId);
+        return service.list(done, assigneeId, unassigned, shopping, taskId);
     }
 
     @Operation(summary = "Create to-do")

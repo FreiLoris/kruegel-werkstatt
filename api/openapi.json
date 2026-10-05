@@ -5020,7 +5020,7 @@
     },
     "/api/todos" : {
       "get" : {
-        "description" : "Open ones (default) by deadline – without deadline at the end; `done=true`: the latest 200 done ones, newest first. Filters: empty = all.",
+        "description" : "Open ones (default) by deadline – without deadline at the end; `done=true`: the latest 200 done ones, newest first. Filters: empty = all; `unassigned=true`: only those without person.",
         "operationId" : "list",
         "parameters" : [ {
           "in" : "query",
@@ -5037,6 +5037,14 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "unassigned",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
           }
         }, {
           "in" : "query",

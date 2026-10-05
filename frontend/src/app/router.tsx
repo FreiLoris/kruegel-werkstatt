@@ -10,6 +10,7 @@ import { TaskEditPage } from '../features/tasks/detail/TaskEditPage'
 import { TaskSheetPage } from '../features/tasks/sheet/TaskSheetPage'
 import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
+import { TodosPage } from '../features/todos/TodosPage'
 import { SystemPage } from '../features/system/SystemPage'
 import { AppLayout } from './AppLayout'
 import { CrashPage, NotFoundPage } from './ErrorPages'
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
       { path: 'courtesy-cars', element: <CourtesyCarsPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
+      { path: 'todos', element: <TodosPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },

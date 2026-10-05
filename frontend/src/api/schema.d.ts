@@ -899,7 +899,7 @@ export interface paths {
         };
         /**
          * To-dos
-         * @description Open ones (default) by deadline – without deadline at the end; `done=true`: the latest 200 done ones, newest first. Filters: empty = all.
+         * @description Open ones (default) by deadline – without deadline at the end; `done=true`: the latest 200 done ones, newest first. Filters: empty = all; `unassigned=true`: only those without person.
          */
         get: operations["list"];
         put?: never;
@@ -5996,6 +5996,7 @@ export interface operations {
             query?: {
                 done?: boolean;
                 assigneeId?: string;
+                unassigned?: boolean;
                 shopping?: boolean;
                 taskId?: string;
             };

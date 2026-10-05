@@ -233,9 +233,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   "Rückgängig"). The note reference follows with 8c (the note does not exist yet).
   Also in this package: courtesy car on the task sheet and the calendar cards; courtesy car page
   layout (full-width calendar, clearer cards).
-- [ ] **8b – To-do page**
+- [x] **8b – To-do page**
   Person filter from the employee list (→ bug #3), active filter recognisable,
   own tab shopping list, done only via checkbox with "undo" (→ F5).
+  `/todos` in the navigation; filter and tab in the address; "nicht zugewiesen" as filter and label,
+  "überfällig seit …"; edit in place, delete after asking (also in the task detail); done ones
+  folded away with "Rückgängig".
 - [ ] **8c – Note data model & API**
   Multiple assignment, reference to task (→ F8), sub-tasks are to-dos only
   (no second list → bug #10), archiving completes linked to-dos, reactivating symmetric.
