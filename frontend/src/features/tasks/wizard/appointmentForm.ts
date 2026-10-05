@@ -34,6 +34,8 @@ export interface AppointmentForm {
   partsOrderedOn: string
   workDescription: string
   notes: string
+  /** SwissGarage order number – often only known later */
+  taskNumber: string
 }
 
 /** Drop-off "the evening before" and "ready by" end of the working day */
@@ -65,6 +67,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   partsOrderedOn: '',
   workDescription: '',
   notes: '',
+  taskNumber: '',
 }
 
 /** "Kommt früher" ticked: the evening of the previous working day (Monday → Friday). */
@@ -176,6 +179,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
       : undefined,
     workDescription: text(form.workDescription),
     notes: text(form.notes),
+    taskNumber: text(form.taskNumber),
     version,
   }
 }
@@ -217,6 +221,7 @@ export function formFromTask(task: Task): AppointmentForm {
     partsOrderedOn: task.parts?.orderedOn ?? '',
     workDescription: task.workDescription ?? '',
     notes: task.notes ?? '',
+    taskNumber: task.taskNumber ?? '',
   }
 }
 

@@ -182,6 +182,18 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   status from the one definition (→ F10); missing task number always "offen". No delete in the
   rows (misclick) – a row opens the task, deleting is there with confirmation.
 
+- [x] **6x – Smoke test fixes** *(inserted)*
+  Drag & drop: no flash back of the old position after dropping; task number already in the wizard;
+  MFK appointment on day/week cards and in the task detail, "Letzte MFK unbekannt" instead of the
+  misleading "MFK-Datum unbekannt".
+- [ ] **6j – Task duration (model & API)** *(inserted, from the smoke test)*
+  End time per task (default start + 1 h, also for existing tasks); the database prevents two tasks
+  on the same lift at the same time (like the courtesy cars); moving keeps the duration.
+- [ ] **6k – Day view as time grid per lift** *(inserted)*
+  Like Outlook: columns = lifts, rows = time, tasks as blocks as long as their duration; tap and drag
+  in the grid = new task with start/end; move a block / drag its end = change the time. The manual
+  order of 6f is replaced by the time. Capacity overview in the wizard with durations, select by dragging.
+
 ## Phase 7 – Courtesy car bookings
 
 - [x] **7a – Booking data model**

@@ -109,6 +109,7 @@ describe('toTaskRequest', () => {
       parts: undefined,
       workDescription: undefined,
       notes: undefined,
+      taskNumber: undefined,
       version: undefined,
     })
   })

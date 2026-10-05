@@ -217,6 +217,18 @@ class TaskApiTest {
     }
 
     @Test
+    void taskNumberCanBeGivenWhenCreatingAndEditing() {
+        String first = idOf(create("\"taskNumber\": \" A-17 \""));
+
+        assertThat(mvc.get().uri("/api/tasks/" + first).exchange()).bodyJson().extractingPath("$.taskNumber").isEqualTo("A-17");
+        assertFieldError(create("\"taskNumber\": \"A-17\""), "taskNumber");
+        // editing keeps its own number, and can change it
+        assertThat(send("PUT", "/api/tasks/" + first, body("\"taskNumber\": \"A-17\", \"version\": 0"))).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + first, body("\"taskNumber\": \"A-18\", \"version\": 0")))
+                .bodyJson().extractingPath("$.taskNumber").isEqualTo("A-18");
+    }
+
+    @Test
     void taskNumberIsUniqueAndCanBeRemoved() {
         String first = idOf(create(null));
         String second = idOf(create(null));

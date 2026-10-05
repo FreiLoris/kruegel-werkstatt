@@ -1,14 +1,14 @@
-import { Clock, Hourglass, Printer } from 'lucide-react'
+import { ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
-import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { formatDate, formatTime } from '../../../lib/format'
+import { formatTime } from '../../../lib/format'
 import type { Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
 import { statusAccentClass } from '../taskStatusStyle'
+import { timeSeenFrom } from '../taskTime'
 import { workSummary } from '../workSummary'
 import styles from './TaskCard.module.css'
 
@@ -68,9 +68,14 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
               <Hourglass aria-hidden /> Wartet
             </span>
           )}
+          {task.mfk && (
+            <span className={styles.flag} title="Fahrzeug geht an die MFK">
+              <ClipboardCheck aria-hidden /> MFK{task.mfkAppointment ? ` ${timeSeenFrom(task.date, task.mfkAppointment)}` : ''}
+            </span>
+          )}
           {task.readyBy && (
             <span className={styles.flag} title="Muss fertig sein bis">
-              <Clock aria-hidden /> bis {readyByText(task.date, task.readyBy)}
+              <Clock aria-hidden /> bis {timeSeenFrom(task.date, task.readyBy)}
             </span>
           )}
         </span>
@@ -92,10 +97,4 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
       </div>
     </div>
   )
-}
-
-/** "16:30" on the day of the appointment, otherwise with the day: "Fr 16.10. 12:00" */
-function readyByText(appointmentDate: string, readyBy: string): string {
-  const [day, time] = readyBy.split('T')
-  return day === appointmentDate ? formatTime(time) : `${WEEKDAYS_SHORT[weekdayOf(day)]} ${formatDate(day).slice(0, 6)} ${formatTime(time)}`
 }

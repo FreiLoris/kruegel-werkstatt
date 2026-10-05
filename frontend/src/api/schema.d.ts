@@ -1458,6 +1458,8 @@ export interface components {
              */
             readyBy?: string;
             serviceItemIds?: string[];
+            /** @description SwissGarage order number – may also be added later; unique */
+            taskNumber?: string;
             /** @example 08:00 */
             time: string;
             /** @description Missing = false */

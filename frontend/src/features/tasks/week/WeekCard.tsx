@@ -8,6 +8,7 @@ import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TASK_STATUS } from '../taskApi'
 import { statusAccentClass } from '../taskStatusStyle'
+import { timeSeenFrom } from '../taskTime'
 import styles from './WeekCard.module.css'
 
 interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -54,6 +55,11 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, className
           <span className="muted">{task.vehicle ? task.vehicle.description : 'Fahrzeug offen'}</span>
         )}
         {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} />}
+        {task.mfk && (
+          <span className={styles.mfk} title={task.mfkAppointment ? `MFK ${timeSeenFrom(task.date, task.mfkAppointment)}` : 'MFK, Termin offen'}>
+            MFK{task.mfkAppointment ? ` ${timeSeenFrom(task.date, task.mfkAppointment)}` : ''}
+          </span>
+        )}
       </div>
       <span className="visually-hidden">Status: {TASK_STATUS[task.status]}</span>
     </div>

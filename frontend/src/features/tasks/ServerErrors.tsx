@@ -19,6 +19,7 @@ const FIELD_LABELS: Record<string, string> = {
   'parts.supplier': 'Lieferant',
   workDescription: 'Weitere Arbeiten',
   notes: 'Notizen',
+  taskNumber: 'Auftragsnummer',
   version: 'Version',
 }
 
