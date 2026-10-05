@@ -7,16 +7,18 @@ import { addDays, formatDate, todayIso } from '../../lib/format'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
 import styles from './AppointmentsPage.module.css'
 import { DayView } from './day/DayView'
+import { TaskListView } from './list/TaskListView'
 import { TaskSearch } from './TaskSearch'
 import { TaskStatusLegend } from './TaskStatusBadge'
 import { WeekView } from './week/WeekView'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
-type View = 'day' | 'week'
+type View = 'day' | 'week' | 'list'
 
 /**
- * "Termine": day view (one column per lift) or week view (one column per day), switchable.
+ * "Termine": day view (one column per lift), week view (one column per day) or list (table with
+ * filters), switchable.
  * View and date are in the URL (?view=week&date=2026-10-15): reload, browser back and a bookmark
  * on the workshop tablet keep them – and "Termine" stays the active navigation entry.
  */
@@ -27,14 +29,15 @@ export function AppointmentsPage() {
   const today = todayIso()
   const requested = params.get('date')
   const date = requested && ISO_DATE.test(requested) ? requested : today
-  const view: View = params.get('view') === 'week' ? 'week' : 'day'
+  const requestedView = params.get('view')
+  const view: View = requestedView === 'week' || requestedView === 'list' ? requestedView : 'day'
   const monday = mondayOf(date)
   const { data: holidays } = usePublicHolidays(date, date)
 
   function show(nextView: View, nextDate: string) {
     const next: Record<string, string> = {}
-    if (nextView === 'week') next.view = 'week'
-    if (nextDate !== today) next.date = nextDate
+    if (nextView !== 'day') next.view = nextView
+    if (nextDate !== today && nextView !== 'list') next.date = nextDate
     setParams(next)
   }
 
@@ -47,7 +50,9 @@ export function AppointmentsPage() {
         <div>
           <h1 className={styles.title}>Termine</h1>
           <p className={styles.date}>
-            {view === 'day' ? (
+            {view === 'list' ? (
+              <strong>Liste</strong>
+            ) : view === 'day' ? (
               <>
                 <strong>
                   {WEEKDAYS_SHORT[weekdayOf(date)]} {formatDate(date)}
@@ -84,30 +89,44 @@ export function AppointmentsPage() {
           <Button variant={view === 'week' ? 'primary' : 'secondary'} aria-pressed={view === 'week'} onClick={() => show('week', date)}>
             Woche
           </Button>
-        </div>
-        <div className={styles.nav}>
-          <Button
-            icon={ChevronLeft}
-            onClick={() => show(view, addDays(date, -step))}
-            aria-label={view === 'week' ? 'Vorherige Woche' : 'Vorheriger Tag'}
-          />
-          <Button onClick={() => show(view, today)} disabled={isCurrent}>
-            Heute
+          <Button variant={view === 'list' ? 'primary' : 'secondary'} aria-pressed={view === 'list'} onClick={() => show('list', date)}>
+            Liste
           </Button>
-          <Button icon={ChevronRight} onClick={() => show(view, addDays(date, step))} aria-label={view === 'week' ? 'Nächste Woche' : 'Nächster Tag'} />
-          <input
-            type="date"
-            className={styles.picker}
-            value={date}
-            onChange={(e) => e.target.value && show(view, e.target.value)}
-            aria-label="Datum wählen"
-          />
         </div>
-        <TaskStatusLegend />
+        {/* the list has its own period filters */}
+        {view !== 'list' && (
+          <>
+            <div className={styles.nav}>
+              <Button
+                icon={ChevronLeft}
+                onClick={() => show(view, addDays(date, -step))}
+                aria-label={view === 'week' ? 'Vorherige Woche' : 'Vorheriger Tag'}
+              />
+              <Button onClick={() => show(view, today)} disabled={isCurrent}>
+                Heute
+              </Button>
+              <Button
+                icon={ChevronRight}
+                onClick={() => show(view, addDays(date, step))}
+                aria-label={view === 'week' ? 'Nächste Woche' : 'Nächster Tag'}
+              />
+              <input
+                type="date"
+                className={styles.picker}
+                value={date}
+                onChange={(e) => e.target.value && show(view, e.target.value)}
+                aria-label="Datum wählen"
+              />
+            </div>
+            <TaskStatusLegend />
+          </>
+        )}
       </div>
 
       <div className={styles.content}>
-        {view === 'day' ? (
+        {view === 'list' ? (
+          <TaskListView />
+        ) : view === 'day' ? (
           <DayView date={date} onGo={(day) => show('day', day)} />
         ) : (
           <WeekView monday={monday} onOpenDay={(day) => show('day', day)} />

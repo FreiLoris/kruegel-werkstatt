@@ -78,6 +78,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Termine (Tagesansicht) | day view (`DayViewPage`, `/tasks`) | one column per lift |
 | Ohne Lift | no lift (`NO_LIFT`) | column for tasks without lift |
 | Auftrag ansehen / bearbeiten | task detail / edit (`/tasks/:id`, `/tasks/:id/edit`) | |
+| Auftragsliste | task list (`TaskListView`, `/tasks?view=list`) | table with filters |
 | Wochenansicht | week view (`WeekView`, `/tasks?view=week`) | one column per day |
 | Terminsuche | appointment search (`/api/tasks/search`) | all appointments, upcoming first |
 | Verschieben (Drag & Drop) | move (`PUT /api/tasks/{id}/move`) | both columns are renumbered |

@@ -1,0 +1,174 @@
+.list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.presets,
+.statuses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.period {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+}
+
+/* Status filter: the badge itself is the button; off = faded */
+.statusToggle {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  opacity: 0.35;
+}
+
+.statusToggle.on {
+  opacity: 1;
+}
+
+.statusToggle:hover {
+  background: var(--color-surface-raised);
+}
+
+.count {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.empty {
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* On narrow devices the table scrolls sideways */
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sort:hover {
+  color: var(--color-text);
+}
+
+.sort svg {
+  width: 1em;
+  height: 1em;
+}
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover td {
+  background: var(--color-surface-raised);
+}
+
+.table tbody tr + tr td {
+  border-top: 1px solid var(--color-border);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.time {
+  font-weight: 700;
+}
+
+.customer {
+  color: inherit;
+  font-weight: 600;
+}
+
+.vehicle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.open {
+  color: var(--color-warning);
+}
+
+/* F1: the complete work, readable */
+.work {
+  min-width: 14rem;
+  font-size: var(--font-size-sm);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  margin: calc(var(--space-2) * -1) 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.icon:hover {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.icon svg {
+  width: 1.1em;
+  height: 1.1em;
+}
