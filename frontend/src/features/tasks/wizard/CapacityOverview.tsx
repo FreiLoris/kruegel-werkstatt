@@ -20,6 +20,8 @@ interface CapacityOverviewProps {
   onPickDay: (date: string) => void
   /** dragged open (or tapped) in the day's grid: lift, start and end */
   onPickSlot: (slot: Slot) => void
+  /** when editing: the task itself – not in the way of its own new place */
+  taskId?: string
 }
 
 /**
@@ -27,7 +29,7 @@ interface CapacityOverviewProps {
  * time grid per lift – dragging open a free area takes over lift, start and end. A lift already
  * taken at that time shows red ("belegt"). Weekends only appear when there are tasks.
  */
-export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot }: CapacityOverviewProps) {
+export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, taskId }: CapacityOverviewProps) {
   const today = todayIso()
   const [day, setDay] = useState(picked.date || today)
   const [monday, setMonday] = useState(() => mondayOf(day))
@@ -109,11 +111,14 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot }: Ca
           canEdit
           onPick={onPickSlot}
           picked={picked.date ? picked : null}
+          hiddenTaskId={taskId}
         />
       ) : (
         <p className="muted">Lade Termine …</p>
       )}
-      <p className={styles.legend}>Im Raster ziehen übernimmt Lift, Beginn und Ende – tippen eine Stunde.</p>
+      <p className={styles.legend}>
+        Im Raster ziehen übernimmt Lift, Beginn und Ende (am Tablet: kurz halten, dann ziehen) – tippen eine Stunde.
+      </p>
     </section>
   )
 }

@@ -132,7 +132,7 @@ function TaskEditForm({ task: current, onReload }: { task: Task; onReload: () =>
         )}
       </section>
 
-      <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired} />
+      <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired} taskId={task.id} />
 
       <StickyFooterSpacer />
       <StickyFooter>
