@@ -58,8 +58,15 @@ export function TaskListView() {
   const mechanicId = params.get('mechanic') ?? ''
   const sortKey = (COLUMNS.find((c) => c.key === params.get('sort'))?.key ?? 'date') as SortKey
   const direction: SortDirection = params.get('dir') === 'desc' ? 'desc' : 'asc'
-  const [text, setText] = useState(params.get('q') ?? '')
+  const qParam = params.get('q') ?? ''
+  const [text, setText] = useState(qParam)
   const debouncedText = useDebouncedValue(text, 250)
+  // Back button / bookmark changed the text in the URL → the field follows ("adjust state while rendering")
+  const [syncedQ, setSyncedQ] = useState(qParam)
+  if (qParam !== syncedQ) {
+    setSyncedQ(qParam)
+    if (qParam !== text.trim()) setText(qParam)
+  }
 
   const days = periodDays({ from, to })
   const periodValid = days >= 1 && days <= MAX_PERIOD_DAYS
@@ -69,23 +76,35 @@ export function TaskListView() {
   const { data: serviceItems } = useAllServiceItems()
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
-  /** Changes some list parameters, keeps the rest (view=list, other filters) */
-  function update(changes: Record<string, string | null>) {
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      for (const [key, value] of Object.entries(changes)) {
-        if (value) next.set(key, value)
-        else next.delete(key)
-      }
-      return next
-    })
+  /**
+   * Changes some list parameters, keeps the rest (view=list, other filters).
+   * `replace`: no new browser history entry (typing – otherwise "back" would go letter by letter).
+   */
+  function update(changes: Record<string, string | null>, replace = false) {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        for (const [key, value] of Object.entries(changes)) {
+          if (value) next.set(key, value)
+          else next.delete(key)
+        }
+        return next
+      },
+      { replace },
+    )
   }
+
+  // the work text once per task – used by the text filter and the table
+  const workOf = useMemo(() => {
+    const byId = new Map((tasks.data ?? []).map((task) => [task.id, workSummary(task, names)]))
+    return (task: Task) => byId.get(task.id) ?? ''
+  }, [tasks.data, names])
 
   const shown = useMemo(() => {
     if (!tasks.data || !employees || !lifts) return []
-    const filtered = filterTasks(tasks.data, { statuses, mechanicId, text: debouncedText }, (task) => workSummary(task, names))
+    const filtered = filterTasks(tasks.data, { statuses, mechanicId, text: debouncedText }, workOf)
     return sortTasks(filtered, sortKey, direction, { employees, lifts })
-  }, [tasks.data, employees, lifts, statuses, mechanicId, debouncedText, names, sortKey, direction])
+  }, [tasks.data, employees, lifts, statuses, mechanicId, debouncedText, workOf, sortKey, direction])
 
   /** A badge switches its status on or off; nothing chosen = all statuses are shown. */
   function toggleStatus(status: TaskStatus) {
@@ -141,7 +160,7 @@ export function TaskListView() {
             value={text}
             onChange={(e) => {
               setText(e.target.value)
-              update({ q: e.target.value.trim() || null })
+              update({ q: e.target.value.trim() || null }, true)
             }}
           />
         </div>
@@ -205,7 +224,7 @@ export function TaskListView() {
                     <Row
                       key={task.id}
                       task={task}
-                      work={workSummary(task, names)}
+                      work={workOf(task)}
                       mechanic={employees.find((e) => e.id === task.mechanicId)}
                       liftName={lifts.find((l) => l.id === task.liftId)?.name}
                       onOpen={() => navigate(`/tasks/${task.id}`)}
