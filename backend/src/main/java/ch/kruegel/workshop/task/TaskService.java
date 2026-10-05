@@ -188,6 +188,9 @@ public class TaskService {
         repository.flush();
         log.info("Task {} of {} deleted by person {}", id, task.getAppointment().date(), CurrentPerson.id().orElse(null));
         events.publishEvent(new DataChanged(TOPIC));
+        // its courtesy car booking is deleted with it (ON DELETE CASCADE) – the booking views reload too.
+        // Text instead of BookingService.TOPIC: booking depends on task, not the other way round.
+        events.publishEvent(new DataChanged("courtesy-car-bookings"));
     }
 
     private TaskDetails details(TaskRequest request, Task current) {
