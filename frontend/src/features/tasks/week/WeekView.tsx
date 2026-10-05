@@ -53,6 +53,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const canEdit = useCanEdit()
   const toast = useToast()
   const [activeId, setActiveId] = useState<string | null>(null)
+  // After dropping: show the card on its new day until the tasks themselves do (no flash back)
+  const [dropped, setDropped] = useState<{ tasks: Task[]; basedOn: Task[] } | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -61,7 +63,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
     useSensor(KeyboardSensor, { keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space'] } }),
   )
 
-  const days = useMemo(() => weekDays(monday, tasks.data ?? []), [monday, tasks.data])
+  const shown = dropped && dropped.basedOn === tasks.data ? dropped.tasks : tasks.data
+  const days = useMemo(() => weekDays(monday, shown ?? []), [monday, shown])
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
   const today = todayIso()
 
@@ -78,12 +81,16 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
     const task = all.find((t) => t.id === dragged.id)
     if (!task || !over || over.id === task.date) return
     const date = String(over.id)
+    const arranged = withDate(all, task.id, date)
+    setDropped({ tasks: arranged, basedOn: all })
     move.mutate(
-      { id: task.id, liftId: task.liftId, position: END_OF_COLUMN, date, arranged: withDate(all, task.id, date) },
+      { id: task.id, liftId: task.liftId, position: END_OF_COLUMN, date, arranged },
       {
-        onSuccess: () =>
-          toast.success(`${task.customer.displayName} auf ${dayLabel(date)} verschoben`),
-        onError: (error) => toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`),
+        onSuccess: () => toast.success(`${task.customer.displayName} auf ${dayLabel(date)} verschoben`),
+        onError: (error) => {
+          setDropped(null)
+          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`)
+        },
       },
     )
   }
@@ -123,7 +130,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
           </DayColumn>
         ))}
       </div>
-      <DragOverlay>
+      {/* no fly-back animation: the card is already shown on its new day */}
+      <DragOverlay dropAnimation={null}>
         {active && <WeekCard task={active} mechanic={mechanicOf(active)} liftName={liftNameOf(active)} dragging />}
       </DragOverlay>
     </DndContext>

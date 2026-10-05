@@ -190,6 +190,12 @@ function TaskDetail({ task }: { task: Task }) {
                   ['Treibstoff', v.fuel],
                 ]}
               />
+              {/* the task's own MFK appointment first – the hint below is about the last/next official date */}
+              {task.mfk && (
+                <p className={styles.mfk}>
+                  MFK in diesem Auftrag: {task.mfkAppointment ? formatLocalDateTime(task.mfkAppointment) : 'Termin noch offen'}
+                </p>
+              )}
               <MfkHint vehicle={v} />
             </>
           ) : (

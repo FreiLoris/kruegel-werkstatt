@@ -234,6 +234,17 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired 
           />
         </Section>
 
+        <Section title="Auftragsnummer">
+          <TextField
+            label="Auftragsnummer aus SwissGarage"
+            hint="Falls schon bekannt – sonst später im Auftrag eintragen"
+            maxLength={30}
+            autoComplete="off"
+            value={form.taskNumber}
+            onChange={(e) => set('taskNumber', e.target.value)}
+          />
+        </Section>
+
         <Section title="Interne Notizen">
           <TextArea
             label="Notizen"

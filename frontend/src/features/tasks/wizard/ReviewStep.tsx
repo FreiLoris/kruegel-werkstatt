@@ -97,6 +97,12 @@ export function ReviewStep({ customerStep, appointment: f, onEdit, serverErrors 
           </ul>
         )}
         {f.workDescription.trim() && <p className={styles.freeText}>{f.workDescription.trim()}</p>}
+        {f.taskNumber.trim() && (
+          <p>
+            <span className="muted">Auftragsnummer: </span>
+            {f.taskNumber.trim()}
+          </p>
+        )}
         {f.notes.trim() && (
           <p className={styles.freeText}>
             <span className="muted">Notizen: </span>

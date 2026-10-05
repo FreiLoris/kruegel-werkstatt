@@ -35,6 +35,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             ORDER BY t.sortOrder, t.id""")
     List<Task> column(LocalDate date, UUID liftId);
 
+    boolean existsByTaskNumber(String taskNumber);
+
     boolean existsByTaskNumberAndIdNot(String taskNumber, UUID id);
 
     /** Several tasks with customer and vehicle in one query – for the search hits. */

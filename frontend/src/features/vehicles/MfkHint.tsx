@@ -15,7 +15,7 @@ export function MfkHint({ vehicle, today = todayIso() }: { vehicle: Pick<Vehicle
     case 'unknown':
       return (
         <span className={`${styles.hint} ${styles.unknown}`}>
-          <CircleHelp aria-hidden /> MFK-Datum unbekannt
+          <CircleHelp aria-hidden /> Letzte MFK unbekannt
         </span>
       )
     case 'overdue':

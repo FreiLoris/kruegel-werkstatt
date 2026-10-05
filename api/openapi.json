@@ -6473,6 +6473,12 @@
               "format" : "uuid"
             }
           },
+          "taskNumber" : {
+            "type" : "string",
+            "description" : "SwissGarage order number – may also be added later; unique",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
           "time" : {
             "type" : "string",
             "example" : "08:00"

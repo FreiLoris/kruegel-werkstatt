@@ -101,7 +101,9 @@ public class TaskService {
     /** New task – at the end of its lift column. */
     public TaskDto create(TaskRequest request) {
         TaskDetails details = details(request, null);
+        String number = freeTaskNumber(request.taskNumber(), null);
         Task task = new Task(details, nextPosition(details));
+        task.assignTaskNumber(number);
         return saved(repository.save(task));
     }
 
@@ -113,11 +115,13 @@ public class TaskService {
         Task task = find(id);
         task.checkVersion(request.version());
         TaskDetails details = details(request, task);
+        String number = freeTaskNumber(request.taskNumber(), id);
         boolean otherColumn = !details.appointment().date().equals(task.getAppointment().date())
                 || !Objects.equals(details.lift(), task.getLift());
         int position = otherColumn ? nextPosition(details) : task.getSortOrder();
 
         task.update(details);
+        task.assignTaskNumber(number);
         task.moveTo(position);
         return saved(task);
     }
@@ -173,12 +177,25 @@ public class TaskService {
 
     public TaskDto assignTaskNumber(UUID id, String taskNumber) {
         Task task = find(id);
+        task.assignTaskNumber(freeTaskNumber(taskNumber, id));
+        return saved(task);
+    }
+
+    /**
+     * The task number if no OTHER task has it (checked before anything is changed).
+     *
+     * @param ownId the task itself when editing – its own number is fine; empty for a new task
+     */
+    private String freeTaskNumber(String taskNumber, UUID ownId) {
         String number = taskNumber == null ? null : taskNumber.strip();
-        if (number != null && !number.isEmpty() && repository.existsByTaskNumberAndIdNot(number, id)) {
+        if (number == null || number.isEmpty()) {
+            return null;
+        }
+        boolean taken = ownId == null ? repository.existsByTaskNumber(number) : repository.existsByTaskNumberAndIdNot(number, ownId);
+        if (taken) {
             throw new InvalidInputException("taskNumber", "'" + number + "' ist bereits bei einem anderen Auftrag eingetragen");
         }
-        task.assignTaskNumber(number);
-        return saved(task);
+        return number;
     }
 
     /** Tasks are really deleted (unlike master data). The log keeps who did it. */

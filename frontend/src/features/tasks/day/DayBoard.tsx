@@ -54,6 +54,9 @@ export function DayBoard({ columns, tasks, dayKey, employees, serviceItemNames, 
   const move = useMoveTask(dayKey)
   const toast = useToast()
   const [dragging, setDragging] = useState<{ id: string; arrangement: Arrangement } | null>(null)
+  // After dropping: the new arrangement stays on screen until the tasks themselves show it.
+  // Without this the old order flashed for a moment (the immediate update of the query is async).
+  const [dropped, setDropped] = useState<{ arrangement: Arrangement; basedOn: Task[] } | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -67,7 +70,8 @@ export function DayBoard({ columns, tasks, dayKey, employees, serviceItemNames, 
 
   const byId = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks])
   const columnIds = new Set(columns.map((column) => column.id))
-  const arrangement = dragging?.arrangement ?? arrangementOf(columns)
+  const arrangement =
+    dragging?.arrangement ?? (dropped && dropped.basedOn === tasks ? dropped.arrangement : arrangementOf(columns))
   const titleOf = (columnId: string) => columns.find((column) => column.id === columnId)?.title ?? ''
 
   /** over = a card or an (empty) column → target column and index */
@@ -105,9 +109,16 @@ export function DayBoard({ columns, tasks, dayKey, employees, serviceItemNames, 
     if (unchanged) return
 
     const task = byId.get(id)!
+    setDropped({ arrangement: final, basedOn: tasks })
     move.mutate(
       { id, liftId: column === NO_LIFT ? null : column, position: index, arranged: applyArrangement(tasks, final) },
-      { onError: (error) => toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`) },
+      {
+        onError: (error) => {
+          // the query goes back to the old list – the SAME object as before, so drop the kept arrangement explicitly
+          setDropped(null)
+          toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${error.message}`)
+        },
+      },
     )
   }
 
