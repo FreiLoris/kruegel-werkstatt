@@ -1,0 +1,50 @@
+/* --status is set per status below and used by badge and accent bar alike */
+.received {
+  --status: var(--color-status-received);
+}
+
+.inProgress {
+  --status: var(--color-status-in-progress);
+}
+
+.waiting {
+  --status: var(--color-status-waiting);
+}
+
+.done {
+  --status: var(--color-status-done);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--status);
+  border-radius: 999px;
+  color: var(--status);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--status);
+}
+
+.accent {
+  border-left: 4px solid var(--status);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

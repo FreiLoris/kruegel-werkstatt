@@ -3,6 +3,7 @@ import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
+import { DayViewPage } from '../features/tasks/day/DayViewPage'
 import { TaskSheetPage } from '../features/tasks/sheet/TaskSheetPage'
 import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'employees', element: <EmployeesPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
+      { path: 'tasks', element: <DayViewPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'system', element: <SystemPage /> },
       { path: 'system/components', element: <ComponentsPage /> },

@@ -268,6 +268,54 @@ class TaskApiTest {
     }
 
     @Test
+    void movingWithinAColumnRenumbersTheWholeColumn() {
+        String a = idOf(create(liftJson(lift1)));
+        String b = idOf(create(liftJson(lift1)));
+        String c = idOf(create(liftJson(lift1)));
+
+        MvcTestResult response = send("PUT", "/api/tasks/" + c + "/move", moveJson(lift1, 0));
+
+        assertThat(response).hasStatusOk();
+        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(c, a, b);
+        assertThat(response).bodyJson().extractingPath("$[*].sortOrder").asArray().containsExactly(0, 1, 2);
+    }
+
+    @Test
+    void movingToAnotherLiftClosesTheGapInTheOldColumn() {
+        String a = idOf(create(liftJson(lift1)));
+        String b = idOf(create(liftJson(lift1)));
+        String x = idOf(create(liftJson(lift2)));
+
+        MvcTestResult response = send("PUT", "/api/tasks/" + a + "/move", moveJson(lift2, 0));
+
+        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(a, x);
+        assertThat(response).bodyJson().extractingPath("$[0].liftId").isEqualTo(lift2.getId().toString());
+        // bug #5: the neighbour in the old column is saved too
+        assertThat(mvc.get().uri("/api/tasks/" + b).exchange()).bodyJson().extractingPath("$.sortOrder").isEqualTo(0);
+    }
+
+    @Test
+    void positionBeyondTheEndMeansAtTheEndAndNoLiftIsAColumnToo() {
+        String a = idOf(create(liftJson(lift1)));
+        String open = idOf(create(null));
+
+        MvcTestResult response = send("PUT", "/api/tasks/" + a + "/move", "{ \"liftId\": null, \"position\": 99 }");
+
+        assertThat(response).bodyJson().extractingPath("$[*].id").asArray().containsExactly(open, a);
+        assertThat(response).bodyJson().extractingPath("$[1].liftId").isNull();
+    }
+
+    @Test
+    void cannotMoveToALiftOutOfService() {
+        String a = idOf(create(liftJson(lift1)));
+        lift2.deactivate();
+        lifts.save(lift2);
+
+        assertFieldError(send("PUT", "/api/tasks/" + a + "/move", moveJson(lift2, 0)), "liftId");
+        assertFieldError(send("PUT", "/api/tasks/" + a + "/move", "{ \"position\": -1 }"), "position");
+    }
+
+    @Test
     void periodIsLimited() {
         LocalDate from = LocalDate.parse(DAY);
         assertFieldError(mvc.get().uri("/api/tasks?from=%s&to=%s".formatted(from, from.minusDays(1))).exchange(), "to");
@@ -276,6 +324,14 @@ class TaskApiTest {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    private static String liftJson(Lift lift) {
+        return "\"liftId\": \"%s\"".formatted(lift.getId());
+    }
+
+    private static String moveJson(Lift lift, int position) {
+        return "{ \"liftId\": \"%s\", \"position\": %d }".formatted(lift.getId(), position);
+    }
 
     /** Task for Huber on {@link #DAY} at 08:00 plus the given JSON fields. */
     private String body(String moreFields) {

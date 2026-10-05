@@ -33,6 +33,12 @@
   --color-plate-border: #2b2b2b;
   --color-swiss-red: #da291c;
 
+  /* Task status – the ONLY place for these colors (F10). "Eingang" bright enough to be seen (UI review) */
+  --color-status-received: #9aa5b8;
+  --color-status-in-progress: #4c9aff;
+  --color-status-waiting: #b18cff;
+  --color-status-done: #2fbf71;
+
   /* Paper: printed task sheet and logo preview – always white, also in the dark app */
   --color-paper: #ffffff;
   --color-paper-text: #111111;

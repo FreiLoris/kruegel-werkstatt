@@ -1,0 +1,100 @@
+.card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow);
+  touch-action: manipulation;
+}
+
+.card p {
+  margin: 0;
+}
+
+/* The card under the pointer while dragging */
+.dragging {
+  cursor: grabbing;
+  opacity: 0.95;
+  outline: 2px solid var(--color-accent);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.time {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+}
+
+.customer {
+  font-weight: 600;
+}
+
+.vehicle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+/* Full text color – the old card's work line was hardly readable (UI review) */
+.work {
+  font-size: var(--font-size-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-right: auto;
+}
+
+.flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+}
+
+.flag svg,
+.print svg {
+  width: 1em;
+  height: 1em;
+}
+
+.print {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  margin: calc(var(--space-2) * -1) calc(var(--space-3) * -1) calc(var(--space-2) * -1) 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.print:hover {
+  color: var(--color-text);
+  background: var(--color-surface);
+}

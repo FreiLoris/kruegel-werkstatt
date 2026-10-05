@@ -26,6 +26,14 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
               AND ((:liftId IS NULL AND t.lift IS NULL) OR t.lift.id = :liftId)""")
     int maxSortOrder(LocalDate date, UUID liftId);
 
+    /** One lift column of a day in its order (lift empty = "not assigned yet" column). */
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.appointment.date = :date
+              AND ((:liftId IS NULL AND t.lift IS NULL) OR t.lift.id = :liftId)
+            ORDER BY t.sortOrder, t.id""")
+    List<Task> column(LocalDate date, UUID liftId);
+
     boolean existsByTaskNumberAndIdNot(String taskNumber, UUID id);
 
     /**

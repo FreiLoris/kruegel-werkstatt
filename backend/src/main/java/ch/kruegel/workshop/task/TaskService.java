@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -129,6 +130,42 @@ public class TaskService {
         Task task = find(id);
         task.changeStatus(status);
         return saved(task);
+    }
+
+    /**
+     * Drag & drop in the day view: the task goes into the column of {@code liftId} at
+     * {@code position}. BOTH affected columns are numbered 0, 1, 2 … again and saved – the old app
+     * only saved the dragged card, so the neighbours jumped back after a reload (bug #5).
+     * No version needed, like the status: moving must not fail because of an unrelated edit.
+     */
+    public List<TaskDto> move(UUID id, TaskMoveRequest request) {
+        Task task = find(id);
+        Lift target = reference(lifts, request.liftId(), task.getLift(), "liftId", "Lift", Lift::isActive, "ist ausser Betrieb");
+        LocalDate day = task.getAppointment().date();
+        boolean sameColumn = Objects.equals(target, task.getLift());
+
+        // read both columns BEFORE changing anything (check before change, no auto flush surprises)
+        List<Task> source = new ArrayList<>(repository.column(day, liftId(task.getLift())));
+        List<Task> destination = sameColumn ? source : new ArrayList<>(repository.column(day, liftId(target)));
+        source.remove(task);
+        destination.add(Math.min(request.position(), destination.size()), task);
+
+        task.moveToLift(target);
+        renumber(source);
+        renumber(destination);
+        repository.flush();
+        events.publishEvent(new DataChanged(TOPIC));
+        return destination.stream().map(TaskDto::of).toList();
+    }
+
+    private static void renumber(List<Task> column) {
+        for (int i = 0; i < column.size(); i++) {
+            column.get(i).moveTo(i);
+        }
+    }
+
+    private static UUID liftId(Lift lift) {
+        return lift == null ? null : lift.getId();
     }
 
     public TaskDto assignTaskNumber(UUID id, String taskNumber) {

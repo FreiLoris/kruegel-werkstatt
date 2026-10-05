@@ -75,6 +75,9 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Firma / Firmenprofil | company profile (`CompanyProfile`, `/api/company`) | name, address, logo – one row |
 | Briefkopf | letterhead | from the company profile |
 | Auftragszettel | task sheet (`TaskSheet`, `/tasks/:id/sheet`) | printed A4 sheet for the mechanic |
+| Termine (Tagesansicht) | day view (`DayViewPage`, `/tasks`) | one column per lift |
+| Ohne Lift | no lift (`NO_LIFT`) | column for tasks without lift |
+| Verschieben (Drag & Drop) | move (`PUT /api/tasks/{id}/move`) | both columns are renumbered |
 | Kapazitätsübersicht | capacity overview (`CapacityOverview`) | week grid, a planning aid – no capacity check |
 | Werktag | working day (`previousWorkingDay`) | Monday–Friday without public holidays (also in the frontend: `lib/calendar.ts`) |
 | MFK (Motorfahrzeugkontrolle) | `mfk` | Swiss periodic vehicle inspection – kept as a proper noun, a literal translation would be ambiguous |
