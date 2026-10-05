@@ -89,7 +89,10 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Material / Bestellung | `parts` / `PartsOrder` | |
 | Lieferant | `supplier` | |
 | Ersatzwagen | `CourtesyCar` | the loan car given to customers |
-| Ersatzwagen-Buchung | `CourtesyCarBooking` | |
+| Ersatzwagen-Buchung | `CourtesyCarBooking` (package `booking`) | one table for bookings with and without task |
+| ↳ Abholung / Rückgabe (geplant) | `pickupAt` / `returnAt` (`BookingPeriod`) | half-open: [pickup, return) |
+| ↳ zurückgegeben am | `returnedAt` | early return frees the car |
+| ↳ an wen (ohne Auftrag) | `holder` | free text |
 | ↳ Bezeichnung (des Ersatzwagens) | `name` | e.g. "Ersatzwagen 1" |
 | ↳ Modell | `model` | e.g. "VW Polo" |
 | ↳ Service fällig | `serviceDue` | |
