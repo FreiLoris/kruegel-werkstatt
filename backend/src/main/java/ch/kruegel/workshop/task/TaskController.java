@@ -75,6 +75,13 @@ class TaskController {
         return service.changeStatus(id, request.status());
     }
 
+    @Operation(summary = "Move into a lift column at a position (drag & drop)",
+            description = "Both affected columns are renumbered and saved. Returns the target column in its new order.")
+    @PutMapping("/{id}/move")
+    List<TaskDto> move(@PathVariable UUID id, @Valid @RequestBody TaskMoveRequest request) {
+        return service.move(id, request);
+    }
+
     @Operation(summary = "Set or remove the SwissGarage order number", description = "Must be unique.")
     @PutMapping("/{id}/task-number")
     TaskDto assignTaskNumber(@PathVariable UUID id, @Valid @RequestBody TaskNumberRequest request) {

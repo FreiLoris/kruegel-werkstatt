@@ -117,6 +117,11 @@ public class Task extends BaseEntity implements Sortable {
         this.sortOrder = sortOrder;
     }
 
+    /** Into another lift column (drag & drop in the day view); the position is set by the service. */
+    public void moveToLift(Lift lift) {
+        this.lift = lift;
+    }
+
     private void apply(TaskDetails details) {
         this.customer = details.customer();
         this.vehicle = details.vehicle();

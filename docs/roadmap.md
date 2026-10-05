@@ -157,9 +157,12 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   "saved" confirmation with print / next task / start; task sheet `/tasks/:id/sheet`: A4 white
   paper, letterhead from the company profile, customer address, **all ticked work as a
   checklist** (→ F1). "Neuer Auftrag" in the navigation.
-- [ ] **6f – Appointments: day view by lift**
-  Cards with mechanic + courtesy car symbol, drag & drop between lifts and within the
-  column – the order is saved for **all** affected tasks (→ bug #5).
+- [x] **6f – Appointments: day view by lift**
+  `/tasks?date=…` ("Termine"): one column per lift + "Ohne Lift"; cards with time, status
+  (colors from one place, F10), customer, vehicle, mechanic badge, waiting customer, ready by,
+  all work. Drag & drop with mouse, touch (press briefly) and keyboard; `PUT /api/tasks/{id}/move`
+  renumbers **both** affected columns (→ bug #5). Empty day: "Nächster Termin …".
+  Courtesy car symbol follows with the bookings (7c).
 - [ ] **6g – Appointments: week view**
   Drag & drop onto a date, absences visible, search over all appointments instead of only the
   current week (→ F11). Optional: take over the time when moving (→ bug #6, dead feature).

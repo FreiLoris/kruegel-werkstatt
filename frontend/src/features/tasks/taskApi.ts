@@ -37,10 +37,15 @@ export const PARTS_STATUS: Record<PartsStatus, string> = {
   ARRIVED: 'Angekommen',
 }
 
+/** Query key of a period – also used to update the day view right away when moving a card. */
+export function tasksBetweenKey(from: string, to: string) {
+  return [TOPIC, 'between', from, to] as const
+}
+
 /** Tasks of a period (both inclusive) – calendar and capacity overview. */
 export function useTasksBetween(from: string, to: string) {
   return useQuery({
-    queryKey: [TOPIC, 'between', from, to],
+    queryKey: tasksBetweenKey(from, to),
     queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })),
   })
 }
@@ -69,6 +74,26 @@ export function useCreateTask() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (request: TaskRequest) => dataOrThrow(await api.POST('/api/tasks', { body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/**
+ * Drag & drop: the card is shown at its new place right away (`arranged` = all tasks of the day
+ * in their new order); if the server refuses, the day jumps back. The server renumbers both columns.
+ */
+export function useMoveTask(dayKey: ReturnType<typeof tasksBetweenKey>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, liftId, position }: { id: string; liftId: string | null; position: number; arranged: Task[] }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/move', { params: { path: { id } }, body: { liftId, position } })),
+    onMutate: async ({ arranged }) => {
+      await queryClient.cancelQueries({ queryKey: dayKey })
+      const previous = queryClient.getQueryData<Task[]>(dayKey)
+      queryClient.setQueryData(dayKey, arranged)
+      return { previous }
+    },
+    onError: (_error, _move, context) => queryClient.setQueryData(dayKey, context?.previous),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
