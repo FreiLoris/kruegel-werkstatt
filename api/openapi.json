@@ -636,7 +636,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Which courtesy cars are free in [from, to)",
+        "summary" : "Which courtesy cars are free in [from, to) – max. 92 days",
         "tags" : [ "Courtesy car bookings" ]
       }
     },

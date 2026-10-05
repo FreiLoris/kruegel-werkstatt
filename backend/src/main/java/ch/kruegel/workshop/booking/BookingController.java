@@ -48,7 +48,7 @@ class BookingController {
         return service.ofTask(taskId);
     }
 
-    @Operation(summary = "Which courtesy cars are free in [from, to)",
+    @Operation(summary = "Which courtesy cars are free in [from, to) – max. 92 days",
             description = "The ONE availability check for wizard, task and courtesy car page. "
                     + "`excludeBookingId`: a booking that is being moved does not count against itself.")
     @GetMapping("/availability")
