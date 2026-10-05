@@ -215,9 +215,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   Wizard: section "Ersatzwagen", pickup/return follow "kommt früher"/start and "fertig bis"/end until
   changed; task and booking saved together (`POST /api/tasks/with-courtesy-car`, both or neither).
   Task detail: book, change, cancel, "ist zurück" (from pickup on) and undo.
-- [ ] **7d – Courtesy car page**
+- [x] **7d – Courtesy car page**
   Cards with correct status, occupancy calendar (free/booked clearly visible),
   drag booking, period changeable in the panel (→ F12).
+  Page `/courtesy-cars` in the main navigation: cards (free / unterwegs / überfällig, next
+  reservation, service & insurance), 14-day calendar (drag open free days, drag planned bookings to
+  another day/car, click = panel), panel with editable period, return, cancel, link to the task.
+  Availability also says when a car is overdue (not back) – a warning, not a conflict.
 
 ## Phase 8 – To-dos & pinboard
 

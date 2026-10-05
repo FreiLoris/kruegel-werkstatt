@@ -22,7 +22,8 @@ const split = (dateTime: string | null): [string, string] => (dateTime ? [dateTi
 
 /**
  * Pickup, return and every courtesy car with "frei" or who has it when (7c, bug #2: one check for
- * all views – the server's availability). Only a free car can be chosen.
+ * all views – the server's availability). Only a free car can be chosen; a car that is overdue
+ * (not back yet) stays choosable but says so (7d).
  */
 export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesyCarId, onCarChange, excludeBookingId, name }: CourtesyCarPickerProps) {
   const [pickupDate, pickupTime] = split(pickupAt)
@@ -87,6 +88,11 @@ export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesy
                       vergeben an {b.holderName}, {formatLocalDateTime(b.pickupAt)} – {formatLocalDateTime(b.blockedUntil)}
                     </span>
                   ))}
+                </span>
+              )}
+              {car.overdue && (
+                <span className={styles.overdue}>
+                  Achtung: noch nicht zurück von {car.overdue.holderName} (fällig {formatLocalDateTime(car.overdue.returnAt)})
                 </span>
               )}
             </label>

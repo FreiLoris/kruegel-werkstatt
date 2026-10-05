@@ -32,6 +32,15 @@ export function useAvailability(from: string | null, to: string | null, excludeB
   })
 }
 
+/** Bookings whose planned period touches [from, to) – courtesy car page (max. 92 days). */
+export function useBookingsBetween(from: string, to: string) {
+  return useQuery({
+    queryKey: [TOPIC, 'period', from, to],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/courtesy-car-bookings', { params: { query: { from, to } }, signal })),
+    placeholderData: keepPreviousData,
+  })
+}
+
 /** Bookings of a task (task detail, task sheet). */
 export function useTaskBookings(taskId: string) {
   return useQuery({

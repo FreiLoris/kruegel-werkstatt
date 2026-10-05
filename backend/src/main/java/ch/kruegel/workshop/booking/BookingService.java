@@ -67,7 +67,8 @@ public class BookingService {
     }
 
     /**
-     * Every courtesy car in service with "free" or the bookings in the way.
+     * Every courtesy car in service with "free" or the bookings in the way – and whether it is still
+     * out although it should be back (overdue: the planned period is free, but the car may not be there).
      *
      * @param excludeBookingId a booking that is being moved – it does not count against itself
      */
@@ -75,12 +76,16 @@ public class BookingService {
     public List<AvailabilityDto> availability(LocalDateTime from, LocalDateTime to, UUID excludeBookingId) {
         checkQueryPeriod(from, to);
         BookingPeriod period = new BookingPeriod(from, to);
+        LocalDateTime now = LocalDateTime.now(clock);
         return cars.findByActiveTrueOrderBySortOrderAscNameAsc().stream()
                 .map(car -> {
                     List<BookingDto> conflicts = repository.blocking(car.getId(), period.pickupAt(), period.returnAt(), excludeBookingId)
                             .stream().map(BookingDto::of).toList();
+                    BookingDto overdue = repository
+                            .findByCourtesyCarIdAndReturnedAtIsNullAndPeriodReturnAtLessThanEqualOrderByPeriodReturnAt(car.getId(), now)
+                            .stream().findFirst().map(BookingDto::of).orElse(null);
                     return new AvailabilityDto(car.getId(), car.getName(), car.getModel(), car.getLicensePlate(),
-                            conflicts.isEmpty(), conflicts);
+                            conflicts.isEmpty(), conflicts, overdue);
                 })
                 .toList();
     }

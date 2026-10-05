@@ -12,5 +12,7 @@ public record AvailabilityDto(
         @Schema(types = {"string", "null"}) String model,
         @Schema(types = {"string", "null"}) String licensePlate,
         boolean available,
-        @Schema(description = "Bookings that overlap the period; empty when available") List<BookingDto> conflicts) {
+        @Schema(description = "Bookings that overlap the period; empty when available") List<BookingDto> conflicts,
+        @Schema(types = {"object", "null"}, description = "The car is not back although it should be – it may still be "
+                + "late for the asked period. A warning, not a conflict: the period is free as planned.") BookingDto overdue) {
 }
