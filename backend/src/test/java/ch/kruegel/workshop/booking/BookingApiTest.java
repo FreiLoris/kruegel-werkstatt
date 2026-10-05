@@ -129,6 +129,20 @@ class BookingApiTest {
     }
 
     @Test
+    void aCarNotBackIsMarkedOverdueButStaysBookable() {
+        String yesterday = LocalDate.now().minusDays(1).toString();
+        send("POST", "/api/courtesy-car-bookings", """
+                { "courtesyCarId": "%s", "holder": "Frau Spät", "pickupAt": "%sT08:00", "returnAt": "%sT12:00" }"""
+                .formatted(polo.getId(), yesterday, yesterday));
+
+        MvcTestResult response = availability("08:00", "17:00", null);
+
+        assertThat(response).bodyJson().extractingPath("$[0].available").isEqualTo(true);
+        assertThat(response).bodyJson().extractingPath("$[0].overdue.holderName").isEqualTo("Frau Spät");
+        assertThat(response).bodyJson().extractingPath("$[1].overdue").isNull();
+    }
+
+    @Test
     void withoutTaskSomeoneMustBeNamed() {
         assertFieldError(book(polo, null, "08:00", "17:00"), "holder");
         assertThat(book(polo, "\"holder\": \"Frau Muster\"", "08:00", "17:00"))

@@ -96,6 +96,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ zurückgegeben am | `returnedAt` | early return frees the car |
 | ↳ an wen (ohne Auftrag) | `holder` | free text |
 | Verfügbarkeit (Ersatzwagen) | availability (`AvailabilityDto`) | one check for every view |
+| Belegungskalender | `OccupancyCalendar`, `occupancy.ts` | rows = cars, columns = days, bookings as bars |
+| überfällig (Ersatzwagen) | `overdue` | should be back, is not – warning in the availability |
 | Auftrag mit Ersatzwagen (Wizard) | `TaskWithBookingService`, `POST /api/tasks/with-courtesy-car` | both saved or neither |
 | Rückgabe erfassen | record the return | |
 | stornieren | cancel (a booking) | deletes it |

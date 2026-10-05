@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router'
+import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { HomePage } from '../features/home/HomePage'
 import { SettingsPage } from '../features/settings/SettingsPage'
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: 'employees', element: <EmployeesPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
+      { path: 'courtesy-cars', element: <CourtesyCarsPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },

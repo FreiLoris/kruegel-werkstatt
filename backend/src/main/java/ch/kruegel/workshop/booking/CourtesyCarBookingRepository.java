@@ -38,4 +38,9 @@ public interface CourtesyCarBookingRepository extends JpaRepository<CourtesyCarB
 
     @EntityGraph(attributePaths = {"courtesyCar", "task", "task.customer"})
     List<CourtesyCarBooking> findByTaskIdOrderByPeriodPickupAt(UUID taskId);
+
+    /** Bookings of a car that should be back by {@code now} but are not – oldest first. */
+    @EntityGraph(attributePaths = {"courtesyCar", "task", "task.customer"})
+    List<CourtesyCarBooking> findByCourtesyCarIdAndReturnedAtIsNullAndPeriodReturnAtLessThanEqualOrderByPeriodReturnAt(
+            UUID courtesyCarId, LocalDateTime now);
 }

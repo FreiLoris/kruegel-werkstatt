@@ -1,28 +1,14 @@
 import { CarFront, Pencil, Plus, RotateCcw, Undo2, X } from 'lucide-react'
 import { useState } from 'react'
-import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
-import { useConfirm } from '../../components/ui/confirmContext'
-import { TextField } from '../../components/ui/Fields'
-import { useToast } from '../../components/ui/toastContext'
-import { formatLocalDateTime, nowTimeIso, todayIso } from '../../lib/format'
+import { formatLocalDateTime } from '../../lib/format'
 import { useAllCourtesyCars } from '../courtesy-cars/courtesyCarApi'
 import type { Task } from '../tasks/taskApi'
-import { useCancelBooking, useReturn, useSaveBooking, useTaskBookings, type Booking } from './bookingApi'
-import { CourtesyCarPicker } from './CourtesyCarPicker'
+import { useTaskBookings, type Booking } from './bookingApi'
+import { BookingEditor } from './BookingEditor'
+import { minutesOf } from './occupancy'
 import styles from './CourtesyCarPanel.module.css'
-
-/** "2026-10-15T08:00:00" → "2026-10-15T08:00" – the form works with minutes */
-const minutes = (dateTime: string) => dateTime.slice(0, 16)
-
-interface Draft {
-  /** empty = new booking */
-  booking?: Booking
-  pickupAt: string
-  returnAt: string
-  courtesyCarId: string
-  notes: string
-}
+import { useBookingActions } from './useBookingActions'
 
 /**
  * Courtesy car of a task (7c): what is booked, with return and changes – or book one. A new
@@ -31,121 +17,31 @@ interface Draft {
 export function CourtesyCarPanel({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const bookings = useTaskBookings(task.id)
   const { data: cars } = useAllCourtesyCars()
-  const save = useSaveBooking()
-  const cancel = useCancelBooking()
-  const giveBack = useReturn()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const [draft, setDraft] = useState<Draft | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
   const carName = (id: string) => cars?.find((c) => c.id === id)?.name ?? 'Ersatzwagen'
-  // a car can only come back once it has been picked up
-  const now = `${todayIso()}T${nowTimeIso()}`
-
-  function startNew() {
-    setError(null)
-    setDraft({
-      pickupAt: minutes(task.arrivesEarlier ?? `${task.date}T${task.time}`),
-      returnAt: minutes(task.readyBy ?? task.endAt),
-      courtesyCarId: '',
-      notes: '',
-    })
-  }
-
-  function startEdit(booking: Booking) {
-    setError(null)
-    setDraft({
-      booking,
-      pickupAt: minutes(booking.pickupAt),
-      returnAt: minutes(booking.returnAt),
-      courtesyCarId: booking.courtesyCarId,
-      notes: booking.notes ?? '',
-    })
-  }
-
-  function submit() {
-    if (!draft) return
-    if (!draft.courtesyCarId) {
-      setError('Einen freien Ersatzwagen wählen')
-      return
-    }
-    save.mutate(
-      {
-        id: draft.booking?.id,
-        request: {
-          courtesyCarId: draft.courtesyCarId,
-          taskId: draft.booking ? undefined : task.id,
-          pickupAt: draft.pickupAt,
-          returnAt: draft.returnAt,
-          notes: draft.notes.trim() || undefined,
-          version: draft.booking?.version,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success(draft.booking ? 'Buchung geändert' : 'Ersatzwagen gebucht')
-          setDraft(null)
-        },
-        onError: (e) => setError(reasonOf(e)),
-      },
-    )
-  }
-
-  async function cancelBooking(booking: Booking) {
-    const ok = await confirm({
-      title: 'Buchung stornieren?',
-      text: `${carName(booking.courtesyCarId)} ist dann ab ${formatLocalDateTime(booking.pickupAt)} wieder frei.`,
-      confirmLabel: 'Stornieren',
-      dangerous: true,
-    })
-    if (!ok) return
-    cancel.mutate(booking.id, {
-      onSuccess: () => toast.success('Buchung storniert'),
-      onError: (e) => toast.error(`Stornieren fehlgeschlagen: ${reasonOf(e)}`),
-    })
-  }
-
-  function setReturned(booking: Booking, undo: boolean) {
-    giveBack.mutate(
-      { id: booking.id, undo },
-      {
-        onSuccess: () => toast.success(undo ? 'Rückgabe rückgängig gemacht' : `${carName(booking.courtesyCarId)} ist zurück`),
-        onError: (e) => toast.error(reasonOf(e)),
-      },
-    )
-  }
+  const actions = useBookingActions(carName)
+  // null = list; 'new' = book one; a booking = change it
+  const [editing, setEditing] = useState<Booking | 'new' | null>(null)
 
   if (bookings.error) return <p className="muted">Buchungen konnten nicht geladen werden: {bookings.error.message}</p>
   if (!bookings.data) return <p className="muted">Lade …</p>
 
-  if (draft) {
+  if (editing) {
+    const initial =
+      editing === 'new'
+        ? {
+            courtesyCarId: '',
+            pickupAt: minutesOf(task.arrivesEarlier ?? `${task.date}T${task.time}`),
+            returnAt: minutesOf(task.readyBy ?? task.endAt),
+          }
+        : { courtesyCarId: editing.courtesyCarId, pickupAt: minutesOf(editing.pickupAt), returnAt: minutesOf(editing.returnAt) }
     return (
-      <div className={styles.editor}>
-        <CourtesyCarPicker
-          name={`courtesy-car-${task.id}`}
-          pickupAt={draft.pickupAt}
-          returnAt={draft.returnAt}
-          onPeriodChange={(pickupAt, returnAt) => setDraft({ ...draft, pickupAt, returnAt })}
-          courtesyCarId={draft.courtesyCarId}
-          onCarChange={(courtesyCarId) => setDraft({ ...draft, courtesyCarId })}
-          excludeBookingId={draft.booking?.id}
-        />
-        <TextField label="Notiz" value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
-        {error && (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        )}
-        <div className={styles.actions}>
-          <Button onClick={() => setDraft(null)} disabled={save.isPending}>
-            Abbrechen
-          </Button>
-          <Button variant="primary" onClick={submit} loading={save.isPending}>
-            {draft.booking ? 'Änderung speichern' : 'Buchen'}
-          </Button>
-        </div>
-      </div>
+      <BookingEditor
+        booking={editing === 'new' ? undefined : editing}
+        taskId={task.id}
+        initial={initial}
+        onSaved={() => setEditing(null)}
+        onCancel={() => setEditing(null)}
+      />
     )
   }
 
@@ -165,20 +61,20 @@ export function CourtesyCarPanel({ task, canEdit }: { task: Task; canEdit: boole
           {canEdit && (
             <div className={styles.actions}>
               {booking.returnedAt ? (
-                <Button small icon={Undo2} onClick={() => setReturned(booking, true)} loading={giveBack.isPending}>
+                <Button small icon={Undo2} onClick={() => actions.setReturned(booking, true)} loading={actions.pending}>
                   Rückgabe rückgängig
                 </Button>
               ) : (
                 <>
-                  {minutes(booking.pickupAt) <= now && (
-                    <Button small icon={RotateCcw} onClick={() => setReturned(booking, false)} loading={giveBack.isPending}>
+                  {actions.canReturn(booking) && (
+                    <Button small icon={RotateCcw} onClick={() => actions.setReturned(booking, false)} loading={actions.pending}>
                       Ist zurück
                     </Button>
                   )}
-                  <Button small icon={Pencil} onClick={() => startEdit(booking)}>
+                  <Button small icon={Pencil} onClick={() => setEditing(booking)}>
                     Ändern
                   </Button>
-                  <Button small variant="ghost" icon={X} onClick={() => void cancelBooking(booking)}>
+                  <Button small variant="ghost" icon={X} onClick={() => void actions.cancelBooking(booking)}>
                     Stornieren
                   </Button>
                 </>
@@ -189,7 +85,7 @@ export function CourtesyCarPanel({ task, canEdit }: { task: Task; canEdit: boole
       ))}
       {/* a second car only once the first is back – one customer, one courtesy car at a time */}
       {canEdit && bookings.data.every((b) => b.returnedAt) && (
-        <Button small icon={Plus} onClick={startNew}>
+        <Button small icon={Plus} onClick={() => setEditing('new')}>
           Ersatzwagen buchen
         </Button>
       )}
