@@ -55,6 +55,21 @@ class CustomerImportApiTest {
     }
 
     @Test
+    void secondBlockWithTheSameHeadersDoesNotOverwriteTheCustomer() {
+        // like the real export: "Kundenzusatz" columns with the same names further right, mostly empty
+        String[] withAdditionBlock = {"Adressart", "Name", "Vorname", "PLZ", "Ort", "Adressnummer",
+                "Kundenzusatz Anrede", "Name", "Vorname", "PLZ", "Ort"};
+
+        MvcTestResult response = upload(TestExcel.with(withAdditionBlock)
+                .row("Garage-Kunde", "Huber", "Peter", 8400, "Winterthur", 1001, null, null, null, null, null)
+                .bytes(), "Adrliste.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.created").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.skipped").isEqualTo(0);
+        assertThat(customers.findBySwissgarageNumber("1001").orElseThrow().getDetails().lastName()).isEqualTo("Huber");
+    }
+
+    @Test
     void importsGarageCustomersAndSkipsTheRest() {
         byte[] file = TestExcel.with(HEADERS)
                 .row("Garage-Kunde", "Herr", "Huber", "Peter", null, "Musterstrasse 1", 8400, "Winterthur", "052 000 00 01", null, "p@example.ch", 1001)
