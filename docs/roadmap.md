@@ -189,8 +189,11 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   free-text holder. The database prevents overlapping bookings of the same car (exclusion
   constraint, `btree_gist`), half-open periods, an early return frees the car, a late return can
   still be recorded. (→ bug #2, F2)
-- [ ] **7b – Availability & booking API**
-  One single availability check for wizard, task and courtesy car page. Record the return.
+- [x] **7b – Availability & booking API**
+  `GET /api/courtesy-car-bookings/availability?from&to` – THE check for wizard, task and courtesy car
+  page (free, or the bookings in the way; a booking being moved does not count against itself).
+  Book (task or holder), move, cancel, record the return (empty = now) and undo it. Overlaps → 409
+  naming the booking in the way; a race between two devices gets the same friendly message.
 - [ ] **7c – Booking in a task**
   Selection in wizard/task with an understandable availability table.
 - [ ] **7d – Courtesy car page**

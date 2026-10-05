@@ -93,6 +93,9 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ Abholung / Rückgabe (geplant) | `pickupAt` / `returnAt` (`BookingPeriod`) | half-open: [pickup, return) |
 | ↳ zurückgegeben am | `returnedAt` | early return frees the car |
 | ↳ an wen (ohne Auftrag) | `holder` | free text |
+| Verfügbarkeit (Ersatzwagen) | availability (`AvailabilityDto`) | one check for every view |
+| Rückgabe erfassen | record the return | |
+| stornieren | cancel (a booking) | deletes it |
 | ↳ Bezeichnung (des Ersatzwagens) | `name` | e.g. "Ersatzwagen 1" |
 | ↳ Modell | `model` | e.g. "VW Polo" |
 | ↳ Service fällig | `serviceDue` | |
