@@ -162,6 +162,7 @@ Overview of all components with examples: http://localhost:5173/system/component
 | Required vs. optional input | Jackson 3 refuses a missing value for `boolean`/`int`. Primitive = required, mark it `@Schema(requiredMode = REQUIRED)` (`EmployeeRequest`). Optional tick = `Boolean`, normalised to `false` in the compact constructor (`TaskRequest`). |
 | Create | `POST /api/<topic>` → **201** with `Location` header |
 | Edit | `PUT /api/<topic>/{id}` with `version` → 409 for a stale state |
+| Version in the frontend | Send the version **as it was when the form opened** (snapshot in `useState`), never the live one from the query – live updates refresh the query, and the newest version would silently overwrite another device's change. Never use the version as React `key` of a form: a live update would throw away what is being typed. |
 | Delete | Master data other data refers to is **deactivated** (`POST …/{id}/deactivate`), not deleted |
 | Delete (other data) | `DELETE /api/<topic>/{id}` → **204**, logged with the person (e.g. tasks) |
 | Rule needs the database | check in the service and `throw new InvalidInputException("field", "…")` → appears at the form field |

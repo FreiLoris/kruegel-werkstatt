@@ -58,7 +58,11 @@ export function DayBoard({ columns, tasks, dayKey, employees, serviceItemNames, 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    // Enter opens the task – only space picks a card up
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space'] },
+    }),
   )
 
   const byId = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks])

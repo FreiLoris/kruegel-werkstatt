@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { Customer, Vehicle } from '../../customers/customerSearchApi'
+import type { Task } from '../taskApi'
 import {
   appointmentErrors,
+  customerStepFromTask,
   EMPTY_APPOINTMENT,
+  formFromTask,
   toTaskRequest,
   withArrivesEarlier,
   withDate,
@@ -106,10 +109,60 @@ describe('toTaskRequest', () => {
       parts: undefined,
       workDescription: undefined,
       notes: undefined,
+      version: undefined,
     })
   })
 
   it('vehicle still open → no vehicle', () => {
     expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, THURSDAY).vehicleId).toBeUndefined()
+  })
+})
+
+describe('formFromTask', () => {
+  const task = {
+    customer: { id: 'c1' },
+    vehicle: null,
+    date: '2026-10-15',
+    time: '08:00:00',
+    arrivesEarlier: '2026-10-14T17:00:00',
+    readyBy: null,
+    waitingCustomer: true,
+    mechanicId: 'm1',
+    liftId: null,
+    tireChange: true,
+    tireChangeKind: 'WHEELS_STORED',
+    mfk: true,
+    mfkAppointment: '2026-10-15T10:30:00',
+    serviceItemIds: ['oil'],
+    parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: null },
+    workDescription: 'Geräusch',
+    notes: null,
+  } as unknown as Task
+
+  it('fills the form so that saving gives the same task back', () => {
+    const form = formFromTask(task)
+    const request = toTaskRequest(customerStepFromTask(task), form, 3)
+
+    expect(request).toMatchObject({
+      customerId: 'c1',
+      vehicleId: undefined,
+      date: '2026-10-15',
+      time: '08:00',
+      arrivesEarlier: '2026-10-14T17:00',
+      waitingCustomer: true,
+      mechanicId: 'm1',
+      liftId: undefined,
+      tireChangeKind: 'WHEELS_STORED',
+      mfkAppointment: '2026-10-15T10:30',
+      serviceItemIds: ['oil'],
+      parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: undefined },
+      workDescription: 'Geräusch',
+      notes: undefined,
+      version: 3,
+    })
+  })
+
+  it('a task without vehicle stays "vehicle open"', () => {
+    expect(customerStepFromTask(task).vehicle).toEqual({ kind: 'open' })
   })
 })

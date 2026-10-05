@@ -23,15 +23,22 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
 
 /**
  * One task in the day view: time, status, customer, vehicle, mechanic (UI review: was missing)
- * and all work in readable contrast. The rest of the props make it draggable.
+ * and all work in readable contrast. Click or Enter opens the task; the rest of the props make it
+ * draggable (keyboard: space picks it up).
  */
-export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, className, ...rest }: TaskCardProps) {
+export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, className, onKeyDown, ...rest }: TaskCardProps) {
   const navigate = useNavigate()
   const work = workSummary(task, serviceItemNames)
+  const open = () => navigate(`/tasks/${task.id}`)
 
   return (
     <div
       className={[styles.card, statusAccentClass(task.status), dragging && styles.dragging, className].filter(Boolean).join(' ')}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') open()
+        else onKeyDown?.(e)
+      }}
       {...rest}
     >
       <div className={styles.top}>
@@ -67,7 +74,11 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
         <button
           type="button"
           className={styles.print}
-          onClick={() => navigate(`/tasks/${task.id}/sheet`)}
+          onClick={(e) => {
+            // the sheet, not the task behind the card
+            e.stopPropagation()
+            navigate(`/tasks/${task.id}/sheet`)
+          }}
           // Enter/space here open the sheet – they must not pick up the card for keyboard dragging
           onKeyDown={(e) => e.stopPropagation()}
           aria-label={`Auftragszettel ${task.customer.displayName}`}

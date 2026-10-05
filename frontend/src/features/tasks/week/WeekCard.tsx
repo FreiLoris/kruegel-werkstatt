@@ -1,5 +1,6 @@
 import { Hourglass } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
+import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { formatTime } from '../../../lib/format'
 import type { Employee } from '../../employees/employeeApi'
@@ -17,12 +18,22 @@ interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
   ref?: Ref<HTMLDivElement>
 }
 
-/** Compact card for the week: time, customer, plate, lift and mechanic. Status as colored bar + tooltip. */
-export function WeekCard({ task, mechanic, liftName, dragging = false, className, ...rest }: WeekCardProps) {
+/**
+ * Compact card for the week: time, customer, plate, lift and mechanic. Status as colored bar +
+ * tooltip. Click or Enter opens the task; keyboard dragging starts with space.
+ */
+export function WeekCard({ task, mechanic, liftName, dragging = false, className, onKeyDown, ...rest }: WeekCardProps) {
+  const navigate = useNavigate()
+  const open = () => navigate(`/tasks/${task.id}`)
   return (
     <div
       className={[styles.card, statusAccentClass(task.status), dragging && styles.dragging, className].filter(Boolean).join(' ')}
       title={TASK_STATUS[task.status]}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') open()
+        else onKeyDown?.(e)
+      }}
       {...rest}
     >
       <div className={styles.top}>

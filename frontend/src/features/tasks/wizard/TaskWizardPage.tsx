@@ -1,11 +1,11 @@
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ApiError, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
 import { useToast } from '../../../components/ui/toastContext'
-import { todayIso } from '../../../lib/format'
-import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
+import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTask, type Task } from '../taskApi'
 import { appointmentErrors, EMPTY_APPOINTMENT, toTaskRequest, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
@@ -32,7 +32,7 @@ export function TaskWizardPage() {
   const [showRequired, setShowRequired] = useState(false)
   const [saved, setSaved] = useState<Task | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
-  const holidays = useHolidaysAroundToday()
+  const holidays = useHolidayNames()
   const create = useCreateTask()
   const toast = useToast()
 
@@ -87,7 +87,7 @@ export function TaskWizardPage() {
   }
 
   return (
-    <div className={styles.page}>
+    <>
       <h1>Neuer Auftrag</h1>
       <ol className={styles.steps} aria-label="Schritte">
         {STEPS.map((title, index) => (
@@ -110,8 +110,8 @@ export function TaskWizardPage() {
       )}
       {step === 3 && <ReviewStep customerStep={customerStep} appointment={appointment} onEdit={setStep} serverErrors={serverErrors} />}
 
-      {/* Always visible at the bottom – the buttons are never cut off or scrolled away (UI review) */}
-      <footer className={styles.footer}>
+      <StickyFooterSpacer />
+      <StickyFooter>
         {step === 1 && (
           <>
             <span className="muted">{customerStepComplete ? '' : 'Kunde wählen und Fahrzeug festlegen (oder «noch offen»)'}</span>
@@ -141,8 +141,8 @@ export function TaskWizardPage() {
             </Button>
           </>
         )}
-      </footer>
-    </div>
+      </StickyFooter>
+    </>
   )
 }
 
@@ -165,11 +165,4 @@ function ChosenCustomer({ value, onChange }: { value: CustomerStepValue; onChang
       </Button>
     </p>
   )
-}
-
-/** Holidays of last, this and next year as date → name – enough for every appointment that is planned. */
-function useHolidaysAroundToday(): ReadonlyMap<string, string> {
-  const year = Number(todayIso().slice(0, 4))
-  const { data } = usePublicHolidays(`${year - 1}-01-01`, `${year + 1}-12-31`)
-  return useMemo(() => new Map((data ?? []).map((holiday) => [holiday.date, holiday.name])), [data])
 }

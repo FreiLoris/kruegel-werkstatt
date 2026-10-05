@@ -6,7 +6,7 @@ import { Button } from '../../../components/ui/Button'
 import { formatCount } from '../../../lib/format'
 import type { Customer, Vehicle } from '../../customers/customerSearchApi'
 import { MfkHint } from '../../vehicles/MfkHint'
-import { NewVehicleDialog } from '../../vehicles/NewVehicleDialog'
+import { VehicleDialog } from '../../vehicles/VehicleDialog'
 import { useVehiclesOfCustomer } from '../../vehicles/vehicleApi'
 import styles from './VehiclePicker.module.css'
 import type { VehicleChoice } from './wizardState'
@@ -69,10 +69,10 @@ export function VehiclePicker({
       )}
 
       {newVehicleOpen && (
-        <NewVehicleDialog
+        <VehicleDialog
           customerId={customer.id}
           fromSwissGarage={customer.source === 'SWISSGARAGE'}
-          onCreated={(vehicle) => {
+          onSaved={(vehicle) => {
             setNewVehicleOpen(false)
             onChange({ kind: 'vehicle', vehicle })
           }}

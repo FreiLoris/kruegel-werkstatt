@@ -1,6 +1,6 @@
 import { previousWorkingDay } from '../../../lib/calendar'
 import { addDays } from '../../../lib/format'
-import type { PartsStatus, TaskRequest, TireChangeKind } from '../taskApi'
+import type { PartsStatus, Task, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
 /**
@@ -147,8 +147,8 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   return errors
 }
 
-/** Form → JSON for POST /api/tasks. Unticked options are left out completely. */
-export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm): TaskRequest {
+/** Form → JSON for POST/PUT /api/tasks. Unticked options are left out; `version` only when editing. */
+export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, version?: number): TaskRequest {
   if (!step1.customer) throw new Error('Step 1 not complete')
   const text = (value: string) => value.trim() || undefined
   return {
@@ -176,5 +176,51 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm): 
       : undefined,
     workDescription: text(form.workDescription),
     notes: text(form.notes),
+    version,
   }
+}
+
+/** "2026-10-14T17:00:00" → ["2026-10-14", "17:00"] – the form works with minutes */
+function split(dateTime: string | null): [string, string] {
+  if (!dateTime) return ['', '']
+  const [date, time] = dateTime.split('T')
+  return [date, time.slice(0, 5)]
+}
+
+/** A saved task back into the form – for editing. The opposite of {@link toTaskRequest}. */
+export function formFromTask(task: Task): AppointmentForm {
+  const [arrivesEarlierDate, arrivesEarlierTime] = split(task.arrivesEarlier)
+  const [readyByDate, readyByTime] = split(task.readyBy)
+  const [mfkDate, mfkTime] = split(task.mfkAppointment)
+  return {
+    date: task.date,
+    time: task.time.slice(0, 5),
+    arrivesEarlier: task.arrivesEarlier !== null,
+    arrivesEarlierDate,
+    arrivesEarlierTime: arrivesEarlierTime || EVENING,
+    readyBy: task.readyBy !== null,
+    readyByDate,
+    readyByTime: readyByTime || EVENING,
+    waitingCustomer: task.waitingCustomer,
+    mechanicId: task.mechanicId ?? '',
+    liftId: task.liftId ?? '',
+    tireChange: task.tireChange,
+    tireChangeKind: task.tireChangeKind ?? '',
+    mfk: task.mfk,
+    mfkDate,
+    mfkTime,
+    serviceItemIds: task.serviceItemIds,
+    parts: task.parts !== null,
+    partsDescription: task.parts?.description ?? '',
+    partsStatus: task.parts?.status ?? 'TO_ORDER',
+    partsSupplier: task.parts?.supplier ?? '',
+    partsOrderedOn: task.parts?.orderedOn ?? '',
+    workDescription: task.workDescription ?? '',
+    notes: task.notes ?? '',
+  }
+}
+
+/** Customer and vehicle of a saved task as step 1 value. */
+export function customerStepFromTask(task: Task): CustomerStepValue {
+  return { customer: task.customer, vehicle: task.vehicle ? { kind: 'vehicle', vehicle: task.vehicle } : { kind: 'open' } }
 }
