@@ -263,9 +263,14 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 ## Phase 9 – Absences & employee calendar
 
-- [ ] **9a – Absence data model & API**
+- [x] **9a – Absence data model & API**
   Category as enum (vacation, sick, external work + company, training) (→ bug #1).
   Then show absences in the week view of the appointments (left open in 6g).
+  Done: `absence` table (V18) with half days (first day from noon, last day until noon), company
+  only for external work, no overlap per person – the service names who/what is in the way, the
+  DB constraint (`EXCLUDE USING gist`) is the safety net. `/api/absences` (list by period/person,
+  create, change with version, delete). Week view: chips "Name · Kategorie (Vormittag)" under each
+  day's head, category color + text.
 - [ ] **9b – Calendar page**
   Continuous bars instead of single boxes, fixed column width, 4 distinguishable colors,
   weekends + public holidays marked, drag selection → entry, always loads (→ F3).

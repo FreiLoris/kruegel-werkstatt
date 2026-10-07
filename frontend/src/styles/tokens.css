@@ -39,6 +39,13 @@
   --color-status-waiting: #b18cff;
   --color-status-done: #2fbf71;
 
+  /* Absence categories – the ONLY place for these colors. Four clearly different hues (UI review:
+     all four were the same brown), also distinct from the task status colors */
+  --color-absence-vacation: #22c3b5;
+  --color-absence-sick: #ff7a7a;
+  --color-absence-external: #ff9442;
+  --color-absence-training: #e07be0;
+
   /* Paper: printed task sheet and logo preview – always white, also in the dark app */
   --color-paper: #ffffff;
   --color-paper-text: #111111;

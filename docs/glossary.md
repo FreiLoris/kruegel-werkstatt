@@ -117,7 +117,10 @@ If a term is missing: add it here in the same pull request that introduces it.
 | verantwortlich (To-do) | `assignee` | an employee "für To-dos wählbar" |
 | Frist (To-do) | `dueDate` | |
 | erledigt (am / von) | `doneAt` / `doneBy` | undo = open again |
-| Abwesenheit (Ferien, Krank, Kurs, Fremdarbeit) | `Absence` (`VACATION`, `SICK`, `TRAINING`, `EXTERNAL_WORK`) | |
+| Abwesenheit (Ferien, Krank, Kurs, Fremdarbeit) | `Absence` (package `absence`; `AbsenceCategory` `VACATION`, `SICK`, `TRAINING`, `EXTERNAL_WORK`) | no overlap per person (DB constraint `absence_no_overlap`) |
+| Firma (bei Fremdarbeit) | `company` | required for external work only, dropped otherwise |
+| Zeitraum (von – bis, ganze/halbe Tage) | `AbsencePeriod` (`startDate`, `startsAfternoon`, `endDate`, `endsNoon`) | half day = morning until 12:00 / afternoon from 12:00 |
+| Vormittag / Nachmittag | `morning` / `afternoon` (`DayPart`) | how one day of an absence is shown |
 | Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
 | Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |
 | Ostersonntag | `EasterSunday` | basis for the moving holidays |
