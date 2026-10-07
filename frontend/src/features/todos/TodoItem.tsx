@@ -20,13 +20,15 @@ interface TodoItemProps {
   showTask?: boolean
   /** show the shopping list tick in the edit form */
   withShopping?: boolean
+  /** say "Pinnwand" for a sub-task of a note (not inside the note itself) */
+  showNote?: boolean
 }
 
 /**
  * One to-do: ticked off ONLY with the checkbox (F5: the old dashboard ticked off on any click),
  * done ones show who and when with "Rückgängig". Edit in place, delete after asking.
  */
-export function TodoItem({ todo, canEdit, showTask = false, withShopping = false }: TodoItemProps) {
+export function TodoItem({ todo, canEdit, showTask = false, withShopping = false, showNote = true }: TodoItemProps) {
   const navigate = useNavigate()
   const setDone = useSetTodoDone()
   const remove = useDeleteTodo()
@@ -86,7 +88,7 @@ export function TodoItem({ todo, canEdit, showTask = false, withShopping = false
             {todo.dueDate && <span className={[styles.due, styles[due]].join(' ')}>{dueLabel(todo.dueDate, today)}</span>}
           </>
         )}
-        {todo.noteId && (
+        {showNote && todo.noteId && (
           <span className={styles.fromNote} title="Aufgabe aus einer Pinnwand-Notiz">
             <StickyNote aria-hidden /> Pinnwand
           </span>

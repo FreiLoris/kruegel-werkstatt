@@ -119,6 +119,23 @@ public class NoteService {
         return dto;
     }
 
+    /**
+     * Drag & drop on the pinboard: from one person's column (empty = "Neu") to another's. No version
+     * needed – like moving a task, it must not fail because someone edited the text meanwhile.
+     */
+    public NoteDto move(UUID id, UUID fromEmployeeId, UUID toEmployeeId) {
+        Note note = find(id);
+        if (note.isArchived()) {
+            throw new BusinessRuleException("Die Notiz ist archiviert – zuerst wieder auf die Pinnwand holen.");
+        }
+        Set<Employee> current = note.getAssignees();
+        Employee from = fromEmployeeId == null ? null
+                : current.stream().filter(e -> e.getId().equals(fromEmployeeId)).findFirst().orElse(null);
+        Employee to = toEmployeeId == null ? null : assignee(toEmployeeId, current, "toEmployeeId");
+        note.reassign(from, to);
+        return saved(note);
+    }
+
     /** Deleted for good, with its sub-tasks (normally a note is archived). */
     public void delete(UUID id) {
         repository.delete(find(id));
@@ -142,21 +159,21 @@ public class NoteService {
         Set<Employee> currentPeople = current == null ? Set.of() : current.getAssignees();
         Set<Employee> people = new HashSet<>();
         for (UUID personId : request.assigneeIds() == null ? List.<UUID>of() : request.assigneeIds()) {
-            people.add(assignee(personId, currentPeople));
+            people.add(assignee(personId, currentPeople, "assigneeIds"));
         }
         return new NoteDetails(request.text(), request.info(), people, task(request.taskId(), current == null ? null : current.getTask()));
     }
 
     /** A person already on the note stays valid; a newly chosen one must be active and selectable. */
-    private Employee assignee(UUID id, Set<Employee> current) {
+    private Employee assignee(UUID id, Set<Employee> current, String field) {
         for (Employee employee : current) {
             if (employee.getId().equals(id)) {
                 return employee;
             }
         }
-        Employee employee = employees.findById(id).orElseThrow(() -> new InvalidInputException("assigneeIds", "Diese Person gibt es nicht"));
+        Employee employee = employees.findById(id).orElseThrow(() -> new InvalidInputException(field, "Diese Person gibt es nicht"));
         if (!employee.isActive() || !employee.isSelectableForTodos()) {
-            throw new InvalidInputException("assigneeIds", employee.getName() + " ist für Notizen nicht wählbar");
+            throw new InvalidInputException(field, employee.getName() + " ist für Notizen nicht wählbar");
         }
         return employee;
     }

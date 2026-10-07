@@ -1,0 +1,210 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.header h1,
+.header p {
+  margin: 0;
+}
+
+/* columns side by side; on narrow screens the board scrolls sideways */
+.board {
+  display: grid;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  align-items: start;
+}
+
+.column {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 13rem;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* the person's color as a bar on top – the name stays readable on its own badge */
+.columnTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 5px solid;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  font-size: var(--font-size-lg);
+}
+
+.add {
+  justify-self: start;
+}
+
+.newNote {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.newNoteActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.drop {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-height: 8rem;
+  border-radius: var(--radius);
+}
+
+.over {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.empty {
+  margin: var(--space-4) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* a sticky note – warm, readable in both themes, no rotation (it makes reading harder) */
+.card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-left: 4px solid var(--color-warning);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-warning) 9%, var(--color-surface-raised));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  touch-action: manipulation;
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.card p {
+  margin: 0;
+}
+
+.dragging {
+  cursor: grabbing;
+  outline: 2px solid var(--color-accent);
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.author svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--color-warning);
+}
+
+/* long notes are cut after a few lines – the dialog shows everything */
+.text {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.chip svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.allDone {
+  color: var(--color-success);
+}
+
+.archive {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 52rem;
+}
+
+.month h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.archiveList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.archiveList li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.archived {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.archived:hover,
+.archived:focus-visible {
+  background: var(--color-surface-raised);
+}
+
+.archivedText {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.archivedMeta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button'
 import { Checkbox, Select, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
+import { useAddNoteTodo } from '../notes/noteApi'
 import { useSaveTodo, type Todo } from './todoApi'
 import styles from './TodoForm.module.css'
 
@@ -13,6 +14,8 @@ interface TodoFormProps {
   todo?: Todo
   /** new to-do: for this task */
   taskId?: string
+  /** new to-do: a sub-task of this note (pinboard) */
+  noteId?: string
   /** new to-do: start values from the current filter (person, shopping list tab) */
   defaults?: { assigneeId?: string; shopping?: boolean }
   /** show the "Einkaufsliste" tick (not needed in a task) */
@@ -25,8 +28,10 @@ interface TodoFormProps {
  * New or changed to-do: text, who, until when (and shopping list). A person who is not selectable
  * any more stays in the list while it is on the to-do – the server accepts it unchanged.
  */
-export function TodoForm({ todo, taskId, defaults, withShopping = false, onSaved, onCancel }: TodoFormProps) {
-  const save = useSaveTodo()
+export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false, onSaved, onCancel }: TodoFormProps) {
+  const saveTodo = useSaveTodo()
+  const addToNote = useAddNoteTodo()
+  const pending = saveTodo.isPending || addToNote.isPending
   const toast = useToast()
   const { data: active } = useActiveEmployees()
   const { data: everyone } = useAllEmployees()
@@ -47,26 +52,23 @@ export function TodoForm({ todo, taskId, defaults, withShopping = false, onSaved
   function submit(e: FormEvent) {
     e.preventDefault()
     if (!draft.text.trim()) return
-    save.mutate(
-      {
-        id: todo?.id,
-        request: {
-          text: draft.text.trim(),
-          assigneeId: draft.assigneeId || undefined,
-          dueDate: draft.dueDate || undefined,
-          shopping: draft.shopping,
-          taskId: todo ? (todo.task?.id ?? undefined) : taskId,
-          version: openedVersion,
-        },
+    const request = {
+      text: draft.text.trim(),
+      assigneeId: draft.assigneeId || undefined,
+      dueDate: draft.dueDate || undefined,
+      shopping: draft.shopping,
+      taskId: todo ? (todo.task?.id ?? undefined) : taskId,
+      version: openedVersion,
+    }
+    const callbacks = {
+      onSuccess: () => {
+        if (!todo) setDraft({ ...initial, text: '', dueDate: '' })
+        onSaved?.()
       },
-      {
-        onSuccess: () => {
-          if (!todo) setDraft({ ...initial, text: '', dueDate: '' })
-          onSaved?.()
-        },
-        onError: (error) => toast.error(`To-do nicht gespeichert: ${reasonOf(error)}`),
-      },
-    )
+      onError: (error: Error) => toast.error(`To-do nicht gespeichert: ${reasonOf(error)}`),
+    }
+    if (!todo && noteId) addToNote.mutate({ noteId, request }, callbacks)
+    else saveTodo.mutate({ id: todo?.id, request }, callbacks)
   }
 
   return (
@@ -93,11 +95,11 @@ export function TodoForm({ todo, taskId, defaults, withShopping = false, onSaved
       )}
       <div className={styles.actions}>
         {onCancel && (
-          <Button onClick={onCancel} disabled={save.isPending}>
+          <Button onClick={onCancel} disabled={pending}>
             Abbrechen
           </Button>
         )}
-        <Button type="submit" variant={todo ? 'primary' : 'secondary'} icon={todo ? Save : Plus} loading={save.isPending} disabled={!draft.text.trim()}>
+        <Button type="submit" variant={todo ? 'primary' : 'secondary'} icon={todo ? Save : Plus} loading={pending} disabled={!draft.text.trim()}>
           {todo ? 'Speichern' : 'Hinzufügen'}
         </Button>
       </div>

@@ -3646,6 +3646,95 @@
         "tags" : [ "Notes" ]
       }
     },
+    "/api/notes/{id}/move" : {
+      "put" : {
+        "description" : "The person `from` gives the note away, `to` takes it – other people stay. Empty = the column \"Neu\". No version needed; not on an archived note (409).",
+        "operationId" : "move",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NoteMoveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NoteDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Move between pinboard columns",
+        "tags" : [ "Notes" ]
+      }
+    },
     "/api/notes/{id}/todos" : {
       "post" : {
         "description" : "An ordinary to-do with a link to the note – it appears in the to-do lists too. Not on an archived note (409). Its `taskId` is ignored: the note has the task.",
@@ -7401,6 +7490,19 @@
           }
         },
         "required" : [ "archivedAt", "assigneeIds", "createdAt", "createdBy", "id", "info", "task", "text", "todoCount", "todoDoneCount", "updatedAt", "updatedBy", "version" ]
+      },
+      "NoteMoveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "fromEmployeeId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
+          "toEmployeeId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          }
+        }
       },
       "NoteRequest" : {
         "type" : "object",
