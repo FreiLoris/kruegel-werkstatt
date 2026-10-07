@@ -331,6 +331,10 @@ dropped, and so is the parallel operation in 11e.
 - [ ] **11d – Deployment to the NAS**
   Container Manager, images (via GitHub Container Registry), `.env` with its own password,
   check memory limits.
+  Code part: CI pushes `backend`, `frontend` and `backup` images to ghcr.io after every merge
+  (`latest` + commit tag); `deploy/nas/compose.yaml` only pulls them (no default password, no
+  open DB port, `pull_policy: always`); the backup scripts are in their own image. Guide for the
+  NAS steps: [`deployment-nas.md`](deployment-nas.md). NAS: DS224+ (Intel), 2 GB RAM.
 - [ ] **11e – Go-live**
   Checklist: own DB password in `.env`, SwissGarage import of both Excel files, create Reto
   (Geschäftsführung) and the team, set up the TV as "Nur ansehen", first backup checked,
