@@ -1,6 +1,7 @@
 package ch.kruegel.workshop.todo;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -69,6 +70,17 @@ class TodoController {
     @PutMapping("/{id}/done")
     TodoDto setDone(@PathVariable UUID id, @Valid @RequestBody TodoDoneRequest request) {
         return service.setDone(id, request.done());
+    }
+
+    /** Who takes care of it; empty = nobody */
+    record TodoAssigneeRequest(@Schema(types = {"string", "null"}, format = "uuid") UUID assigneeId) {
+    }
+
+    @Operation(summary = "Give to someone else", description = "Dragged on the pinboard. No version needed. "
+            + "A newly chosen person must be active and selectable for to-dos.")
+    @PutMapping("/{id}/assignee")
+    TodoDto reassign(@PathVariable UUID id, @RequestBody TodoAssigneeRequest request) {
+        return service.reassign(id, request.assigneeId());
     }
 
     @Operation(summary = "Delete to-do")

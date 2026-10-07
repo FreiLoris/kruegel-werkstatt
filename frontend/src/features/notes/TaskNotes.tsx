@@ -16,7 +16,18 @@ import styles from './TaskNotes.module.css'
  * care, how many sub-tasks are done – and a new note right here (UI review: no modal in a modal).
  * The whole note (sub-tasks, info) is edited on the pinboard (8d).
  */
-export function TaskNotes({ taskId, canEdit }: { taskId: string; canEdit: boolean }) {
+export function TaskNotes({
+  taskId,
+  canEdit,
+  adding,
+  onAdded,
+}: {
+  taskId: string
+  canEdit: boolean
+  /** show the form for a new note */
+  adding: boolean
+  onAdded: () => void
+}) {
   const notes = useNotes({ taskId })
   const { data: everyone } = useAllEmployees()
   const { data: active } = useActiveEmployees()
@@ -62,6 +73,7 @@ export function TaskNotes({ taskId, canEdit }: { taskId: string; canEdit: boolea
         onSuccess: () => {
           setText('')
           setAssigneeIds([])
+          onAdded()
         },
         onError: (error) => toast.error(`Notiz nicht gespeichert: ${reasonOf(error)}`),
       },
@@ -73,9 +85,7 @@ export function TaskNotes({ taskId, canEdit }: { taskId: string; canEdit: boolea
 
   return (
     <div className={styles.notes}>
-      {notes.data.length === 0 ? (
-        <p className="muted">Keine Notizen zu diesem Auftrag auf der Pinnwand.</p>
-      ) : (
+      {notes.data.length > 0 && (
         <ul className={styles.list}>
           {notes.data.map((note) => {
             const author = person(note.createdBy)
@@ -123,7 +133,7 @@ export function TaskNotes({ taskId, canEdit }: { taskId: string; canEdit: boolea
         </ul>
       )}
 
-      {canEdit && (
+      {canEdit && adding && (
         <form className={styles.form} onSubmit={add}>
           <TextArea label="Neue Notiz zum Auftrag" rows={2} value={text} maxLength={2000} onChange={(e) => setText(e.target.value)} />
           <div className={styles.people} role="group" aria-label="Für wen">
@@ -141,9 +151,12 @@ export function TaskNotes({ taskId, canEdit }: { taskId: string; canEdit: boolea
               </Button>
             ))}
           </div>
-          <Button type="submit" icon={Plus} loading={save.isPending} disabled={!text.trim()}>
-            An die Pinnwand
-          </Button>
+          <div className={styles.formActions}>
+            <Button onClick={onAdded}>Abbrechen</Button>
+            <Button type="submit" variant="primary" icon={Plus} loading={save.isPending} disabled={!text.trim()}>
+              An die Pinnwand
+            </Button>
+          </div>
         </form>
       )}
     </div>

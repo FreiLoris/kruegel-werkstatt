@@ -6067,6 +6067,95 @@
         "tags" : [ "To-dos" ]
       }
     },
+    "/api/todos/{id}/assignee" : {
+      "put" : {
+        "description" : "Dragged on the pinboard. No version needed. A newly chosen person must be active and selectable for to-dos.",
+        "operationId" : "reassign",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TodoAssigneeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TodoDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Give to someone else",
+        "tags" : [ "To-dos" ]
+      }
+    },
     "/api/todos/{id}/done" : {
       "put" : {
         "description" : "No version needed. Remembers when and by whom.",
@@ -8050,6 +8139,15 @@
           }
         },
         "required" : [ "courtesyCar", "task" ]
+      },
+      "TodoAssigneeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "assigneeId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          }
+        }
       },
       "TodoDoneRequest" : {
         "type" : "object",

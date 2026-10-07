@@ -61,3 +61,24 @@ export function useDeleteTodo() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
+
+/** The open to-dos on the pinboard (not the shopping list) – updated right away when one is dragged */
+export const BOARD_TODOS: TodoFilter = { shopping: false }
+
+/** Dragged to another column on the pinboard: someone else (or nobody) takes care of it. */
+export function useReassignTodo() {
+  const queryClient = useQueryClient()
+  const key = [TOPIC, BOARD_TODOS]
+  return useMutation({
+    mutationFn: async ({ id, assigneeId }: { id: string; assigneeId: string | null; arranged: Todo[] }) =>
+      dataOrThrow(await api.PUT('/api/todos/{id}/assignee', { params: { path: { id } }, body: { assigneeId } })),
+    onMutate: async ({ arranged }) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      const previous = queryClient.getQueryData<Todo[]>(key)
+      queryClient.setQueryData(key, arranged)
+      return { previous }
+    },
+    onError: (_error, _variables, context) => queryClient.setQueryData(key, context?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}

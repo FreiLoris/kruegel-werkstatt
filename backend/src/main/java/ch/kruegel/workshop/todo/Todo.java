@@ -63,6 +63,11 @@ public class Todo extends BaseEntity {
         apply(details);
     }
 
+    /** Someone else takes care of it (dragged on the pinboard); empty = nobody yet. */
+    public void reassign(Employee assignee) {
+        this.assignee = assignee;
+    }
+
     /** Ticked off – remembers when and by whom (empty when no person is known, e.g. sample data). */
     public void markDone(Instant at, UUID by) {
         this.doneAt = Objects.requireNonNull(at, "at");

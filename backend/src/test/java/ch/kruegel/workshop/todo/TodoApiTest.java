@@ -144,6 +144,22 @@ class TodoApiTest {
     }
 
     @Test
+    void draggingGivesItToSomeoneElseWithoutVersion() {
+        String id = idOf(create("{ \"text\": \"Kunde anrufen\", \"assigneeId\": \"%s\" }".formatted(reto.getId())));
+        send("PUT", "/api/todos/" + id, "{ \"text\": \"Kunde Huber anrufen\", \"assigneeId\": \"%s\", \"version\": 0 }".formatted(reto.getId()));
+        Employee mora = employees.save(EmployeeTestData.employee("Mora", 4));
+
+        assertThat(send("PUT", "/api/todos/" + id + "/assignee", "{ \"assigneeId\": \"%s\" }".formatted(mora.getId())))
+                .bodyJson().extractingPath("$.assigneeId").isEqualTo(mora.getId().toString());
+        assertThat(send("PUT", "/api/todos/" + id + "/assignee", "{ \"assigneeId\": null }"))
+                .bodyJson().extractingPath("$.assigneeId").isNull();
+        Employee notForTodos = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
+                true, false, true), 5));
+        assertFieldError(send("PUT", "/api/todos/" + id + "/assignee", "{ \"assigneeId\": \"%s\" }".formatted(notForTodos.getId())),
+                "assigneeId");
+    }
+
+    @Test
     void editingNeedsTheCurrentVersion() {
         String id = idOf(create("{ \"text\": \"A\" }"));
 

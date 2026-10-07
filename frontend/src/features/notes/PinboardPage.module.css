@@ -1,15 +1,30 @@
 .header {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
-.header h1,
-.header p {
+.header h1 {
   margin: 0;
+}
+
+/* board / list / shopping list / archive – the active one filled */
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.count {
+  min-width: 1.25rem;
+  padding: 0 var(--space-1);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }
 
 /* columns side by side; on narrow screens the board scrolls sideways */
@@ -44,13 +59,17 @@
   font-size: var(--font-size-lg);
 }
 
-.add {
-  justify-self: start;
+.addButtons {
+  display: flex;
+  gap: var(--space-1);
 }
 
-.newNote {
+.newEntry {
   display: grid;
   gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
 }
 
 .newNoteActions {
@@ -207,4 +226,52 @@
 .archivedMeta {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+}
+
+/* the person's open to-dos below the notes */
+.todos {
+  display: grid;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1) var(--space-2);
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+}
+
+/* drag a to-do by its grip – checkbox and buttons stay easy to hit */
+.grip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.grip svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.grip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  border-radius: var(--radius-sm);
+}
+
+.todoOverlay {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  outline: 2px solid var(--color-accent);
+  cursor: grabbing;
+}
+
+.todoOverlay svg {
+  width: 1rem;
+  height: 1rem;
 }

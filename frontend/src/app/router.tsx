@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { HomePage } from '../features/home/HomePage'
@@ -11,7 +11,6 @@ import { TaskEditPage } from '../features/tasks/detail/TaskEditPage'
 import { TaskSheetPage } from '../features/tasks/sheet/TaskSheetPage'
 import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
-import { TodosPage } from '../features/todos/TodosPage'
 import { SystemPage } from '../features/system/SystemPage'
 import { AppLayout } from './AppLayout'
 import { CrashPage, NotFoundPage } from './ErrorPages'
@@ -33,7 +32,8 @@ export const router = createBrowserRouter([
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
       { path: 'courtesy-cars', element: <CourtesyCarsPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
-      { path: 'todos', element: <TodosPage /> },
+      // since 8e the to-do list is a view of the pinboard – old bookmarks keep working
+      { path: 'todos', element: <Navigate to="/pinboard?view=list" replace /> },
       { path: 'pinboard', element: <PinboardPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },

@@ -13,7 +13,6 @@ export const navigation: NavEntry[] = [
   { path: '/tasks', title: 'Termine' },
   { path: '/tasks/new', title: 'Neuer Auftrag' },
   { path: '/courtesy-cars', title: 'Ersatzwagen' },
-  { path: '/todos', title: 'To-dos' },
   { path: '/pinboard', title: 'Pinnwand' },
   { path: '/employees', title: 'Mitarbeiter' },
   { path: '/settings', title: 'Einstellungen' },

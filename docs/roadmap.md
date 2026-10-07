@@ -254,6 +254,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   column stay visible in "Neu". Dialog: growing fields, "Gespeichert ✓", people, task via search,
   sub-tasks. Archive grouped by month with search, "Wieder auf die Pinnwand".
 
+- [x] **8e – Pinboard and to-dos together** *(inserted, wish of the user)*
+  One place "Pinnwand" with the views board / to-do list / shopping list / archive (`/todos` redirects).
+  A person's column shows their notes AND their open to-dos (drag by the grip = other person,
+  `PUT /api/todos/{id}/assignee`); "+ Notiz" / "+ To-do" per column; the board uses the full width.
+  Task detail: one card "Pinnwand & To-dos". The data model stays separate (note = information,
+  to-do = one action to tick off; sub-tasks of a note are to-dos since 8c).
+
 ## Phase 9 – Absences & employee calendar
 
 - [ ] **9a – Absence data model & API**
