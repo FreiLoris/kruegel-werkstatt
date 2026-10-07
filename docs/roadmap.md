@@ -25,7 +25,7 @@ Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) 
 | 8 | To-dos & pinboard | Team communication |
 | 9 | Absences | Employee calendar + correct statistics |
 | 10 | Dashboard (TV) | Kiosk view for the workshop TV |
-| 11 | Migration & go-live | Take over data, backup, NAS, switch-over |
+| 11 | Go-live | Backup, NAS, go-live checklist (no data migration – decided 2026-10-07) |
 
 ---
 
@@ -315,20 +315,26 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   The week on the dashboard: one line per appointment, at most 6 per day + "+ n weitere", so
   everything fits one screen.
 
-## Phase 11 – Migration & go-live (version 1)
+## Phase 11 – Go-live (version 1)
 
-- [ ] **11a – Migration script**
-  Old SQLite data (employees, courtesy cars, tasks, to-dos, notes, absences,
-  bookings) into the new schema; resolve names → IDs; log what could not be assigned.
-- [ ] **11b – Trial run & comparison**
-  Migration on a copy, spot checks against the old app.
-- [ ] **11c – Backup & restore**
+**Decision 2026-10-07 (user):** the old app was never in production – nothing of its data is
+taken over. Go-live = fresh database, the two Excel files again via the SwissGarage import, Reto
+created as "Geschäftsführung". 11a (migration script) and 11b (trial run of the migration) are
+dropped, and so is the parallel operation in 11e.
+
+- [x] **11c – Backup & restore**
   Daily `pg_dump` into `Datensicherung/`, retention, tested restore.
+  Done: `backup` container (postgres image, cron at 02:00 Swiss time, `BACKUP_DIR`,
+  `BACKUP_KEEP_DAYS`), `backup.sh` / `restore.sh` (refuses without `--yes`, one transaction).
+  Restore tested after deleting a whole test instance incl. its volume – see
+  [`operations.md`](operations.md).
 - [ ] **11d – Deployment to the NAS**
   Container Manager, images (via GitHub Container Registry), `.env` with its own password,
   check memory limits.
-- [ ] **11e – Parallel operation & switch-over**
-  Both apps in parallel (8080 old / 8090 new), final migration, switch off the old app.
+- [ ] **11e – Go-live**
+  Checklist: own DB password in `.env`, SwissGarage import of both Excel files, create Reto
+  (Geschäftsführung) and the team, set up the TV as "Nur ansehen", first backup checked,
+  switch off the old app.
 
 ---
 

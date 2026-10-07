@@ -25,3 +25,7 @@ docs/img.png
 # Real SwissGarage exports (customer data) – only imported locally, never committed
 *.xlsx
 *.xls
+
+# Database backups (customer data) – never committed
+Datensicherung/
+*.dump

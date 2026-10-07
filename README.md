@@ -23,7 +23,8 @@ Browser / tablet / TV
 └───────────────┘                  └───────────────┘                └───────────────┘
 ```
 
-Three containers in one Docker Compose setup. Why these technologies:
+Three containers in one Docker Compose setup (plus a small `backup` container for the nightly
+database backup – [`docs/operations.md`](docs/operations.md)). Why these technologies:
 [`docs/adr/0001-tech-stack.md`](docs/adr/0001-tech-stack.md).
 
 ## Project structure
@@ -36,6 +37,8 @@ Three containers in one Docker Compose setup. Why these technologies:
 | `docs/roadmap.md` | Plan of all packages + tracking of the bugs from the analysis |
 | `docs/conventions.md` | Binding rules for code, database, time, tests |
 | `docs/glossary.md` | German domain terms ↔ English code names |
+| `docs/operations.md` | Operation: backups, restore |
+| `backup/` | Scripts of the backup container (nightly `pg_dump`, restore) |
 | `docs/adr/` | Architecture Decision Records |
 | `docs/analysis/` | Analysis of the old app: features, bugs, UI review with screenshots (German) |
 
