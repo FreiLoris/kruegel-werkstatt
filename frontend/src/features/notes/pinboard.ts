@@ -1,4 +1,5 @@
 import type { Employee } from '../employees/employeeApi'
+import type { Todo } from '../todos/todoApi'
 import type { Note } from './noteApi'
 
 /** Column of notes nobody takes care of yet – always first */
@@ -10,22 +11,38 @@ export interface PinboardColumn {
   /** null = "Neu" */
   employee: Employee | null
   notes: Note[]
+  /** open to-dos of this person (8e: one board for "what to know" and "what to do") */
+  todos: Todo[]
 }
 
 /**
  * The columns of the pinboard: "Neu" first, then every active person with a pinboard column in the
  * order of the employee list (bug #3: the old board had five fixed names). A note for several people
- * appears in each of their columns. A note whose people have no column (left, or no column) stays
- * visible in "Neu" – it must not disappear.
+ * appears in each of their columns; a to-do in the column of its person. Whatever belongs to nobody
+ * with a column (nobody yet, left, no column) stays visible in "Neu" – it must not disappear.
  */
-export function pinboardColumns(notes: Note[], employees: Employee[]): PinboardColumn[] {
+export function pinboardColumns(notes: Note[], todos: Todo[], employees: Employee[]): PinboardColumn[] {
   const people = employees.filter((e) => e.active && e.hasPinboardColumn)
   const withColumn = new Set(people.map((p) => p.id))
-  const unassigned = notes.filter((n) => !n.assigneeIds.some((id) => withColumn.has(id)))
   return [
-    { id: NEW_COLUMN, employee: null, notes: unassigned },
-    ...people.map((employee) => ({ id: employee.id, employee, notes: notes.filter((n) => n.assigneeIds.includes(employee.id)) })),
+    {
+      id: NEW_COLUMN,
+      employee: null,
+      notes: notes.filter((n) => !n.assigneeIds.some((id) => withColumn.has(id))),
+      todos: todos.filter((t) => !t.assigneeId || !withColumn.has(t.assigneeId)),
+    },
+    ...people.map((employee) => ({
+      id: employee.id,
+      employee,
+      notes: notes.filter((n) => n.assigneeIds.includes(employee.id)),
+      todos: todos.filter((t) => t.assigneeId === employee.id),
+    })),
   ]
+}
+
+/** The to-dos after dragging one to another column – shown right away while the server saves */
+export function movedTodo(todos: Todo[], todoId: string, toColumn: string): Todo[] {
+  return todos.map((t) => (t.id === todoId ? { ...t, assigneeId: toColumn === NEW_COLUMN ? null : toColumn } : t))
 }
 
 /**

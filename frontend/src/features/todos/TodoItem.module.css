@@ -109,3 +109,12 @@
   width: 0.95rem;
   height: 0.95rem;
 }
+
+/* pinboard: grip, checkbox, text */
+.draggable {
+  grid-template-columns: auto auto 1fr;
+}
+
+.draggable .meta {
+  grid-column: 3;
+}

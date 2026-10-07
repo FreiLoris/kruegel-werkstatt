@@ -1,5 +1,5 @@
 import { ClipboardList, Pencil, ShoppingCart, StickyNote, Trash2, Undo2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
@@ -22,13 +22,29 @@ interface TodoItemProps {
   withShopping?: boolean
   /** say "Pinnwand" for a sub-task of a note (not inside the note itself) */
   showNote?: boolean
+  /** hide the person – in the person's own pinboard column it is clear */
+  showAssignee?: boolean
+  /** pinboard: a grip to drag the to-do to another column (the checkbox and buttons stay clickable) */
+  dragHandle?: ReactNode
+  style?: CSSProperties
+  ref?: Ref<HTMLLIElement>
 }
 
 /**
  * One to-do: ticked off ONLY with the checkbox (F5: the old dashboard ticked off on any click),
  * done ones show who and when with "Rückgängig". Edit in place, delete after asking.
  */
-export function TodoItem({ todo, canEdit, showTask = false, withShopping = false, showNote = true }: TodoItemProps) {
+export function TodoItem({
+  todo,
+  canEdit,
+  showTask = false,
+  withShopping = false,
+  showNote = true,
+  showAssignee = true,
+  dragHandle,
+  style,
+  ref,
+}: TodoItemProps) {
   const navigate = useNavigate()
   const setDone = useSetTodoDone()
   const remove = useDeleteTodo()
@@ -63,7 +79,8 @@ export function TodoItem({ todo, canEdit, showTask = false, withShopping = false
   const assignee = person(todo.assigneeId)
   const due = dueState(todo.dueDate, today)
   return (
-    <li className={[styles.item, done && styles.done].filter(Boolean).join(' ')}>
+    <li ref={ref} style={style} className={[styles.item, dragHandle !== undefined && styles.draggable, done && styles.done].filter(Boolean).join(' ')}>
+      {dragHandle}
       <input
         type="checkbox"
         className={styles.check}
@@ -84,7 +101,8 @@ export function TodoItem({ todo, canEdit, showTask = false, withShopping = false
           </span>
         ) : (
           <>
-            {assignee ? <NameBadge name={assignee.name} color={assignee.color} /> : <span className="muted">nicht zugewiesen</span>}
+            {showAssignee &&
+              (assignee ? <NameBadge name={assignee.name} color={assignee.color} /> : <span className="muted">nicht zugewiesen</span>)}
             {todo.dueDate && <span className={[styles.due, styles[due]].join(' ')}>{dueLabel(todo.dueDate, today)}</span>}
           </>
         )}

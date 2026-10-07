@@ -1,27 +1,48 @@
 import { describe, expect, it } from 'vitest'
 import type { Employee } from '../employees/employeeApi'
+import type { Todo } from '../todos/todoApi'
 import type { Note } from './noteApi'
-import { archiveByMonth, movedNote, NEW_COLUMN, pinboardColumns } from './pinboard'
+import { archiveByMonth, movedNote, movedTodo, NEW_COLUMN, pinboardColumns } from './pinboard'
 
 const person = (id: string, hasPinboardColumn = true, active = true) => ({ id, name: id, active, hasPinboardColumn }) as Employee
 const note = (id: string, assigneeIds: string[], archivedAt: string | null = null) => ({ id, assigneeIds, archivedAt }) as Note
+const todo = (id: string, assigneeId: string | null) => ({ id, assigneeId }) as Todo
 
 describe('pinboardColumns', () => {
   const people = [person('reto'), person('erich'), person('lehrling', false), person('weg', true, false)]
 
   it('"Neu" first, then the people with a column in their order', () => {
-    expect(pinboardColumns([], people).map((c) => c.id)).toEqual([NEW_COLUMN, 'reto', 'erich'])
+    expect(pinboardColumns([], [], people).map((c) => c.id)).toEqual([NEW_COLUMN, 'reto', 'erich'])
   })
 
   it('a note for two people is in both columns; one without a column-person stays visible in "Neu"', () => {
     const columns = pinboardColumns(
       [note('beide', ['reto', 'erich']), note('niemand', []), note('lehrling', ['lehrling']), note('weg', ['weg'])],
+      [],
       people,
     )
 
     expect(columns.find((c) => c.id === 'reto')!.notes.map((n) => n.id)).toEqual(['beide'])
     expect(columns.find((c) => c.id === 'erich')!.notes.map((n) => n.id)).toEqual(['beide'])
     expect(columns[0].notes.map((n) => n.id)).toEqual(['niemand', 'lehrling', 'weg'])
+  })
+})
+
+describe('to-dos on the board', () => {
+  it('in the column of their person – nobody or a person without column in "Neu"', () => {
+    const columns = pinboardColumns(
+      [],
+      [todo('reto', 'reto'), todo('frei', null), todo('lehrling', 'lehrling')],
+      [person('reto'), person('lehrling', false)],
+    )
+
+    expect(columns.find((c) => c.id === 'reto')!.todos.map((t) => t.id)).toEqual(['reto'])
+    expect(columns[0].todos.map((t) => t.id)).toEqual(['frei', 'lehrling'])
+  })
+
+  it('dragging gives the to-do to the person of the column, "Neu" = nobody', () => {
+    expect(movedTodo([todo('a', 'reto')], 'a', 'erich')[0].assigneeId).toBe('erich')
+    expect(movedTodo([todo('a', 'reto')], 'a', NEW_COLUMN)[0].assigneeId).toBeNull()
   })
 })
 

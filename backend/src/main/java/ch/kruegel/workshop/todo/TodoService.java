@@ -102,6 +102,16 @@ public class TodoService {
         return saved(todo);
     }
 
+    /**
+     * Someone else takes care of it – dragged to another column on the pinboard. No version needed,
+     * like ticking off: it must not fail because someone edited the text meanwhile.
+     */
+    public TodoDto reassign(UUID id, UUID assigneeId) {
+        Todo todo = find(id);
+        todo.reassign(assignee(assigneeId, todo.getAssignee()));
+        return saved(todo);
+    }
+
     public void delete(UUID id) {
         repository.delete(find(id));
         repository.flush();
