@@ -108,6 +108,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ bald fällig / überfällig (abgelaufen) | `DUE_SOON` / `OVERDUE` (`DueStatus`) | "soon" = within 30 days |
 | ausser Betrieb nehmen | `deactivate` | |
 | Dashboard / Startseite | `DashboardPage` (package `dashboard`) | `/`; on the TV full screen ("kiosk") |
+| Heute nach Lift | `TodayByLift` (`liftColumns`) | `NO_LIFT` = "Ohne Lift" |
+| Pinnwand in klein (Dashboard) | `BoardOverview` | read-only, reuses `pinboardColumns` |
 | Kiosk (Werkstatt-TV) | `kiosk` (AppLayout) | "view only" device on `/`: no header, navigation at the bottom |
 | Pinnwand | `Pinboard` | |
 | Notiz | `Note` (package `note`) | author = `createdBy`; several assignees; task by reference |

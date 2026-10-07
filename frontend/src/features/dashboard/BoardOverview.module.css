@@ -1,0 +1,101 @@
+.columns {
+  display: grid;
+  gap: var(--space-2);
+  overflow-x: auto;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.column :global(.muted) {
+  margin: 0;
+}
+
+.head {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.new {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.notes,
+.todos {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note,
+.todo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: var(--space-2);
+}
+
+.note {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+}
+
+.noteIcon {
+  margin-top: 0.2em;
+  color: var(--color-accent);
+}
+
+/* long texts: two lines, then "…" – the full text is on the pinboard */
+.text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+.progress,
+.due {
+  grid-column: 2;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.box {
+  width: 0.85em;
+  height: 0.85em;
+  margin-top: 0.25em;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 3px;
+}
+
+.overdue {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.today {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

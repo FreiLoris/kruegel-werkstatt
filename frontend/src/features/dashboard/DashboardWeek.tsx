@@ -1,19 +1,15 @@
-import { Hourglass } from 'lucide-react'
-import { Link } from 'react-router'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate, todayIso } from '../../lib/format'
 import { useAbsences } from '../absences/absenceApi'
 import { AbsenceChip } from '../absences/AbsenceChip'
 import { absencesOn } from '../absences/absenceDays'
 import { useAllEmployees } from '../employees/employeeApi'
-import { NameBadge } from '../employees/NameBadge'
 import { useAllLifts } from '../lifts/liftApi'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
-import { TASK_STATUS, useTasksBetween, type Task } from '../tasks/taskApi'
-import { statusAccentClass } from '../tasks/taskStatusStyle'
-import { timeRange } from '../tasks/taskTime'
+import { useTasksBetween, type Task } from '../tasks/taskApi'
 import { weekDays } from '../tasks/week/weekDays'
 import styles from './DashboardWeek.module.css'
+import { TaskRow } from './TaskRow'
 
 /**
  * The week on the dashboard (10a): every day with a clear head (UI review: the old grid had none),
@@ -61,26 +57,11 @@ export function DashboardWeek({ monday }: { monday: string }) {
               </div>
             )}
             <ul className={styles.tasks}>
-              {day.tasks.map((task) => {
-                const mechanic = employeeOf(task.mechanicId)
-                const lift = liftOf(task)
-                return (
-                  <li key={task.id}>
-                    <Link to={`/tasks/${task.id}`} className={[styles.task, statusAccentClass(task.status)].join(' ')} title={TASK_STATUS[task.status]}>
-                      <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
-                      <span className={styles.customer}>
-                        {task.waitingCustomer && <Hourglass aria-label="Wartekunde" className={styles.waiting} />}
-                        {task.customer.displayName}
-                      </span>
-                      <span className={styles.details}>
-                        {lift && <span className={styles.lift}>{lift}</span>}
-                        {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} />}
-                      </span>
-                      <span className="visually-hidden">Status: {TASK_STATUS[task.status]}</span>
-                    </Link>
-                  </li>
-                )
-              })}
+              {day.tasks.map((task) => (
+                <li key={task.id}>
+                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} liftName={liftOf(task)} />
+                </li>
+              ))}
             </ul>
           </section>
         )

@@ -23,3 +23,16 @@ export function dueLabel(dueDate: string | null, today: string): string {
       return ''
   }
 }
+
+/**
+ * Most urgent first: by deadline (overdue ones are the earliest), to-dos without a deadline at the
+ * end – the dashboard shows only a few per person, so the important ones must be on top.
+ */
+export function byUrgency<T extends { dueDate: string | null }>(todos: T[]): T[] {
+  return [...todos].sort((a, b) => {
+    if (a.dueDate === b.dueDate) return 0
+    if (!a.dueDate) return 1
+    if (!b.dueDate) return -1
+    return a.dueDate.localeCompare(b.dueDate)
+  })
+}
