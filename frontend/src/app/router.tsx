@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
+import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
-import { HomePage } from '../features/home/HomePage'
 import { PinboardPage } from '../features/notes/PinboardPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <CrashPage />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <DashboardPage /> },
       { path: 'employees', element: <EmployeesPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },

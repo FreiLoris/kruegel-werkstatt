@@ -60,7 +60,7 @@ export function AbsenceStatisticsView() {
             <Figure label="Externe Partner" value={String(totals.companies)} detail={totals.companies === 1 ? 'Firma' : 'Firmen'} />
           </dl>
 
-          <section aria-labelledby="vacation-heading">
+          <section className={styles.section} aria-labelledby="vacation-heading">
             <h3 id="vacation-heading">Pro Person</h3>
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
@@ -88,7 +88,7 @@ export function AbsenceStatisticsView() {
             </div>
           </section>
 
-          <section aria-labelledby="companies-heading">
+          <section className={styles.section} aria-labelledby="companies-heading">
             <h3 id="companies-heading">Fremdarbeit nach Firma</h3>
             {statistics.companies.length === 0 ? (
               <p className="muted">{year} keine Fremdarbeit erfasst.</p>
