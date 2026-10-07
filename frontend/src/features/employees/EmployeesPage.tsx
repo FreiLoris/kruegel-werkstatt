@@ -1,10 +1,12 @@
-import { ArrowDown, ArrowUp, Pencil, Plus, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowUp, CalendarDays, List, Pencil, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDate } from '../../lib/format'
 import { moved } from '../../lib/sortOrder'
+import { AbsenceCalendarView } from '../absences/AbsenceCalendarView'
 import { ROLES, useAllEmployees, useReorderEmployees, useSetEmployeeActive, type Employee } from './employeeApi'
 import { EmployeeDialog } from './EmployeeDialog'
 import styles from './EmployeesPage.module.css'
@@ -13,11 +15,50 @@ import { NameBadge } from './NameBadge'
 /** Which dialog is open: none, "new" or a specific person */
 type Dialog = { kind: 'new' } | { kind: 'edit'; employee: Employee } | null
 
+type View = 'calendar' | 'list'
+const VIEWS: { view: View; label: string; icon: typeof List }[] = [
+  { view: 'calendar', label: 'Kalender', icon: CalendarDays },
+  { view: 'list', label: 'Liste', icon: List },
+]
+
+/**
+ * The employees: the calendar of who is away when (9b, as in the old app the first view) and the
+ * list to manage them. The view stands in the address (`view=list`).
+ */
+export function EmployeesPage() {
+  const [params, setParams] = useSearchParams()
+  const view: View = params.get('view') === 'list' ? 'list' : 'calendar'
+
+  return (
+    // the calendar uses the whole screen width (AppLayout: data-wide)
+    <div data-wide={view === 'calendar' ? '' : undefined}>
+      <div className={styles.header}>
+        <h1>Mitarbeiter</h1>
+        <div className={styles.views} role="group" aria-label="Ansicht">
+          {VIEWS.map(({ view: v, label, icon }) => (
+            <Button
+              key={v}
+              icon={icon}
+              variant={view === v ? 'primary' : 'secondary'}
+              aria-pressed={view === v}
+              // the month belongs to the calendar – the list starts without it
+              onClick={() => setParams(v === 'list' ? { view: 'list' } : {}, { replace: true })}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      </div>
+      {view === 'calendar' ? <AbsenceCalendarView /> : <EmployeeList />}
+    </div>
+  )
+}
+
 /**
  * Administration of the employees: list in fixed order (= order on the pinboard and in
  * selection lists), create/edit in a dialog, former employees separately.
  */
-export function EmployeesPage() {
+function EmployeeList() {
   const { data: all, error, isPending, refetch } = useAllEmployees()
   const [dialog, setDialog] = useState<Dialog>(null)
   const canEdit = useCanEdit()
@@ -28,7 +69,6 @@ export function EmployeesPage() {
   if (error) {
     return (
       <>
-        <h1>Mitarbeiter</h1>
         <p className={styles.error}>Mitarbeiter konnten nicht geladen werden: {error.message}</p>
         <Button onClick={() => void refetch()}>Erneut versuchen</Button>
       </>
@@ -40,11 +80,8 @@ export function EmployeesPage() {
 
   return (
     <>
-      <div className={styles.header}>
-        <div>
-          <h1>Mitarbeiter</h1>
-          <p className="muted">Die Reihenfolge gilt überall – Pinnwand-Spalten, Auswahllisten, Kalender.</p>
-        </div>
+      <div className={styles.listHeader}>
+        <p className="muted">Die Reihenfolge gilt überall – Pinnwand-Spalten, Auswahllisten, Kalender.</p>
         {canEdit && (
           <Button variant="primary" icon={Plus} onClick={() => setDialog({ kind: 'new' })}>
             Neuer Mitarbeiter

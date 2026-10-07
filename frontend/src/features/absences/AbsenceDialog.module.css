@@ -1,0 +1,69 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* The four categories as big buttons (tablet) – color AND text */
+.categories {
+  display: grid;
+  /* 2 × 2 – "Fremdarbeit" needs the width, 3 + 1 looked lost */
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-left: 6px solid var(--absence-color);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.category:has(input:checked) {
+  border-color: var(--absence-color);
+  background: color-mix(in srgb, var(--absence-color) 22%, var(--color-surface));
+}
+
+.category:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.category input {
+  accent-color: var(--absence-color);
+}
+
+/* From | until side by side, each with its half-day box – stacked on narrow devices */
+.period {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+.day {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+/* "Delete" on the left, apart from cancel/save – so it is not hit by accident */
+.left {
+  margin-right: auto;
+}

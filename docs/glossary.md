@@ -121,6 +121,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Firma (bei Fremdarbeit) | `company` | required for external work only, dropped otherwise |
 | Zeitraum (von – bis, ganze/halbe Tage) | `AbsencePeriod` (`startDate`, `startsAfternoon`, `endDate`, `endsNoon`) | half day = morning until 12:00 / afternoon from 12:00 |
 | Vormittag / Nachmittag | `morning` / `afternoon` (`DayPart`) | how one day of an absence is shown |
+| Mitarbeiterkalender (Monat) | `AbsenceCalendar` / `AbsenceCalendarView` | `/employees` (default view), `?month=2026-10`; the list is `?view=list` |
+| Balken (einer Abwesenheit) | `AbsenceBar` | position in half days from the first day shown |
 | Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
 | Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |
 | Ostersonntag | `EasterSunday` | basis for the moving holidays |

@@ -1,0 +1,209 @@
+/* As wide as the page; on a narrow screen it scrolls sideways (every day at least 2.25rem) */
+.scroller {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  /* dragging must not select text, holding a finger must not open the callout */
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.grid {
+  display: grid;
+  /* all days the same width – the old calendar's columns jumped with the label */
+  grid-template-columns: minmax(7.5rem, 10rem) minmax(calc(var(--days) * 2.25rem), 1fr);
+}
+
+.corner,
+.person {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.corner {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(var(--days), 1fr);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* weekday above the day number */
+.day {
+  display: grid;
+  padding: var(--space-1) 0;
+  border-left: 1px solid var(--color-border);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.weekday {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.today,
+.today .weekday {
+  color: var(--color-accent);
+}
+
+.today {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  box-shadow: inset 0 -3px 0 var(--color-accent);
+}
+
+.off {
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text-muted) 7%, transparent);
+}
+
+.row {
+  display: contents;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* One person: day lines, the bars positioned inside */
+.track {
+  position: relative;
+  min-height: 2.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-border) 0 1px,
+    transparent 1px calc(100% / var(--days))
+  );
+  /* days are dragged open with the mouse; fingers still scroll */
+  touch-action: pan-x pan-y;
+}
+
+.row:last-child .track,
+.row:last-child .person {
+  border-bottom: 0;
+}
+
+.creatable {
+  cursor: crosshair;
+}
+
+.offDay,
+.todayDay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.offDay {
+  background: color-mix(in srgb, var(--color-text-muted) 9%, transparent);
+}
+
+.todayDay {
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.birthday {
+  position: absolute;
+  top: 2px;
+  display: flex;
+  justify-content: center;
+  color: var(--color-accent);
+  pointer-events: none;
+}
+
+/* The category color as a strong edge and a tinted fill; the text stays readable */
+.bar {
+  position: absolute;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-width: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: 0;
+  border-left: 4px solid var(--absence-color);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--absence-color) 38%, var(--color-surface));
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+
+.bar:hover {
+  background: color-mix(in srgb, var(--absence-color) 52%, var(--color-surface));
+}
+
+.bar:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.barText {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* goes on before/after the month shown */
+.before {
+  border-left-width: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.after {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ghost {
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.taken {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+}

@@ -1,13 +1,7 @@
-import { ABSENCE_CATEGORY, type AbsenceCategory } from './absenceApi'
+import { ABSENCE_CATEGORY } from './absenceApi'
 import styles from './AbsenceChip.module.css'
 import { partLabel, type AbsenceOnDay } from './absenceDays'
-
-const CATEGORY_CLASS: Record<AbsenceCategory, string> = {
-  VACATION: styles.vacation,
-  SICK: styles.sick,
-  EXTERNAL_WORK: styles.external,
-  TRAINING: styles.training,
-}
+import { CATEGORY_CLASS } from './categoryColors'
 
 /**
  * Who is away on a day, small: "Reto · Ferien", with "Vormittag"/"Nachmittag" for half days and

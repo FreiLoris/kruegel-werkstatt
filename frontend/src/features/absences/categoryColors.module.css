@@ -1,0 +1,16 @@
+/* The color of a category as variable `--absence-color` – chip, calendar bar and dialog use it */
+.vacation {
+  --absence-color: var(--color-absence-vacation);
+}
+
+.sick {
+  --absence-color: var(--color-absence-sick);
+}
+
+.external {
+  --absence-color: var(--color-absence-external);
+}
+
+.training {
+  --absence-color: var(--color-absence-training);
+}
