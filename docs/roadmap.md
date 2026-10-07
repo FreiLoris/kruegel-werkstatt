@@ -239,10 +239,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   `/todos` in the navigation; filter and tab in the address; "nicht zugewiesen" as filter and label,
   "überfällig seit …"; edit in place, delete after asking (also in the task detail); done ones
   folded away with "Rückgängig".
-- [ ] **8c – Note data model & API**
+- [x] **8c – Note data model & API**
   Multiple assignment, reference to task (→ F8), sub-tasks are to-dos only
   (no second list → bug #10), archiving completes linked to-dos, reactivating symmetric.
   Then "Notiz" directly in the task detail (left open in 6h, UI review: no modal-in-modal).
+  V17 `note` + `note_assignee`, `todo.note_id`; `/api/notes` (board with filters, archive with search,
+  `POST /{id}/todos` for sub-tasks). The to-do knows its note only by ID (no package cycle).
+  Task detail: card "Pinnwand" (notes of the task, add one for chosen people, archive after asking).
 - [ ] **8d – Pinboard page**
   Columns from the employee list (→ bug #3), same order as dashboard, drag between
   columns, detail modal (large text field, visible save), archive with search.

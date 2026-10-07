@@ -208,8 +208,9 @@ public class TaskService {
         // its courtesy car booking is deleted with it (ON DELETE CASCADE) – the booking views reload too.
         // Text instead of BookingService.TOPIC: booking depends on task, not the other way round.
         events.publishEvent(new DataChanged("courtesy-car-bookings"));
-        // its to-dos stay, without the link (ON DELETE SET NULL) – the to-do lists reload too
+        // its to-dos and notes stay, without the link (ON DELETE SET NULL) – their lists reload too
         events.publishEvent(new DataChanged("todos"));
+        events.publishEvent(new DataChanged("notes"));
     }
 
     private TaskDetails details(TaskRequest request, Task current) {

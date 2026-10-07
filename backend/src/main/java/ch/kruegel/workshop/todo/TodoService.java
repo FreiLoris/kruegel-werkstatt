@@ -53,17 +53,28 @@ public class TodoService {
      * @param unassigned only those nobody takes care of yet
      * @param shopping   only the shopping list (true) or only the rest (false); empty = both
      * @param taskId     only those of this task; empty = all
+     * @param noteId     only the sub-tasks of this note; empty = all
      */
     @Transactional(readOnly = true)
-    public List<TodoDto> list(boolean done, UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId) {
+    public List<TodoDto> list(boolean done, UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId, UUID noteId) {
         List<Todo> found = done
-                ? repository.done(assigneeId, unassigned, shopping, taskId, Limit.of(DONE_LIMIT))
-                : repository.open(assigneeId, unassigned, shopping, taskId);
+                ? repository.done(assigneeId, unassigned, shopping, taskId, noteId, Limit.of(DONE_LIMIT))
+                : repository.open(assigneeId, unassigned, shopping, taskId, noteId);
         return found.stream().map(TodoDto::of).toList();
     }
 
     public TodoDto create(TodoRequest request) {
         Todo todo = new Todo(details(request, null));
+        return saved(repository.save(todo));
+    }
+
+    /**
+     * A sub-task of a note (pinboard) – the note checks that it exists and is not archived.
+     * Without task of its own: the note has the task.
+     */
+    public TodoDto createForNote(UUID noteId, TodoRequest request) {
+        TodoRequest withoutTask = new TodoRequest(request.text(), request.assigneeId(), request.dueDate(), request.shopping(), null, null);
+        Todo todo = new Todo(details(withoutTask, null), noteId);
         return saved(repository.save(todo));
     }
 

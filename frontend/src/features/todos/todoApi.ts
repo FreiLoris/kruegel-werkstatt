@@ -18,6 +18,8 @@ export interface TodoFilter {
   unassigned?: boolean
   shopping?: boolean
   taskId?: string
+  /** only the sub-tasks of this note */
+  noteId?: string
 }
 
 export function useTodos(filter: TodoFilter) {

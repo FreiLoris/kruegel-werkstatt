@@ -108,7 +108,10 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ bald fällig / überfällig (abgelaufen) | `DUE_SOON` / `OVERDUE` (`DueStatus`) | "soon" = within 30 days |
 | ausser Betrieb nehmen | `deactivate` | |
 | Pinnwand | `Pinboard` | |
-| Notiz | `Note` | |
+| Notiz | `Note` (package `note`) | author = `createdBy`; several assignees; task by reference |
+| Infos (der Notiz) | `info` | longer background text |
+| Unteraufgabe / Aufgabe (der Notiz) | to-do with `noteId` | no second list (bug #10) |
+| archivieren / reaktivieren | `archive` / `reactivate` (`archivedAt`) | ticks off / reopens exactly the open sub-tasks |
 | To-do | `Todo` (package `todo`) | text, person, deadline, task by reference |
 | Einkaufsliste | `shopping` (flag on the to-do) | not its own module |
 | verantwortlich (To-do) | `assignee` | an employee "für To-dos wählbar" |
