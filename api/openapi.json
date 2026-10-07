@@ -184,6 +184,85 @@
         "tags" : [ "Absences" ]
       }
     },
+    "/api/absences/statistics" : {
+      "get" : {
+        "description" : "In working days (Mon–Fri without public holidays), half days as 0.5: vacation taken/planned/left per person, sick, training, external work – and per company.",
+        "operationId" : "statistics",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "year",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AbsenceStatisticsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Absences of a year counted",
+        "tags" : [ "Absences" ]
+      }
+    },
     "/api/absences/{id}" : {
       "delete" : {
         "operationId" : "delete_3",
@@ -7160,6 +7239,28 @@
         },
         "required" : [ "category", "employeeId", "endDate", "startDate" ]
       },
+      "AbsenceStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "companies" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CompanyStatisticsDto"
+            }
+          },
+          "people" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PersonStatisticsDto"
+            }
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "companies", "people", "year" ]
+      },
       "AvailabilityDto" : {
         "type" : "object",
         "properties" : {
@@ -7382,6 +7483,30 @@
           }
         },
         "required" : [ "name", "version" ]
+      },
+      "CompanyStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "assignments" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "company" : {
+            "type" : "string"
+          },
+          "days" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "employeeIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        },
+        "required" : [ "assignments", "company", "days", "employeeIds" ]
       },
       "CourtesyCarChoice" : {
         "type" : "object",
@@ -8103,6 +8228,50 @@
           }
         },
         "required" : [ "description", "orderedOn", "status", "supplier" ]
+      },
+      "PersonStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "active" : {
+            "type" : "boolean"
+          },
+          "employeeId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "externalWorkDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "sickDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "trainingDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "vacationEntitlement" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vacationLeft" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "vacationPlanned" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "vacationTaken" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        },
+        "required" : [ "active", "employeeId", "externalWorkDays", "name", "sickDays", "trainingDays", "vacationEntitlement", "vacationLeft", "vacationPlanned", "vacationTaken" ]
       },
       "ProblemDetail" : {
         "type" : "object",

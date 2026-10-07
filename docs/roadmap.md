@@ -280,9 +280,14 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   (4 colored buttons), from/until with "erst ab Mittag"/"nur bis Mittag", company for external
   work; click a bar = change or delete it (view-only devices: just show). Overlap: red outline
   while dragging, the server's message at "Von".
-- [ ] **9c – Statistics on the server**
+- [x] **9c – Statistics on the server**
   Vacation days = working days (without weekends/holidays) (→ F6), balance per person,
   external work per company.
+  Done: `GET /api/absences/statistics?year=` counts in half working days (`AbsencePeriod.workingHalfDays`),
+  an absence over New Year is split between the years. Per person: entitlement, vacation taken
+  (up to today) / planned (from tomorrow) / left, sick, training, external work days; per company
+  (spelling variants together): days, assignments, who. "Mitarbeiter" → view "Statistik" with the
+  year in the address, key figures, a vacation bar per person (red when over the entitlement).
 
 ## Phase 10 – Dashboard (TV kiosk)
 

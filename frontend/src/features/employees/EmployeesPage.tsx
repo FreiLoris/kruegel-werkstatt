@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, CalendarDays, List, Pencil, Plus, RotateCcw } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChartColumn, CalendarDays, List, Pencil, Plus, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
@@ -7,6 +7,7 @@ import { useToast } from '../../components/ui/toastContext'
 import { formatDate } from '../../lib/format'
 import { moved } from '../../lib/sortOrder'
 import { AbsenceCalendarView } from '../absences/AbsenceCalendarView'
+import { AbsenceStatisticsView } from '../absences/AbsenceStatisticsView'
 import { ROLES, useAllEmployees, useReorderEmployees, useSetEmployeeActive, type Employee } from './employeeApi'
 import { EmployeeDialog } from './EmployeeDialog'
 import styles from './EmployeesPage.module.css'
@@ -15,19 +16,21 @@ import { NameBadge } from './NameBadge'
 /** Which dialog is open: none, "new" or a specific person */
 type Dialog = { kind: 'new' } | { kind: 'edit'; employee: Employee } | null
 
-type View = 'calendar' | 'list'
+type View = 'calendar' | 'statistics' | 'list'
 const VIEWS: { view: View; label: string; icon: typeof List }[] = [
   { view: 'calendar', label: 'Kalender', icon: CalendarDays },
+  { view: 'statistics', label: 'Statistik', icon: ChartColumn },
   { view: 'list', label: 'Liste', icon: List },
 ]
 
 /**
- * The employees: the calendar of who is away when (9b, as in the old app the first view) and the
- * list to manage them. The view stands in the address (`view=list`).
+ * The employees: the calendar of who is away when (9b, as in the old app the first view), the
+ * year statistics (9c) and the list to manage them. The view stands in the address (`view=`).
  */
 export function EmployeesPage() {
   const [params, setParams] = useSearchParams()
-  const view: View = params.get('view') === 'list' ? 'list' : 'calendar'
+  const requested = params.get('view')
+  const view: View = VIEWS.some((v) => v.view === requested) ? (requested as View) : 'calendar'
 
   return (
     // the calendar uses the whole screen width (AppLayout: data-wide)
@@ -41,15 +44,17 @@ export function EmployeesPage() {
               icon={icon}
               variant={view === v ? 'primary' : 'secondary'}
               aria-pressed={view === v}
-              // the month belongs to the calendar – the list starts without it
-              onClick={() => setParams(v === 'list' ? { view: 'list' } : {}, { replace: true })}
+              // month and year belong to their view – switching starts without them
+              onClick={() => setParams(v === 'calendar' ? {} : { view: v }, { replace: true })}
             >
               {label}
             </Button>
           ))}
         </div>
       </div>
-      {view === 'calendar' ? <AbsenceCalendarView /> : <EmployeeList />}
+      {view === 'calendar' && <AbsenceCalendarView />}
+      {view === 'statistics' && <AbsenceStatisticsView />}
+      {view === 'list' && <EmployeeList />}
     </div>
   )
 }

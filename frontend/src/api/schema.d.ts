@@ -28,6 +28,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/absences/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Absences of a year counted
+         * @description In working days (Mon–Fri without public holidays), half days as 0.5: vacation taken/planned/left per person, sick, training, external work – and per company.
+         */
+        get: operations["statistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/absences/{id}": {
         parameters: {
             query?: never;
@@ -1250,6 +1270,12 @@ export interface components {
              */
             version?: number;
         };
+        AbsenceStatisticsDto: {
+            companies: components["schemas"]["CompanyStatisticsDto"][];
+            people: components["schemas"]["PersonStatisticsDto"][];
+            /** Format: int32 */
+            year: number;
+        };
         AvailabilityDto: {
             available: boolean;
             /** @description Bookings that overlap the period; empty when available */
@@ -1361,6 +1387,14 @@ export interface components {
              */
             version: number;
             website?: string;
+        };
+        CompanyStatisticsDto: {
+            /** Format: int32 */
+            assignments: number;
+            company: string;
+            /** Format: double */
+            days: number;
+            employeeIds: string[];
         };
         CourtesyCarChoice: {
             /** Format: uuid */
@@ -1677,6 +1711,26 @@ export interface components {
             /** @enum {string} */
             status: "TO_ORDER" | "ORDERED" | "ARRIVED";
             supplier: string | null;
+        };
+        PersonStatisticsDto: {
+            active: boolean;
+            /** Format: uuid */
+            employeeId: string;
+            /** Format: double */
+            externalWorkDays: number;
+            name: string;
+            /** Format: double */
+            sickDays: number;
+            /** Format: double */
+            trainingDays: number;
+            /** Format: int32 */
+            vacationEntitlement: number;
+            /** Format: double */
+            vacationLeft: number;
+            /** Format: double */
+            vacationPlanned: number;
+            /** Format: double */
+            vacationTaken: number;
         };
         ProblemDetail: {
             detail?: string;
@@ -2140,6 +2194,73 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AbsenceDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    statistics: {
+        parameters: {
+            query: {
+                year: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AbsenceStatisticsDto"];
                 };
             };
             /** @description Bad Request */
