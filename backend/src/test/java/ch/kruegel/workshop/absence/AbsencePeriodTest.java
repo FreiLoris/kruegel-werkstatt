@@ -3,6 +3,7 @@ package ch.kruegel.workshop.absence;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,6 +32,20 @@ class AbsencePeriodTest {
         assertThat(morning.overlaps(AbsencePeriod.days(MON, TUE))).isTrue();
         // back to back over the night is fine too
         assertThat(AbsencePeriod.days(MON, MON).overlaps(AbsencePeriod.days(TUE, TUE))).isFalse();
+    }
+
+    @Test
+    void countsHalfWorkingDaysInsideTheGivenDays() {
+        // Fri afternoon – Tue noon, the weekend in between; a "holiday" on Monday
+        LocalDate fri = MON.minusDays(3);
+        AbsencePeriod period = new AbsencePeriod(fri, true, TUE, true);
+        Predicate<LocalDate> weekdays = day -> day.getDayOfWeek().getValue() <= 5;
+
+        assertThat(period.workingHalfDays(fri, TUE, weekdays)).isEqualTo(1 + 2 + 1);
+        assertThat(period.workingHalfDays(fri, TUE, weekdays.and(day -> !day.equals(MON)))).isEqualTo(1 + 1);
+        // only the part inside [from, to] counts
+        assertThat(period.workingHalfDays(MON, MON.plusDays(30), weekdays)).isEqualTo(2 + 1);
+        assertThat(period.workingHalfDays(TUE.plusDays(1), TUE.plusDays(9), weekdays)).isZero();
     }
 
     @Test

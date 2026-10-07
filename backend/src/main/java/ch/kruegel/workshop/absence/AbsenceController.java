@@ -30,9 +30,11 @@ import java.util.UUID;
 class AbsenceController {
 
     private final AbsenceService service;
+    private final AbsenceStatisticsService statistics;
 
-    AbsenceController(AbsenceService service) {
+    AbsenceController(AbsenceService service, AbsenceStatisticsService statistics) {
         this.service = service;
+        this.statistics = statistics;
     }
 
     @Operation(summary = "Absences touching the days `from`–`to`", description = "Both inclusive, max. "
@@ -42,6 +44,13 @@ class AbsenceController {
                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                              @RequestParam(required = false) UUID employeeId) {
         return service.between(from, to, employeeId);
+    }
+
+    @Operation(summary = "Absences of a year counted", description = "In working days (Mon–Fri without public holidays), "
+            + "half days as 0.5: vacation taken/planned/left per person, sick, training, external work – and per company.")
+    @GetMapping("/statistics")
+    AbsenceStatisticsDto statistics(@RequestParam int year) {
+        return statistics.forYear(year);
     }
 
     @Operation(summary = "Enter absence", description = "Not overlapping another absence of the person (to the half day).")

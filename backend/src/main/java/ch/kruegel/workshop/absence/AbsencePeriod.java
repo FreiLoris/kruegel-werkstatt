@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * From when to when someone is away – whole days, the first day possibly only from noon, the last
@@ -55,5 +56,27 @@ public record AbsencePeriod(
     /** The same rule as the database constraint: half-open, to the half day. */
     public boolean overlaps(AbsencePeriod other) {
         return start().isBefore(other.end()) && other.start().isBefore(end());
+    }
+
+    /**
+     * How many HALF working days of this period lie in [from, to] (both inclusive) – in half days so
+     * the count stays a whole number; 2 = one day. Weekends and public holidays do not count (F6:
+     * the old app counted vacation over Saturday and Sunday).
+     *
+     * @param isWorkingDay e.g. {@code ZurichPublicHolidays::isWorkingDay}
+     */
+    public int workingHalfDays(LocalDate from, LocalDate to, Predicate<LocalDate> isWorkingDay) {
+        LocalDate first = startDate.isAfter(from) ? startDate : from;
+        LocalDate last = endDate.isBefore(to) ? endDate : to;
+        int halves = 0;
+        for (LocalDate day = first; !day.isAfter(last); day = day.plusDays(1)) {
+            if (!isWorkingDay.test(day)) {
+                continue;
+            }
+            boolean onlyAfternoon = day.equals(startDate) && startsAfternoon;
+            boolean onlyMorning = day.equals(endDate) && endsNoon;
+            halves += onlyAfternoon || onlyMorning ? 1 : 2;
+        }
+        return halves;
     }
 }

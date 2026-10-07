@@ -49,3 +49,14 @@ export function useDeleteAbsence() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
+
+export type AbsenceStatistics = components['schemas']['AbsenceStatisticsDto']
+export type PersonStatistics = components['schemas']['PersonStatisticsDto']
+
+/** The absences of a year counted on the server (working days, half days 0.5) – live with the absences. */
+export function useAbsenceStatistics(year: number) {
+  return useQuery({
+    queryKey: [TOPIC, 'statistics', year],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/absences/statistics', { params: { query: { year } }, signal })),
+  })
+}
