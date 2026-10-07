@@ -5,7 +5,7 @@ import { formatLocalDateTime, nowTimeIso, todayIso } from '../../lib/format'
 import { useCancelBooking, useReturn, type Booking } from './bookingApi'
 
 /** Now in Swiss time as "2026-10-15T10:00" – compared with booking times */
-export function nowLocal(): string {
+function nowLocal(): string {
   return `${todayIso()}T${nowTimeIso()}`
 }
 

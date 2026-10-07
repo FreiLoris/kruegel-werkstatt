@@ -1,0 +1,16 @@
+.clock {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+
+.date {
+  color: var(--color-text-muted);
+}
+
+.time {
+  font-size: var(--font-size-title);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
+import { useToday } from '../../lib/clock'
 import { isWeekend, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { addDays, formatDate, formatLocalDateTime, minutesBetween, todayIso } from '../../lib/format'
+import { addDays, formatDate, formatLocalDateTime, minutesBetween } from '../../lib/format'
 import type { CourtesyCar } from '../courtesy-cars/courtesyCarApi'
 import type { Booking } from './bookingApi'
 import styles from './OccupancyCalendar.module.css'
@@ -75,7 +76,7 @@ export function OccupancyCalendar({
 }: OccupancyCalendarProps) {
   const [gesture, setGesture] = useState<Gesture | null>(null)
   const holdTimer = useRef<number | undefined>(undefined)
-  const today = todayIso()
+  const today = useToday()
   const dayList = Array.from({ length: days }, (_, i) => addDays(from, i))
   const nowOffset = minutesBetween(`${from}T00:00`, now)
   const barsFor = (carId: string) =>

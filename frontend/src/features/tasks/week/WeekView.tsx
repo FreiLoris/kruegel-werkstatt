@@ -14,11 +14,12 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { useMemo, useState, type ReactNode } from 'react'
+import { useToday } from '../../../lib/clock'
 import { reasonOf } from '../../../api/errors'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { useToast } from '../../../components/ui/toastContext'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../../lib/format'
+import { addDays, formatDate } from '../../../lib/format'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
@@ -72,7 +73,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const shown = dropped && dropped.basedOn === tasks.data ? dropped.tasks : tasks.data
   const days = useMemo(() => weekDays(monday, shown ?? []), [monday, shown])
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
-  const today = todayIso()
+  const today = useToday()
 
   if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
   if (!tasks.data || !lifts || !employees) return <p className="muted">Lade Termine …</p>

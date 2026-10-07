@@ -1,5 +1,6 @@
+import { useToday } from '../../lib/clock'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { addDays, formatDate, formatTime, todayIso } from '../../lib/format'
+import { addDays, formatDate, formatTime } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { useAllLifts } from '../lifts/liftApi'
 import { useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
@@ -16,7 +17,7 @@ const LOOK_AHEAD_DAYS = 60
  * an empty black area (UI review).
  */
 export function TodayByLift() {
-  const today = todayIso()
+  const today = useToday()
   const tasks = useTasksOfDay(today)
   const ahead = useTasksBetween(addDays(today, 1), addDays(today, LOOK_AHEAD_DAYS))
   const { data: lifts } = useAllLifts()
@@ -45,7 +46,8 @@ export function TodayByLift() {
 
   const columns = liftColumns(tasks.data, lifts)
   return (
-    <div className={styles.lifts} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(9rem, 1fr))` }}>
+    // columns shrink rather than scroll – nobody scrolls on the TV
+    <div className={styles.lifts} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
       {columns.map((column) => (
         <section key={column.id} className={styles.lift} aria-label={column.name}>
           <h3 className={styles.name}>{column.name}</h3>

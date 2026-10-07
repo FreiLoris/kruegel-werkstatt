@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
-import { todayIso } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
 import { ABSENCE_CATEGORY, useAbsences, type Absence, type AbsenceCategory } from './absenceApi'
@@ -22,7 +22,7 @@ type Dialog = { kind: 'new'; fresh?: NewAbsence } | { kind: 'open'; absence: Abs
 export function AbsenceCalendarView() {
   const [params, setParams] = useSearchParams()
   const canEdit = useCanEdit()
-  const today = todayIso()
+  const today = useToday()
   const [dialog, setDialog] = useState<Dialog>(null)
 
   const requested = params.get('month')

@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useCompany } from '../features/company/companyApi'
 import { useActiveEmployees } from '../features/employees/employeeApi'
 import styles from './AppLayout.module.css'
+import { KioskClock } from './kiosk/KioskClock'
+import { useBackToDashboard } from './kiosk/useBackToDashboard'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
@@ -17,8 +19,10 @@ import { useDevicePerson } from './person/useDevicePerson'
  *
  * If the device has not said yet who uses it, the person picker appears instead of the page.
  *
- * The workshop TV ("view only") shows the dashboard full screen: no header, the navigation at the
- * bottom (10a). Every other device keeps the normal header there too.
+ * The workshop TV ("view only") shows the dashboard full screen: no header, the navigation, date,
+ * time and live status at the bottom (10a), larger and with more contrast (10c). Every other
+ * device keeps the normal header there too. On another page the TV returns to the dashboard by
+ * itself after a while without touch.
  */
 export function AppLayout() {
   const liveStatus = useLiveUpdates()
@@ -27,6 +31,7 @@ export function AppLayout() {
   const { data: active = [] } = useActiveEmployees()
   const { data: company } = useCompany()
   const kiosk = device.kind === 'viewOnly' && pathname === '/'
+  useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
 
   // Browser tab and bookmarks carry the workshop's name
   useEffect(() => {
@@ -35,13 +40,17 @@ export function AppLayout() {
 
   if (kiosk) {
     return (
-      <div className={styles.kiosk}>
+      // data-kiosk: larger text and stronger contrast (tokens.css)
+      <div className={styles.kiosk} data-kiosk>
         <main className={styles.kioskContent}>
           <Outlet />
         </main>
         <nav className={styles.bottomNav} aria-label="Hauptnavigation">
           <MainLinks />
-          <LiveIndicator status={liveStatus} />
+          <span className={styles.status}>
+            <KioskClock />
+            <LiveIndicator status={liveStatus} />
+          </span>
         </nav>
       </div>
     )

@@ -1,11 +1,12 @@
 import { ArrowDown, ArrowUp, Printer } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useToday } from '../../../lib/clock'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { Select, TextField } from '../../../components/ui/Fields'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../../lib/format'
+import { addDays, formatDate } from '../../../lib/format'
 import { useDebouncedValue } from '../../../lib/useDebouncedValue'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
@@ -49,7 +50,7 @@ const COLUMNS: { key: SortKey; title: string }[] = [
 export function TaskListView() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
-  const today = todayIso()
+  const today = useToday()
 
   const from = valid(params.get('from')) ?? today
   const to = valid(params.get('to')) ?? addDays(today, 13)

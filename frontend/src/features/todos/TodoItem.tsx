@@ -1,11 +1,12 @@
 import { ClipboardList, Pencil, ShoppingCart, StickyNote, Trash2, Undo2 } from 'lucide-react'
 import { useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { useNavigate } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { useToast } from '../../components/ui/toastContext'
-import { formatDate, formatTime, formatTimestamp, todayIso } from '../../lib/format'
+import { formatDate, formatTime, formatTimestamp } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { useDeleteTodo, useSetTodoDone, type Todo } from './todoApi'
@@ -54,7 +55,7 @@ export function TodoItem({
   const [editing, setEditing] = useState(false)
   const person = (id: string | null) => everyone?.find((e) => e.id === id)
   const done = todo.doneAt !== null
-  const today = todayIso()
+  const today = useToday()
 
   function tick(isDone: boolean) {
     setDone.mutate({ id: todo.id, done: isDone }, { onError: (error) => toast.error(reasonOf(error)) })

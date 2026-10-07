@@ -1,9 +1,10 @@
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { isoWeek, mondayOf, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../lib/format'
+import { addDays, formatDate } from '../../lib/format'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
 import styles from './AppointmentsPage.module.css'
 import { DayView } from './day/DayView'
@@ -26,7 +27,7 @@ export function AppointmentsPage() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const canEdit = useCanEdit()
-  const today = todayIso()
+  const today = useToday()
   const requested = params.get('date')
   const date = requested && ISO_DATE.test(requested) ? requested : today
   const requestedView = params.get('view')

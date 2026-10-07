@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { Button } from '../../components/ui/Button'
-import { todayIso } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { useAbsenceStatistics, type PersonStatistics } from './absenceApi'
@@ -17,7 +17,7 @@ const UNKNOWN_COLOR = '#c8c8c8'
  */
 export function AbsenceStatisticsView() {
   const [params, setParams] = useSearchParams()
-  const currentYear = Number(todayIso().slice(0, 4))
+  const currentYear = Number(useToday().slice(0, 4))
   const year = yearFrom(params.get('year'), currentYear)
   const { data: statistics, error } = useAbsenceStatistics(year)
   const { data: employees } = useAllEmployees()

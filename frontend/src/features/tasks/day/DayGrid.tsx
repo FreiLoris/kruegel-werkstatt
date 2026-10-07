@@ -19,7 +19,7 @@ import type { QueryKey } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
 import { reasonOf } from '../../../api/errors'
 import { useToast } from '../../../components/ui/toastContext'
-import { nowTimeIso, todayIso } from '../../../lib/format'
+import { useClock } from '../../../lib/clock'
 import type { Employee } from '../../employees/employeeApi'
 import type { Lift } from '../../lifts/liftApi'
 import { useScheduleTask, type Task } from '../taskApi'
@@ -131,7 +131,9 @@ export function DayGrid({
   )
   const byId = useMemo(() => new Map(shown.map((task) => [task.id, task])), [shown])
   const range = useMemo(() => visibleRange(shown, date), [shown, date])
-  const now = useNow(date === todayIso())
+  const clock = useClock()
+  // the "now" line only on today – it moves every minute (one clock for the app, 10c)
+  const now = date === clock.today ? minutesOf(clock.time) : null
 
   const [dragging, setDragging] = useState<{ id: string; columnId: string; start: number } | null>(null)
   const [resizing, setResizing] = useState<{ id: string; end: number } | null>(null)
@@ -444,17 +446,6 @@ function chipTitle(task: Task): string {
   return [timeRange(task.date, task.time, task.endAt), task.customer.displayName, task.vehicle?.licensePlate, task.vehicle?.description]
     .filter(Boolean)
     .join(' · ')
-}
-
-/** Current minute of the day while the grid shows today (the "now" line), null otherwise */
-function useNow(isToday: boolean): number | null {
-  const [now, setNow] = useState(() => minutesOf(nowTimeIso()))
-  useEffect(() => {
-    if (!isToday) return
-    const timer = setInterval(() => setNow(minutesOf(nowTimeIso())), 60_000)
-    return () => clearInterval(timer)
-  }, [isToday])
-  return isToday ? now : null
 }
 
 function TimeAxis({ range, scale }: { range: { start: number; end: number }; scale: number }) {

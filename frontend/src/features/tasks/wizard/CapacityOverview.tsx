@@ -1,8 +1,9 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { useToday } from '../../../lib/clock'
 import { Button } from '../../../components/ui/Button'
 import { isoWeek, isWeekend, mondayOf, weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../../lib/format'
+import { addDays, formatDate } from '../../../lib/format'
 import { useAllLifts } from '../../lifts/liftApi'
 import { DayGrid, type Slot } from '../day/DayGrid'
 import { useTasksBetween, useTasksOfDay } from '../taskApi'
@@ -30,7 +31,7 @@ interface CapacityOverviewProps {
  * taken at that time shows red ("belegt"). Weekends only appear when there are tasks.
  */
 export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, taskId }: CapacityOverviewProps) {
-  const today = todayIso()
+  const today = useToday()
   const [day, setDay] = useState(picked.date || today)
   const [monday, setMonday] = useState(() => mondayOf(day))
   // A date typed in the form shows its day ("adjust state while rendering", no effect needed)
