@@ -57,6 +57,20 @@ public class Note extends BaseEntity {
         apply(details);
     }
 
+    /**
+     * Dragged from one pinboard column to another: {@code from} gives the note away, {@code to} takes
+     * it – the other people stay (the old app overwrote a multiple assignment with one name).
+     * Empty = the column "Neu" (nobody).
+     */
+    public void reassign(Employee from, Employee to) {
+        if (from != null) {
+            assignees.remove(from);
+        }
+        if (to != null) {
+            assignees.add(to);
+        }
+    }
+
     /** Put away – the caller ticks off the open sub-tasks at the same moment. */
     public void archive(Instant at) {
         this.archivedAt = Objects.requireNonNull(at, "at");

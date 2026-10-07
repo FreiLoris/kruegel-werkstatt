@@ -160,6 +160,34 @@ class NoteApiTest {
     }
 
     @Test
+    void draggingBetweenColumnsSwapsOnlyThatPerson() {
+        String note = idOf(create("{ \"text\": \"für beide\", \"assigneeIds\": [\"%s\", \"%s\"] }".formatted(reto.getId(), erich.getId())));
+        Employee mora = employees.save(EmployeeTestData.employee("Mora", 3));
+
+        // from Reto's column to Mora's: Erich stays (the old app overwrote it with one name)
+        MvcTestResult moved = send("PUT", "/api/notes/" + note + "/move",
+                "{ \"fromEmployeeId\": \"%s\", \"toEmployeeId\": \"%s\" }".formatted(reto.getId(), mora.getId()));
+        assertThat(moved).bodyJson().extractingPath("$.assigneeIds").asArray()
+                .containsExactly(erich.getId().toString(), mora.getId().toString());
+
+        // to "Neu": that person gives it away; from "Neu": the person takes it
+        send("PUT", "/api/notes/" + note + "/move", "{ \"fromEmployeeId\": \"%s\" }".formatted(erich.getId()));
+        MvcTestResult alone = send("PUT", "/api/notes/" + note + "/move", "{ \"fromEmployeeId\": \"%s\" }".formatted(mora.getId()));
+        assertThat(alone).bodyJson().extractingPath("$.assigneeIds").asArray().isEmpty();
+        assertThat(send("PUT", "/api/notes/" + note + "/move", "{ \"toEmployeeId\": \"%s\" }".formatted(reto.getId())))
+                .bodyJson().extractingPath("$.assigneeIds").asArray().containsExactly(reto.getId().toString());
+
+        // no version needed, but only selectable people and not when archived
+        Employee notForNotes = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
+                true, false, true), 4));
+        assertFieldError(send("PUT", "/api/notes/" + note + "/move", "{ \"toEmployeeId\": \"%s\" }".formatted(notForNotes.getId())),
+                "toEmployeeId");
+        send("PUT", "/api/notes/" + note + "/archived", "{ \"archived\": true }");
+        assertThat(send("PUT", "/api/notes/" + note + "/move", "{ \"toEmployeeId\": \"%s\" }".formatted(erich.getId())))
+                .hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void theArchiveIsSearchable() {
         String brakes = idOf(create("{ \"text\": \"Bremsen Huber\", \"info\": \"100% erledigt\" }"));
         String oil = idOf(create("{ \"text\": \"Öl bestellen\" }"));

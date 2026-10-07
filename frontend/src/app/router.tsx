@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { HomePage } from '../features/home/HomePage'
+import { PinboardPage } from '../features/notes/PinboardPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
 import { AppointmentsPage } from '../features/tasks/AppointmentsPage'
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'courtesy-cars', element: <CourtesyCarsPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
       { path: 'todos', element: <TodosPage /> },
+      { path: 'pinboard', element: <PinboardPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },

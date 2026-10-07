@@ -3,6 +3,7 @@ package ch.kruegel.workshop.note;
 import ch.kruegel.workshop.todo.TodoDto;
 import ch.kruegel.workshop.todo.TodoRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,6 +35,12 @@ class NoteController {
 
     NoteController(NoteService service) {
         this.service = service;
+    }
+
+    /** Dragged from one column to another; empty = the column "Neu" */
+    record NoteMoveRequest(
+            @Schema(types = {"string", "null"}, format = "uuid") UUID fromEmployeeId,
+            @Schema(types = {"string", "null"}, format = "uuid") UUID toEmployeeId) {
     }
 
     /** Put away or back on the board */
@@ -76,6 +83,13 @@ class NoteController {
     @PutMapping("/{id}/archived")
     NoteDto setArchived(@PathVariable UUID id, @Valid @RequestBody NoteArchivedRequest request) {
         return service.setArchived(id, request.archived());
+    }
+
+    @Operation(summary = "Move between pinboard columns", description = "The person `from` gives the note away, `to` "
+            + "takes it – other people stay. Empty = the column \"Neu\". No version needed; not on an archived note (409).")
+    @PutMapping("/{id}/move")
+    NoteDto move(@PathVariable UUID id, @RequestBody NoteMoveRequest request) {
+        return service.move(id, request.fromEmployeeId(), request.toEmployeeId());
     }
 
     @Operation(summary = "Delete note", description = "With its sub-tasks. Normally a note is archived instead.")

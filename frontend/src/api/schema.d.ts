@@ -593,6 +593,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/notes/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Move between pinboard columns
+         * @description The person `from` gives the note away, `to` takes it – other people stay. Empty = the column "Neu". No version needed; not on an archived note (409).
+         */
+        put: operations["move"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notes/{id}/todos": {
         parameters: {
             query?: never;
@@ -1509,6 +1529,12 @@ export interface components {
             updatedBy: string | null;
             /** Format: int64 */
             version: number;
+        };
+        NoteMoveRequest: {
+            /** Format: uuid */
+            fromEmployeeId?: string | null;
+            /** Format: uuid */
+            toEmployeeId?: string | null;
         };
         NoteRequest: {
             /** @description Empty = nobody yet */
@@ -4918,6 +4944,77 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["NoteArchivedRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NoteDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteMoveRequest"];
             };
         };
         responses: {

@@ -246,9 +246,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   V17 `note` + `note_assignee`, `todo.note_id`; `/api/notes` (board with filters, archive with search,
   `POST /{id}/todos` for sub-tasks). The to-do knows its note only by ID (no package cycle).
   Task detail: card "Pinnwand" (notes of the task, add one for chosen people, archive after asking).
-- [ ] **8d – Pinboard page**
+- [x] **8d – Pinboard page**
   Columns from the employee list (→ bug #3), same order as dashboard, drag between
   columns, detail modal (large text field, visible save), archive with search.
+  `/pinboard`: "Neu" + people with a pinboard column (employee order – the dashboard follows it);
+  dragging swaps only that person (`PUT /api/notes/{id}/move`, no version); notes of people without
+  column stay visible in "Neu". Dialog: growing fields, "Gespeichert ✓", people, task via search,
+  sub-tasks. Archive grouped by month with search, "Wieder auf die Pinnwand".
 
 ## Phase 9 – Absences & employee calendar
 
