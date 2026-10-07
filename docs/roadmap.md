@@ -291,8 +291,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
 
 ## Phase 10 – Dashboard (TV kiosk)
 
-- [ ] **10a – Layout & week grid**
+- [x] **10a – Layout & week grid**
   With day headers (→ UI review dashboard), appointments + absences per day, navigation at the bottom.
+  Done: the dashboard is the start page (`/`). Decision with the user: full screen with the
+  navigation at the bottom (+ live status) only on the "view only" device (the TV) – office PC and
+  tablets keep the normal header there. The week (weekend: the coming one) with large day heads,
+  holidays, who is away and compact appointment rows (time, customer, lift, mechanic, status bar);
+  a click opens the task.
 - [ ] **10b – Today by lift, mini pinboard, to-dos**
   Empty state "next appointment …", readable column names, overdue to-dos with date.
 - [ ] **10c – Kiosk mode for the TV**

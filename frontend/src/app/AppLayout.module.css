@@ -72,3 +72,31 @@
 .content:has([data-wide]) {
   max-width: none;
 }
+
+/* Workshop TV: the page fills the screen, the navigation sits at the bottom (no strip below it) */
+.kiosk {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100dvh;
+}
+
+.kioskContent {
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+.bottomNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+/* the live status to the far right */
+.bottomNav > :last-child {
+  margin-left: auto;
+}

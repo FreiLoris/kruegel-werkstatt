@@ -107,6 +107,8 @@ If a term is missing: add it here in the same pull request that introduces it.
 | ↳ Versicherung bis | `insuranceUntil` | |
 | ↳ bald fällig / überfällig (abgelaufen) | `DUE_SOON` / `OVERDUE` (`DueStatus`) | "soon" = within 30 days |
 | ausser Betrieb nehmen | `deactivate` | |
+| Dashboard / Startseite | `DashboardPage` (package `dashboard`) | `/`; on the TV full screen ("kiosk") |
+| Kiosk (Werkstatt-TV) | `kiosk` (AppLayout) | "view only" device on `/`: no header, navigation at the bottom |
 | Pinnwand | `Pinboard` | |
 | Notiz | `Note` (package `note`) | author = `createdBy`; several assignees; task by reference |
 | Infos (der Notiz) | `info` | longer background text |

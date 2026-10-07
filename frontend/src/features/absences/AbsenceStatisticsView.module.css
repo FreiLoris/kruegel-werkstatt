@@ -49,11 +49,12 @@
   color: var(--color-text-muted);
 }
 
-section + section {
+/* scoped by class – a bare "section" selector in a CSS module applies to the whole app */
+.section + .section {
   margin-top: var(--space-6);
 }
 
-section h3 {
+.section h3 {
   margin: 0 0 var(--space-3);
 }
 
