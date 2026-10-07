@@ -298,8 +298,13 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   tablets keep the normal header there. The week (weekend: the coming one) with large day heads,
   holidays, who is away and compact appointment rows (time, customer, lift, mechanic, status bar);
   a click opens the task.
-- [ ] **10b – Today by lift, mini pinboard, to-dos**
+- [x] **10b – Today by lift, mini pinboard, to-dos**
   Empty state "next appointment …", readable column names, overdue to-dos with date.
+  Done: below the week "Heute nach Lift" (every lift in service, "frei" when empty, also the task
+  from yesterday still up; no appointment today → the next one within 60 days) and "Pinnwand &
+  To-dos" – the 8e columns in small (name badges, notes with sub-task progress, to-dos most urgent
+  first with "überfällig seit …", at most 3 notes / 5 to-dos per person + "+ n weitere"). Only to
+  look at: nothing can be ticked off on the dashboard (F5), the pinboard is one click away.
 - [ ] **10c – Kiosk mode for the TV**
   Large font, high contrast, clock + connection status, date updates itself
   (→ bug #15), no accidental actions by touch (→ F5).

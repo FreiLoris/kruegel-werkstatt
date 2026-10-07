@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dueLabel, dueState } from './todoDue'
+import { byUrgency, dueLabel, dueState } from './todoDue'
 
 describe('dueState', () => {
   it('overdue before today, today, later, or no deadline', () => {
@@ -16,5 +16,14 @@ describe('dueLabel', () => {
     expect(dueLabel('2026-10-15', '2026-10-15')).toBe('heute fällig')
     expect(dueLabel('2026-10-20', '2026-10-15')).toBe('bis 20.10.2026')
     expect(dueLabel(null, '2026-10-15')).toBe('')
+  })
+})
+
+describe('byUrgency', () => {
+  it('earliest deadline first, without deadline last, the list itself unchanged', () => {
+    const todos = [{ id: 'none', dueDate: null }, { id: 'later', dueDate: '2026-10-20' }, { id: 'overdue', dueDate: '2026-10-01' }]
+
+    expect(byUrgency(todos).map((t) => t.id)).toEqual(['overdue', 'later', 'none'])
+    expect(todos[0].id).toBe('none')
   })
 })
