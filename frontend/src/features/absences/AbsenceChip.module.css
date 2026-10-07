@@ -14,19 +14,3 @@
 .half {
   color: var(--color-text-muted);
 }
-
-.vacation {
-  --absence-color: var(--color-absence-vacation);
-}
-
-.sick {
-  --absence-color: var(--color-absence-sick);
-}
-
-.external {
-  --absence-color: var(--color-absence-external);
-}
-
-.training {
-  --absence-color: var(--color-absence-training);
-}

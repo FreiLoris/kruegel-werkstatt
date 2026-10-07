@@ -271,9 +271,15 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   DB constraint (`EXCLUDE USING gist`) is the safety net. `/api/absences` (list by period/person,
   create, change with version, delete). Week view: chips "Name · Kategorie (Vormittag)" under each
   day's head, category color + text.
-- [ ] **9b – Calendar page**
+- [x] **9b – Calendar page**
   Continuous bars instead of single boxes, fixed column width, 4 distinguishable colors,
   weekends + public holidays marked, drag selection → entry, always loads (→ F3).
+  Done: "Mitarbeiter" opens on the month calendar (views Kalender / Liste, month in the address).
+  One row per person (+ former ones who were away that month), one bar per absence in half-day
+  steps, birthdays marked. Drag open days (tablet: hold first) → dialog with person, category
+  (4 colored buttons), from/until with "erst ab Mittag"/"nur bis Mittag", company for external
+  work; click a bar = change or delete it (view-only devices: just show). Overlap: red outline
+  while dragging, the server's message at "Von".
 - [ ] **9c – Statistics on the server**
   Vacation days = working days (without weekends/holidays) (→ F6), balance per person,
   external work per company.
