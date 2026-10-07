@@ -1,0 +1,83 @@
+# Workshop app on the Synology NAS (Container Manager project) – see docs/deployment-nas.md.
+#
+# Unlike the compose.yaml in the project root nothing is built here: the images come ready-made
+# from the GitHub Container Registry (CI pushes them after every merge to main). Keep the
+# services in step with the root compose.yaml.
+#
+# Needs a .env next to this file (template: .env.example) – without a database password and a
+# backup folder it refuses to start instead of running with a default password.
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-werkstatt}
+      POSTGRES_USER: ${DB_USER:-werkstatt}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
+    # no "ports": the database is only reachable inside the project, never from the network
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 256m
+
+  backend:
+    image: ghcr.io/freiloris/kruegel-werkstatt-backend:${APP_VERSION:-latest}
+    # "Erstellen"/"up" fetches the newest image – an update needs nothing else
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-werkstatt}
+      DB_USER: ${DB_USER:-werkstatt}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    mem_limit: 400m
+
+  frontend:
+    image: ghcr.io/freiloris/kruegel-werkstatt-frontend:${APP_VERSION:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8090}:80"
+    mem_limit: 64m
+
+  backup:
+    image: ghcr.io/freiloris/kruegel-werkstatt-backup:${APP_VERSION:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${DB_NAME:-werkstatt}
+      PGUSER: ${DB_USER:-werkstatt}
+      PGPASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
+      TZ: Europe/Zurich
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
+    volumes:
+      - ${BACKUP_DIR:?BACKUP_DIR fehlt in .env}:/dumps
+    mem_limit: 64m
+
+volumes:
+  db-data:

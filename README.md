@@ -38,6 +38,8 @@ database backup – [`docs/operations.md`](docs/operations.md)). Why these techn
 | `docs/conventions.md` | Binding rules for code, database, time, tests |
 | `docs/glossary.md` | German domain terms ↔ English code names |
 | `docs/operations.md` | Operation: backups, restore |
+| `docs/deployment-nas.md` | Installing and updating on the Synology NAS |
+| `deploy/nas/` | `compose.yaml` + `.env.example` for the NAS (ready-made images, nothing is built there) |
 | `backup/` | Scripts of the backup container (nightly `pg_dump`, restore) |
 | `docs/adr/` | Architecture Decision Records |
 | `docs/analysis/` | Analysis of the old app: features, bugs, UI review with screenshots (German) |

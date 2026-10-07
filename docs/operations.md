@@ -5,7 +5,8 @@ How the app is kept safe in daily operation. All commands are run in the project
 
 ## Backups
 
-The `backup` container backs up the database every night and deletes old backups.
+The `backup` container (own image, `backup/Dockerfile`) backs up the database every night and
+deletes old backups. Installing on the NAS: [`deployment-nas.md`](deployment-nas.md).
 
 | Setting (`.env`) | Default | Meaning |
 |---|---|---|
