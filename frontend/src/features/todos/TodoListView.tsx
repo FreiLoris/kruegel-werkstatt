@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
-import { todayIso } from '../../lib/format'
 import { useActiveEmployees } from '../employees/employeeApi'
 import { useTodos, type TodoFilter } from './todoApi'
 import { dueState } from './todoDue'
@@ -25,7 +25,7 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
   const canEdit = useCanEdit()
   const { data: active } = useActiveEmployees()
   const [showDone, setShowDone] = useState(false)
-  const today = todayIso()
+  const today = useToday()
 
   const personParam = params.get('person') ?? ''
   const people = (active ?? []).filter((e) => e.selectableForTodos)

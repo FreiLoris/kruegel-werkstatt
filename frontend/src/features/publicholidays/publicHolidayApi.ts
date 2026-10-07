@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
-import { todayIso } from '../../lib/format'
+import { useToday } from '../../lib/clock'
 
 export type PublicHoliday = components['schemas']['PublicHolidayDto']
 
@@ -22,7 +22,7 @@ export function usePublicHolidays(from: string, to: string) {
 
 /** Holidays of last, this and next year as date → name – enough for every appointment that is planned. */
 export function useHolidayNames(): ReadonlyMap<string, string> {
-  const year = Number(todayIso().slice(0, 4))
+  const year = Number(useToday().slice(0, 4))
   const { data } = usePublicHolidays(`${year - 1}-01-01`, `${year + 1}-12-31`)
   return useMemo(() => new Map((data ?? []).map((holiday) => [holiday.date, holiday.name])), [data])
 }

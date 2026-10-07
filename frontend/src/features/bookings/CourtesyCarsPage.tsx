@@ -7,7 +7,8 @@ import { Button } from '../../components/ui/Button'
 import { Facts } from '../../components/ui/Facts'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { useToast } from '../../components/ui/toastContext'
-import { addDays, formatLocalDateTime, todayIso } from '../../lib/format'
+import { useClock } from '../../lib/clock'
+import { addDays, formatLocalDateTime } from '../../lib/format'
 import { useAllCourtesyCars, type CourtesyCar } from '../courtesy-cars/courtesyCarApi'
 import { DueDate } from '../courtesy-cars/DueDate'
 import { useHolidayNames } from '../publicholidays/publicHolidayApi'
@@ -16,7 +17,7 @@ import { BookingEditor } from './BookingEditor'
 import styles from './CourtesyCarsPage.module.css'
 import { OccupancyCalendar } from './OccupancyCalendar'
 import { carState, daySelection, defaultPeriod, minutesOf, movedByDays, type CarState } from './occupancy'
-import { nowLocal, useBookingActions } from './useBookingActions'
+import { useBookingActions } from './useBookingActions'
 
 /** Days shown in the occupancy calendar – two weeks, moved by one week */
 const DAYS = 14
@@ -39,8 +40,9 @@ export function CourtesyCarsPage() {
   const toast = useToast()
   const canEdit = useCanEdit()
   const holidays = useHolidayNames()
-  const today = todayIso()
-  const now = nowLocal()
+  // keeps itself up to date: the "now" line moves, an overdue car turns red without reloading
+  const { today, time } = useClock()
+  const now = `${today}T${time}`
   const [from, setFrom] = useState(today)
   const [panel, setPanel] = useState<Panel | null>(null)
   // a moved bar stays at its new place until the bookings themselves show it (no flash back)

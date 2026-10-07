@@ -1,15 +1,19 @@
+import { useToday } from '../../lib/clock'
+import { Link } from 'react-router'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../lib/format'
+import { addDays, formatDate } from '../../lib/format'
 import { useAbsences } from '../absences/absenceApi'
 import { AbsenceChip } from '../absences/AbsenceChip'
 import { absencesOn } from '../absences/absenceDays'
 import { useAllEmployees } from '../employees/employeeApi'
-import { useAllLifts } from '../lifts/liftApi'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
-import { useTasksBetween, type Task } from '../tasks/taskApi'
+import { useTasksBetween } from '../tasks/taskApi'
 import { weekDays } from '../tasks/week/weekDays'
 import styles from './DashboardWeek.module.css'
 import { TaskRow } from './TaskRow'
+
+/** Appointments per day – a TV cannot scroll; the rest is "+ n weitere" (the day view has all) */
+const MAX_ROWS = 6
 
 /**
  * The week on the dashboard (10a): every day with a clear head (UI review: the old grid had none),
@@ -22,8 +26,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
   const absences = useAbsences(monday, sunday)
   const { data: holidays } = usePublicHolidays(monday, sunday)
   const { data: employees } = useAllEmployees()
-  const { data: lifts } = useAllLifts()
-  const today = todayIso()
+  const today = useToday()
 
   if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
   if (!tasks.data) return <p className="muted">Lade Woche …</p>
@@ -31,7 +34,6 @@ export function DashboardWeek({ monday }: { monday: string }) {
   const days = weekDays(monday, tasks.data)
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
   const employeeOf = (id: string | null | undefined) => employees?.find((e) => e.id === id)
-  const liftOf = (task: Task) => lifts?.find((l) => l.id === task.liftId)?.name
 
   return (
     <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(9rem, 1fr))` }}>
@@ -57,11 +59,18 @@ export function DashboardWeek({ monday }: { monday: string }) {
               </div>
             )}
             <ul className={styles.tasks}>
-              {day.tasks.map((task) => (
+              {day.tasks.slice(0, MAX_ROWS).map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} liftName={liftOf(task)} />
+                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} oneLine />
                 </li>
               ))}
+              {day.tasks.length > MAX_ROWS && (
+                <li>
+                  <Link to={`/tasks?date=${day.date}`} className={styles.more}>
+                    + {day.tasks.length - MAX_ROWS} weitere
+                  </Link>
+                </li>
+              )}
             </ul>
           </section>
         )

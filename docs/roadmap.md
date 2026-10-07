@@ -305,9 +305,15 @@ Core of the app, therefore split more finely. ("Task" = Auftrag/Termin, see glos
   To-dos" – the 8e columns in small (name badges, notes with sub-task progress, to-dos most urgent
   first with "überfällig seit …", at most 3 notes / 5 to-dos per person + "+ n weitere"). Only to
   look at: nothing can be ticked off on the dashboard (F5), the pinboard is one click away.
-- [ ] **10c – Kiosk mode for the TV**
+- [x] **10c – Kiosk mode for the TV**
   Large font, high contrast, clock + connection status, date updates itself
   (→ bug #15), no accidental actions by touch (→ F5).
+  Done: ONE clock for the app (`lib/clock.ts`, `useToday`/`useClock`, one timer at the full
+  minute) – every page with "today" moves on over midnight, queries load the new day. On the TV:
+  125 % text, lighter secondary text and lines, date + time + live status at the bottom, nothing
+  to select or long-press, back to the dashboard after 2 minutes without touch on another page.
+  The week on the dashboard: one line per appointment, at most 6 per day + "+ n weitere", so
+  everything fits one screen.
 
 ## Phase 11 – Migration & go-live (version 1)
 

@@ -1,7 +1,8 @@
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
+import { useToday } from '../../lib/clock'
 import { isoWeek } from '../../lib/calendar'
-import { addDays, formatDate, todayIso } from '../../lib/format'
+import { addDays, formatDate } from '../../lib/format'
 import { BoardOverview } from './BoardOverview'
 import styles from './DashboardPage.module.css'
 import { dashboardMonday } from './shownWeek'
@@ -14,7 +15,7 @@ import { TodayByLift } from './TodayByLift'
  * the navigation at the bottom (AppLayout).
  */
 export function DashboardPage() {
-  const today = todayIso()
+  const today = useToday()
   const monday = dashboardMonday(today)
   const nextWeek = monday > today
 

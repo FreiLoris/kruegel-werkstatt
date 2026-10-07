@@ -72,3 +72,10 @@
   padding: var(--space-2);
   list-style: none;
 }
+
+.more {
+  display: block;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

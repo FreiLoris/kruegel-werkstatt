@@ -1,7 +1,7 @@
 import { ChevronRight, StickyNote } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { todayIso } from '../../lib/format'
+import { useToday } from '../../lib/clock'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { BOARD, useNotes, type Note } from '../notes/noteApi'
@@ -24,7 +24,7 @@ export function BoardOverview() {
   const notes = useNotes(BOARD)
   const todos = useTodos(BOARD_TODOS)
   const { data: employees } = useAllEmployees()
-  const today = todayIso()
+  const today = useToday()
 
   const error = notes.error ?? todos.error
   if (error) return <p className="muted">Pinnwand konnte nicht geladen werden: {error.message}</p>

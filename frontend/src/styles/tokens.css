@@ -85,3 +85,18 @@
   --layer-menu: 50;
   --layer-toast: 100;
 }
+
+/*
+ * Workshop TV (10c): read from a few metres away – larger text (everything is in rem, so the root
+ * size scales the whole page) and stronger contrast: lighter secondary text, visible lines.
+ */
+:root:has([data-kiosk]) {
+  font-size: 125%;
+}
+
+[data-kiosk] {
+  --color-text-muted: #c9ccd3;
+  --color-border: #4a4d55;
+  --color-border-strong: #6b6f78;
+  --color-surface-raised: #2b2d32;
+}

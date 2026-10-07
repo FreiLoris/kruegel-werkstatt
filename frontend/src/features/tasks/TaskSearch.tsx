@@ -1,8 +1,9 @@
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useToday } from '../../lib/clock'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { formatDate, formatTime, todayIso } from '../../lib/format'
+import { formatDate, formatTime } from '../../lib/format'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useTaskSearch, type Task } from './taskApi'
 import styles from './TaskSearch.module.css'
@@ -18,7 +19,7 @@ export function TaskSearch({ onOpen }: { onOpen: (task: Task) => void }) {
   const query = useDebouncedValue(input, 250)
   const search = useTaskSearch(query)
   const root = useRef<HTMLDivElement>(null)
-  const today = todayIso()
+  const today = useToday()
 
   // a click somewhere else closes the list
   useEffect(() => {
