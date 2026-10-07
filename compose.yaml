@@ -3,6 +3,7 @@
 #   docker compose up -d --build    build and start everything → http://localhost:8090
 #   docker compose up -d db         only the database (for development with a local backend)
 #   docker compose down             stop (data stays in the volume)
+#   docker compose exec backup sh /backup/backup.sh    back up right now (see docs/operations.md)
 #
 # Configuration comes from the file .env (template: .env.example).
 # Without .env the defaults after ":-" apply.
@@ -62,6 +63,29 @@ services:
         condition: service_healthy
     ports:
       - "${APP_PORT:-8090}:80"
+    mem_limit: 64m
+
+  # Nightly database backup into BACKUP_DIR (NAS: Datensicherung), old ones deleted after
+  # BACKUP_KEEP_DAYS. Restore: docs/operations.md
+  backup:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["sh", "/backup/entrypoint.sh"]
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${DB_NAME:-werkstatt}
+      PGUSER: ${DB_USER:-werkstatt}
+      PGPASSWORD: ${DB_PASSWORD:-werkstatt}
+      TZ: Europe/Zurich
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
+    volumes:
+      - ./backup:/backup:ro
+      - ${BACKUP_DIR:-./Datensicherung}:/dumps
     mem_limit: 64m
 
 volumes:
