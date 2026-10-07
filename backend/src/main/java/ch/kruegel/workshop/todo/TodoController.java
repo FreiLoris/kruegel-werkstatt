@@ -46,8 +46,9 @@ class TodoController {
                        @RequestParam(required = false) UUID assigneeId,
                        @RequestParam(defaultValue = "false") boolean unassigned,
                        @RequestParam(required = false) Boolean shopping,
-                       @RequestParam(required = false) UUID taskId) {
-        return service.list(done, assigneeId, unassigned, shopping, taskId);
+                       @RequestParam(required = false) UUID taskId,
+                       @RequestParam(required = false) UUID noteId) {
+        return service.list(done, assigneeId, unassigned, shopping, taskId, noteId);
     }
 
     @Operation(summary = "Create to-do")

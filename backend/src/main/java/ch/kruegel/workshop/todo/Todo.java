@@ -35,6 +35,12 @@ public class Todo extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Task task;
 
+    /**
+     * The note this is a sub-task of (pinboard, 8c) – only the ID: the note knows its to-dos,
+     * a to-do does not need the note (no package cycle). Set once, never changed.
+     */
+    private UUID noteId;
+
     private Instant doneAt;
 
     private UUID doneBy;
@@ -45,6 +51,12 @@ public class Todo extends BaseEntity {
 
     public Todo(TodoDetails details) {
         apply(details);
+    }
+
+    /** A sub-task of a note: an ordinary to-do that knows its note (bug #10: no second list). */
+    public Todo(TodoDetails details, UUID noteId) {
+        this(details);
+        this.noteId = Objects.requireNonNull(noteId, "noteId");
     }
 
     public void update(TodoDetails details) {
@@ -93,6 +105,10 @@ public class Todo extends BaseEntity {
 
     public Task getTask() {
         return task;
+    }
+
+    public UUID getNoteId() {
+        return noteId;
     }
 
     public Instant getDoneAt() {

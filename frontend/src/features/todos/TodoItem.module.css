@@ -97,3 +97,15 @@
 .done .check {
   cursor: default;
 }
+
+.fromNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-warning);
+}
+
+.fromNote svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}

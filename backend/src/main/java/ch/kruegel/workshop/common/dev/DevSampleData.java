@@ -14,6 +14,9 @@ import ch.kruegel.workshop.lift.Lift;
 import ch.kruegel.workshop.lift.LiftRepository;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
 import ch.kruegel.workshop.serviceitem.ServiceItemRepository;
+import ch.kruegel.workshop.note.Note;
+import ch.kruegel.workshop.note.NoteDetails;
+import ch.kruegel.workshop.note.NoteRepository;
 import ch.kruegel.workshop.task.Appointment;
 import ch.kruegel.workshop.task.PartsOrder;
 import ch.kruegel.workshop.task.PartsStatus;
@@ -73,11 +76,12 @@ class DevSampleData implements ApplicationRunner {
     private final ServiceItemRepository serviceItems;
     private final TaskRepository tasks;
     private final TodoRepository todos;
+    private final NoteRepository notes;
     private final Clock clock;
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
                   VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
-                  TaskRepository tasks, TodoRepository todos, Clock clock) {
+                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
@@ -86,6 +90,7 @@ class DevSampleData implements ApplicationRunner {
         this.serviceItems = serviceItems;
         this.tasks = tasks;
         this.todos = todos;
+        this.notes = notes;
         this.clock = clock;
     }
 
@@ -107,6 +112,37 @@ class DevSampleData implements ApplicationRunner {
         if (todos.count() == 0) {
             createTodos();
         }
+        if (notes.count() == 0) {
+            createNotes();
+        }
+    }
+
+    /** Pinboard: a note for two people with sub-tasks, one about a task, one for nobody, one archived. */
+    private void createNotes() {
+        List<Employee> forNotes = employees.findByActiveTrueOrderBySortOrderAscNameAsc().stream()
+                .filter(Employee::isSelectableForTodos)
+                .toList();
+        if (forNotes.size() < 2) {
+            return;
+        }
+        LocalDate today = LocalDate.now(clock);
+        Task firstTask = tasks.findAll().stream().findFirst().orElse(null);
+
+        Note service = notes.save(new Note(new NoteDetails("Grosser Service Sprinter vorbereiten", "Kunde bringt eigene Wischblätter mit",
+                Set.of(forNotes.get(0), forNotes.get(1)), null)));
+        notes.save(new Note(new NoteDetails("Kunde fragt nach Offerte Winterreifen", null, Set.of(forNotes.get(1)), firstTask)));
+        notes.save(new Note(new NoteDetails("Werkstatt-Apéro am Freitag organisieren", null, Set.of(), null)));
+        Note archived = new Note(new NoteDetails("Prüfgerät kalibrieren lassen", "erledigt durch Firma Muster", Set.of(forNotes.get(0)), null));
+        archived.archive(clock.instant());
+        notes.save(archived);
+        // write the notes first: a to-do knows its note only by ID, so Hibernate (order_inserts) does not
+        // know it must insert the note before the to-do
+        notes.flush();
+
+        todos.saveAll(List.of(
+                new Todo(new TodoDetails("Öl und Filter bereitlegen", forNotes.get(1), today, false, null), service.getId()),
+                new Todo(new TodoDetails("Termin mit Kunde bestätigen", forNotes.get(0), null, false, null), service.getId())));
+        log.info("Dev sample data created: 4 notes");
     }
 
     /** A few to-dos: overdue, for a task, on the shopping list, without person, one done. */

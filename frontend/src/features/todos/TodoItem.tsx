@@ -1,4 +1,4 @@
-import { ClipboardList, Pencil, ShoppingCart, Trash2, Undo2 } from 'lucide-react'
+import { ClipboardList, Pencil, ShoppingCart, StickyNote, Trash2, Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
@@ -85,6 +85,11 @@ export function TodoItem({ todo, canEdit, showTask = false, withShopping = false
             {assignee ? <NameBadge name={assignee.name} color={assignee.color} /> : <span className="muted">nicht zugewiesen</span>}
             {todo.dueDate && <span className={[styles.due, styles[due]].join(' ')}>{dueLabel(todo.dueDate, today)}</span>}
           </>
+        )}
+        {todo.noteId && (
+          <span className={styles.fromNote} title="Aufgabe aus einer Pinnwand-Notiz">
+            <StickyNote aria-hidden /> Pinnwand
+          </span>
         )}
         {showTask && todo.task && (
           <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${todo.task!.id}`)}>

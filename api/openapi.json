@@ -10,7 +10,7 @@
   "paths" : {
     "/api/company" : {
       "get" : {
-        "operationId" : "get_4",
+        "operationId" : "get_5",
         "responses" : {
           "200" : {
             "content" : {
@@ -78,7 +78,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_7",
+        "operationId" : "update_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -465,7 +465,7 @@
       },
       "post" : {
         "description" : "409 with a message naming the booking in the way.",
-        "operationId" : "create_9",
+        "operationId" : "create_10",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -793,7 +793,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_6",
+        "operationId" : "update_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1045,7 +1045,7 @@
     },
     "/api/courtesy-cars" : {
       "get" : {
-        "operationId" : "list_4",
+        "operationId" : "list_5",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -1124,7 +1124,7 @@
         "tags" : [ "Courtesy cars" ]
       },
       "post" : {
-        "operationId" : "create_8",
+        "operationId" : "create_9",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1286,7 +1286,7 @@
     "/api/courtesy-cars/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409.",
-        "operationId" : "update_5",
+        "operationId" : "update_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1617,7 +1617,7 @@
     },
     "/api/customers" : {
       "post" : {
-        "operationId" : "create_7",
+        "operationId" : "create_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1696,7 +1696,7 @@
     },
     "/api/customers/{id}" : {
       "get" : {
-        "operationId" : "get_3",
+        "operationId" : "get_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1773,7 +1773,7 @@
       },
       "put" : {
         "description" : "SwissGarage customers → 409. Needs the loaded `version`.",
-        "operationId" : "update_4",
+        "operationId" : "update_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2017,7 +2017,7 @@
     },
     "/api/employees" : {
       "get" : {
-        "operationId" : "list_3",
+        "operationId" : "list_4",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -2096,7 +2096,7 @@
         "tags" : [ "Employees" ]
       },
       "post" : {
-        "operationId" : "create_6",
+        "operationId" : "create_7",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2257,7 +2257,7 @@
     },
     "/api/employees/{id}" : {
       "get" : {
-        "operationId" : "get_2",
+        "operationId" : "get_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2334,7 +2334,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409 if changed in the meantime.",
-        "operationId" : "update_3",
+        "operationId" : "update_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2578,7 +2578,7 @@
     },
     "/api/lifts" : {
       "get" : {
-        "operationId" : "list_2",
+        "operationId" : "list_3",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -2657,7 +2657,7 @@
         "tags" : [ "Lifts" ]
       },
       "post" : {
-        "operationId" : "create_5",
+        "operationId" : "create_6",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -3129,6 +3129,610 @@
         },
         "summary" : "Live connection for changes (Server-Sent Events)",
         "tags" : [ "live-controller" ]
+      }
+    },
+    "/api/notes" : {
+      "get" : {
+        "description" : "On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).",
+        "operationId" : "list_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "archived",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "in" : "query",
+          "name" : "assigneeId",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "unassigned",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "in" : "query",
+          "name" : "taskId",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/NoteDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Notes",
+        "tags" : [ "Notes" ]
+      },
+      "post" : {
+        "description" : "The author is the person of the device.",
+        "operationId" : "create_5",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NoteRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NoteDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Create note",
+        "tags" : [ "Notes" ]
+      }
+    },
+    "/api/notes/{id}" : {
+      "delete" : {
+        "description" : "With its sub-tasks. Normally a note is archived instead.",
+        "operationId" : "delete_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Delete note",
+        "tags" : [ "Notes" ]
+      },
+      "get" : {
+        "operationId" : "get_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NoteDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Single note",
+        "tags" : [ "Notes" ]
+      },
+      "put" : {
+        "description" : "Needs the loaded `version` (409 if someone else changed it).",
+        "operationId" : "update_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NoteRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NoteDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Edit note",
+        "tags" : [ "Notes" ]
+      }
+    },
+    "/api/notes/{id}/archived" : {
+      "put" : {
+        "description" : "Archiving ticks off the open sub-tasks; reactivating reopens exactly those. No version needed.",
+        "operationId" : "setArchived",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NoteArchivedRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NoteDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Archive or reactivate",
+        "tags" : [ "Notes" ]
+      }
+    },
+    "/api/notes/{id}/todos" : {
+      "post" : {
+        "description" : "An ordinary to-do with a link to the note – it appears in the to-do lists too. Not on an archived note (409). Its `taskId` is ignored: the note has the task.",
+        "operationId" : "addTodo",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TodoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TodoDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Add a sub-task",
+        "tags" : [ "Notes" ]
       }
     },
     "/api/public-holidays" : {
@@ -3707,7 +4311,7 @@
     },
     "/api/swissgarage-imports" : {
       "get" : {
-        "operationId" : "list_5",
+        "operationId" : "list_6",
         "responses" : {
           "200" : {
             "content" : {
@@ -5056,6 +5660,14 @@
         }, {
           "in" : "query",
           "name" : "taskId",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "noteId",
           "required" : false,
           "schema" : {
             "type" : "string",
@@ -6714,6 +7326,116 @@
         },
         "required" : [ "name" ]
       },
+      "NoteArchivedRequest" : {
+        "type" : "object",
+        "properties" : {
+          "archived" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "archived" ]
+      },
+      "NoteDto" : {
+        "type" : "object",
+        "properties" : {
+          "archivedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time",
+            "description" : "Empty = on the board"
+          },
+          "assigneeIds" : {
+            "type" : "array",
+            "description" : "In the order of the employee list",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Author"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "info" : {
+            "type" : [ "string", "null" ]
+          },
+          "task" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/TaskRefDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "text" : {
+            "type" : "string"
+          },
+          "todoCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Sub-tasks (to-dos of this note)"
+          },
+          "todoDoneCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "… of which done"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "archivedAt", "assigneeIds", "createdAt", "createdBy", "id", "info", "task", "text", "todoCount", "todoDoneCount", "updatedAt", "updatedBy", "version" ]
+      },
+      "NoteRequest" : {
+        "type" : "object",
+        "properties" : {
+          "assigneeIds" : {
+            "type" : "array",
+            "description" : "Empty = nobody yet",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "info" : {
+            "type" : "string",
+            "description" : "Longer background (\"Infos\")",
+            "maxLength" : 4000,
+            "minLength" : 0
+          },
+          "taskId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
+          "text" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Only needed when editing"
+          }
+        },
+        "required" : [ "text" ]
+      },
       "Parts" : {
         "type" : "object",
         "properties" : {
@@ -7030,6 +7752,30 @@
           }
         }
       },
+      "TaskRefDto" : {
+        "type" : "object",
+        "properties" : {
+          "customerName" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "taskNumber" : {
+            "type" : [ "string", "null" ]
+          },
+          "time" : {
+            "type" : "string",
+            "example" : "08:00:00"
+          }
+        },
+        "required" : [ "customerName", "date", "id", "taskNumber", "time" ]
+      },
       "TaskRequest" : {
         "type" : "object",
         "properties" : {
@@ -7244,13 +7990,18 @@
             "type" : "string",
             "format" : "uuid"
           },
+          "noteId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "The note it is a sub-task of (pinboard)"
+          },
           "shopping" : {
             "type" : "boolean"
           },
           "task" : {
             "description" : "The task it is about – enough to name it and open it",
             "oneOf" : [ {
-              "$ref" : "#/components/schemas/TodoTaskDto"
+              "$ref" : "#/components/schemas/TaskRefDto"
             }, {
               "type" : "null"
             } ]
@@ -7263,7 +8014,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "assigneeId", "createdAt", "createdBy", "doneAt", "doneBy", "dueDate", "id", "shopping", "task", "text", "version" ]
+        "required" : [ "assigneeId", "createdAt", "createdBy", "doneAt", "doneBy", "dueDate", "id", "noteId", "shopping", "task", "text", "version" ]
       },
       "TodoRequest" : {
         "type" : "object",
@@ -7296,30 +8047,6 @@
           }
         },
         "required" : [ "text" ]
-      },
-      "TodoTaskDto" : {
-        "type" : "object",
-        "properties" : {
-          "customerName" : {
-            "type" : "string"
-          },
-          "date" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "id" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "taskNumber" : {
-            "type" : [ "string", "null" ]
-          },
-          "time" : {
-            "type" : "string",
-            "example" : "08:00:00"
-          }
-        },
-        "required" : [ "customerName", "date", "id", "taskNumber", "time" ]
       },
       "VehicleDto" : {
         "type" : "object",

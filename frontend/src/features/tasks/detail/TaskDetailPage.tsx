@@ -15,6 +15,7 @@ import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { TaskNotes } from '../../notes/TaskNotes'
 import { TaskTodos } from '../../todos/TaskTodos'
 import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
@@ -242,6 +243,10 @@ function TaskDetail({ task }: { task: Task }) {
 
         <Card title="To-dos">
           <TaskTodos taskId={task.id} canEdit={canEdit} />
+        </Card>
+
+        <Card title="Pinnwand">
+          <TaskNotes taskId={task.id} canEdit={canEdit} />
         </Card>
 
         <Card title="Auftragsnummer">
