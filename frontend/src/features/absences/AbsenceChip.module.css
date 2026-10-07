@@ -1,0 +1,32 @@
+/* Who is away – category color as a bar on the left, text readable on the surface */
+.chip {
+  display: block;
+  overflow: hidden;
+  padding: 1px var(--space-2);
+  border-left: 4px solid var(--absence-color);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--absence-color) 16%, var(--color-surface));
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.half {
+  color: var(--color-text-muted);
+}
+
+.vacation {
+  --absence-color: var(--color-absence-vacation);
+}
+
+.sick {
+  --absence-color: var(--color-absence-sick);
+}
+
+.external {
+  --absence-color: var(--color-absence-external);
+}
+
+.training {
+  --absence-color: var(--color-absence-training);
+}

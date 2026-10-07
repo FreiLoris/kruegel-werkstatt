@@ -1,5 +1,9 @@
 package ch.kruegel.workshop.common.dev;
 
+import ch.kruegel.workshop.absence.Absence;
+import ch.kruegel.workshop.absence.AbsenceCategory;
+import ch.kruegel.workshop.absence.AbsencePeriod;
+import ch.kruegel.workshop.absence.AbsenceRepository;
 import ch.kruegel.workshop.courtesycar.CourtesyCar;
 import ch.kruegel.workshop.courtesycar.CourtesyCarDetails;
 import ch.kruegel.workshop.courtesycar.CourtesyCarRepository;
@@ -41,6 +45,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -77,11 +82,12 @@ class DevSampleData implements ApplicationRunner {
     private final TaskRepository tasks;
     private final TodoRepository todos;
     private final NoteRepository notes;
+    private final AbsenceRepository absences;
     private final Clock clock;
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
                   VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
-                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, Clock clock) {
+                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, AbsenceRepository absences, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
@@ -91,6 +97,7 @@ class DevSampleData implements ApplicationRunner {
         this.tasks = tasks;
         this.todos = todos;
         this.notes = notes;
+        this.absences = absences;
         this.clock = clock;
     }
 
@@ -115,6 +122,26 @@ class DevSampleData implements ApplicationRunner {
         if (notes.count() == 0) {
             createNotes();
         }
+        if (absences.count() == 0) {
+            createAbsences();
+        }
+    }
+
+    /** Absences around today: vacation, sick, half a day of external work, a training. */
+    private void createAbsences() {
+        List<Employee> team = employees.findByActiveTrueOrderBySortOrderAscNameAsc();
+        if (team.size() < 4) {
+            return;
+        }
+        LocalDate today = LocalDate.now(clock);
+        LocalDate monday = today.with(DayOfWeek.MONDAY);
+        absences.saveAll(List.of(
+                new Absence(team.get(0), AbsenceCategory.VACATION, null, "Herbstferien", AbsencePeriod.days(monday.plusDays(7), monday.plusDays(11))),
+                new Absence(team.get(1), AbsenceCategory.SICK, null, null, AbsencePeriod.days(today, today)),
+                new Absence(team.get(2), AbsenceCategory.EXTERNAL_WORK, "Garage Muster AG", "Aushilfe Diagnose",
+                        new AbsencePeriod(today.plusDays(1), false, today.plusDays(1), true)),
+                new Absence(team.get(3), AbsenceCategory.TRAINING, null, "Kurs Hochvolt", AbsencePeriod.days(monday.plusDays(3), monday.plusDays(4)))));
+        log.info("Dev sample data created: 4 absences");
     }
 
     /** Pinboard: a note for two people with sub-tasks, one about a task, one for nobody, one archived. */

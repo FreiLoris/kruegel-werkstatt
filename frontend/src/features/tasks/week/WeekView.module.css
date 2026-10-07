@@ -8,7 +8,8 @@
 
 .day {
   display: grid;
-  grid-template-rows: auto 1fr;
+  /* head, who is away (often empty), appointments – only the appointments stretch */
+  grid-template-rows: auto auto 1fr;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
@@ -68,4 +69,15 @@
 
 .holidayDrop {
   background: color-mix(in srgb, var(--color-danger) 5%, transparent);
+}
+
+/* who is away that day – under the head, above the appointments */
+.absences {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-1) var(--space-1) 0;
+}
+
+.absences:empty {
+  padding: 0;
 }

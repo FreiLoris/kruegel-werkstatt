@@ -23,6 +23,9 @@ import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { usePublicHolidays } from '../../publicholidays/publicHolidayApi'
 import { movedTo, minutesOf, withSchedule } from '../day/timeGrid'
+import { useAbsences } from '../../absences/absenceApi'
+import { AbsenceChip } from '../../absences/AbsenceChip'
+import { absencesOn, type AbsenceOnDay } from '../../absences/absenceDays'
 import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
 import { tasksBetweenKey, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
 import { WeekCard } from './WeekCard'
@@ -40,7 +43,8 @@ const dropTarget: CollisionDetection = (args) => {
 /**
  * The week of the given Monday: one column per day, cards by time. A card dragged onto another day
  * moves the appointment there – same time, duration and lift (bug #6: the time is kept, not
- * guessed). The lift must be free then, otherwise the server says by whom. Absences of employees follow with phase 9.
+ * guessed). The lift must be free then, otherwise the server says by whom. Who is away (vacation,
+ * sick, …) stands under each day's head (9a). Absences of employees follow with phase 9.
  */
 export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (date: string) => void }) {
   const sunday = addDays(monday, 6)
@@ -49,6 +53,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: holidays } = usePublicHolidays(monday, sunday)
+  const absences = useAbsences(monday, sunday)
   const schedule = useScheduleTask(viewKey)
   const courtesyCars = useCourtesyCarsByTask(`${monday}T00:00`, `${addDays(monday, 7)}T00:00`)
   const canEdit = useCanEdit()
@@ -123,6 +128,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
             date={day.date}
             count={day.tasks.length}
             holiday={holidayOf.get(day.date)}
+            absences={absencesOn(absences.data ?? [], day.date)}
+            nameOf={(id) => employees.find((e) => e.id === id)?.name ?? ''}
             today={day.date === today}
             onOpen={() => onOpenDay(day.date)}
           >
@@ -153,6 +160,8 @@ function DayColumn({
   date,
   count,
   holiday,
+  absences,
+  nameOf,
   today,
   onOpen,
   children,
@@ -160,6 +169,9 @@ function DayColumn({
   date: string
   count: number
   holiday: string | undefined
+  /** who is away that day (9a – left open in 6g) */
+  absences: AbsenceOnDay[]
+  nameOf: (employeeId: string) => string
   today: boolean
   onOpen: () => void
   children: ReactNode
@@ -174,6 +186,12 @@ function DayColumn({
         </span>
         <span className={holiday ? styles.holiday : styles.count}>{holiday ?? (count === 1 ? '1 Termin' : `${count} Termine`)}</span>
       </button>
+      {/* always there (empty without absences) so the grid rows stay head / absences / appointments */}
+      <div className={styles.absences} aria-label={absences.length > 0 ? 'Abwesend' : undefined}>
+        {absences.map((day) => (
+          <AbsenceChip key={day.absence.id} day={day} name={nameOf(day.absence.employeeId)} />
+        ))}
+      </div>
       <div ref={setNodeRef} className={[styles.drop, isOver && styles.over, holiday && styles.holidayDrop].filter(Boolean).join(' ')}>
         {children}
       </div>
