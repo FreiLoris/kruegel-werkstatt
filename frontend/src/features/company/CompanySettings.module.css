@@ -21,10 +21,14 @@
   font-weight: 600;
 }
 
+/* Flex, not grid: in a grid the image sits in an auto-sized row, so "max-height: 100%" had nothing
+   to refer to and a tall logo overflowed the box (seen live after the first real upload) */
 .preview {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 8rem;
+  overflow: hidden;
   padding: var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -33,6 +37,7 @@
 }
 
 .preview img {
+  display: block;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
