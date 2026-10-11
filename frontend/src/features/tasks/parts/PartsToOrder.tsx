@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router'
 import { reasonOf } from '../../../api/errors'
 import { Button } from '../../../components/ui/Button'
 import { useToast } from '../../../components/ui/toastContext'
-import { formatDate, formatTime } from '../../../lib/format'
+import { formatDate } from '../../../lib/format'
 import { useChangePartsStatus, usePartsToOrder, type Task } from '../taskApi'
 import styles from './PartsToOrder.module.css'
+import { startLabel } from '../taskTime'
 
 /**
  * The material still to be ordered for tasks, on the shopping list (12c). Not copies as to-dos:
@@ -44,7 +45,7 @@ export function PartsToOrder({ canEdit }: { canEdit: boolean }) {
             </span>
             <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${task.id}`)}>
               <ClipboardList aria-hidden />
-              {task.customer.displayName}, {formatDate(task.date).slice(0, 6)} {formatTime(task.time)}
+              {task.customer.displayName}, {formatDate(task.date).slice(0, 6)} {startLabel(task)}
               {task.vehicle?.licensePlate && ` · ${task.vehicle.licensePlate}`}
             </button>
             {canEdit && (

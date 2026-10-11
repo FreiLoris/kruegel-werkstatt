@@ -14,6 +14,8 @@ export interface AppointmentForm {
   /** Until when the lift is taken – usually the same day, a car waiting for parts may stay longer */
   endDate: string
   endTime: string
+  /** "Zeit offen": time and end only reserve the lift, people see no clock time */
+  timeOpen: boolean
   arrivesEarlier: boolean
   arrivesEarlierDate: string
   arrivesEarlierTime: string
@@ -59,6 +61,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   time: '08:00',
   endDate: '',
   endTime: '09:00',
+  timeOpen: false,
   arrivesEarlier: false,
   arrivesEarlierDate: '',
   arrivesEarlierTime: EVENING,
@@ -235,6 +238,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     date: form.date,
     time: form.time,
     endAt: `${form.endDate}T${form.endTime}`,
+    timeOpen: form.timeOpen,
     arrivesEarlier: form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
     readyBy: form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
     waitingCustomer: form.waitingCustomer,
@@ -278,6 +282,7 @@ export function formFromTask(task: Task): AppointmentForm {
     time: task.time.slice(0, 5),
     endDate,
     endTime,
+    timeOpen: task.timeOpen,
     arrivesEarlier: task.arrivesEarlier !== null,
     arrivesEarlierDate,
     arrivesEarlierTime: arrivesEarlierTime || EVENING,

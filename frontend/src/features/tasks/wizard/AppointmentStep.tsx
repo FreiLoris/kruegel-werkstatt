@@ -131,6 +131,11 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             />
           </div>
           <Checkbox
+            label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
+            checked={form.timeOpen}
+            onChange={(e) => set('timeOpen', e.target.checked)}
+          />
+          <Checkbox
             label="Wartekunde – Kunde wartet vor Ort"
             checked={form.waitingCustomer}
             onChange={(e) => set('waitingCustomer', e.target.checked)}

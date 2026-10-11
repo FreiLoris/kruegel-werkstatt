@@ -8,6 +8,7 @@ import type { Booking } from '../../bookings/bookingApi'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import type { Task } from '../taskApi'
 import styles from './SavedStep.module.css'
+import { TIME_OPEN } from '../taskTime'
 
 /**
  * Clear confirmation after saving (UI review: the old wizard gave no feedback) – with what
@@ -27,7 +28,7 @@ export function SavedStep({ task, booking, onNext }: { task: Task; booking: Book
         {task.vehicle && <span>{task.vehicle.description}</span>}
       </p>
       <p>
-        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {formatTime(task.time)} Uhr
+        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}
       </p>
       {booking && (
         <p>

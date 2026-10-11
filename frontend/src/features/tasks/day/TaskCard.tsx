@@ -7,7 +7,7 @@ import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
 import { statusAccentClass } from '../taskStatusStyle'
-import { timeRange, timeSeenFrom } from '../taskTime'
+import { periodLabel, timeSeenFrom } from '../taskTime'
 import { workSummary } from '../workSummary'
 import styles from './TaskCard.module.css'
 
@@ -46,7 +46,7 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
       {...rest}
     >
       <div className={styles.top}>
-        <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
+        <span className={styles.time}>{periodLabel(task)}</span>
         <TaskStatusBadge status={task.status} />
       </div>
       {/* the tooltip has the whole name – a short block shortens it with "…" */}

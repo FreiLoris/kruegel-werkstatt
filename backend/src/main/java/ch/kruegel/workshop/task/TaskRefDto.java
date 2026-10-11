@@ -14,6 +14,7 @@ public record TaskRefDto(
         UUID id,
         @Schema(format = "date") LocalDate date,
         @Schema(type = "string", example = "08:00:00") LocalTime time,
+        @Schema(description = "Zeit offen – show no clock time") boolean timeOpen,
         String customerName,
         @Schema(types = {"string", "null"}) String taskNumber) {
 
@@ -22,7 +23,7 @@ public record TaskRefDto(
         if (task == null) {
             return null;
         }
-        return new TaskRefDto(task.getId(), task.getAppointment().date(), task.getAppointment().time(),
+        return new TaskRefDto(task.getId(), task.getAppointment().date(), task.getAppointment().time(), task.getAppointment().timeOpen(),
                 task.getCustomer().getDetails().displayName(), task.getTaskNumber());
     }
 }

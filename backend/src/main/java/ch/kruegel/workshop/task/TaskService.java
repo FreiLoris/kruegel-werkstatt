@@ -278,7 +278,7 @@ public class TaskService {
             throw new InvalidInputException("readyBy", "muss nach dem Termin liegen");
         }
         return new Appointment(request.date(), request.time(), end, request.arrivesEarlier(), request.readyBy(),
-                request.waitingCustomer());
+                request.waitingCustomer(), request.timeOpen());
     }
 
     private TaskWork work(TaskRequest request, Set<ServiceItem> current) {

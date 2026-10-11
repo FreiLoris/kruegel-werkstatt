@@ -151,6 +151,7 @@ describe('toTaskRequest', () => {
       date: '2026-10-15',
       time: '08:00',
       endAt: '2026-10-15T09:00',
+      timeOpen: false,
       arrivesEarlier: '2026-10-14T17:00',
       readyBy: undefined,
       waitingCustomer: false,

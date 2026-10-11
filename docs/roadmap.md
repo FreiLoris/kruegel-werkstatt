@@ -379,12 +379,19 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   numbers typed by hand stay. (1) "Angenommen von" is a required choice in step 2 of the wizard,
   never preset (the PCs are shared); shown in the task and on the sheet. Tasks from before have
   none – editing one asks for it.
-- [ ] **12d-2 – Orders without appointment, appointments without time** (3, 4)
-  A change of the data model: the date of a task is `NOT NULL` today and the rule against
-  double-booking a lift is built on it. New migration, on a database that is in use. "Ohne
-  Termin" list, taking a planned order out of the plan again, flag "Zeit offen". The feedback
-  wants the number "only once an appointment exists" – to decide there whether an order without
-  appointment waits for its number.
+- [x] **12d-2 – Appointments without time: "Zeit offen"** (4)
+  Done: a tick "Uhrzeit noch offen" in the wizard and when editing (`task.time_open`, V21). Start
+  and end stay in the data – they reserve the lift and place the block in the day view – but
+  everywhere a clock time was shown it now says "Zeit offen" (`periodLabel`/`startLabel` in
+  `taskTime.ts`: day and week cards, dashboard, list, search, sheet, links from to-dos and notes).
+  The task itself and the review step add "Lift reserviert 08:00–09:00". Moving the block keeps
+  the flag.
+- [ ] **12d-3 – Orders without appointment** (3)
+  A change of the data model: the date of a task is `NOT NULL` today, the rule against
+  double-booking a lift is built on it, and every screen assumes a date. New migration, on a
+  database that is in use. "Ohne Termin" list, taking a planned order out of the plan again
+  (e.g. waiting for parts) and planning it later. The feedback wants the number "only once an
+  appointment exists" – to decide there.
 
 Answers of the workshop (2026-10-11) and what follows from them:
 

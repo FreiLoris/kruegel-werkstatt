@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useToday } from '../../lib/clock'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { formatDate, formatTime } from '../../lib/format'
+import { formatDate } from '../../lib/format'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useTaskSearch, type Task } from './taskApi'
 import styles from './TaskSearch.module.css'
 import { TaskStatusBadge } from './TaskStatusBadge'
+import { startLabel } from './taskTime'
 
 /**
  * Search over ALL appointments (F11: the old search only looked at the visible week, without
@@ -79,7 +80,7 @@ export function TaskSearch({ onOpen }: { onOpen: (task: Task) => void }) {
                   <li key={task.id}>
                     <button type="button" className={[styles.hit, task.date < today && styles.past].filter(Boolean).join(' ')} onClick={() => choose(task)}>
                       <span className={styles.when}>
-                        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {formatTime(task.time)}
+                        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {startLabel(task)}
                       </span>
                       <span className={styles.who}>{task.customer.displayName}</span>
                       <span className={styles.what}>

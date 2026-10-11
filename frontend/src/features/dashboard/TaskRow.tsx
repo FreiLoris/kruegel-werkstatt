@@ -1,11 +1,10 @@
 import { Hourglass } from 'lucide-react'
 import { Link } from 'react-router'
-import { formatTime } from '../../lib/format'
 import type { Employee } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { TASK_STATUS, type Task } from '../tasks/taskApi'
 import { statusAccentClass } from '../tasks/taskStatusStyle'
-import { timeRange } from '../tasks/taskTime'
+import { periodLabel, startLabel } from '../tasks/taskTime'
 import styles from './TaskRow.module.css'
 
 /**
@@ -16,7 +15,7 @@ import styles from './TaskRow.module.css'
  * so a busy day must still fit. The whole period is in the tooltip.
  */
 export function TaskRow({ task, mechanic, liftName, oneLine = false }: { task: Task; mechanic: Employee | undefined; liftName?: string; oneLine?: boolean }) {
-  const period = timeRange(task.date, task.time, task.endAt)
+  const period = periodLabel(task)
   if (oneLine) {
     return (
       <Link
@@ -24,7 +23,7 @@ export function TaskRow({ task, mechanic, liftName, oneLine = false }: { task: T
         className={[styles.task, styles.oneLine, statusAccentClass(task.status)].join(' ')}
         title={`${period} · ${TASK_STATUS[task.status]}`}
       >
-        <span className={styles.time}>{formatTime(task.time)}</span>
+        <span className={styles.time}>{startLabel(task, 'offen')}</span>
         <span className={styles.customer}>
           {task.waitingCustomer && <Hourglass aria-label="Wartekunde" className={styles.waiting} />}
           {task.customer.displayName}

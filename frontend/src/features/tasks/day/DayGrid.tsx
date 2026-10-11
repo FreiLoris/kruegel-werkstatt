@@ -23,7 +23,7 @@ import { useClock } from '../../../lib/clock'
 import type { Employee } from '../../employees/employeeApi'
 import type { Lift } from '../../lifts/liftApi'
 import { useScheduleTask, type Task } from '../taskApi'
-import { timeRange } from '../taskTime'
+import { periodLabel } from '../taskTime'
 import { dayColumns, NO_LIFT, type DayColumn } from './dayColumns'
 import styles from './DayGrid.module.css'
 import { TaskCard } from './TaskCard'
@@ -369,7 +369,7 @@ export function DayGrid({
                   }
                   return mode === 'pick' ? (
                     <div key={p.task.id} className={styles.chip} style={style} title={chipTitle(p.task)}>
-                      {timeRange(p.task.date, p.task.time, p.task.endAt)} {p.task.customer.displayName}
+                      {periodLabel(p.task)} {p.task.customer.displayName}
                     </div>
                   ) : (
                     <Block
@@ -443,7 +443,7 @@ export function DayGrid({
 }
 
 function chipTitle(task: Task): string {
-  return [timeRange(task.date, task.time, task.endAt), task.customer.displayName, task.vehicle?.licensePlate, task.vehicle?.description]
+  return [periodLabel(task), task.customer.displayName, task.vehicle?.licensePlate, task.vehicle?.description]
     .filter(Boolean)
     .join(' · ')
 }

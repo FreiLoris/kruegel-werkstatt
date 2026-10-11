@@ -1,12 +1,13 @@
 import { useToday } from '../../lib/clock'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { addDays, formatDate, formatTime } from '../../lib/format'
+import { addDays, formatDate } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { useAllLifts } from '../lifts/liftApi'
 import { useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
 import { TaskRow } from './TaskRow'
 import styles from './TodayByLift.module.css'
 import { liftColumns, nextAppointment } from './todayColumns'
+import { startLabel } from '../tasks/taskTime'
 
 /** How far ahead "nächster Termin" looks when today is empty */
 const LOOK_AHEAD_DAYS = 60
@@ -35,7 +36,7 @@ export function TodayByLift() {
         <strong>Keine Termine heute</strong>
         {next ? (
           <span>
-            Nächster: {WEEKDAYS_SHORT[weekdayOf(next.date)]} {formatDate(next.date).slice(0, 6)} {formatTime(next.time)} · {next.customer.displayName}
+            Nächster: {WEEKDAYS_SHORT[weekdayOf(next.date)]} {formatDate(next.date).slice(0, 6)} {startLabel(next)} · {next.customer.displayName}
           </span>
         ) : (
           ahead.data && <span>Auch in den nächsten {LOOK_AHEAD_DAYS} Tagen nichts geplant.</span>

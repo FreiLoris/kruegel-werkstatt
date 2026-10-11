@@ -8673,6 +8673,10 @@
             "type" : "string",
             "example" : "08:00:00"
           },
+          "timeOpen" : {
+            "type" : "boolean",
+            "description" : "Zeit offen: time and end only reserve the lift – show no clock time"
+          },
           "tireChange" : {
             "type" : "boolean"
           },
@@ -8710,7 +8714,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "acceptedById", "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -8742,9 +8746,13 @@
           "time" : {
             "type" : "string",
             "example" : "08:00:00"
+          },
+          "timeOpen" : {
+            "type" : "boolean",
+            "description" : "Zeit offen – show no clock time"
           }
         },
-        "required" : [ "customerName", "date", "id", "taskNumber", "time" ]
+        "required" : [ "customerName", "date", "id", "taskNumber", "time", "timeOpen" ]
       },
       "TaskRequest" : {
         "type" : "object",
@@ -8814,6 +8822,10 @@
           "time" : {
             "type" : "string",
             "example" : "08:00"
+          },
+          "timeOpen" : {
+            "type" : "boolean",
+            "description" : "The clock time is not agreed yet – start and end only reserve the lift. Missing = false"
           },
           "tireChange" : {
             "type" : "boolean",

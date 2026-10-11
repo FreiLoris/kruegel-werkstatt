@@ -21,6 +21,9 @@ import java.util.Objects;
  * @param arrivesEarlier  "Fahrzeug kommt früher" – e.g. dropped off the evening before; before the start
  * @param readyBy         "fertig bis" – when the customer needs the vehicle back; after the start
  * @param waitingCustomer customer waits on site – a flag, not a status (bug #4)
+ * @param timeOpen        "Zeit offen" (12d-2): the clock time is not agreed yet. {@code time} and
+ *                        {@code end} still reserve the lift – they are just not shown to anyone as
+ *                        a time that was promised
  */
 @Embeddable
 public record Appointment(
@@ -29,7 +32,8 @@ public record Appointment(
         @Column(name = "appointment_end", nullable = false) LocalDateTime end,
         LocalDateTime arrivesEarlier,
         LocalDateTime readyBy,
-        boolean waitingCustomer) {
+        boolean waitingCustomer,
+        boolean timeOpen) {
 
     /** Duration when nothing is given – short enough that it gets noticed and adjusted */
     public static final Duration DEFAULT_DURATION = Duration.ofHours(1);
@@ -50,6 +54,12 @@ public record Appointment(
         }
     }
 
+    /** An appointment at an agreed time – the usual case. */
+    public Appointment(LocalDate date, LocalTime time, LocalDateTime end, LocalDateTime arrivesEarlier, LocalDateTime readyBy,
+                       boolean waitingCustomer) {
+        this(date, time, end, arrivesEarlier, readyBy, waitingCustomer, false);
+    }
+
     /** Appointment of the default duration, without the optional parts. */
     public static Appointment at(LocalDate date, LocalTime time) {
         return new Appointment(date, time, date.atTime(time).plus(DEFAULT_DURATION), null, null, false);
@@ -66,11 +76,12 @@ public record Appointment(
     /**
      * The appointment at another time (drag & drop). On another day "kommt früher" and "fertig bis"
      * move by the same number of days (the car still comes the evening before); within the day they
-     * stay. The caller checks first that they still fit (see {@link #shiftedToDay}).
+     * stay. The caller checks first that they still fit (see {@link #shiftedToDay}). An open time
+     * stays open: dragging the block plans the lift, it does not agree a time with the customer.
      */
     public Appointment movedTo(LocalDate newDate, LocalTime newTime, LocalDateTime newEnd) {
         return new Appointment(newDate, newTime, newEnd, shiftedToDay(arrivesEarlier, newDate), shiftedToDay(readyBy, newDate),
-                waitingCustomer);
+                waitingCustomer, timeOpen);
     }
 
     /** "kommt früher"/"fertig bis" when the appointment moves to {@code newDate}; empty stays empty. */

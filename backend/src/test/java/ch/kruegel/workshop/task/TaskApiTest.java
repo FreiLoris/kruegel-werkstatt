@@ -265,6 +265,21 @@ class TaskApiTest {
     }
 
     @Test
+    void anOpenTimeStillTakesTheLiftAndStaysWhenTheTaskIsMoved() {
+        String open = idOf(create("\"timeOpen\": true, " + liftJson(lift1)));
+        assertThat(mvc.get().uri("/api/tasks/" + open).exchange()).bodyJson().extractingPath("$.timeOpen").isEqualTo(true);
+
+        // the lift is reserved like for any other appointment
+        assertFieldError(create(liftJson(lift1)), "liftId");
+        // dragged to another lift: still "Zeit offen"
+        assertThat(send("PUT", "/api/tasks/" + open + "/schedule", scheduleJson(lift2, DAY, "10:00", DAY + "T11:00")))
+                .bodyJson().extractingPath("$.timeOpen").isEqualTo(true);
+        // the time is agreed after all
+        assertThat(send("PUT", "/api/tasks/" + open, body("\"version\": 1")))
+                .bodyJson().extractingPath("$.timeOpen").isEqualTo(false);
+    }
+
+    @Test
     void someoneMustHaveAcceptedTheOrder() {
         Employee gone = employees.save(new Employee(new EmployeeDetails("Weg", Role.MECHANIC, "#cccccc", null, 25,
                 true, true, true), 3));

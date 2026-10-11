@@ -7,7 +7,7 @@ import { NameBadge } from '../../employees/NameBadge'
 import type { Task } from '../taskApi'
 import { TASK_STATUS } from '../taskApi'
 import { statusAccentClass } from '../taskStatusStyle'
-import { timeRange, timeSeenFrom } from '../taskTime'
+import { periodLabel, timeSeenFrom } from '../taskTime'
 import styles from './WeekCard.module.css'
 
 interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -42,7 +42,7 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, courtesyC
       {...rest}
     >
       <div className={styles.top}>
-        <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
+        <span className={styles.time}>{periodLabel(task)}</span>
         <span className={styles.lift}>{liftName ?? 'ohne Lift'}</span>
       </div>
       <p className={styles.customer}>

@@ -20,7 +20,7 @@ import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
 import { TASK_STATUS, useChangeTaskStatus, useDeleteTask, useTask, type Task, type TaskStatus } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
-import { timeRange } from '../taskTime'
+import { startLabel, TIME_OPEN, timeRange } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
@@ -67,7 +67,7 @@ function TaskDetail({ task }: { task: Task }) {
   async function deleteTask() {
     const ok = await confirm({
       title: 'Auftrag löschen?',
-      text: `${c.displayName}, ${formatDate(task.date)} ${formatTime(task.time)} wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
+      text: `${c.displayName}, ${formatDate(task.date)} ${startLabel(task)} wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
       confirmLabel: 'Löschen',
       dangerous: true,
     })
@@ -91,7 +91,7 @@ function TaskDetail({ task }: { task: Task }) {
         <div>
           <h1 className={styles.title}>{c.displayName}</h1>
           <p className={styles.when}>
-            {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {formatTime(task.time)} Uhr
+            {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}
             <TaskStatusBadge status={task.status} />
           </p>
         </div>
@@ -209,7 +209,8 @@ function TaskDetail({ task }: { task: Task }) {
         <Card title="Termin">
           <Facts
             rows={[
-              ['Termin', `${formatDate(task.date)}, ${timeRange(task.date, task.time, task.endAt)}`],
+              // the times of a task with open time still say how long its lift is taken
+              ['Termin', `${formatDate(task.date)}, ${task.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}${timeRange(task.date, task.time, task.endAt)}`],
               ['Kommt früher', task.arrivesEarlier && formatLocalDateTime(task.arrivesEarlier)],
               ['Fertig bis', task.readyBy && formatLocalDateTime(task.readyBy)],
               ['Wartekunde', task.waitingCustomer && 'Ja – Kunde wartet vor Ort'],
