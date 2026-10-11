@@ -5,6 +5,7 @@ import { useToday } from '../../lib/clock'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { useActiveEmployees } from '../employees/employeeApi'
+import { PartsToOrder } from '../tasks/parts/PartsToOrder'
 import { useTodos, type TodoFilter } from './todoApi'
 import { dueState } from './todoDue'
 import { TodoForm } from './TodoForm'
@@ -78,6 +79,9 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
           />
         </section>
       )}
+
+      {/* material of the orders (12c) belongs to nobody – shown with every person filter */}
+      {shopping && <PartsToOrder canEdit={canEdit} />}
 
       <section className={styles.card} aria-label={shopping ? 'Einkaufsliste' : 'Offene To-dos'}>
         {shown.error ? (

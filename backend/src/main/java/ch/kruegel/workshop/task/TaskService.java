@@ -25,6 +25,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -67,10 +68,11 @@ public class TaskService {
     private final LiftRepository lifts;
     private final ServiceItemRepository serviceItems;
     private final ApplicationEventPublisher events;
+    private final Clock clock;
 
     TaskService(TaskRepository repository, CustomerRepository customers, VehicleRepository vehicles,
                 EmployeeRepository employees, LiftRepository lifts, ServiceItemRepository serviceItems,
-                ApplicationEventPublisher events) {
+                ApplicationEventPublisher events, Clock clock) {
         this.repository = repository;
         this.customers = customers;
         this.vehicles = vehicles;
@@ -78,6 +80,7 @@ public class TaskService {
         this.lifts = lifts;
         this.serviceItems = serviceItems;
         this.events = events;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -104,6 +107,12 @@ public class TaskService {
         return repository.findTop10ByCustomerIdOrderByAppointmentDateDescAppointmentTimeDesc(customerId).stream()
                 .map(TaskDto::of)
                 .toList();
+    }
+
+    /** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
+    @Transactional(readOnly = true)
+    public List<TaskDto> withPartsToOrder() {
+        return repository.withPartsToOrder().stream().map(TaskDto::of).toList();
     }
 
     @Transactional(readOnly = true)
@@ -172,6 +181,20 @@ public class TaskService {
         checkLiftFree(lift, moved, id);
 
         task.schedule(moved, lift);
+        return saved(task);
+    }
+
+    /**
+     * Parts ordered / arrived – ticked off on the shopping list. No version needed, like the status:
+     * it must not fail because someone else edited the task meanwhile.
+     */
+    public TaskDto changePartsStatus(UUID id, PartsStatus status) {
+        Task task = find(id);
+        PartsOrder parts = task.getWork().parts();
+        if (parts == null) {
+            throw new BusinessRuleException("Für diesen Auftrag ist kein Material erfasst.");
+        }
+        task.changeParts(parts.withStatus(status, LocalDate.now(clock)));
         return saved(task);
     }
 

@@ -205,6 +205,26 @@ class TaskApiTest {
     }
 
     @Test
+    void partsToOrderAreListedUntilTheyAreOrdered() {
+        String waiting = idOf(createAt("09:00", "\"parts\": { \"description\": \"Bremsscheiben\", \"status\": \"TO_ORDER\" }"));
+        createAt("10:00", "\"parts\": { \"description\": \"Filter\", \"status\": \"ORDERED\" }");
+        String without = idOf(createAt("11:00", null));
+
+        assertThat(mvc.get().uri("/api/tasks/parts-to-order").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(waiting);
+
+        MvcTestResult ordered = send("PUT", "/api/tasks/" + waiting + "/parts-status", "{ \"status\": \"ORDERED\" }");
+        assertThat(ordered).bodyJson().extractingPath("$.parts.status").isEqualTo("ORDERED");
+        // the day of the order is remembered
+        assertThat(ordered).bodyJson().extractingPath("$.parts.orderedOn").isNotNull();
+        assertThat(mvc.get().uri("/api/tasks/parts-to-order").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        // ticked off by mistake: back on the list, the day forgotten
+        assertThat(send("PUT", "/api/tasks/" + waiting + "/parts-status", "{ \"status\": \"TO_ORDER\" }"))
+                .bodyJson().extractingPath("$.parts.orderedOn").isNull();
+        // a task without parts has nothing to order
+        assertThat(send("PUT", "/api/tasks/" + without + "/parts-status", "{ \"status\": \"ORDERED\" }")).hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void taskNumberCanBeGivenWhenCreatingAndEditing() {
         String first = idOf(create("\"taskNumber\": \" A-17 \""));
 

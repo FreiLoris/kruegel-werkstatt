@@ -102,6 +102,14 @@ public class Task extends BaseEntity {
         this.status = Objects.requireNonNull(newStatus, "status");
     }
 
+    /** The parts order moves on (ordered, arrived) – only for a task that needs parts. */
+    public void changeParts(PartsOrder newParts) {
+        if (parts == null) {
+            throw new IllegalStateException("Task has no parts order");
+        }
+        this.parts = Objects.requireNonNull(newParts, "parts");
+    }
+
     /** Sets the SwissGarage order number; empty removes it. Uniqueness is checked by the service/database. */
     public void assignTaskNumber(String number) {
         this.taskNumber = Texts.checkMaxLength(Texts.emptyToNull(number), TASK_NUMBER_MAX, "Task number");
