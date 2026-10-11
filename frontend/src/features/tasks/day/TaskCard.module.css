@@ -1,7 +1,15 @@
+/*
+ * Sized for the most common block of the time grid: one hour = 88px inside the block. Time,
+ * customer and plate must fit into that with air below the plate – they took 90px, so the plate
+ * sat on the lower edge (reported from the workshop, 10/2026). Now 6 + 25 + 4 + 20 + 4 + 23 = 82.
+ */
 .card {
   display: grid;
+  /* exactly as wide as the card: a row that does not wrap (a long vehicle description in a short
+     block) must be shortened inside it, not widen the column and push the status badge out */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
+  padding: calc(var(--space-1) * 1.5) var(--space-3);
   border-radius: var(--radius);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow);
@@ -28,14 +36,17 @@
   gap: var(--space-2);
 }
 
+/* one line, so no reading distance between lines is needed – the status badge sets the row height */
 .time {
   font-weight: 700;
   white-space: nowrap;
   font-size: var(--font-size-lg);
+  line-height: 1.2;
 }
 
 .customer {
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .vehicle {
@@ -44,6 +55,39 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
+}
+
+/*
+ * Short blocks (up to about 1 h 10 min): customer and vehicle stay on one line each and are
+ * shortened with "…". A second line would push the plate out of the card. Taller blocks have the
+ * room and wrap as before. The container is the block of the time grid (DayGrid.module.css,
+ * `container-type: size`); a browser without container queries simply wraps.
+ */
+@container (max-height: 109px) {
+  .customer {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* One line (line-height 1.25), and it must be said: a grid row whose item hides its overflow
+       may shrink to nothing when the card is too short for all rows – the name would be gone. */
+    min-height: 1.25em;
+  }
+
+  .vehicle {
+    flex-wrap: nowrap;
+  }
+
+  /* the plate keeps its size – the description gives way */
+  .vehicle > :not(.description) {
+    flex-shrink: 0;
+  }
+
+  .description {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 /* Full text color – the old card's work line was hardly readable (UI review) */
@@ -89,7 +133,8 @@
   place-items: center;
   min-width: var(--touch-min);
   min-height: var(--touch-min);
-  margin: calc(var(--space-2) * -1) calc(var(--space-3) * -1) calc(var(--space-2) * -1) 0;
+  /* reaches into the card's padding (6px top and bottom, see .card) */
+  margin: calc(var(--space-1) * -1.5) calc(var(--space-3) * -1) calc(var(--space-1) * -1.5) 0;
   border: 0;
   border-radius: var(--radius);
   background: none;
