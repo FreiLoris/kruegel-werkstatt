@@ -1,21 +1,25 @@
-import type { ReactNode } from 'react'
+import { Pencil } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Button } from '../../../components/ui/Button'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
-import { formatDuration, minutesBetween } from '../../../lib/format'
+import { formatDate, formatDuration, minutesBetween } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
-import { PARTS_STATUS, TIRE_CHANGE_KINDS, type PartsStatus, type TireChangeKind } from '../taskApi'
+import { PARTS_STATUS, TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
 import {
   appointmentErrors,
   withArrivesEarlier,
   withDate,
   withMfk,
   withReadyBy,
+  withService,
   withSlot,
   type AppointmentForm,
 } from './appointmentForm'
 import styles from './AppointmentStep.module.css'
 import { CapacityOverview } from './CapacityOverview'
+import { PartsDialog } from './PartsDialog'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -40,9 +44,11 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
   const holidayDates = new Set(holidays.keys())
+  // the material order is entered in its own window; the form only changes on "Übernehmen"
+  const [partsOpen, setPartsOpen] = useState(false)
   const errors = appointmentErrors(form)
   // "missing" errors only after trying to continue – not while the user is still filling in
-  const required = (field: 'date' | 'partsDescription') => (showRequired ? errors[field] : undefined)
+  const required = (field: 'date' | 'serviceItemIds') => (showRequired ? errors[field] : undefined)
 
   const set = <K extends keyof AppointmentForm>(field: K, fieldValue: AppointmentForm[K]) => onChange({ ...form, [field]: fieldValue })
 
@@ -207,50 +213,63 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             </div>
           )}
 
+          {/* like Radwechsel and MFK: tick first, then the choice (feedback from the workshop, 10/2026) */}
           {activeServiceItems.length > 0 && (
-            <fieldset className={styles.serviceItems}>
-              <legend>Service</legend>
-              {activeServiceItems.map((item) => (
-                <Checkbox
-                  key={item.id}
-                  label={item.name}
-                  checked={form.serviceItemIds.includes(item.id)}
-                  onChange={(e) => toggleServiceItem(item.id, e.target.checked)}
-                />
-              ))}
-            </fieldset>
+            <>
+              <Checkbox label="Service" checked={form.service} onChange={(e) => onChange(withService(form, e.target.checked))} />
+              {form.service && (
+                <div className={styles.indented}>
+                  <fieldset className={styles.serviceItems}>
+                    <legend>Leistungen</legend>
+                    {activeServiceItems.map((item) => (
+                      <Checkbox
+                        key={item.id}
+                        label={item.name}
+                        checked={form.serviceItemIds.includes(item.id)}
+                        onChange={(e) => toggleServiceItem(item.id, e.target.checked)}
+                      />
+                    ))}
+                  </fieldset>
+                  {required('serviceItemIds') && <p className={styles.error}>{required('serviceItemIds')}</p>}
+                </div>
+              )}
+            </>
           )}
 
-          <Checkbox label="Material bestellen" checked={form.parts} onChange={(e) => set('parts', e.target.checked)} />
+          {/* ticking opens the window; the tick only stays once something was entered there */}
+          <Checkbox
+            label="Material bestellen"
+            checked={form.parts}
+            onChange={(e) => (e.target.checked ? setPartsOpen(true) : set('parts', false))}
+          />
           {form.parts && (
-            <div className={styles.indented}>
-              <TextField
-                label="Was"
-                required
-                placeholder="z. B. Bremsscheiben vorne"
-                maxLength={500}
-                value={form.partsDescription}
-                onChange={(e) => set('partsDescription', e.target.value)}
-                error={required("partsDescription")}
-              />
-              <div className={styles.row}>
-                <Select label="Status" value={form.partsStatus} onChange={(e) => set('partsStatus', e.target.value as PartsStatus)}>
-                  {Object.entries(PARTS_STATUS).map(([status, label]) => (
-                    <option key={status} value={status}>
-                      {label}
-                    </option>
-                  ))}
-                </Select>
-                <TextField
-                  label="Lieferant"
-                  placeholder="z. B. Derendinger"
-                  maxLength={100}
-                  value={form.partsSupplier}
-                  onChange={(e) => set('partsSupplier', e.target.value)}
-                />
-                <TextField label="Bestellt am" type="date" value={form.partsOrderedOn} onChange={(e) => set('partsOrderedOn', e.target.value)} />
-              </div>
+            <div className={`${styles.indented} ${styles.partsSummary}`}>
+              <p className={styles.partsText}>
+                <strong>{form.partsDescription}</strong>
+                {' · '}
+                {PARTS_STATUS[form.partsStatus]}
+                {form.partsSupplier.trim() && ` · ${form.partsSupplier.trim()}`}
+                {form.partsOrderedOn && ` · bestellt am ${formatDate(form.partsOrderedOn)}`}
+              </p>
+              <Button small icon={Pencil} onClick={() => setPartsOpen(true)}>
+                Ändern
+              </Button>
             </div>
+          )}
+          {partsOpen && (
+            <PartsDialog
+              initial={{
+                partsDescription: form.partsDescription,
+                partsStatus: form.partsStatus,
+                partsSupplier: form.partsSupplier,
+                partsOrderedOn: form.partsOrderedOn,
+              }}
+              onApply={(parts) => {
+                onChange({ ...form, parts: true, ...parts })
+                setPartsOpen(false)
+              }}
+              onClose={() => setPartsOpen(false)}
+            />
           )}
 
           <TextArea

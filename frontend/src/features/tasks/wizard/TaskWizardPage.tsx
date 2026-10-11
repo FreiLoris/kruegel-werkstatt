@@ -52,6 +52,21 @@ export function TaskWizardPage() {
   const appointmentComplete =
     Object.keys(appointmentErrors(appointment)).length === 0 && choiceError(courtesyCar, appointment) === null
 
+  /**
+   * Step 1 reports a choice. Once the vehicle is decided (a vehicle or "noch offen") the wizard
+   * goes on by itself – one click less per order (feedback from the workshop, 10/2026). It reacts
+   * to the click, not to the state: coming back to step 1 does not jump forward again, and
+   * "Weiter" stays for that case.
+   */
+  function chooseCustomerStep(next: CustomerStepValue) {
+    setCustomerStep(next)
+    if (next.customer !== null && next.vehicle !== null) {
+      setStep(2)
+      // the vehicle list may be scrolled – step 2 starts at its top
+      window.scrollTo({ top: 0 })
+    }
+  }
+
   function toReview() {
     setShowRequired(true)
     if (appointmentComplete) {
@@ -127,7 +142,7 @@ export function TaskWizardPage() {
         ))}
       </ol>
 
-      {step === 1 && <CustomerStep value={customerStep} onChange={setCustomerStep} />}
+      {step === 1 && <CustomerStep value={customerStep} onChange={chooseCustomerStep} />}
       {step === 2 && (
         <>
           <ChosenCustomer value={customerStep} onChange={() => setStep(1)} />

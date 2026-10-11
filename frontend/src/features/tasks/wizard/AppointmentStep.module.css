@@ -66,3 +66,24 @@
   padding: 0 var(--space-1);
   font-weight: 600;
 }
+
+/* Error of a group of ticks (a single field shows its own) */
+.error {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+/* The material order as one line under its tick – the details are in its own window */
+.partsSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.partsText {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
