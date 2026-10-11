@@ -3,6 +3,14 @@
   gap: var(--space-3);
 }
 
+/* the heading on the left, the orders without appointment on the right */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+}
+
 .title {
   display: flex;
   flex-wrap: wrap;

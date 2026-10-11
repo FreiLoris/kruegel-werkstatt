@@ -393,6 +393,8 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   (planned – everything in the calendars), so the calendar views need no "if no date".
   - Wizard and "Auftrag bearbeiten": tick "Noch kein Termin"; dragging a place in the grid plans it.
   - "Termine › Ohne Termin" with the number of waiting orders on the button; the oldest order on top.
+  - Dashboard (12f): the title row names them ("2 ohne Termin · Huber Peter · …") – they are in
+    no day of the week, and the TV must not get higher.
   - In the task: "Aus Planung nehmen" (`DELETE /api/tasks/{id}/appointment`) – day and lift
     become free, work and mechanic stay. Planned again by editing it.
   - Everywhere a task is named without a day it says "ohne Termin" (`whenLabel`); the search

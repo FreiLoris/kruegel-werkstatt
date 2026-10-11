@@ -8,10 +8,11 @@ import styles from './DashboardPage.module.css'
 import { dashboardMonday } from './shownWeek'
 import { DashboardWeek } from './DashboardWeek'
 import { TodayByLift } from './TodayByLift'
+import { WithoutAppointment } from './WithoutAppointment'
 
 /**
  * Start page and workshop TV (phase 10): the week at a glance, below what is on which lift today and
- * the pinboard in small. On a "view only" device (the TV) the app frame hides its header and shows
+ * the pinboard in small. Orders without appointment are in no day – the title row names them. On a "view only" device (the TV) the app frame hides its header and shows
  * the navigation at the bottom (AppLayout).
  */
 export function DashboardPage() {
@@ -22,12 +23,15 @@ export function DashboardPage() {
   return (
     // uses the whole screen width (AppLayout: data-wide)
     <div data-wide className={styles.page}>
-      <h1 className={styles.title}>
-        {nextWeek ? 'Nächste Woche' : 'Diese Woche'}
-        <span className={styles.week}>
-          KW {isoWeek(monday)} · {formatDate(monday).slice(0, 6)} – {formatDate(addDays(monday, 4))}
-        </span>
-      </h1>
+      <div className={styles.titleRow}>
+        <h1 className={styles.title}>
+          {nextWeek ? 'Nächste Woche' : 'Diese Woche'}
+          <span className={styles.week}>
+            KW {isoWeek(monday)} · {formatDate(monday).slice(0, 6)} – {formatDate(addDays(monday, 4))}
+          </span>
+        </h1>
+        <WithoutAppointment />
+      </div>
       <DashboardWeek monday={monday} />
       <div className={styles.below}>
         <section className={styles.area} aria-labelledby="today-heading">
