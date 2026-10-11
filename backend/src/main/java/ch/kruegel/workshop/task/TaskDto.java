@@ -61,7 +61,7 @@ public record TaskDto(
                 .toList();
         return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
-                a.date(), a.time(), a.end(), task.isTimeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
+                a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), serviceItemIds,
                 PartsOrderDto.of(w.parts()), w.description(), task.getNotes(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());

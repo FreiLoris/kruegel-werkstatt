@@ -93,6 +93,10 @@ class TaskTest {
 
         Appointment later = appointment.movedTo(DAY, LocalTime.of(10, 0), DAY.atTime(12, 0));
         assertThat(later).isEqualTo(new Appointment(DAY, LocalTime.of(10, 0), DAY.atTime(12, 0), eveningBefore, ready, true));
+        // "Zeit offen" stays: moving the block plans the lift, it does not agree a time
+        Appointment open = new Appointment(DAY, EIGHT, DAY.atTime(9, 0), null, null, false, true);
+        assertThat(open.movedTo(DAY, LocalTime.of(10, 0), DAY.atTime(11, 0)).timeOpen()).isTrue();
+        assertThat(appointment.timeOpen()).isFalse();
 
         Appointment nextWeek = appointment.movedTo(DAY.plusDays(7), EIGHT, DAY.plusDays(8).atTime(12, 0));
         assertThat(nextWeek.arrivesEarlier()).isEqualTo(eveningBefore.plusDays(7));

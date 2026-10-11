@@ -23,7 +23,7 @@ public record TaskRefDto(
         if (task == null) {
             return null;
         }
-        return new TaskRefDto(task.getId(), task.getAppointment().date(), task.getAppointment().time(), task.isTimeOpen(),
+        return new TaskRefDto(task.getId(), task.getAppointment().date(), task.getAppointment().time(), task.getAppointment().timeOpen(),
                 task.getCustomer().getDetails().displayName(), task.getTaskNumber());
     }
 }
