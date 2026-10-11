@@ -14,7 +14,7 @@ import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TASK_STATUS, useTasksBetween, type Task, type TaskStatus } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
-import { timeRange } from '../taskTime'
+import { periodLabel } from '../taskTime'
 import { workSummary } from '../workSummary'
 import {
   filterTasks,
@@ -263,7 +263,7 @@ function Row({
     <tr className={styles.row} onClick={onOpen}>
       <td className={styles.nowrap}>
         {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}
-        <span className={styles.time}> {timeRange(task.date, task.time, task.endAt)}</span>
+        <span className={styles.time}> {periodLabel(task)}</span>
       </td>
       <td>
         <Link to={`/tasks/${task.id}`} onClick={(e) => e.stopPropagation()} className={styles.customer}>

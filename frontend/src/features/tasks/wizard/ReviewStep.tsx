@@ -12,7 +12,7 @@ import { useActiveEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { ServerErrors } from '../ServerErrors'
-import { timeRange } from '../taskTime'
+import { TIME_OPEN, timeRange } from '../taskTime'
 import { workItems } from '../workSummary'
 import type { AppointmentForm } from './appointmentForm'
 import styles from './ReviewStep.module.css'
@@ -76,7 +76,8 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
 
       <Block title="Termin" onEdit={() => onEdit(2)}>
         <p className={styles.strong}>
-          {WEEKDAYS_SHORT[weekdayOf(f.date)]} {formatDate(f.date)}, {timeRange(f.date, f.time, `${f.endDate}T${f.endTime}`)}
+          {WEEKDAYS_SHORT[weekdayOf(f.date)]} {formatDate(f.date)}, {f.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}
+          {timeRange(f.date, f.time, `${f.endDate}T${f.endTime}`)}
         </p>
         <Facts
           rows={[

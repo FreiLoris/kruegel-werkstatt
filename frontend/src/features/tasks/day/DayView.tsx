@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { Button } from '../../../components/ui/Button'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { addDays, formatDate, formatTime } from '../../../lib/format'
+import { addDays, formatDate } from '../../../lib/format'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -13,6 +13,7 @@ import { newTaskUrl } from '../wizard/appointmentForm'
 import { DayGrid } from './DayGrid'
 import { DayInfo } from './DayInfo'
 import styles from './DayView.module.css'
+import { startLabel } from '../taskTime'
 
 /** Pixels per minute in the day view – one hour = 90 px, enough for customer, vehicle and work */
 const SCALE = 1.5
@@ -69,7 +70,7 @@ function NextAppointment({ after, onGo }: { after: string; onGo: (date: string) 
         <>
           Nächster Termin:{' '}
           <Button variant="ghost" small onClick={() => onGo(next.date)}>
-            {WEEKDAYS_SHORT[weekdayOf(next.date)]} {formatDate(next.date)}, {formatTime(next.time)} – {next.customer.displayName}
+            {WEEKDAYS_SHORT[weekdayOf(next.date)]} {formatDate(next.date)}, {startLabel(next)} – {next.customer.displayName}
           </Button>
         </>
       ) : (

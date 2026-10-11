@@ -1902,6 +1902,8 @@ export interface components {
             taskNumber: string | null;
             /** @example 08:00:00 */
             time: string;
+            /** @description Zeit offen: time and end only reserve the lift – show no clock time */
+            timeOpen: boolean;
             tireChange: boolean;
             /** @enum {string|null} */
             tireChangeKind: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT" | null;
@@ -1933,6 +1935,8 @@ export interface components {
             taskNumber: string | null;
             /** @example 08:00:00 */
             time: string;
+            /** @description Zeit offen – show no clock time */
+            timeOpen: boolean;
         };
         TaskRequest: {
             /**
@@ -1977,6 +1981,8 @@ export interface components {
             serviceItemIds?: string[];
             /** @example 08:00 */
             time: string;
+            /** @description The clock time is not agreed yet – start and end only reserve the lift. Missing = false */
+            timeOpen?: boolean;
             /** @description Missing = false */
             tireChange?: boolean;
             /** @enum {string} */

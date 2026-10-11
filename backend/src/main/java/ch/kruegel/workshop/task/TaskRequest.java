@@ -17,7 +17,7 @@ import java.util.UUID;
  * endpoints; the task number is assigned by the app. Rules that need the database or several fields
  * ("kommt früher" before the appointment, end after the start, lift free, …) are checked by {@link TaskService}.
  *
- * <p>The ticks ({@code waitingCustomer}, {@code tireChange}, {@code mfk}) may be missing = not ticked.
+ * <p>The ticks ({@code timeOpen}, {@code waitingCustomer}, {@code tireChange}, {@code mfk}) may be missing = not ticked.
  * {@code Boolean} instead of {@code boolean}: Jackson 3 refuses a missing value for a primitive.
  *
  * @param version only when editing: the version the device loaded (optimistic locking)
@@ -28,6 +28,7 @@ public record TaskRequest(
         @NotNull LocalDate date,
         @NotNull @Schema(type = "string", example = "08:00") LocalTime time,
         @Schema(example = "2026-10-15T09:00", description = "Until when the lift is taken; empty = 1 hour after the start") LocalDateTime endAt,
+        @Schema(description = "The clock time is not agreed yet – start and end only reserve the lift. Missing = false") Boolean timeOpen,
         @Schema(example = "2026-10-14T18:00") LocalDateTime arrivesEarlier,
         @Schema(example = "2026-10-15T16:30") LocalDateTime readyBy,
         @Schema(description = "Missing = false") Boolean waitingCustomer,
@@ -45,6 +46,7 @@ public record TaskRequest(
         @Schema(description = "Only needed when editing") Long version) {
 
     public TaskRequest {
+        timeOpen = Boolean.TRUE.equals(timeOpen);
         waitingCustomer = Boolean.TRUE.equals(waitingCustomer);
         tireChange = Boolean.TRUE.equals(tireChange);
         mfk = Boolean.TRUE.equals(mfk);

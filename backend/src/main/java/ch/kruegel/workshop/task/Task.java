@@ -42,6 +42,15 @@ public class Task extends BaseEntity {
     /** Assigned by the app when the task is created ("26-0001"); older ones may be SwissGarage numbers. Unique */
     private String taskNumber;
 
+    /** The clock time is still open (true) or agreed (false) – the appointment itself stays as it is. */
+    public void timeOpen(boolean open) {
+        this.timeOpen = open;
+    }
+
+    public boolean isTimeOpen() {
+        return timeOpen;
+    }
+
     /** Who took the order from the customer ("Annehmer"); empty only for tasks from before 12d */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accepted_by")
@@ -55,6 +64,12 @@ public class Task extends BaseEntity {
 
     @Embedded
     private Appointment appointment;
+
+    /**
+     * The clock time is not known yet ("Zeit offen", 12d-2). Start and end of the appointment
+     * still reserve the lift – they are just not shown as a time anyone was promised.
+     */
+    private boolean timeOpen;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee mechanic;

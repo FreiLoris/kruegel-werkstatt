@@ -127,6 +127,7 @@ public class TaskService {
         Employee acceptedBy = acceptedBy(request, null);
         checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details);
+        task.timeOpen(request.timeOpen());
         task.acceptedBy(acceptedBy);
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
@@ -144,6 +145,7 @@ public class TaskService {
         checkLiftFree(details.lift(), details.appointment(), id);
 
         task.update(details);
+        task.timeOpen(request.timeOpen());
         task.acceptedBy(acceptedBy);
         return saved(task);
     }
