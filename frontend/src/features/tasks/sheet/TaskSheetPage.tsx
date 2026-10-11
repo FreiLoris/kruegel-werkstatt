@@ -63,6 +63,7 @@ export function TaskSheetPage() {
           lookups={{
             serviceItemNames,
             mechanicName: employees?.find((e) => e.id === task.data.mechanicId)?.name,
+            acceptedByName: employees?.find((e) => e.id === task.data.acceptedById)?.name,
             liftName: lifts?.find((l) => l.id === task.data.liftId)?.name,
             courtesyCar,
           }}

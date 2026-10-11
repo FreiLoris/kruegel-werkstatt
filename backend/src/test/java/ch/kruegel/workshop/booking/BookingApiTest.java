@@ -252,9 +252,9 @@ class BookingApiTest {
     /** A new task for Huber at 07:00 (the setup task is at 08:00 without lift) with a car */
     private String taskWithCar(CourtesyCar car, String from, String to) {
         return """
-                { "task": { "customerId": "%s", "date": "%s", "time": "07:00" },
+                { "task": { "customerId": "%s", "acceptedById": "%s", "date": "%s", "time": "07:00" },
                   "courtesyCar": { "courtesyCarId": "%s", "pickupAt": "%sT%s", "returnAt": "%sT%s" } }"""
-                .formatted(huber.getId(), DAY, car.getId(), DAY, from, DAY, to);
+                .formatted(huber.getId(), chef, DAY, car.getId(), DAY, from, DAY, to);
     }
 
     private static String body(MvcTestResult response) {

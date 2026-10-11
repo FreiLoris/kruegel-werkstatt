@@ -10,6 +10,8 @@ export interface SheetLookups {
   /** name per service item ID */
   serviceItemNames: ReadonlyMap<string, string>
   mechanicName?: string
+  /** who took the order ("Annehmer") – missing for tasks from before 12d */
+  acceptedByName?: string
   liftName?: string
   /** e.g. "Ersatzwagen 2 (Skoda Fabia, ZH 10002), 06.10.2026, 13:00 – 06.10.2026, 15:00" */
   courtesyCar?: string
@@ -99,6 +101,7 @@ export function TaskSheet({ task, company, lookups }: { task: Task; company: Com
             ['Wartekunde', task.waitingCustomer ? 'Ja – Kunde wartet vor Ort' : null],
             ['Mechaniker', lookups.mechanicName ?? 'noch offen'],
             ['Lift', lookups.liftName ?? 'noch offen'],
+            ['Angenommen von', lookups.acceptedByName ?? null],
             ['Ersatzwagen', lookups.courtesyCar ?? null],
           ]}
         />

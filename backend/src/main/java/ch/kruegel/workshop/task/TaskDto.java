@@ -21,7 +21,7 @@ import java.util.UUID;
 public record TaskDto(
         UUID id,
         long version,
-        @Schema(types = {"string", "null"}, description = "SwissGarage order number") String taskNumber,
+        @Schema(types = {"string", "null"}, description = "Assigned by the app (\"26-0001\"); older ones may be SwissGarage numbers") String taskNumber,
         TaskStatus status,
         CustomerDto customer,
         @Schema(types = {"object", "null"}, description = "Still open if empty") VehicleDto vehicle,
@@ -33,6 +33,7 @@ public record TaskDto(
         @Schema(description = "Customer waits on site – a flag, not a status") boolean waitingCustomer,
         @Schema(types = {"string", "null"}, format = "uuid") UUID mechanicId,
         @Schema(types = {"string", "null"}, format = "uuid") UUID liftId,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Who took the order (\"Annehmer\"); empty for old tasks") UUID acceptedById,
         boolean tireChange,
         @Schema(types = {"string", "null"}) TireChangeKind tireChangeKind,
         boolean mfk,
@@ -52,13 +53,14 @@ public record TaskDto(
         // getId() on a LAZY reference does not load it
         UUID mechanicId = task.getMechanic() == null ? null : task.getMechanic().getId();
         UUID liftId = task.getLift() == null ? null : task.getLift().getId();
+        UUID acceptedById = task.getAcceptedBy() == null ? null : task.getAcceptedBy().getId();
         List<UUID> serviceItemIds = w.serviceItems().stream()
                 .sorted(Comparator.comparingInt(ServiceItem::getSortOrder).thenComparing(ServiceItem::getName))
                 .map(ServiceItem::getId)
                 .toList();
         return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
-                a.date(), a.time(), a.end(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId,
+                a.date(), a.time(), a.end(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), serviceItemIds,
                 PartsOrderDto.of(w.parts()), w.description(), task.getNotes(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());

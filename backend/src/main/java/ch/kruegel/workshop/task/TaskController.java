@@ -113,7 +113,7 @@ class TaskController {
         return service.changePartsStatus(id, request.status());
     }
 
-    @Operation(summary = "Set or remove the SwissGarage order number", description = "Must be unique.")
+    @Operation(summary = "Correct the task number", description = "The app assigns it when the task is created. Must be unique, cannot be removed.")
     @PutMapping("/{id}/task-number")
     TaskDto assignTaskNumber(@PathVariable UUID id, @Valid @RequestBody TaskNumberRequest request) {
         return service.assignTaskNumber(id, request.taskNumber());

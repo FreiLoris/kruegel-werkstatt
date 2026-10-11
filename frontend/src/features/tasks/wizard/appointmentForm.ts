@@ -40,8 +40,8 @@ export interface AppointmentForm {
   partsOrderedOn: string
   workDescription: string
   notes: string
-  /** SwissGarage order number – often only known later */
-  taskNumber: string
+  /** Who takes the order from the customer ("Annehmer") – '' = not chosen yet; required, never preset */
+  acceptedById: string
 }
 
 /** Drop-off "the evening before" */
@@ -82,7 +82,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   partsOrderedOn: '',
   workDescription: '',
   notes: '',
-  taskNumber: '',
+  acceptedById: '',
 }
 
 /** "Kommt früher" ticked: the evening of the previous working day (Monday → Friday). */
@@ -193,6 +193,8 @@ export type AppointmentErrors = Partial<Record<keyof AppointmentForm, string>>
  */
 export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   const errors: AppointmentErrors = {}
+  // everyone uses every PC – so it is asked for every order instead of taken from the device
+  if (!form.acceptedById) errors.acceptedById = 'Bitte wählen, wer den Auftrag annimmt'
   if (!form.date) errors.date = 'Datum wählen – oder rechts im Raster ziehen'
   if (!form.time) errors.time = 'Uhrzeit wählen'
   const start = form.date && form.time ? `${form.date}T${form.time}` : null
@@ -253,7 +255,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
       : undefined,
     workDescription: text(form.workDescription),
     notes: text(form.notes),
-    taskNumber: text(form.taskNumber),
+    acceptedById: form.acceptedById || undefined,
     version,
   }
 }
@@ -299,7 +301,7 @@ export function formFromTask(task: Task): AppointmentForm {
     partsOrderedOn: task.parts?.orderedOn ?? '',
     workDescription: task.workDescription ?? '',
     notes: task.notes ?? '',
-    taskNumber: task.taskNumber ?? '',
+    acceptedById: task.acceptedById ?? '',
   }
 }
 

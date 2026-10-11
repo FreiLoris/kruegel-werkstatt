@@ -257,6 +257,7 @@ function TaskDetail({ task }: { task: Task }) {
         <Card title="Verlauf">
           <Facts
             rows={[
+              ['Angenommen von', employee(task.acceptedById)?.name ?? null],
               ['Erfasst', <Who key="c" at={task.createdAt} employee={employee(task.createdBy)} />],
               ['Zuletzt geändert', <Who key="u" at={task.updatedAt} employee={employee(task.updatedBy)} />],
             ]}
