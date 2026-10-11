@@ -31,10 +31,11 @@ public record EmployeeRequest(
         @Schema(requiredMode = REQUIRED) boolean selectableAsMechanic,
         @Schema(requiredMode = REQUIRED) boolean selectableForTodos,
         @Schema(requiredMode = REQUIRED) boolean hasPinboardColumn,
+        @Schema(description = "Flexible hours: in only on days entered as \"Anwesend\". Missing = false") Boolean flexibleHours,
         @Schema(description = "Only needed when editing") Long version) {
 
     EmployeeDetails toDetails() {
         return new EmployeeDetails(name, role, color, birthday, vacationDaysPerYear,
-                selectableAsMechanic, selectableForTodos, hasPinboardColumn);
+                selectableAsMechanic, selectableForTodos, hasPinboardColumn, Boolean.TRUE.equals(flexibleHours));
     }
 }

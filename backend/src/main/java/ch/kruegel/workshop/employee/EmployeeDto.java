@@ -21,6 +21,7 @@ public record EmployeeDto(
         boolean selectableAsMechanic,
         boolean selectableForTodos,
         boolean hasPinboardColumn,
+        @Schema(description = "Flexible hours: in only on days entered as \"Anwesend\"") boolean flexibleHours,
         boolean active,
         int sortOrder,
         Instant updatedAt,
@@ -29,7 +30,7 @@ public record EmployeeDto(
     static EmployeeDto of(Employee e) {
         return new EmployeeDto(e.getId(), e.getVersion(), e.getName(), e.getRole(), e.getColor(),
                 e.getBirthday(), e.getVacationDaysPerYear(), e.isSelectableAsMechanic(),
-                e.isSelectableForTodos(), e.hasPinboardColumn(), e.isActive(), e.getSortOrder(),
+                e.isSelectableForTodos(), e.hasPinboardColumn(), e.hasFlexibleHours(), e.isActive(), e.getSortOrder(),
                 e.getUpdatedAt(), e.getUpdatedBy());
     }
 }

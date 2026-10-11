@@ -39,6 +39,8 @@ public class Employee extends BaseEntity implements Sortable {
 
     private boolean hasPinboardColumn;
 
+    private boolean flexibleHours;
+
     private boolean active;
 
     private int sortOrder;
@@ -81,11 +83,12 @@ public class Employee extends BaseEntity implements Sortable {
         this.selectableAsMechanic = details.selectableAsMechanic();
         this.selectableForTodos = details.selectableForTodos();
         this.hasPinboardColumn = details.hasPinboardColumn();
+        this.flexibleHours = details.flexibleHours();
     }
 
     public EmployeeDetails getDetails() {
         return new EmployeeDetails(name, role, color, birthday, vacationDaysPerYear,
-                selectableAsMechanic, selectableForTodos, hasPinboardColumn);
+                selectableAsMechanic, selectableForTodos, hasPinboardColumn, flexibleHours);
     }
 
     public String getName() {
@@ -114,6 +117,10 @@ public class Employee extends BaseEntity implements Sortable {
 
     public boolean isSelectableForTodos() {
         return selectableForTodos;
+    }
+
+    public boolean hasFlexibleHours() {
+        return flexibleHours;
     }
 
     public boolean hasPinboardColumn() {

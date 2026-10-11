@@ -203,7 +203,8 @@ class DevSampleData implements ApplicationRunner {
                 person("Erich", Role.MECHANIC, "#ff9f9f", "1978-07-24", 25),
                 person("Döme", Role.MECHANIC, "#9fdfaa", "1992-11-03", 20),
                 person("Mora", Role.MECHANIC, "#9fc8f0", "1995-05-18", 20),
-                person("Noser", Role.APPRENTICE, "#d4b0f0", "2004-09-30", 25));
+                // flexible hours: in only on the days entered as "Anwesend" (see createAbsences)
+                new EmployeeDetails("Noser", Role.APPRENTICE, "#d4b0f0", LocalDate.parse("2004-09-30"), 25, true, true, true, true));
 
         for (int i = 0; i < team.size(); i++) {
             employees.save(new Employee(team.get(i), i));
