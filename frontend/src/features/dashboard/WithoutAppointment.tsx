@@ -17,10 +17,9 @@ export function WithoutAppointment() {
   return (
     <Link to="/tasks?view=unplanned" className={styles.line} title={`Ohne Termin: ${names}`}>
       <CalendarOff aria-hidden />
-      <strong>
-        {tasks.length} ohne Termin
-      </strong>
-      <span className={styles.names}>{names}</span>
+      <strong>{tasks.length} ohne Termin</strong>
+      {/* the dot is text, not a gap: read aloud or copied, number and names stay apart */}
+      <span className={styles.names}>· {names}</span>
     </Link>
   )
 }
