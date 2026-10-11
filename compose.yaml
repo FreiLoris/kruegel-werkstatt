@@ -47,9 +47,10 @@ services:
       DB_NAME: ${DB_NAME:-werkstatt}
       DB_USER: ${DB_USER:-werkstatt}
       DB_PASSWORD: ${DB_PASSWORD:-werkstatt}
-      # Java may use at most 60 % of the container limit as heap
-      # (rest: metaspace, threads, ...). SerialGC needs the least memory.
-      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
+      # Java may use at most 50 % of the container limit as heap (256 MB). The rest is for
+      # metaspace, code cache and threads – measured at about 150 MB after phase 12, which left
+      # no room under the old limit (400 MB, 60 %: peak 397 MB). SerialGC needs the least memory.
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50 -XX:+UseSerialGC
     # No "ports": the backend is only reachable internally – from outside everything goes through nginx.
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
@@ -57,7 +58,7 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 5
-    mem_limit: 400m
+    mem_limit: 512m
 
   frontend:
     build: ./frontend

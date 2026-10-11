@@ -75,5 +75,14 @@ between – otherwise restore the backup from before the update.
 ## Memory
 
 The NAS has 2 GB, of which DSM and Surveillance Station already use about 40 %. The app is
-limited to about 780 MB (db 256, backend 400, frontend 64, backup 64 MB). If the NAS becomes
+limited to about 900 MB (db 256, backend 512, frontend 64, backup 64 MB). If the NAS becomes
 slow: *Ressourcen-Monitor* – a RAM module (the DS224+ takes up to 6 GB) is the simplest help.
+
+The backend had 400 MB until 10/2026. After phase 12 it used 375 MB right after the start (peak
+397 MB): one step from being stopped by Docker, which would look like "the app is suddenly
+gone and comes back after a minute". Now 512 MB, of which Java takes at most half as heap.
+
+**The limits are in `compose.yaml`, which is a copy on the NAS** – an update of the images does
+not change them. After a change here: replace `/volume1/docker/kruegel-werkstatt/compose.yaml`
+with `deploy/nas/compose.yaml` (or change the two lines in *Projekt → YAML-Konfiguration*), then
+*Stopp* and *Erstellen*.

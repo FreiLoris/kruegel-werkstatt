@@ -39,14 +39,14 @@ services:
       DB_NAME: ${DB_NAME:-werkstatt}
       DB_USER: ${DB_USER:-werkstatt}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
-      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50 -XX:+UseSerialGC
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
       interval: 10s
       timeout: 5s
       start_period: 60s
       retries: 5
-    mem_limit: 400m
+    mem_limit: 512m
 
   frontend:
     image: ghcr.io/freiloris/kruegel-werkstatt-frontend:${APP_VERSION:-latest}
