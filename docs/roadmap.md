@@ -363,7 +363,8 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   opens the entry) and the open to-dos due that day, to tick off right there. (13) "Anwesend" is
   a fifth category of the absences (V19) – entered, shown and kept free of overlaps like the
   others, with half days; the statistics leave it out. The button "Anwesend" in the day view
-  presets the person of the device, the day and the category: two clicks. Decided against clock
+  presets the person of the device, the day and the category: two clicks. The employee calendar
+  has its own button "Anwesenheit" next to "Abwesenheit" with the same presets (12g). Decided against clock
   times for now – half days are what the calendar and the chips already know.
 - [x] **12c – Material order → shopping list** (10)
   Done: the shopping list shows "Material für Aufträge" – every task whose parts are still "zum
