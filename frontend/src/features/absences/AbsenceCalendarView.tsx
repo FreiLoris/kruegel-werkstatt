@@ -1,8 +1,8 @@
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, UserRoundCheck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useToday } from '../../lib/clock'
-import { useCanEdit } from '../../app/person/useDevicePerson'
+import { useCanEdit, useDevicePerson } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { useAllEmployees } from '../employees/employeeApi'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
@@ -16,12 +16,13 @@ import { CATEGORY_CLASS } from './categoryColors'
 type Dialog = { kind: 'new'; fresh?: NewAbsence } | { kind: 'open'; absence: Absence } | null
 
 /**
- * The month of all people (9b): who is away when. The month stands in the address (`month=`), so
+ * The month of all people (9b): who is away when – and, with flexible hours, who is in. The month stands in the address (`month=`), so
  * the page shows the same after reloading – and always loads, also when coming via the menu (F3).
  */
 export function AbsenceCalendarView() {
   const [params, setParams] = useSearchParams()
   const canEdit = useCanEdit()
+  const device = useDevicePerson()
   const today = useToday()
   const [dialog, setDialog] = useState<Dialog>(null)
 
@@ -71,9 +72,24 @@ export function AbsenceCalendarView() {
           ))}
         </ul>
         {canEdit && (
-          <Button variant="primary" icon={Plus} onClick={() => setDialog({ kind: 'new' })}>
-            Abwesenheit
-          </Button>
+          <div className={styles.add}>
+            <Button variant="primary" icon={Plus} onClick={() => setDialog({ kind: 'new' })}>
+              Abwesenheit
+            </Button>
+            {/* its own button: nobody looks for "I am in today" behind "Abwesenheit" (feedback 10/2026).
+                Preset like in the day view: the person of the device, today, "Anwesend" */}
+            <Button
+              icon={UserRoundCheck}
+              onClick={() =>
+                setDialog({
+                  kind: 'new',
+                  fresh: { employeeId: device.kind === 'person' ? device.person.id : '', startDate: today, endDate: today, category: 'PRESENT' },
+                })
+              }
+            >
+              Anwesenheit
+            </Button>
+          </div>
         )}
       </div>
 
@@ -96,8 +112,8 @@ export function AbsenceCalendarView() {
         />
       )}
       <p className={styles.hint}>
-        {canEdit && 'Tage in der Zeile einer Person aufziehen = Abwesenheit erfassen (am Tablet kurz halten). '}
-        Klick auf einen Balken zeigt die Abwesenheit. Grau = Wochenende oder Feiertag.
+        {canEdit && 'Tage in der Zeile einer Person aufziehen = Eintrag erfassen (am Tablet kurz halten). '}
+        Klick auf einen Balken zeigt den Eintrag. Grau = Wochenende oder Feiertag.
       </p>
 
       {dialog && (

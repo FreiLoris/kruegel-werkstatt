@@ -54,3 +54,10 @@
 .error {
   color: var(--color-danger);
 }
+
+/* "Abwesenheit" and "Anwesenheit" stay together when the toolbar wraps */
+.add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
