@@ -42,7 +42,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Status Eingang / In Arbeit / Wartet auf Material / Fertig | `TaskStatus`: `RECEIVED` / `IN_PROGRESS` / `WAITING_FOR_PARTS` / `DONE` | |
 | Termin (Datum, Uhrzeit) | `Appointment` (`date`, `time`) | Swiss local time, no time zone |
 | Ende / Dauer ("bis") | `Appointment.end` / API `endAt` | until when the task takes its lift; default 1 h; may be on a later day |
-| Fahrzeug kommt früher | `arrivesEarlier` | before the appointment, e.g. the evening before |
+| Fahrzeug kommt früher | `arrivesEarlier` | before the appointment, e.g. early that morning or the evening before |
 | fertig bis | `readyBy` | after the appointment |
 | Wartekunde | `waitingCustomer` | flag on the appointment, NOT a status (bug #4) |
 | Arbeiten (am Auftrag) | `TaskWork`; free text `description` | everything ticked + free text |

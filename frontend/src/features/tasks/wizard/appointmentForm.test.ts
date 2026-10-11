@@ -23,10 +23,24 @@ const NO_HOLIDAYS = new Set<string>()
 const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, acceptedById: 'r', date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '09:00' }
 
 describe('defaults', () => {
-  it('arrives earlier = evening of the previous working day', () => {
-    expect(withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS)).toMatchObject({ arrivesEarlierDate: '2026-10-14', arrivesEarlierTime: '17:00' })
+  it('arrives earlier = the day of the appointment when the workshop opens', () => {
+    expect(withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS)).toMatchObject({ arrivesEarlierDate: '2026-10-15', arrivesEarlierTime: '07:00' })
+    expect(appointmentErrors(withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS))).toEqual({})
+  })
+
+  it('an appointment at opening time leaves no "earlier" that day: the evening of the previous working day', () => {
+    const atOpening = { ...THURSDAY, time: '07:00', endTime: '08:00' }
+
+    expect(withArrivesEarlier(atOpening, true, NO_HOLIDAYS)).toMatchObject({ arrivesEarlierDate: '2026-10-14', arrivesEarlierTime: '17:00' })
     // Monday → Friday
-    expect(withArrivesEarlier({ ...THURSDAY, date: '2026-10-19' }, true, NO_HOLIDAYS).arrivesEarlierDate).toBe('2026-10-16')
+    expect(withArrivesEarlier({ ...atOpening, date: '2026-10-19' }, true, NO_HOLIDAYS).arrivesEarlierDate).toBe('2026-10-16')
+    expect(appointmentErrors(withArrivesEarlier(atOpening, true, NO_HOLIDAYS))).toEqual({})
+  })
+
+  it('a date typed before stays when "kommt früher" is ticked again', () => {
+    const typed = { ...THURSDAY, arrivesEarlierDate: '2026-10-13', arrivesEarlierTime: '16:00' }
+
+    expect(withArrivesEarlier(typed, true, NO_HOLIDAYS)).toMatchObject({ arrivesEarlier: true, arrivesEarlierDate: '2026-10-13', arrivesEarlierTime: '16:00' })
   })
 
   it('ready by = the day of the appointment at closing time (17:30), next day for a late appointment', () => {
@@ -52,7 +66,21 @@ describe('withDate', () => {
 
     form = withDate(form, '2026-10-20', '09:00', NO_HOLIDAYS)
 
-    expect(form).toMatchObject({ date: '2026-10-20', time: '09:00', arrivesEarlierDate: '2026-10-19', readyByDate: '2026-10-20', mfkDate: '2026-10-20' })
+    expect(form).toMatchObject({ date: '2026-10-20', time: '09:00', arrivesEarlierDate: '2026-10-20', arrivesEarlierTime: '07:00', readyByDate: '2026-10-20', mfkDate: '2026-10-20' })
+  })
+
+  it('"kommt früher" follows a new time too: moved to opening time it becomes the evening before, and back', () => {
+    const preset = withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS)
+
+    const early = withDate(preset, '2026-10-15', '07:00', NO_HOLIDAYS)
+    expect(early).toMatchObject({ arrivesEarlierDate: '2026-10-14', arrivesEarlierTime: '17:00' })
+    expect(withDate(early, '2026-10-15', '10:00', NO_HOLIDAYS)).toMatchObject({ arrivesEarlierDate: '2026-10-15', arrivesEarlierTime: '07:00' })
+  })
+
+  it('a time typed by hand for "kommt früher" stays when the appointment moves', () => {
+    const form = { ...withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS), arrivesEarlierTime: '07:30' }
+
+    expect(withDate(form, '2026-10-20', '09:00', NO_HOLIDAYS)).toMatchObject({ arrivesEarlierDate: '2026-10-15', arrivesEarlierTime: '07:30' })
   })
 
   it('the end moves along with the same duration – also over midnight', () => {
