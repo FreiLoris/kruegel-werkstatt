@@ -1,0 +1,31 @@
+/* In the title row of the dashboard, pushed to the right; takes the room that is left */
+.line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 12rem;
+  justify-content: flex-end;
+  min-width: 0;
+  font-size: var(--font-size-md);
+  font-weight: 400;
+  color: var(--color-warning);
+  text-decoration: none;
+}
+
+.line svg {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.line strong {
+  flex: none;
+}
+
+.names {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+}
