@@ -58,6 +58,10 @@ public class AbsenceStatisticsService {
         Map<UUID, Integer> plannedVacation = new HashMap<>();
         Map<String, CompanyCount> companies = new LinkedHashMap<>();
         for (Absence absence : absences.touching(firstDay, lastDay, null)) {
+            // "Anwesend" (12b) is no absence – it only shares the table
+            if (!absence.getCategory().isAway()) {
+                continue;
+            }
             UUID employeeId = absence.getEmployee().getId();
             AbsencePeriod period = absence.getPeriod();
             int count = period.workingHalfDays(firstDay, lastDay, holidays::isWorkingDay);

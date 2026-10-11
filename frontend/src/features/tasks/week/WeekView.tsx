@@ -188,7 +188,7 @@ function DayColumn({
         <span className={holiday ? styles.holiday : styles.count}>{holiday ?? (count === 1 ? '1 Termin' : `${count} Termine`)}</span>
       </button>
       {/* always there (empty without absences) so the grid rows stay head / absences / appointments */}
-      <div className={styles.absences} aria-label={absences.length > 0 ? 'Abwesend' : undefined}>
+      <div className={styles.absences} aria-label={absences.length > 0 ? 'Abwesend und anwesend' : undefined}>
         {absences.map((day) => (
           <AbsenceChip key={day.absence.id} day={day} name={nameOf(day.absence.employeeId)} />
         ))}

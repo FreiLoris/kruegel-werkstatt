@@ -16,7 +16,12 @@ export const ABSENCE_CATEGORY: Record<AbsenceCategory, string> = {
   SICK: 'Krank',
   EXTERNAL_WORK: 'Fremdarbeit',
   TRAINING: 'Kurs',
+  // the opposite (12b): someone with flexible hours says when they are in
+  PRESENT: 'Anwesend',
 }
+
+/** "Abwesenheit" – or "Anwesenheit" for the one category that is none */
+export const entryNoun = (category: AbsenceCategory) => (category === 'PRESENT' ? 'Anwesenheit' : 'Abwesenheit')
 
 /** Absences touching the days `from`–`to` (both inclusive). */
 export function useAbsences(from: string, to: string, employeeId?: string) {

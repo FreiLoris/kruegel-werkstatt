@@ -7145,7 +7145,7 @@
         "properties" : {
           "category" : {
             "type" : "string",
-            "enum" : [ "VACATION", "SICK", "EXTERNAL_WORK", "TRAINING" ]
+            "enum" : [ "VACATION", "SICK", "EXTERNAL_WORK", "TRAINING", "PRESENT" ]
           },
           "company" : {
             "type" : [ "string", "null" ],
@@ -7198,7 +7198,7 @@
         "properties" : {
           "category" : {
             "type" : "string",
-            "enum" : [ "VACATION", "SICK", "EXTERNAL_WORK", "TRAINING" ]
+            "enum" : [ "VACATION", "SICK", "EXTERNAL_WORK", "TRAINING", "PRESENT" ]
           },
           "company" : {
             "type" : "string",

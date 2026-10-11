@@ -95,6 +95,18 @@ class AbsenceStatisticsApiTest {
     }
 
     @Test
+    void presenceIsNotCounted() {
+        Employee office = employees.save(EmployeeTestData.employee("Büro", 3));
+        save(office, AbsenceCategory.PRESENT, null, AbsencePeriod.days(day("2025-05-05"), day("2025-05-06")));
+        jdbc.update("UPDATE employee SET active = false WHERE name = 'Büro'");
+
+        MvcTestResult response = statistics(2025);
+
+        // someone who has left and was only "in" that year was not away – not listed
+        assertThat(response).bodyJson().extractingPath("$.people[*].name").asArray().doesNotContain("Büro");
+    }
+
+    @Test
     void externalWorkPerCompanyWithSpellingVariantsTogether() {
         save(erich, AbsenceCategory.EXTERNAL_WORK, "Garage Muster AG", AbsencePeriod.days(day("2025-02-03"), day("2025-02-04")));
         save(reto, AbsenceCategory.EXTERNAL_WORK, "garage muster ag", new AbsencePeriod(day("2025-02-10"), false, day("2025-02-10"), true));
