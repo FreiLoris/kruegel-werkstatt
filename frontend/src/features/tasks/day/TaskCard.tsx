@@ -49,7 +49,8 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
         <span className={styles.time}>{timeRange(task.date, task.time, task.endAt)}</span>
         <TaskStatusBadge status={task.status} />
       </div>
-      <p className={styles.customer}>
+      {/* the tooltip has the whole name – a short block shortens it with "…" */}
+      <p className={styles.customer} title={task.customer.displayName}>
         {/* next to the name: short blocks in the time grid cut off the lower lines */}
         {courtesyCar && (
           <span className={styles.courtesyCar} title={`Ersatzwagen: ${courtesyCar}`}>
@@ -63,7 +64,9 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
         {task.vehicle ? (
           <>
             {task.vehicle.licensePlate && <LicensePlate text={task.vehicle.licensePlate} size="sm" />}
-            <span>{task.vehicle.description}</span>
+            <span className={styles.description} title={task.vehicle.description}>
+              {task.vehicle.description}
+            </span>
           </>
         ) : (
           <span className="muted">Fahrzeug offen</span>

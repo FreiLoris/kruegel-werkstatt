@@ -27,10 +27,10 @@ const task = {
 
 const reto = { id: 'm1', name: 'Reto', color: '#f6d860' } as Employee
 
-function renderCard(mechanic?: Employee) {
+function renderCard(mechanic?: Employee, shown: Task = task) {
   render(
     <MemoryRouter>
-      <TaskCard task={task} mechanic={mechanic} serviceItemNames={new Map()} />
+      <TaskCard task={shown} mechanic={mechanic} serviceItemNames={new Map()} />
     </MemoryRouter>,
   )
 }
@@ -51,5 +51,17 @@ describe('TaskCard', () => {
     expect(screen.getByText('Mechaniker offen')).toBeTruthy()
     expect(screen.getByText(/Wartet/)).toBeTruthy()
     expect(screen.getByText(/bis Fr 16\.10\. 12:00/)).toBeTruthy()
+  })
+
+  it('a short block shortens customer and vehicle with "…" – the tooltip has the whole text', () => {
+    const long = {
+      ...task,
+      customer: { displayName: 'Muster Kranreparaturen und Service AG' },
+      vehicle: { licensePlate: null, description: 'Mercedes-Benz Sprinter 316 CDI lang' },
+    } as unknown as Task
+    renderCard(reto, long)
+
+    expect(screen.getByText('Muster Kranreparaturen und Service AG').getAttribute('title')).toBe('Muster Kranreparaturen und Service AG')
+    expect(screen.getByText('Mercedes-Benz Sprinter 316 CDI lang').getAttribute('title')).toBe('Mercedes-Benz Sprinter 316 CDI lang')
   })
 })

@@ -97,6 +97,10 @@
   position: absolute;
   padding: 1px 2px;
   box-sizing: border-box;
+  /* the card inside adapts to the block's height (TaskCard.module.css, @container): a short block
+     keeps customer and vehicle on one line. The block's size comes from its inline style, never
+     from its content, so making it a size container changes nothing else. */
+  container-type: size;
 }
 
 .card {
