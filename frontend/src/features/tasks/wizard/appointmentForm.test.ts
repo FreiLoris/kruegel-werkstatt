@@ -13,6 +13,7 @@ import {
   withDate,
   withMfk,
   withReadyBy,
+  withService,
   withSlot,
   type AppointmentForm,
 } from './appointmentForm'
@@ -28,9 +29,16 @@ describe('defaults', () => {
     expect(withArrivesEarlier({ ...THURSDAY, date: '2026-10-19' }, true, NO_HOLIDAYS).arrivesEarlierDate).toBe('2026-10-16')
   })
 
-  it('ready by = same evening, next day for a late appointment', () => {
-    expect(withReadyBy(THURSDAY, true)).toMatchObject({ readyByDate: '2026-10-15', readyByTime: '17:00' })
+  it('ready by = the day of the appointment at closing time (17:30), next day for a late appointment', () => {
+    expect(withReadyBy(THURSDAY, true)).toMatchObject({ readyByDate: '2026-10-15', readyByTime: '17:30' })
+    // 17:15 still leaves the same evening, an appointment at closing time does not
+    expect(withReadyBy({ ...THURSDAY, time: '17:15' }, true).readyByDate).toBe('2026-10-15')
     expect(withReadyBy({ ...THURSDAY, time: '17:30' }, true).readyByDate).toBe('2026-10-16')
+  })
+
+  it('the preset "ready by" is valid as it stands', () => {
+    expect(appointmentErrors(withReadyBy(THURSDAY, true))).toEqual({})
+    expect(appointmentErrors(withReadyBy({ ...THURSDAY, time: '17:15', endTime: '18:00' }, true))).toEqual({})
   })
 
   it('MFK on the day of the appointment', () => {
@@ -88,6 +96,26 @@ describe('appointmentErrors', () => {
 
   it('parts need a description', () => {
     expect(appointmentErrors({ ...THURSDAY, parts: true }).partsDescription).toBeDefined()
+  })
+
+  it('"Service" ticked needs at least one item – otherwise it would be saved as no service', () => {
+    expect(appointmentErrors(withService(THURSDAY, true)).serviceItemIds).toBeDefined()
+    expect(appointmentErrors({ ...withService(THURSDAY, true), serviceItemIds: ['oil'] })).toEqual({})
+    // not ticked: nothing to complain about
+    expect(appointmentErrors(THURSDAY).serviceItemIds).toBeUndefined()
+  })
+})
+
+describe('withService', () => {
+  it('unticking clears the chosen items, so nothing is saved unseen', () => {
+    const chosen = { ...withService(THURSDAY, true), serviceItemIds: ['oil', 'filter'] }
+
+    expect(withService(chosen, false)).toMatchObject({ service: false, serviceItemIds: [] })
+    expect(toTaskRequest({ customer: { id: 'c1' } as Customer, vehicle: { kind: 'open' } }, withService(chosen, false)).serviceItemIds).toEqual([])
+  })
+
+  it('ticking again starts empty and keeps the rest of the form', () => {
+    expect(withService(THURSDAY, true)).toEqual({ ...THURSDAY, service: true })
   })
 })
 
@@ -190,6 +218,16 @@ describe('formFromTask', () => {
 
   it('a task without vehicle stays "vehicle open"', () => {
     expect(customerStepFromTask(task).vehicle).toEqual({ kind: 'open' })
+  })
+
+  it('"Service" is ticked exactly when the task has service items', () => {
+    expect(formFromTask(task).service).toBe(true)
+    expect(formFromTask({ ...task, serviceItemIds: [] } as Task).service).toBe(false)
+  })
+
+  it('a saved "ready by" keeps its own time – the new preset only applies to new ticks', () => {
+    expect(formFromTask({ ...task, readyBy: '2026-10-15T17:00:00' } as Task)).toMatchObject({ readyBy: true, readyByTime: '17:00' })
+    expect(formFromTask(task).readyByTime).toBe('17:30')
   })
 })
 

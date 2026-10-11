@@ -30,6 +30,8 @@ export interface AppointmentForm {
   mfk: boolean
   mfkDate: string
   mfkTime: string
+  /** "Service" ticked – only then the service items are offered; unticking clears them ({@link withService}) */
+  service: boolean
   serviceItemIds: string[]
   parts: boolean
   partsDescription: string
@@ -42,8 +44,11 @@ export interface AppointmentForm {
   taskNumber: string
 }
 
-/** Drop-off "the evening before" and "ready by" end of the working day */
+/** Drop-off "the evening before" */
 export const EVENING = '17:00'
+
+/** "Muss fertig sein bis": when the workshop closes (feedback from the workshop, 10/2026 – was 17:00) */
+export const READY_BY_TIME = '17:30'
 
 /** Duration of a new task, like the backend default – short enough that it gets noticed and adjusted */
 export const DEFAULT_DURATION_MINUTES = 60
@@ -59,7 +64,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   arrivesEarlierTime: EVENING,
   readyBy: false,
   readyByDate: '',
-  readyByTime: EVENING,
+  readyByTime: READY_BY_TIME,
   waitingCustomer: false,
   mechanicId: '',
   liftId: '',
@@ -68,6 +73,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   mfk: false,
   mfkDate: '',
   mfkTime: '',
+  service: false,
   serviceItemIds: [],
   parts: false,
   partsDescription: '',
@@ -89,7 +95,7 @@ export function withArrivesEarlier(form: AppointmentForm, on: boolean, holidays:
   }
 }
 
-/** "Fertig bis" ticked: the same evening – or the next day for a late appointment. */
+/** "Fertig bis" ticked: the day of the appointment at closing time – or the next day for a late appointment. */
 export function withReadyBy(form: AppointmentForm, on: boolean): AppointmentForm {
   if (!on) return { ...form, readyBy: false }
   return { ...form, readyBy: true, readyByDate: form.readyByDate || defaultReadyByDate(form.date, form.time) }
@@ -97,7 +103,13 @@ export function withReadyBy(form: AppointmentForm, on: boolean): AppointmentForm
 
 function defaultReadyByDate(date: string, time: string): string {
   if (!date) return ''
-  return time && time >= EVENING ? addDays(date, 1) : date
+  // an appointment at or after closing time cannot be ready the same day
+  return time && time >= READY_BY_TIME ? addDays(date, 1) : date
+}
+
+/** "Service" ticked or unticked. Unticking clears the chosen items – otherwise they would be saved unseen. */
+export function withService(form: AppointmentForm, on: boolean): AppointmentForm {
+  return on ? { ...form, service: true } : { ...form, service: false, serviceItemIds: [] }
 }
 
 /** Minutes from start to end, or the default while one of them is incomplete or the end is not after the start. */
@@ -205,6 +217,8 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
     }
   }
   if (form.mfk && form.mfkTime && !form.mfkDate) errors.mfkDate = 'Datum zur Uhrzeit angeben'
+  // "Service" ticked but nothing chosen would be saved as "no service" without anyone noticing
+  if (form.service && form.serviceItemIds.length === 0) errors.serviceItemIds = 'Mindestens eine Leistung wählen – oder «Service» abwählen'
   if (form.parts && !form.partsDescription.trim()) errors.partsDescription = 'Was muss bestellt werden?'
   return errors
 }
@@ -267,7 +281,7 @@ export function formFromTask(task: Task): AppointmentForm {
     arrivesEarlierTime: arrivesEarlierTime || EVENING,
     readyBy: task.readyBy !== null,
     readyByDate,
-    readyByTime: readyByTime || EVENING,
+    readyByTime: readyByTime || READY_BY_TIME,
     waitingCustomer: task.waitingCustomer,
     mechanicId: task.mechanicId ?? '',
     liftId: task.liftId ?? '',
@@ -276,6 +290,7 @@ export function formFromTask(task: Task): AppointmentForm {
     mfk: task.mfk,
     mfkDate,
     mfkTime,
+    service: task.serviceItemIds.length > 0,
     serviceItemIds: task.serviceItemIds,
     parts: task.parts !== null,
     partsDescription: task.parts?.description ?? '',
