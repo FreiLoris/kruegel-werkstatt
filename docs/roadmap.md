@@ -401,6 +401,13 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   "only once an appointment exists") – the list must be able to name the order. A booked
   courtesy car stays booked when its task leaves the plan.
 
+- [x] **12e – "Fahrzeug kommt früher" presets the day of the appointment** (5)
+  Done: ticking it presets the day of the appointment at 07:00, when the workshop opens (was: the
+  evening of the working day before). An appointment at or before 07:00 leaves no "earlier" on
+  its day – then the evening before, as it was. The preset follows when date or time of the
+  appointment change; a date or time typed by hand stays. Built on the wording of the feedback
+  ("ausgewähltes Datum", like "Muss fertig sein") – the workshop has not answered question 6.
+
 Answers of the workshop (2026-10-11) and what follows from them:
 
 1. **Task number:** the app assigns it. In future the workshop only works with the order sheets
@@ -418,7 +425,8 @@ Answers of the workshop (2026-10-11) and what follows from them:
    car comes at exactly that time. → the time stays in the data (the block in the grid), a flag
    "Zeit offen" hides it; only the date becomes optional (point 3).
 5. **Presence:** yes – done in 12b.
-6. "Fahrzeug kommt früher" (preset): not answered yet.
+6. "Fahrzeug kommt früher" (preset): not answered. Built in 12e as the feedback is worded – to
+   confirm with the workshop: the day of the appointment at 07:00.
 
 ---
 

@@ -55,6 +55,9 @@ export interface AppointmentForm {
 /** Drop-off "the evening before" */
 export const EVENING = '17:00'
 
+/** Drop-off "early in the morning": when the workshop opens (the day view starts there too) */
+export const MORNING = '07:00'
+
 /** "Muss fertig sein bis": when the workshop closes (feedback from the workshop, 10/2026 – was 17:00) */
 export const READY_BY_TIME = '17:30'
 
@@ -95,14 +98,22 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   acceptedById: '',
 }
 
-/** "Kommt früher" ticked: the evening of the previous working day (Monday → Friday). */
+/**
+ * When a car that "comes earlier" usually comes: the day of the appointment, when the workshop
+ * opens (feedback from the workshop, 10/2026 – was always the evening before). An appointment
+ * right at opening time leaves no "earlier" on its day: then the evening of the previous working
+ * day (Monday → Friday).
+ */
+function defaultArrivesEarlier(date: string, time: string, holidays: ReadonlySet<string>): { date: string; time: string } {
+  return time > MORNING ? { date, time: MORNING } : { date: previousWorkingDay(date, holidays), time: EVENING }
+}
+
+/** "Kommt früher" ticked: preset {@link defaultArrivesEarlier} – a date typed before stays. */
 export function withArrivesEarlier(form: AppointmentForm, on: boolean, holidays: ReadonlySet<string>): AppointmentForm {
   if (!on) return { ...form, arrivesEarlier: false }
-  return {
-    ...form,
-    arrivesEarlier: true,
-    arrivesEarlierDate: form.arrivesEarlierDate || (form.date ? previousWorkingDay(form.date, holidays) : ''),
-  }
+  if (form.arrivesEarlierDate || !form.date) return { ...form, arrivesEarlier: true }
+  const preset = defaultArrivesEarlier(form.date, form.time, holidays)
+  return { ...form, arrivesEarlier: true, arrivesEarlierDate: preset.date, arrivesEarlierTime: preset.time }
 }
 
 /** "Fertig bis" ticked: the day of the appointment at closing time – or the next day for a late appointment. */
@@ -139,21 +150,23 @@ function endAfter(date: string, time: string, minutes: number): Pick<Appointment
 /**
  * New appointment date or time (typed or clicked in the overview). The end moves along with the
  * same duration – like moving an appointment in Outlook. Dates that were derived from the old date
- * (evening before, ready by, MFK on the same day) move along; dates typed by hand stay.
+ * ("kommt früher", ready by, MFK on the same day) move along; dates typed by hand stay.
  */
 export function withDate(form: AppointmentForm, date: string, time: string, holidays: ReadonlySet<string>): AppointmentForm {
   const old = form.date
-  const derivedEarlier = old ? previousWorkingDay(old, holidays) : ''
+  // "kommt früher" still at its preset (or not set yet) → it gets the preset of the new appointment
+  const oldEarlier = old ? defaultArrivesEarlier(old, form.time, holidays) : null
+  const earlierUntouched =
+    !form.arrivesEarlierDate || (oldEarlier !== null && form.arrivesEarlierDate === oldEarlier.date && form.arrivesEarlierTime === oldEarlier.time)
+  const earlier = form.arrivesEarlier && date && earlierUntouched ? defaultArrivesEarlier(date, time, holidays) : null
   const derivedReady = defaultReadyByDate(old, form.time)
   return {
     ...form,
     date,
     time,
     ...endAfter(date, time, durationMinutes(form)),
-    arrivesEarlierDate:
-      form.arrivesEarlier && date && (!form.arrivesEarlierDate || form.arrivesEarlierDate === derivedEarlier)
-        ? previousWorkingDay(date, holidays)
-        : form.arrivesEarlierDate,
+    arrivesEarlierDate: earlier ? earlier.date : form.arrivesEarlierDate,
+    arrivesEarlierTime: earlier ? earlier.time : form.arrivesEarlierTime,
     readyByDate:
       form.readyBy && (!form.readyByDate || form.readyByDate === derivedReady) ? defaultReadyByDate(date, time) : form.readyByDate,
     mfkDate: form.mfk && (!form.mfkDate || form.mfkDate === old) ? date : form.mfkDate,

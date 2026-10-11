@@ -37,7 +37,8 @@ interface AppointmentStepProps {
 /**
  * Wizard step 2: appointment and work on the left, the week overview on the right (sticky, so it
  * stays visible while scrolling through the options – UI review). Defaults: "kommt früher" = the
- * evening of the previous working day, "fertig bis" = the same evening.
+ * day of the appointment at opening time (the evening before for an appointment at opening time),
+ * "fertig bis" = the same evening.
  */
 export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, children }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
