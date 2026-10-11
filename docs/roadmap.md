@@ -386,12 +386,20 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   `taskTime.ts`: day and week cards, dashboard, list, search, sheet, links from to-dos and notes).
   The task itself and the review step add "Lift reserviert 08:00–09:00". Moving the block keeps
   the flag.
-- [ ] **12d-3 – Orders without appointment** (3)
-  A change of the data model: the date of a task is `NOT NULL` today, the rule against
-  double-booking a lift is built on it, and every screen assumes a date. New migration, on a
-  database that is in use. "Ohne Termin" list, taking a planned order out of the plan again
-  (e.g. waiting for parts) and planning it later. The feedback wants the number "only once an
-  appointment exists" – to decide there.
+- [x] **12d-3 – Orders without appointment** (3)
+  Done: a task may have no appointment (V22: day, time and end empty together; then no lift, no
+  "kommt früher"/"fertig bis", no waiting customer – so the lift rule never sees it).
+  `Appointment.NONE` in the backend; in the frontend `AnyTask` (may be unplanned) and `Task`
+  (planned – everything in the calendars), so the calendar views need no "if no date".
+  - Wizard and "Auftrag bearbeiten": tick "Noch kein Termin"; dragging a place in the grid plans it.
+  - "Termine › Ohne Termin" with the number of waiting orders on the button; the oldest order on top.
+  - In the task: "Aus Planung nehmen" (`DELETE /api/tasks/{id}/appointment`) – day and lift
+    become free, work and mechanic stay. Planned again by editing it.
+  - Everywhere a task is named without a day it says "ohne Termin" (`whenLabel`); the search
+    lists such orders first.
+  Decided: the number is assigned right away, also without appointment (the feedback asked for
+  "only once an appointment exists") – the list must be able to name the order. A booked
+  courtesy car stays booked when its task leaves the plan.
 
 Answers of the workshop (2026-10-11) and what follows from them:
 

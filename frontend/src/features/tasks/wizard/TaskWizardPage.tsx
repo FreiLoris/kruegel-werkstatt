@@ -10,7 +10,7 @@ import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTaskWithBooking, type Booking } from '../../bookings/bookingApi'
 import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { CourtesyCarSection } from '../../bookings/CourtesyCarSection'
-import { useCreateTask, type Task } from '../taskApi'
+import { useCreateTask, type AnyTask } from '../taskApi'
 import { appointmentErrors, EMPTY_APPOINTMENT, slotFromUrl, toTaskRequest, withSlot, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
 import { CustomerStep } from './CustomerStep'
@@ -40,13 +40,19 @@ export function TaskWizardPage() {
   })
   const [showRequired, setShowRequired] = useState(false)
   const [courtesyCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
-  const [saved, setSaved] = useState<{ task: Task; booking: Booking | null } | null>(null)
+  const [saved, setSaved] = useState<{ task: AnyTask; booking: Booking | null } | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const holidays = useHolidayNames()
   const create = useCreateTask()
   const createWithCar = useCreateTaskWithBooking()
   const saving = create.isPending || createWithCar.isPending
   const toast = useToast()
+
+  /** "Noch kein Termin" ticked: a courtesy car chosen before is dropped – it would be booked for a day nobody knows. */
+  function changeAppointment(next: AppointmentForm) {
+    setAppointment(next)
+    if (next.noAppointment && courtesyCar.wanted) setCourtesyCar(NO_COURTESY_CAR)
+  }
 
   const customerStepComplete = customerStep.customer !== null && customerStep.vehicle !== null
   const appointmentComplete =
@@ -80,7 +86,7 @@ export function TaskWizardPage() {
   function save() {
     const request = toTaskRequest(customerStep, appointment)
     const period = periodOf(courtesyCar, appointment)
-    const onSuccess = (task: Task, booking: Booking | null) => {
+    const onSuccess = (task: AnyTask, booking: Booking | null) => {
       setSaved({ task, booking })
       window.scrollTo({ top: 0 })
     }
@@ -146,8 +152,11 @@ export function TaskWizardPage() {
       {step === 2 && (
         <>
           <ChosenCustomer value={customerStep} onChange={() => setStep(1)} />
-          <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired}>
-            <CourtesyCarSection value={courtesyCar} onChange={setCourtesyCar} appointment={appointment} showRequired={showRequired} />
+          <AppointmentStep value={appointment} onChange={changeAppointment} holidays={holidays} showRequired={showRequired}>
+            {/* a courtesy car is booked for a period – without an appointment there is none yet */}
+            {!appointment.noAppointment && (
+              <CourtesyCarSection value={courtesyCar} onChange={setCourtesyCar} appointment={appointment} showRequired={showRequired} />
+            )}
           </AppointmentStep>
         </>
       )}

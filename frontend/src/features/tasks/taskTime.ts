@@ -10,6 +10,19 @@ export function timeSeenFrom(appointmentDate: string, dateTime: string): string 
   return day === appointmentDate ? formatTime(time) : `${WEEKDAYS_SHORT[weekdayOf(day)]} ${formatDate(day).slice(0, 6)} ${formatTime(time)}`
 }
 
+/** What stands in place of day and time of an order that is not planned (12d-3) */
+export const NO_APPOINTMENT = 'ohne Termin'
+
+/**
+ * When a task is, for links and lists: "15.10. 08:00", "15.10. Zeit offen" – or "ohne Termin".
+ * `full` writes the year too ("15.10.2026, 08:00").
+ */
+export function whenLabel(task: { date: string | null; time: string | null; timeOpen: boolean }, full = false): string {
+  if (task.date === null || task.time === null) return NO_APPOINTMENT
+  const start = startLabel({ time: task.time, timeOpen: task.timeOpen })
+  return full ? `${formatDate(task.date)}, ${start}` : `${formatDate(task.date).slice(0, 6)} ${start}`
+}
+
 /** What stands in place of a clock time that is not agreed yet (12d-2) */
 export const TIME_OPEN = 'Zeit offen'
 

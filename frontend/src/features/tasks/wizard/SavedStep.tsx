@@ -6,7 +6,7 @@ import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { formatDate, formatLocalDateTime, formatTime } from '../../../lib/format'
 import type { Booking } from '../../bookings/bookingApi'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
-import type { Task } from '../taskApi'
+import type { AnyTask } from '../taskApi'
 import styles from './SavedStep.module.css'
 import { TIME_OPEN } from '../taskTime'
 
@@ -14,7 +14,7 @@ import { TIME_OPEN } from '../taskTime'
  * Clear confirmation after saving (UI review: the old wizard gave no feedback) – with what
  * comes next: print the sheet, enter the next task, or back to the start.
  */
-export function SavedStep({ task, booking, onNext }: { task: Task; booking: Booking | null; onNext: () => void }) {
+export function SavedStep({ task, booking, onNext }: { task: AnyTask; booking: Booking | null; onNext: () => void }) {
   const navigate = useNavigate()
   const { data: cars } = useAllCourtesyCars()
 
@@ -28,7 +28,9 @@ export function SavedStep({ task, booking, onNext }: { task: Task; booking: Book
         {task.vehicle && <span>{task.vehicle.description}</span>}
       </p>
       <p>
-        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}
+        {task.date && task.time
+          ? `${WEEKDAYS_SHORT[weekdayOf(task.date)]} ${formatDate(task.date)}, ${task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}`
+          : 'Noch ohne Termin – zu finden unter Termine › Ohne Termin'}
       </p>
       {booking && (
         <p>

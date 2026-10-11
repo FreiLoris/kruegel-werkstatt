@@ -5696,6 +5696,79 @@
         "tags" : [ "Tasks" ]
       }
     },
+    "/api/tasks/without-appointment" : {
+      "get" : {
+        "description" : "Taken but not planned yet, or taken out of the plan again. The one waiting longest first.",
+        "operationId" : "withoutAppointment",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TaskDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Orders without appointment",
+        "tags" : [ "Tasks" ]
+      }
+    },
     "/api/tasks/{id}" : {
       "delete" : {
         "operationId" : "delete_1",
@@ -5927,6 +6000,85 @@
           }
         },
         "summary" : "Edit task",
+        "tags" : [ "Tasks" ]
+      }
+    },
+    "/api/tasks/{id}/appointment" : {
+      "delete" : {
+        "description" : "No version needed. Day, time and lift become free; the order stays and is listed under \"Ohne Termin\".",
+        "operationId" : "removeAppointment",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Take the task out of the plan",
         "tags" : [ "Tasks" ]
       }
     },
@@ -8606,11 +8758,12 @@
             "$ref" : "#/components/schemas/CustomerDto"
           },
           "date" : {
-            "type" : "string",
-            "format" : "date"
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Empty = no appointment yet; then time and end are empty too"
           },
           "endAt" : {
-            "type" : "string",
+            "type" : [ "string", "null" ],
             "format" : "date-time",
             "description" : "Until when the task takes its lift",
             "example" : "2026-10-15T09:00:00"
@@ -8670,7 +8823,8 @@
             "description" : "Assigned by the app (\"26-0001\"); older ones may be SwissGarage numbers"
           },
           "time" : {
-            "type" : "string",
+            "type" : [ "string", "null" ],
+            "format" : "time-local",
             "example" : "08:00:00"
           },
           "timeOpen" : {
@@ -8733,8 +8887,9 @@
             "type" : "string"
           },
           "date" : {
-            "type" : "string",
-            "format" : "date"
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Empty = no appointment yet"
           },
           "id" : {
             "type" : "string",
@@ -8744,7 +8899,8 @@
             "type" : [ "string", "null" ]
           },
           "time" : {
-            "type" : "string",
+            "type" : [ "string", "null" ],
+            "format" : "time-local",
             "example" : "08:00:00"
           },
           "timeOpen" : {
@@ -8773,7 +8929,8 @@
           },
           "date" : {
             "type" : "string",
-            "format" : "date"
+            "format" : "date",
+            "description" : "Empty = no appointment yet (list \"Ohne Termin\"); then time, end, lift, \"kommt früher\" and \"fertig bis\" are empty too"
           },
           "endAt" : {
             "type" : "string",
@@ -8821,6 +8978,7 @@
           },
           "time" : {
             "type" : "string",
+            "description" : "Required with a date",
             "example" : "08:00"
           },
           "timeOpen" : {
@@ -8854,7 +9012,7 @@
             "minLength" : 0
           }
         },
-        "required" : [ "customerId", "date", "time" ]
+        "required" : [ "customerId" ]
       },
       "TaskScheduleRequest" : {
         "type" : "object",
@@ -8884,7 +9042,7 @@
         "properties" : {
           "hits" : {
             "type" : "array",
-            "description" : "Upcoming appointments first (nearest first), then past ones (newest first)",
+            "description" : "Orders without appointment first, then upcoming appointments (nearest first), then past ones (newest first)",
             "items" : {
               "$ref" : "#/components/schemas/TaskDto"
             }

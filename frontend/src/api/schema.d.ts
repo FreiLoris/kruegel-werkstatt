@@ -1002,6 +1002,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/without-appointment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Orders without appointment
+         * @description Taken but not planned yet, or taken out of the plan again. The one waiting longest first.
+         */
+        get: operations["withoutAppointment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks/{id}": {
         parameters: {
             query?: never;
@@ -1019,6 +1039,26 @@ export interface paths {
         post?: never;
         /** Delete task */
         delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tasks/{id}/appointment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Take the task out of the plan
+         * @description No version needed. Day, time and lift become free; the order stays and is listed under "Ohne Termin".
+         */
+        delete: operations["removeAppointment"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1864,14 +1904,17 @@ export interface components {
             /** Format: uuid */
             createdBy: string | null;
             customer: components["schemas"]["CustomerDto"];
-            /** Format: date */
-            date: string;
+            /**
+             * Format: date
+             * @description Empty = no appointment yet; then time and end are empty too
+             */
+            date: string | null;
             /**
              * Format: date-time
              * @description Until when the task takes its lift
              * @example 2026-10-15T09:00:00
              */
-            endAt: string;
+            endAt: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -1900,8 +1943,11 @@ export interface components {
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
             /** @description Assigned by the app ("26-0001"); older ones may be SwissGarage numbers */
             taskNumber: string | null;
-            /** @example 08:00:00 */
-            time: string;
+            /**
+             * Format: time-local
+             * @example 08:00:00
+             */
+            time: string | null;
             /** @description Zeit offen: time and end only reserve the lift – show no clock time */
             timeOpen: boolean;
             tireChange: boolean;
@@ -1928,13 +1974,19 @@ export interface components {
         };
         TaskRefDto: {
             customerName: string;
-            /** Format: date */
-            date: string;
+            /**
+             * Format: date
+             * @description Empty = no appointment yet
+             */
+            date: string | null;
             /** Format: uuid */
             id: string;
             taskNumber: string | null;
-            /** @example 08:00:00 */
-            time: string;
+            /**
+             * Format: time-local
+             * @example 08:00:00
+             */
+            time: string | null;
             /** @description Zeit offen – show no clock time */
             timeOpen: boolean;
         };
@@ -1951,8 +2003,11 @@ export interface components {
             arrivesEarlier?: string;
             /** Format: uuid */
             customerId: string;
-            /** Format: date */
-            date: string;
+            /**
+             * Format: date
+             * @description Empty = no appointment yet (list "Ohne Termin"); then time, end, lift, "kommt früher" and "fertig bis" are empty too
+             */
+            date?: string;
             /**
              * Format: date-time
              * @description Until when the lift is taken; empty = 1 hour after the start
@@ -1979,8 +2034,11 @@ export interface components {
              */
             readyBy?: string;
             serviceItemIds?: string[];
-            /** @example 08:00 */
-            time: string;
+            /**
+             * @description Required with a date
+             * @example 08:00
+             */
+            time?: string;
             /** @description The clock time is not agreed yet – start and end only reserve the lift. Missing = false */
             timeOpen?: boolean;
             /** @description Missing = false */
@@ -2012,7 +2070,7 @@ export interface components {
             time: string;
         };
         TaskSearchResultDto: {
-            /** @description Upcoming appointments first (nearest first), then past ones (newest first) */
+            /** @description Orders without appointment first, then upcoming appointments (nearest first), then past ones (newest first) */
             hits: components["schemas"]["TaskDto"][];
             /** @description True if there are more hits than delivered */
             more: boolean;
@@ -6939,6 +6997,71 @@ export interface operations {
             };
         };
     };
+    withoutAppointment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     get_1: {
         parameters: {
             query?: never;
@@ -7094,6 +7217,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    removeAppointment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"];
+                };
             };
             /** @description Bad Request */
             400: {

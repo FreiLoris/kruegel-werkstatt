@@ -1,4 +1,4 @@
-import { ArrowLeft, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarX, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
@@ -18,9 +18,9 @@ import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TaskPinboard } from '../../notes/TaskPinboard'
 import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
-import { TASK_STATUS, useChangeTaskStatus, useDeleteTask, useTask, type Task, type TaskStatus } from '../taskApi'
+import { isPlanned, TASK_STATUS, useChangeTaskStatus, useDeleteTask, useRemoveAppointment, useTask, type AnyTask, type TaskStatus } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
-import { startLabel, TIME_OPEN, timeRange } from '../taskTime'
+import { TIME_OPEN, timeRange, whenLabel } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
@@ -38,13 +38,14 @@ export function TaskDetailPage() {
   return <TaskDetail task={task.data} />
 }
 
-function TaskDetail({ task }: { task: Task }) {
+function TaskDetail({ task }: { task: AnyTask }) {
   const navigate = useNavigate()
   const canEdit = useCanEdit()
   const confirm = useConfirm()
   const toast = useToast()
   const changeStatus = useChangeTaskStatus()
   const remove = useDeleteTask()
+  const removeAppointment = useRemoveAppointment()
   const { data: employees } = useAllEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -52,7 +53,8 @@ function TaskDetail({ task }: { task: Task }) {
 
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
   const employee = (id: string | null) => employees?.find((e) => e.id === id)
-  const backToDay = () => navigate(`/tasks?date=${task.date}`)
+  // an order without appointment came from its list, not from a day
+  const backToDay = () => navigate(task.date ? `/tasks?date=${task.date}` : '/tasks?view=unplanned')
   const c = task.customer
   const v = task.vehicle
   const items = workItems(task, names)
@@ -67,7 +69,7 @@ function TaskDetail({ task }: { task: Task }) {
   async function deleteTask() {
     const ok = await confirm({
       title: 'Auftrag löschen?',
-      text: `${c.displayName}, ${formatDate(task.date)} ${startLabel(task)} wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
+      text: `${c.displayName}, ${whenLabel(task, true)} wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
       confirmLabel: 'Löschen',
       dangerous: true,
     })
@@ -81,17 +83,33 @@ function TaskDetail({ task }: { task: Task }) {
     })
   }
 
+  /** Out of the plan, e.g. the parts are not here: the order stays, day and lift are free for others. */
+  async function takeOutOfPlan() {
+    const ok = await confirm({
+      title: 'Aus der Planung nehmen?',
+      text: `${c.displayName}, ${whenLabel(task, true)}: Tag, Uhrzeit und Lift werden frei. Der Auftrag bleibt und steht unter «Ohne Termin», bis er neu eingeplant wird. Ein gebuchter Ersatzwagen bleibt gebucht.`,
+      confirmLabel: 'Aus der Planung nehmen',
+    })
+    if (!ok) return
+    removeAppointment.mutate(task.id, {
+      onSuccess: () => toast.success('Auftrag steht jetzt unter «Ohne Termin»'),
+      onError: (error) => toast.error(`Nicht gespeichert: ${error.message}`),
+    })
+  }
+
   return (
     <>
       <Button variant="ghost" icon={ArrowLeft} onClick={backToDay}>
-        Zu den Terminen vom {formatDate(task.date)}
+        {task.date ? `Zu den Terminen vom ${formatDate(task.date)}` : 'Zu den Aufträgen ohne Termin'}
       </Button>
 
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>{c.displayName}</h1>
           <p className={styles.when}>
-            {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}
+            {isPlanned(task)
+              ? `${WEEKDAYS_SHORT[weekdayOf(task.date)]} ${formatDate(task.date)}, ${task.timeOpen ? TIME_OPEN : `${formatTime(task.time)} Uhr`}`
+              : 'Ohne Termin'}
             <TaskStatusBadge status={task.status} />
           </p>
         </div>
@@ -102,8 +120,13 @@ function TaskDetail({ task }: { task: Task }) {
           {canEdit && (
             <>
               <Button variant="primary" icon={Pencil} onClick={() => navigate(`/tasks/${task.id}/edit`)}>
-                Bearbeiten
+                {task.date ? 'Bearbeiten' : 'Einplanen / Bearbeiten'}
               </Button>
+              {task.date && (
+                <Button icon={CalendarX} onClick={takeOutOfPlan} loading={removeAppointment.isPending}>
+                  Aus Planung nehmen
+                </Button>
+              )}
               <Button variant="ghost" icon={Trash2} onClick={deleteTask} loading={remove.isPending}>
                 Löschen
               </Button>
@@ -210,13 +233,18 @@ function TaskDetail({ task }: { task: Task }) {
           <Facts
             rows={[
               // the times of a task with open time still say how long its lift is taken
-              ['Termin', `${formatDate(task.date)}, ${task.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}${timeRange(task.date, task.time, task.endAt)}`],
+              [
+                'Termin',
+                isPlanned(task)
+                  ? `${formatDate(task.date)}, ${task.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}${timeRange(task.date, task.time, task.endAt)}`
+                  : 'Noch keiner – über «Einplanen / Bearbeiten» festlegen',
+              ],
               ['Kommt früher', task.arrivesEarlier && formatLocalDateTime(task.arrivesEarlier)],
               ['Fertig bis', task.readyBy && formatLocalDateTime(task.readyBy)],
               ['Wartekunde', task.waitingCustomer && 'Ja – Kunde wartet vor Ort'],
               // UI review: the old view called the mechanic "Termin erstellt von"
               ['Mechaniker', <PersonOrOpen key="m" employee={employee(task.mechanicId)} />],
-              ['Lift', lifts?.find((l) => l.id === task.liftId)?.name ?? 'noch offen'],
+              ['Lift', task.date ? (lifts?.find((l) => l.id === task.liftId)?.name ?? 'noch offen') : null],
             ]}
           />
         </Card>

@@ -3,7 +3,18 @@ import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
 
-export type Task = components['schemas']['TaskDto']
+/** A task as the API delivers it – it may have no appointment yet (12d-3: list "Ohne Termin") */
+export type AnyTask = components['schemas']['TaskDto']
+
+/**
+ * A planned task: it has a day, a time and an end. Everything in the calendars is one – the day,
+ * week and period endpoints only deliver planned tasks – so the views there need no "if no date".
+ */
+export type Task = AnyTask & { date: string; time: string; endAt: string }
+
+/** Has the task an appointment? Narrows {@link AnyTask} to {@link Task}. */
+export const isPlanned = (task: AnyTask): task is Task => task.date !== null
+
 export type TaskStatus = Task['status']
 export type TaskRequest = components['schemas']['TaskRequest']
 export type TireChangeKind = NonNullable<Task['tireChangeKind']>
@@ -46,7 +57,8 @@ export function tasksBetweenKey(from: string, to: string) {
 export function useTasksBetween(from: string, to: string) {
   return useQuery({
     queryKey: tasksBetweenKey(from, to),
-    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })),
+    // by the day of their start – only planned tasks have one
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })) as Task[],
   })
 }
 
@@ -58,7 +70,7 @@ export function tasksOfDayKey(date: string) {
 export function useTasksOfDay(date: string | undefined) {
   return useQuery({
     queryKey: tasksOfDayKey(date ?? ''),
-    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/day', { params: { query: { date: date! } }, signal })),
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/day', { params: { query: { date: date! } }, signal })) as Task[],
     enabled: !!date,
   })
 }
@@ -140,6 +152,23 @@ export function useChangeTaskStatus() {
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) =>
       dataOrThrow(await api.PUT('/api/tasks/{id}/status', { params: { path: { id } }, body: { status } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** Orders without appointment – taken but not planned yet, or taken out of the plan again (12d-3). */
+export function useTasksWithoutAppointment() {
+  return useQuery({
+    queryKey: [TOPIC, 'without-appointment'],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/without-appointment', { signal })),
+  })
+}
+
+/** Take a planned task out of the plan: day, time and lift become free, the order stays. */
+export function useRemoveAppointment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => dataOrThrow(await api.DELETE('/api/tasks/{id}/appointment', { params: { path: { id } } })),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

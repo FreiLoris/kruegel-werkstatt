@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { formatCount, formatDate, formatLocalDateTime, formatMonth, formatTimestamp } from '../../../lib/format'
 import type { Company } from '../../company/companyApi'
-import type { Task } from '../taskApi'
+import { isPlanned, type AnyTask } from '../taskApi'
 import { periodLabel } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskSheet.module.css'
@@ -22,7 +22,7 @@ export interface SheetLookups {
  * address, vehicle, appointment and EVERY ticked piece of work as a checklist (F1 – the old sheet
  * only printed the free text). Text only, no app colors: it must work on a black-and-white printer.
  */
-export function TaskSheet({ task, company, lookups }: { task: Task; company: Company; lookups: SheetLookups }) {
+export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: Company; lookups: SheetLookups }) {
   const c = task.customer
   const v = task.vehicle
   const items = workItems(task, lookups.serviceItemNames)
@@ -95,12 +95,12 @@ export function TaskSheet({ task, company, lookups }: { task: Task; company: Com
       <Block title="Termin">
         <Facts
           rows={[
-            ['Termin', `${formatDate(task.date)}, ${periodLabel(task)}`],
+            ['Termin', isPlanned(task) ? `${formatDate(task.date)}, ${periodLabel(task)}` : 'noch offen'],
             ['Kommt früher', task.arrivesEarlier ? formatLocalDateTime(task.arrivesEarlier) : null],
             ['Fertig bis', task.readyBy ? formatLocalDateTime(task.readyBy) : null],
             ['Wartekunde', task.waitingCustomer ? 'Ja – Kunde wartet vor Ort' : null],
             ['Mechaniker', lookups.mechanicName ?? 'noch offen'],
-            ['Lift', lookups.liftName ?? 'noch offen'],
+            ['Lift', task.date ? (lookups.liftName ?? 'noch offen') : null],
             ['Angenommen von', lookups.acceptedByName ?? null],
             ['Ersatzwagen', lookups.courtesyCar ?? null],
           ]}

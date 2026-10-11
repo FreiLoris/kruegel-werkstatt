@@ -5,6 +5,7 @@ import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TASK_STATUS, useCustomerHistory } from '../taskApi'
 import { workSummary } from '../workSummary'
 import styles from './CustomerHistory.module.css'
+import { NO_APPOINTMENT } from '../taskTime'
 
 /** The customer's last tasks – what was done last time, which car came (UI review: no empty area). */
 export function CustomerHistory({ customerId }: { customerId: string }) {
@@ -28,7 +29,7 @@ export function CustomerHistory({ customerId }: { customerId: string }) {
           {history.data.map((task) => (
             <li key={task.id} className={styles.item}>
               <div className={styles.line}>
-                <span className={styles.date}>{formatDate(task.date)}</span>
+                <span className={styles.date}>{task.date ? formatDate(task.date) : NO_APPOINTMENT}</span>
                 <span className={styles.status}>{TASK_STATUS[task.status]}</span>
               </div>
               <div className={styles.line}>

@@ -67,6 +67,13 @@ class TaskController {
         return search.search(q, limit);
     }
 
+    @Operation(summary = "Orders without appointment",
+            description = "Taken but not planned yet, or taken out of the plan again. The one waiting longest first.")
+    @GetMapping("/without-appointment")
+    List<TaskDto> withoutAppointment() {
+        return service.withoutAppointment();
+    }
+
     @Operation(summary = "Tasks whose parts are still to be ordered", description = "The next appointment first – shown on the shopping list.")
     @GetMapping("/parts-to-order")
     List<TaskDto> withPartsToOrder() {
@@ -104,6 +111,13 @@ class TaskController {
     @PutMapping("/{id}/schedule")
     TaskDto schedule(@PathVariable UUID id, @Valid @RequestBody TaskScheduleRequest request) {
         return service.schedule(id, request);
+    }
+
+    @Operation(summary = "Take the task out of the plan",
+            description = "No version needed. Day, time and lift become free; the order stays and is listed under \"Ohne Termin\".")
+    @DeleteMapping("/{id}/appointment")
+    TaskDto removeAppointment(@PathVariable UUID id) {
+        return service.removeAppointment(id);
     }
 
     @Operation(summary = "Parts ordered / arrived",

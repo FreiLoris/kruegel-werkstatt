@@ -11,7 +11,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * When the vehicle is in the workshop – Swiss local time, no time zone (an appointment is
+ * When the vehicle is in the workshop – or {@link #NONE}: the order is taken, but not planned yet
+ * (12d-3). Then nothing here is set.
+ *
+ * <p>When the vehicle is in the workshop – Swiss local time, no time zone (an appointment is
  * "08:00 here", also after a daylight saving change).
  *
  * @param date            day of the appointment
@@ -27,9 +30,9 @@ import java.util.Objects;
  */
 @Embeddable
 public record Appointment(
-        @Column(name = "appointment_date", nullable = false) LocalDate date,
-        @Column(name = "appointment_time", nullable = false) LocalTime time,
-        @Column(name = "appointment_end", nullable = false) LocalDateTime end,
+        @Column(name = "appointment_date") LocalDate date,
+        @Column(name = "appointment_time") LocalTime time,
+        @Column(name = "appointment_end") LocalDateTime end,
         LocalDateTime arrivesEarlier,
         LocalDateTime readyBy,
         boolean waitingCustomer,
@@ -38,20 +41,34 @@ public record Appointment(
     /** Duration when nothing is given – short enough that it gets noticed and adjusted */
     public static final Duration DEFAULT_DURATION = Duration.ofHours(1);
 
+    /** No appointment yet: the order waits in the list "Ohne Termin". */
+    public static final Appointment NONE = new Appointment(null, null, null, null, null, false, false);
+
     public Appointment {
-        Objects.requireNonNull(date, "date");
-        Objects.requireNonNull(time, "time");
-        Objects.requireNonNull(end, "end");
-        LocalDateTime start = date.atTime(time);
-        if (!end.isAfter(start)) {
-            throw new IllegalArgumentException("End must be after the start: " + start + " – " + end);
+        if (date == null) {
+            // without a day nothing else can be set – the database has the same rule (V22)
+            if (time != null || end != null || arrivesEarlier != null || readyBy != null || waitingCustomer || timeOpen) {
+                throw new IllegalArgumentException("Without a day an appointment has nothing else");
+            }
+        } else {
+            Objects.requireNonNull(time, "time");
+            Objects.requireNonNull(end, "end");
+            LocalDateTime start = date.atTime(time);
+            if (!end.isAfter(start)) {
+                throw new IllegalArgumentException("End must be after the start: " + start + " – " + end);
+            }
+            if (arrivesEarlier != null && !arrivesEarlier.isBefore(start)) {
+                throw new IllegalArgumentException("'Arrives earlier' must be before the appointment: " + arrivesEarlier);
+            }
+            if (readyBy != null && !readyBy.isAfter(start)) {
+                throw new IllegalArgumentException("'Ready by' must be after the appointment: " + readyBy);
+            }
         }
-        if (arrivesEarlier != null && !arrivesEarlier.isBefore(start)) {
-            throw new IllegalArgumentException("'Arrives earlier' must be before the appointment: " + arrivesEarlier);
-        }
-        if (readyBy != null && !readyBy.isAfter(start)) {
-            throw new IllegalArgumentException("'Ready by' must be after the appointment: " + readyBy);
-        }
+    }
+
+    /** Is there a day and time? False for {@link #NONE}. */
+    public boolean isPlanned() {
+        return date != null;
     }
 
     /** An appointment at an agreed time – the usual case. */
@@ -65,7 +82,11 @@ public record Appointment(
         return new Appointment(date, time, date.atTime(time).plus(DEFAULT_DURATION), null, null, false);
     }
 
+    /** Only for a planned appointment. */
     public LocalDateTime start() {
+        if (!isPlanned()) {
+            throw new IllegalStateException("No appointment yet");
+        }
         return date.atTime(time);
     }
 

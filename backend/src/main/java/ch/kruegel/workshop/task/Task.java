@@ -131,7 +131,24 @@ public class Task extends BaseEntity {
      */
     public void schedule(Appointment appointment, Lift lift) {
         this.appointment = Objects.requireNonNull(appointment, "appointment");
-        this.lift = lift;
+        this.lift = checkPlace(appointment, lift);
+    }
+
+    /**
+     * Out of the plan again (12d-3) – e.g. the parts have not arrived. The order stays, with all
+     * its work; day, time and lift are free for others.
+     */
+    public void removeAppointment() {
+        this.appointment = Appointment.NONE;
+        this.lift = null;
+    }
+
+    /** A lift is taken for a time – without an appointment there is none. */
+    private static Lift checkPlace(Appointment appointment, Lift lift) {
+        if (!appointment.isPlanned() && lift != null) {
+            throw new IllegalArgumentException("A task without appointment cannot take a lift");
+        }
+        return lift;
     }
 
     private void apply(TaskDetails details) {
@@ -139,7 +156,7 @@ public class Task extends BaseEntity {
         this.vehicle = details.vehicle();
         this.appointment = details.appointment();
         this.mechanic = details.mechanic();
-        this.lift = details.lift();
+        this.lift = checkPlace(details.appointment(), details.lift());
         TaskWork work = details.work();
         this.tireChange = work.tireChange();
         this.tireChangeKind = work.tireChangeKind();

@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router'
 import { reasonOf } from '../../../api/errors'
 import { Button } from '../../../components/ui/Button'
 import { useToast } from '../../../components/ui/toastContext'
-import { formatDate } from '../../../lib/format'
-import { useChangePartsStatus, usePartsToOrder, type Task } from '../taskApi'
+import { useChangePartsStatus, usePartsToOrder, type AnyTask } from '../taskApi'
 import styles from './PartsToOrder.module.css'
-import { startLabel } from '../taskTime'
+import { whenLabel } from '../taskTime'
 
 /**
  * The material still to be ordered for tasks, on the shopping list (12c). Not copies as to-dos:
@@ -23,7 +22,7 @@ export function PartsToOrder({ canEdit }: { canEdit: boolean }) {
   // nothing to order = no empty box above the shopping list
   if (!tasks || tasks.length === 0) return null
 
-  function ordered(task: Task) {
+  function ordered(task: AnyTask) {
     change.mutate(
       { id: task.id, status: 'ORDERED' },
       {
@@ -45,7 +44,7 @@ export function PartsToOrder({ canEdit }: { canEdit: boolean }) {
             </span>
             <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${task.id}`)}>
               <ClipboardList aria-hidden />
-              {task.customer.displayName}, {formatDate(task.date).slice(0, 6)} {startLabel(task)}
+              {task.customer.displayName}, {whenLabel(task)}
               {task.vehicle?.licensePlate && ` · ${task.vehicle.licensePlate}`}
             </button>
             {canEdit && (

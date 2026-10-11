@@ -4,14 +4,14 @@ import { ApiError } from '../../../api/errors'
 import { Button } from '../../../components/ui/Button'
 import { TextField } from '../../../components/ui/Fields'
 import { useToast } from '../../../components/ui/toastContext'
-import { useAssignTaskNumber, type Task } from '../taskApi'
+import { useAssignTaskNumber, type AnyTask } from '../taskApi'
 import styles from './TaskNumberEditor.module.css'
 
 /**
  * The task number – assigned by the app when the task is created (12d; older tasks may carry a
  * SwissGarage number). Shown as text; "ändern" corrects it right here, it cannot be removed.
  */
-export function TaskNumberEditor({ task, canEdit }: { task: Task; canEdit: boolean }) {
+export function TaskNumberEditor({ task, canEdit }: { task: AnyTask; canEdit: boolean }) {
   const [editing, setEditing] = useState(false)
   const [value, setValue] = useState(task.taskNumber ?? '')
   const assign = useAssignTaskNumber()

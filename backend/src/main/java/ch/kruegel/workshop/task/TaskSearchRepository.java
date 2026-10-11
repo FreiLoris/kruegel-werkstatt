@@ -38,7 +38,8 @@ class TaskSearchRepository {
                                       v.license_plate, replace(v.license_plate, ' ', ''), v.make, v.model, v.vin,
                                       v.swissgarage_number,
                                       t.task_number, t.work_description, t.notes, t.parts_description)), w.word) = 0)
-                        ORDER BY t.appointment_date < :today,
+                        ORDER BY t.appointment_date IS NOT NULL,
+                                 t.appointment_date < :today,
                                  CASE WHEN t.appointment_date >= :today THEN t.appointment_date END ASC,
                                  t.appointment_date DESC,
                                  t.appointment_time

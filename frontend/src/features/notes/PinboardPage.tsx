@@ -33,6 +33,7 @@ import { BOARD, useMoveNote, useNotes, useSaveNote, type Note } from './noteApi'
 import { NoteDialogById } from './NoteDialog'
 import { archiveByMonth, movedNote, movedTodo, NEW_COLUMN, pinboardColumns, type PinboardColumn } from './pinboard'
 import styles from './PinboardPage.module.css'
+import { NO_APPOINTMENT } from '../tasks/taskTime'
 
 /** Drop on the column under the pointer/finger; between columns the closest one (as on the other boards). */
 const dropTarget: CollisionDetection = (args) => {
@@ -427,7 +428,7 @@ function NoteCard({ note, columnId, employees, dragging = false, onOpen, classNa
       <div className={styles.meta}>
         {note.task && (
           <span className={styles.chip}>
-            <ClipboardList aria-hidden /> {note.task.customerName}, {formatDate(note.task.date).slice(0, 6)}
+            <ClipboardList aria-hidden /> {note.task.customerName}, {note.task.date ? formatDate(note.task.date).slice(0, 6) : NO_APPOINTMENT}
           </span>
         )}
         {note.todoCount > 0 && (

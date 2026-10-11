@@ -12,8 +12,8 @@ import java.util.UUID;
  */
 public record TaskRefDto(
         UUID id,
-        @Schema(format = "date") LocalDate date,
-        @Schema(type = "string", example = "08:00:00") LocalTime time,
+        @Schema(types = {"string", "null"}, format = "date", description = "Empty = no appointment yet") LocalDate date,
+        @Schema(types = {"string", "null"}, example = "08:00:00") LocalTime time,
         @Schema(description = "Zeit offen – show no clock time") boolean timeOpen,
         String customerName,
         @Schema(types = {"string", "null"}) String taskNumber) {

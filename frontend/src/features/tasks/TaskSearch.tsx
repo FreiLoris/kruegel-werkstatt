@@ -3,18 +3,17 @@ import { useEffect, useRef, useState } from 'react'
 import { useToday } from '../../lib/clock'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { formatDate } from '../../lib/format'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
-import { useTaskSearch, type Task } from './taskApi'
+import { useTaskSearch, type AnyTask } from './taskApi'
 import styles from './TaskSearch.module.css'
 import { TaskStatusBadge } from './TaskStatusBadge'
-import { startLabel } from './taskTime'
+import { whenLabel } from './taskTime'
 
 /**
  * Search over ALL appointments (F11: the old search only looked at the visible week, without
  * saying that there were hits elsewhere). A hit opens its day.
  */
-export function TaskSearch({ onOpen }: { onOpen: (task: Task) => void }) {
+export function TaskSearch({ onOpen }: { onOpen: (task: AnyTask) => void }) {
   const [input, setInput] = useState('')
   const [open, setOpen] = useState(false)
   const query = useDebouncedValue(input, 250)
@@ -34,7 +33,7 @@ export function TaskSearch({ onOpen }: { onOpen: (task: Task) => void }) {
 
   const showList = open && query.trim().length >= 2
 
-  function choose(task: Task) {
+  function choose(task: AnyTask) {
     setOpen(false)
     setInput('')
     onOpen(task)
@@ -78,9 +77,10 @@ export function TaskSearch({ onOpen }: { onOpen: (task: Task) => void }) {
               <ul className={styles.hits}>
                 {search.data.hits.map((task) => (
                   <li key={task.id}>
-                    <button type="button" className={[styles.hit, task.date < today && styles.past].filter(Boolean).join(' ')} onClick={() => choose(task)}>
+                    <button type="button" className={[styles.hit, task.date !== null && task.date < today && styles.past].filter(Boolean).join(' ')} onClick={() => choose(task)}>
                       <span className={styles.when}>
-                        {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}, {startLabel(task)}
+                        {task.date && `${WEEKDAYS_SHORT[weekdayOf(task.date)]} `}
+                        {whenLabel(task, true)}
                       </span>
                       <span className={styles.who}>{task.customer.displayName}</span>
                       <span className={styles.what}>

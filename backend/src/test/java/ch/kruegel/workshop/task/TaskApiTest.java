@@ -280,6 +280,52 @@ class TaskApiTest {
     }
 
     @Test
+    void anOrderWithoutAppointmentWaitsInItsOwnListAndCanBePlannedLater() {
+        String noDate = "{ \"customerId\": \"%s\", \"acceptedById\": \"%s\", \"workDescription\": \"Service\"%%s }"
+                .formatted(huber.getId(), reto.getId());
+
+        MvcTestResult created = send("POST", "/api/tasks", noDate.formatted(""));
+        assertThat(created).hasStatus(HttpStatus.CREATED);
+        assertThat(created).bodyJson().extractingPath("$.date").isNull();
+        assertThat(created).bodyJson().extractingPath("$.endAt").isNull();
+        // it has its number right away – the list must be able to name it
+        assertThat(created).bodyJson().extractingPath("$.taskNumber").isNotNull();
+        String id = idOf(created);
+        // nothing may hang on a day that does not exist
+        assertFieldError(send("POST", "/api/tasks", noDate.formatted(", " + liftJson(lift1))), "date");
+        assertFieldError(send("POST", "/api/tasks", noDate.formatted(", \"waitingCustomer\": true")), "date");
+
+        assertThat(mvc.get().uri("/api/tasks/without-appointment").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(id);
+        assertThat(mvc.get().uri("/api/tasks?from=2026-10-01&to=2026-10-31").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+
+        // planned by editing it …
+        assertThat(send("PUT", "/api/tasks/" + id, body("\"version\": 0, " + liftJson(lift1))))
+                .bodyJson().extractingPath("$.date").isEqualTo(DAY);
+        assertThat(mvc.get().uri("/api/tasks/without-appointment").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
+
+    @Test
+    void aPlannedOrderCanBeTakenOutOfThePlanAndItsLiftIsFree() {
+        String id = idOf(create(liftJson(lift1) + ", \"readyBy\": \"2026-10-15T16:30\", \"waitingCustomer\": true, \"mechanicId\": \"%s\""
+                .formatted(reto.getId())));
+
+        MvcTestResult removed = mvc.delete().uri("/api/tasks/" + id + "/appointment").header(CurrentPerson.HEADER, chef).exchange();
+
+        assertThat(removed).hasStatusOk();
+        assertThat(removed).bodyJson().extractingPath("$.date").isNull();
+        assertThat(removed).bodyJson().extractingPath("$.liftId").isNull();
+        assertThat(removed).bodyJson().extractingPath("$.readyBy").isNull();
+        assertThat(removed).bodyJson().extractingPath("$.waitingCustomer").isEqualTo(false);
+        // who works on it and what is to do stays
+        assertThat(removed).bodyJson().extractingPath("$.mechanicId").isEqualTo(reto.getId().toString());
+        // the lift is free for someone else
+        assertThat(create(liftJson(lift1))).hasStatus(HttpStatus.CREATED);
+        // dragged back into the plan: a first appointment
+        assertThat(send("PUT", "/api/tasks/" + id + "/schedule", scheduleJson(lift2, DAY, "10:00", DAY + "T11:00")))
+                .bodyJson().extractingPath("$.time").isEqualTo("10:00:00");
+    }
+
+    @Test
     void someoneMustHaveAcceptedTheOrder() {
         Employee gone = employees.save(new Employee(new EmployeeDetails("Weg", Role.MECHANIC, "#cccccc", null, 25,
                 true, true, true), 3));
