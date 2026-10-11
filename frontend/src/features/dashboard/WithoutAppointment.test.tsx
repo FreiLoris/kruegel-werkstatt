@@ -25,7 +25,7 @@ describe('WithoutAppointment', () => {
 
     const link = screen.getByRole('link')
     expect(link.getAttribute('href')).toBe('/tasks?view=unplanned')
-    expect(link.textContent).toBe('2 ohne Termin· Huber Peter · Muster Transport AG')
+    expect(link.textContent).toBe('2 ohne Termin · Huber Peter · Muster Transport AG')
   })
 
   it('shows nothing when everything is planned or still loading', () => {
