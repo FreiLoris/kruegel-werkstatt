@@ -1093,8 +1093,8 @@ export interface paths {
         };
         get?: never;
         /**
-         * Set or remove the SwissGarage order number
-         * @description Must be unique.
+         * Correct the task number
+         * @description The app assigns it when the task is created. Must be unique, cannot be removed.
          */
         put: operations["assignTaskNumber"];
         post?: never;
@@ -1849,6 +1849,11 @@ export interface components {
         };
         TaskDto: {
             /**
+             * Format: uuid
+             * @description Who took the order ("Annehmer"); empty for old tasks
+             */
+            acceptedById: string | null;
+            /**
              * Format: date-time
              * @description Fahrzeug kommt früher
              * @example 2026-10-14T18:00:00
@@ -1893,7 +1898,7 @@ export interface components {
             serviceItemIds: string[];
             /** @enum {string} */
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
-            /** @description SwissGarage order number */
+            /** @description Assigned by the app ("26-0001"); older ones may be SwissGarage numbers */
             taskNumber: string | null;
             /** @example 08:00:00 */
             time: string;
@@ -1931,6 +1936,11 @@ export interface components {
         };
         TaskRequest: {
             /**
+             * Format: uuid
+             * @description Who took the order from the customer ("Annehmer") – required; checked by the service
+             */
+            acceptedById?: string;
+            /**
              * Format: date-time
              * @example 2026-10-14T18:00
              */
@@ -1965,8 +1975,6 @@ export interface components {
              */
             readyBy?: string;
             serviceItemIds?: string[];
-            /** @description SwissGarage order number – may also be added later; unique */
-            taskNumber?: string;
             /** @example 08:00 */
             time: string;
             /** @description Missing = false */

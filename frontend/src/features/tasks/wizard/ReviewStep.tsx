@@ -116,12 +116,11 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
           </ul>
         )}
         {f.workDescription.trim() && <p className={styles.freeText}>{f.workDescription.trim()}</p>}
-        {f.taskNumber.trim() && (
-          <p>
-            <span className="muted">Auftragsnummer: </span>
-            {f.taskNumber.trim()}
-          </p>
-        )}
+        <p>
+          <span className="muted">Angenommen von: </span>
+          {employees?.find((e) => e.id === f.acceptedById)?.name ?? '–'}
+        </p>
+        <p className="muted">Die Auftragsnummer wird beim Speichern vergeben.</p>
         {f.notes.trim() && (
           <p className={styles.freeText}>
             <span className="muted">Notizen: </span>

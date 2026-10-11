@@ -48,7 +48,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const [partsOpen, setPartsOpen] = useState(false)
   const errors = appointmentErrors(form)
   // "missing" errors only after trying to continue – not while the user is still filling in
-  const required = (field: 'date' | 'serviceItemIds') => (showRequired ? errors[field] : undefined)
+  const required = (field: 'date' | 'serviceItemIds' | 'acceptedById') => (showRequired ? errors[field] : undefined)
 
   const set = <K extends keyof AppointmentForm>(field: K, fieldValue: AppointmentForm[K]) => onChange({ ...form, [field]: fieldValue })
 
@@ -65,6 +65,30 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   return (
     <div className={styles.layout}>
       <div className={styles.form}>
+        <Section title="Angenommen von">
+          <Select
+            label="Wer nimmt den Auftrag an?"
+            required
+            value={form.acceptedById}
+            onChange={(e) => set('acceptedById', e.target.value)}
+            error={required('acceptedById')}
+          >
+            {/* no preset on purpose: the PCs are shared, the person of the device is often someone else */}
+            <option value="" disabled>
+              Bitte wählen …
+            </option>
+            {(employees ?? []).map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+            {/* editing: whoever accepted it stays, even if they have left since */}
+            {form.acceptedById && employees && !employees.some((e) => e.id === form.acceptedById) && (
+              <option value={form.acceptedById}>(nicht mehr aktiv)</option>
+            )}
+          </Select>
+        </Section>
+
         <Section title="Termin">
           <div className={styles.row}>
             <TextField
@@ -278,17 +302,6 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             maxLength={2000}
             value={form.workDescription}
             onChange={(e) => set('workDescription', e.target.value)}
-          />
-        </Section>
-
-        <Section title="Auftragsnummer">
-          <TextField
-            label="Auftragsnummer aus SwissGarage"
-            hint="Falls schon bekannt – sonst später im Auftrag eintragen"
-            maxLength={30}
-            autoComplete="off"
-            value={form.taskNumber}
-            onChange={(e) => set('taskNumber', e.target.value)}
           />
         </Section>
 

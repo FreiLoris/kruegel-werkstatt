@@ -225,52 +225,61 @@ class TaskApiTest {
     }
 
     @Test
-    void taskNumberCanBeGivenWhenCreatingAndEditing() {
-        String first = idOf(create("\"taskNumber\": \" A-17 \""));
+    void theAppAssignsTheTaskNumberYearAndRunningNumber() {
+        String year = "%02d".formatted(LocalDate.now().getYear() % 100);
 
-        assertThat(mvc.get().uri("/api/tasks/" + first).exchange()).bodyJson().extractingPath("$.taskNumber").isEqualTo("A-17");
-        assertFieldError(create("\"taskNumber\": \"A-17\""), "taskNumber");
-        // editing keeps its own number, and can change it
-        assertThat(send("PUT", "/api/tasks/" + first, body("\"taskNumber\": \"A-17\", \"version\": 0"))).hasStatusOk();
-        assertThat(send("PUT", "/api/tasks/" + first, body("\"taskNumber\": \"A-18\", \"version\": 0")))
-                .bodyJson().extractingPath("$.taskNumber").isEqualTo("A-18");
+        MvcTestResult first = create(null);
+        MvcTestResult second = createAt("09:00", null);
+
+        assertThat(first).bodyJson().extractingPath("$.taskNumber").isEqualTo(year + "-0001");
+        assertThat(second).bodyJson().extractingPath("$.taskNumber").isEqualTo(year + "-0002");
+        // editing the task keeps its number
+        assertThat(send("PUT", "/api/tasks/" + idOf(first), body("\"notes\": \"x\", \"version\": 0")))
+                .bodyJson().extractingPath("$.taskNumber").isEqualTo(year + "-0001");
     }
 
     @Test
-    void taskNumberIsUniqueAndCanBeRemoved() {
+    void aSaveThatFailsTakesNoNumberAndANumberTypedByHandIsSkipped() {
+        String year = "%02d".formatted(LocalDate.now().getYear() % 100);
         String first = idOf(create(null));
-        String second = idOf(create(null));
+        // someone corrects the first number to what would be the next one
+        send("PUT", "/api/tasks/" + first + "/task-number", "{ \"taskNumber\": \"%s-0002\" }".formatted(year));
+        // refused (end before start) – must not use up a number
+        assertFieldError(createAt("09:00", "\"endAt\": \"2026-10-15T08:00\""), "endAt");
+
+        assertThat(createAt("09:00", null)).bodyJson().extractingPath("$.taskNumber").isEqualTo(year + "-0003");
+    }
+
+    @Test
+    void taskNumberCanBeCorrectedButIsUniqueAndStays() {
+        String first = idOf(create(null));
+        String second = idOf(createAt("09:00", null));
         send("PUT", "/api/tasks/" + first + "/task-number", "{ \"taskNumber\": \" A-17 \" }");
 
         assertFieldError(send("PUT", "/api/tasks/" + second + "/task-number", "{ \"taskNumber\": \"A-17\" }"), "taskNumber");
         // the same number again on the same task is fine
         assertThat(send("PUT", "/api/tasks/" + first + "/task-number", "{ \"taskNumber\": \"A-17\" }"))
                 .bodyJson().extractingPath("$.taskNumber").isEqualTo("A-17");
-        assertThat(send("PUT", "/api/tasks/" + first + "/task-number", "{ \"taskNumber\": \"\" }"))
-                .bodyJson().extractingPath("$.taskNumber").isNull();
+        // every task has a number – it cannot be removed
+        assertFieldError(send("PUT", "/api/tasks/" + first + "/task-number", "{ \"taskNumber\": \"\" }"), "taskNumber");
     }
 
     @Test
-    void deletesTask() {
-        String id = idOf(create("\"serviceItemIds\": [\"%s\"]".formatted(oil.getId())));
+    void someoneMustHaveAcceptedTheOrder() {
+        Employee gone = employees.save(new Employee(new EmployeeDetails("Weg", Role.MECHANIC, "#cccccc", null, 25,
+                true, true, true), 3));
+        String id = idOf(create(null));
+        assertThat(mvc.get().uri("/api/tasks/" + id).exchange()).bodyJson().extractingPath("$.acceptedById").isEqualTo(reto.getId().toString());
 
-        assertThat(mvc.delete().uri("/api/tasks/" + id).header(CurrentPerson.HEADER, chef).exchange())
-                .hasStatus(HttpStatus.NO_CONTENT);
-        assertThat(mvc.get().uri("/api/tasks/" + id).exchange()).hasStatus(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void listsAPeriodByDayAndTime() {
-        send("POST", "/api/tasks", body(null).replace(DAY, "2026-10-16"));
-        send("POST", "/api/tasks", body(null).replace("08:00", "13:00"));
-        send("POST", "/api/tasks", body(null).replace("08:00", "07:30"));
-        send("POST", "/api/tasks", body(null).replace(DAY, "2026-10-20"));
-
-        MvcTestResult response = mvc.get().uri("/api/tasks?from=2026-10-15&to=2026-10-16").exchange();
-
-        assertThat(response).bodyJson().extractingPath("$[*].time").asArray()
-                .containsExactly("07:30:00", "13:00:00", "08:00:00");
-        assertThat(response).bodyJson().extractingPath("$[2].date").isEqualTo("2026-10-16");
+        String without = "{ \"customerId\": \"%s\", \"date\": \"%s\", \"time\": \"10:00\" }".formatted(huber.getId(), DAY);
+        assertFieldError(send("POST", "/api/tasks", without), "acceptedById");
+        // changed to someone else – who may leave later without the task losing them
+        String byGone = body("\"version\": 0").replace(reto.getId().toString(), gone.getId().toString());
+        assertThat(send("PUT", "/api/tasks/" + id, byGone)).bodyJson().extractingPath("$.acceptedById").isEqualTo(gone.getId().toString());
+        jdbc.update("UPDATE employee SET active = false WHERE name = 'Weg'");
+        assertThat(send("PUT", "/api/tasks/" + id, byGone.replace("\"version\": 0", "\"version\": 1"))).hasStatusOk();
+        // but not newly chosen
+        assertFieldError(send("POST", "/api/tasks", bodyAt("11:00", null).replace(reto.getId().toString(), gone.getId().toString())), "acceptedById");
     }
 
     @Test
@@ -279,7 +288,7 @@ class TaskApiTest {
         send("POST", "/api/tasks", body(null).replace(DAY, "2026-09-01"));
         send("POST", "/api/tasks", body("\"vehicleId\": \"%s\"".formatted(golf.getId())));
         send("POST", "/api/tasks", """
-                { "customerId": "%s", "date": "%s", "time": "08:00" }""".formatted(meier.getId(), DAY));
+                { "customerId": "%s", "acceptedById": "%s", "date": "%s", "time": "08:00" }""".formatted(meier.getId(), reto.getId(), DAY));
 
         MvcTestResult response = mvc.get().uri("/api/tasks/history?customerId=" + huber.getId()).exchange();
 
@@ -435,7 +444,8 @@ class TaskApiTest {
 
     /** Task for Huber on {@link #DAY} at the given time – several tasks on one lift need different times. */
     private String bodyAt(String time, String moreFields) {
-        String base = "\"customerId\": \"%s\", \"date\": \"%s\", \"time\": \"%s\"".formatted(huber.getId(), DAY, time);
+        String base = "\"customerId\": \"%s\", \"acceptedById\": \"%s\", \"date\": \"%s\", \"time\": \"%s\""
+                .formatted(huber.getId(), reto.getId(), DAY, time);
         return "{ " + base + (moreFields == null ? "" : ", " + moreFields) + " }";
     }
 

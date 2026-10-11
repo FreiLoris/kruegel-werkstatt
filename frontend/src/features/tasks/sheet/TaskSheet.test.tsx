@@ -44,13 +44,14 @@ const task = {
 
 describe('TaskSheet', () => {
   it('prints every ticked piece of work, not only the free text (F1)', () => {
-    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto' }} />)
+    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto', acceptedByName: 'Carina' }} />)
 
     expect(screen.getByText('Radwechsel')).toBeTruthy()
     expect(screen.getByText('MFK')).toBeTruthy()
     expect(screen.getByText('Ölwechsel')).toBeTruthy()
     expect(screen.getByText('Material: Bremsscheiben vorne')).toBeTruthy()
     expect(screen.getByText('Geräusch hinten links')).toBeTruthy()
+    expect(screen.getByText('Carina')).toBeTruthy()
   })
 
   it('has the letterhead from the company profile and the customer address', () => {

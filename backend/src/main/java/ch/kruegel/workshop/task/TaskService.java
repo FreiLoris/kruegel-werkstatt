@@ -69,10 +69,11 @@ public class TaskService {
     private final ServiceItemRepository serviceItems;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final TaskNumbers numbers;
 
     TaskService(TaskRepository repository, CustomerRepository customers, VehicleRepository vehicles,
                 EmployeeRepository employees, LiftRepository lifts, ServiceItemRepository serviceItems,
-                ApplicationEventPublisher events, Clock clock) {
+                ApplicationEventPublisher events, Clock clock, TaskNumbers numbers) {
         this.repository = repository;
         this.customers = customers;
         this.vehicles = vehicles;
@@ -81,6 +82,7 @@ public class TaskService {
         this.serviceItems = serviceItems;
         this.events = events;
         this.clock = clock;
+        this.numbers = numbers;
     }
 
     @Transactional(readOnly = true)
@@ -122,10 +124,12 @@ public class TaskService {
 
     public TaskDto create(TaskRequest request) {
         TaskDetails details = details(request, null);
-        String number = freeTaskNumber(request.taskNumber(), null);
+        Employee acceptedBy = acceptedBy(request, null);
         checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details);
-        task.assignTaskNumber(number);
+        task.acceptedBy(acceptedBy);
+        // last, after all checks: the number is only taken when the task is really saved
+        task.assignTaskNumber(numbers.next());
         return saved(repository.save(task));
     }
 
@@ -136,11 +140,11 @@ public class TaskService {
         Task task = find(id);
         task.checkVersion(request.version());
         TaskDetails details = details(request, task);
-        String number = freeTaskNumber(request.taskNumber(), id);
+        Employee acceptedBy = acceptedBy(request, task.getAcceptedBy());
         checkLiftFree(details.lift(), details.appointment(), id);
 
         task.update(details);
-        task.assignTaskNumber(number);
+        task.acceptedBy(acceptedBy);
         return saved(task);
     }
 
@@ -200,7 +204,11 @@ public class TaskService {
 
     public TaskDto assignTaskNumber(UUID id, String taskNumber) {
         Task task = find(id);
-        task.assignTaskNumber(freeTaskNumber(taskNumber, id));
+        String number = freeTaskNumber(taskNumber, id);
+        if (number == null) {
+            throw new InvalidInputException("taskNumber", "Die Auftragsnummer kann geändert, aber nicht entfernt werden");
+        }
+        task.assignTaskNumber(number);
         return saved(task);
     }
 
@@ -247,6 +255,14 @@ public class TaskService {
                 "liftId", "Lift", Lift::isActive, "ist ausser Betrieb");
         return new TaskDetails(customer, vehicle, appointment(request), mechanic, lift,
                 work(request, current == null ? Set.of() : current.getWork().serviceItems()), request.notes());
+    }
+
+    /** Who took the order – required; anyone active (the office accepts orders too, not only mechanics). */
+    private Employee acceptedBy(TaskRequest request, Employee current) {
+        if (request.acceptedById() == null) {
+            throw new InvalidInputException("acceptedById", "Bitte wählen, wer den Auftrag angenommen hat");
+        }
+        return reference(employees, request.acceptedById(), current, "acceptedById", "Mitarbeiter", Employee::isActive, "ist nicht mehr aktiv");
     }
 
     private static Appointment appointment(TaskRequest request) {

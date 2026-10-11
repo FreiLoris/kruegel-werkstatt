@@ -39,8 +39,13 @@ public class Task extends BaseEntity {
 
     static final int TASK_NUMBER_MAX = 30;
 
-    /** SwissGarage order number, added later by hand; unique */
+    /** Assigned by the app when the task is created ("26-0001"); older ones may be SwissGarage numbers. Unique */
     private String taskNumber;
+
+    /** Who took the order from the customer ("Annehmer"); empty only for tasks from before 12d */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accepted_by")
+    private Employee acceptedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Customer customer;
@@ -110,7 +115,12 @@ public class Task extends BaseEntity {
         this.parts = Objects.requireNonNull(newParts, "parts");
     }
 
-    /** Sets the SwissGarage order number; empty removes it. Uniqueness is checked by the service/database. */
+    /** Who took the order from the customer – required from 12d on, so it cannot be removed again. */
+    public void acceptedBy(Employee employee) {
+        this.acceptedBy = Objects.requireNonNull(employee, "acceptedBy");
+    }
+
+    /** Sets the task number; empty removes it. Uniqueness is checked by the service/database. */
     public void assignTaskNumber(String number) {
         this.taskNumber = Texts.checkMaxLength(Texts.emptyToNull(number), TASK_NUMBER_MAX, "Task number");
     }
@@ -149,6 +159,10 @@ public class Task extends BaseEntity {
 
     public TaskWork getWork() {
         return new TaskWork(tireChange, tireChangeKind, mfk, mfkAppointment, serviceItems, parts, workDescription);
+    }
+
+    public Employee getAcceptedBy() {
+        return acceptedBy;
     }
 
     public String getTaskNumber() {

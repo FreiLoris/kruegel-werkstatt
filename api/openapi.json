@@ -6199,7 +6199,7 @@
     },
     "/api/tasks/{id}/task-number" : {
       "put" : {
-        "description" : "Must be unique.",
+        "description" : "The app assigns it when the task is created. Must be unique, cannot be removed.",
         "operationId" : "assignTaskNumber",
         "parameters" : [ {
           "in" : "path",
@@ -6282,7 +6282,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Set or remove the SwissGarage order number",
+        "summary" : "Correct the task number",
         "tags" : [ "Tasks" ]
       }
     },
@@ -8583,6 +8583,11 @@
       "TaskDto" : {
         "type" : "object",
         "properties" : {
+          "acceptedById" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who took the order (\"Annehmer\"); empty for old tasks"
+          },
           "arrivesEarlier" : {
             "type" : [ "string", "null" ],
             "format" : "date-time",
@@ -8662,7 +8667,7 @@
           },
           "taskNumber" : {
             "type" : [ "string", "null" ],
-            "description" : "SwissGarage order number"
+            "description" : "Assigned by the app (\"26-0001\"); older ones may be SwissGarage numbers"
           },
           "time" : {
             "type" : "string",
@@ -8705,7 +8710,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "createdAt", "createdBy", "customer", "date", "endAt", "id", "liftId", "mechanicId", "mfk", "mfkAppointment", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -8744,6 +8749,11 @@
       "TaskRequest" : {
         "type" : "object",
         "properties" : {
+          "acceptedById" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Who took the order from the customer (\"Annehmer\") – required; checked by the service"
+          },
           "arrivesEarlier" : {
             "type" : "string",
             "format" : "date-time",
@@ -8800,12 +8810,6 @@
               "type" : "string",
               "format" : "uuid"
             }
-          },
-          "taskNumber" : {
-            "type" : "string",
-            "description" : "SwissGarage order number – may also be added later; unique",
-            "maxLength" : 30,
-            "minLength" : 0
           },
           "time" : {
             "type" : "string",

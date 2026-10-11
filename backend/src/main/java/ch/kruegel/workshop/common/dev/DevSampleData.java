@@ -312,6 +312,16 @@ class DevSampleData implements ApplicationRunner {
         yesterday.changeStatus(TaskStatus.DONE);
         yesterday.assignTaskNumber("A-90001");
 
+        // like the app does it (12d): every task has a number and someone who accepted it. The 9000
+        // range keeps clear of the numbers the app assigns to tasks created by hand afterwards.
+        Employee acceptedBy = employees.findByActiveTrueOrderBySortOrderAscNameAsc().getFirst();
+        int running = 9000;
+        for (Task task : sample.created) {
+            task.acceptedBy(acceptedBy);
+            if (task.getTaskNumber() == null) {
+                task.assignTaskNumber("%02d-%04d".formatted(today.getYear() % 100, ++running));
+            }
+        }
         tasks.saveAll(sample.created);
         log.info("Dev sample data created: {} tasks", sample.created.size());
     }

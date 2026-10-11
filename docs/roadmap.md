@@ -371,10 +371,20 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   the parts order (and remembers the day); then it is gone from the list. Deliberately NOT a
   copied to-do: one source, the parts order of the task (the old app's bugs #2 and #10 were two
   lists of the same thing). New: `GET /api/tasks/parts-to-order`, `PUT /api/tasks/{id}/parts-status`.
-- [ ] **12d – Orders without appointment, appointments without time, numbering, "Annehmer"** (3, 4, 9, 1)
+- [x] **12d-1 – Task number by the app, "Angenommen von"** (9, 1)
+  Done: (9) the app assigns the task number when the task is created – year and running number,
+  "26-0001" (`TaskNumbers`, counter row per year locked in the saving transaction: no duplicates,
+  no gaps from failed saves). The field is gone from the wizard; in the task the number can be
+  corrected, not removed. V20 numbers the tasks entered so far in the order they were created;
+  numbers typed by hand stay. (1) "Angenommen von" is a required choice in step 2 of the wizard,
+  never preset (the PCs are shared); shown in the task and on the sheet. Tasks from before have
+  none – editing one asks for it.
+- [ ] **12d-2 – Orders without appointment, appointments without time** (3, 4)
   A change of the data model: the date of a task is `NOT NULL` today and the rule against
-  double-booking a lift is built on it. New migration, on a database that is in use. Probably
-  two packages (numbering + Annehmer / without appointment + without time).
+  double-booking a lift is built on it. New migration, on a database that is in use. "Ohne
+  Termin" list, taking a planned order out of the plan again, flag "Zeit offen". The feedback
+  wants the number "only once an appointment exists" – to decide there whether an order without
+  appointment waits for its number.
 
 Answers of the workshop (2026-10-11) and what follows from them:
 

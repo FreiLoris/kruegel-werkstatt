@@ -8,8 +8,8 @@ import { useAssignTaskNumber, type Task } from '../taskApi'
 import styles from './TaskNumberEditor.module.css'
 
 /**
- * The SwissGarage order number – usually added later, when the order exists in SwissGarage.
- * Shown as text; "ändern" turns it into a field right here.
+ * The task number – assigned by the app when the task is created (12d; older tasks may carry a
+ * SwissGarage number). Shown as text; "ändern" corrects it right here, it cannot be removed.
  */
 export function TaskNumberEditor({ task, canEdit }: { task: Task; canEdit: boolean }) {
   const [editing, setEditing] = useState(false)
@@ -26,7 +26,7 @@ export function TaskNumberEditor({ task, canEdit }: { task: Task; canEdit: boole
       {
         onSuccess: (saved) => {
           setEditing(false)
-          toast.success(saved.taskNumber ? `Auftragsnummer ${saved.taskNumber} gespeichert` : 'Auftragsnummer entfernt')
+          toast.success(`Auftragsnummer ${saved.taskNumber} gespeichert`)
         },
       },
     )
@@ -57,8 +57,9 @@ export function TaskNumberEditor({ task, canEdit }: { task: Task; canEdit: boole
   return (
     <form className={styles.row} onSubmit={submit}>
       <TextField
-        label="Auftragsnummer aus SwissGarage"
-        hint="Leer lassen entfernt sie"
+        label="Auftragsnummer"
+        hint="Wird automatisch vergeben – nur zum Korrigieren"
+        required
         maxLength={30}
         autoComplete="off"
         // a field that appears after a click should take the typing right away

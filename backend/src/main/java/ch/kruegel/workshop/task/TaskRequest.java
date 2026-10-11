@@ -14,7 +14,7 @@ import java.util.UUID;
 
 /**
  * Input for creating and editing a task (wizard, task detail). Status and position have their own
- * endpoints; the task number can be given here or later on its own. Rules that need the database or several fields
+ * endpoints; the task number is assigned by the app. Rules that need the database or several fields
  * ("kommt früher" before the appointment, end after the start, lift free, …) are checked by {@link TaskService}.
  *
  * <p>The ticks ({@code waitingCustomer}, {@code tireChange}, {@code mfk}) may be missing = not ticked.
@@ -41,7 +41,7 @@ public record TaskRequest(
         @Valid @Schema(description = "Empty = no parts needed") Parts parts,
         @Size(max = TaskWork.DESCRIPTION_MAX) String workDescription,
         @Size(max = TaskDetails.NOTES_MAX) String notes,
-        @Size(max = Task.TASK_NUMBER_MAX) @Schema(description = "SwissGarage order number – may also be added later; unique") String taskNumber,
+        @Schema(description = "Who took the order from the customer (\"Annehmer\") – required; checked by the service") UUID acceptedById,
         @Schema(description = "Only needed when editing") Long version) {
 
     public TaskRequest {

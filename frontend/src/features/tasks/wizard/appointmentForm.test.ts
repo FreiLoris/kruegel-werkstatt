@@ -20,7 +20,7 @@ import {
 
 const NO_HOLIDAYS = new Set<string>()
 // Thursday
-const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '09:00' }
+const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, acceptedById: 'r', date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '09:00' }
 
 describe('defaults', () => {
   it('arrives earlier = evening of the previous working day', () => {
@@ -75,6 +75,11 @@ describe('withDate', () => {
 })
 
 describe('appointmentErrors', () => {
+  it('asks who accepts the order – never preset', () => {
+    expect(EMPTY_APPOINTMENT.acceptedById).toBe('')
+    expect(appointmentErrors({ ...THURSDAY, acceptedById: '' }).acceptedById).toBeDefined()
+  })
+
   it('needs a date', () => {
     expect(appointmentErrors(EMPTY_APPOINTMENT).date).toBeDefined()
     expect(appointmentErrors(THURSDAY)).toEqual({})
@@ -160,7 +165,7 @@ describe('toTaskRequest', () => {
       parts: undefined,
       workDescription: undefined,
       notes: undefined,
-      taskNumber: undefined,
+      acceptedById: 'r',
       version: undefined,
     })
   })
