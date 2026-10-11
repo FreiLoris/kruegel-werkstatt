@@ -365,7 +365,12 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   others, with half days; the statistics leave it out. The button "Anwesend" in the day view
   presets the person of the device, the day and the category: two clicks. Decided against clock
   times for now – half days are what the calendar and the chips already know.
-- [ ] **12c – Material order → shopping list** (10)
+- [x] **12c – Material order → shopping list** (10)
+  Done: the shopping list shows "Material für Aufträge" – every task whose parts are still "zum
+  bestellen", the next appointment first, with a link to the task. "Bestellt" sets the status of
+  the parts order (and remembers the day); then it is gone from the list. Deliberately NOT a
+  copied to-do: one source, the parts order of the task (the old app's bugs #2 and #10 were two
+  lists of the same thing). New: `GET /api/tasks/parts-to-order`, `PUT /api/tasks/{id}/parts-status`.
 - [ ] **12d – Orders without appointment, appointments without time, numbering, "Annehmer"** (3, 4, 9, 1)
   A change of the data model: the date of a task is `NOT NULL` today and the rule against
   double-booking a lift is built on it. New migration, on a database that is in use. Probably
@@ -375,10 +380,12 @@ Answers of the workshop (2026-10-11) and what follows from them:
 
 1. **Task number:** the app assigns it. In future the workshop only works with the order sheets
    of this app; SwissGarage is used for the invoice only. → generated number, format still to
-   decide; the free-text field goes.
+   decide; the free-text field goes. Decided (Loris, 2026-10-11): year + running number, e.g.
+   `26-0001`; SwissGarage numbers already entered stay as they are.
 2. **"Annehmer":** everyone uses every PC, so "the person of the device" is whoever chose first.
    The workshop suggests asking again after some time without input. → open: ask again when
-   idle, or choose "Angenommen von" in the wizard (see the questions to Loris in the PR of 12b).
+   idle, or choose "Angenommen von" in the wizard. Decided (Loris, 2026-10-11): a required
+   field "Angenommen von" in the wizard, without preset; no asking again when idle.
 3. **Without appointment:** a list. New: orders also LOSE their appointment – e.g. while waiting
    for parts – and must stay visible so they are not forgotten. → "Ohne Termin" list, and an
    action to take a planned order out of the plan again.

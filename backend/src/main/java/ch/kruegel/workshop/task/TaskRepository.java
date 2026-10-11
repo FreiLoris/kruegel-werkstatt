@@ -22,6 +22,14 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
     List<Task> findByAppointmentDateBetween(LocalDate from, LocalDate to, Sort sort);
 
+    /** Tasks whose parts are still to be ordered – the next appointment first (shopping list, 12c). */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.parts.status = ch.kruegel.workshop.task.PartsStatus.TO_ORDER
+            ORDER BY t.appointment.date, t.appointment.time""")
+    List<Task> withPartsToOrder();
+
     /**
      * Tasks that take time on {@code day}: started that day or earlier and not yet ended at its start.
      *

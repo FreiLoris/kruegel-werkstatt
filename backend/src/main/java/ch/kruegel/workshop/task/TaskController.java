@@ -67,6 +67,12 @@ class TaskController {
         return search.search(q, limit);
     }
 
+    @Operation(summary = "Tasks whose parts are still to be ordered", description = "The next appointment first – shown on the shopping list.")
+    @GetMapping("/parts-to-order")
+    List<TaskDto> withPartsToOrder() {
+        return service.withPartsToOrder();
+    }
+
     @Operation(summary = "Single task")
     @GetMapping("/{id}")
     TaskDto get(@PathVariable UUID id) {
@@ -98,6 +104,13 @@ class TaskController {
     @PutMapping("/{id}/schedule")
     TaskDto schedule(@PathVariable UUID id, @Valid @RequestBody TaskScheduleRequest request) {
         return service.schedule(id, request);
+    }
+
+    @Operation(summary = "Parts ordered / arrived",
+            description = "No version needed. \"Ordered\" remembers today as the day of the order if none is entered.")
+    @PutMapping("/{id}/parts-status")
+    TaskDto changePartsStatus(@PathVariable UUID id, @Valid @RequestBody PartsStatusRequest request) {
+        return service.changePartsStatus(id, request.status());
     }
 
     @Operation(summary = "Set or remove the SwissGarage order number", description = "Must be unique.")

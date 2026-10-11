@@ -144,6 +144,24 @@ export function useChangeTaskStatus() {
   })
 }
 
+/** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
+export function usePartsToOrder() {
+  return useQuery({
+    queryKey: [TOPIC, 'parts-to-order'],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/parts-to-order', { signal })),
+  })
+}
+
+/** Parts ordered / arrived – no version, like the status. */
+export function useChangePartsStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: PartsStatus }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/parts-status', { params: { path: { id } }, body: { status } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
 /** SwissGarage order number; empty removes it. */
 export function useAssignTaskNumber() {
   const queryClient = useQueryClient()

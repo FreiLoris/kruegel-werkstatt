@@ -36,6 +36,19 @@ public record PartsOrder(
         Objects.requireNonNull(status, "status");
     }
 
+    /**
+     * The same parts in another state (ticked off on the shopping list, 12c). "Ordered" remembers
+     * the day – unless one is already entered; back to "to order" forgets it.
+     */
+    public PartsOrder withStatus(PartsStatus newStatus, LocalDate today) {
+        LocalDate day = switch (newStatus) {
+            case TO_ORDER -> null;
+            case ORDERED -> orderedOn == null ? today : orderedOn;
+            case ARRIVED -> orderedOn;
+        };
+        return new PartsOrder(description, newStatus, supplier, day);
+    }
+
     /** Parts still to be ordered. */
     public static PartsOrder toOrder(String description) {
         return new PartsOrder(description, PartsStatus.TO_ORDER, null, null);
