@@ -1614,6 +1614,8 @@ export interface components {
             /** Format: date */
             birthday: string | null;
             color: string;
+            /** @description Flexible hours: in only on days entered as "Anwesend" */
+            flexibleHours: boolean;
             hasPinboardColumn: boolean;
             /** Format: uuid */
             id: string;
@@ -1643,6 +1645,8 @@ export interface components {
             /** Format: date */
             birthday?: string;
             color: string;
+            /** @description Flexible hours: in only on days entered as "Anwesend". Missing = false */
+            flexibleHours?: boolean;
             hasPinboardColumn: boolean;
             name: string;
             /** @enum {string} */

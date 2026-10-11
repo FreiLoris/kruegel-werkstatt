@@ -19,6 +19,7 @@ const erich: Employee = {
   selectableAsMechanic: true,
   selectableForTodos: false,
   hasPinboardColumn: true,
+  flexibleHours: false,
   active: true,
   sortOrder: 1,
   updatedAt: '2026-10-01T06:00:00Z',

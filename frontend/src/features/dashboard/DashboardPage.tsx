@@ -7,12 +7,14 @@ import { BoardOverview } from './BoardOverview'
 import styles from './DashboardPage.module.css'
 import { dashboardMonday } from './shownWeek'
 import { DashboardWeek } from './DashboardWeek'
+import { PresentToday } from './PresentToday'
 import { TodayByLift } from './TodayByLift'
 import { WithoutAppointment } from './WithoutAppointment'
 
 /**
  * Start page and workshop TV (phase 10): the week at a glance, below what is on which lift today and
- * the pinboard in small. Orders without appointment are in no day – the title row names them. On a "view only" device (the TV) the app frame hides its header and shows
+ * the pinboard in small. Orders without appointment are in no day – the title row names them, the line
+ * below it says who is in today. On a "view only" device (the TV) the app frame hides its header and shows
  * the navigation at the bottom (AppLayout).
  */
 export function DashboardPage() {
@@ -32,6 +34,7 @@ export function DashboardPage() {
         </h1>
         <WithoutAppointment />
       </div>
+      <PresentToday />
       <DashboardWeek monday={monday} />
       <div className={styles.below}>
         <section className={styles.area} aria-labelledby="today-heading">

@@ -75,6 +75,15 @@ class EmployeeApiTest {
     }
 
     @Test
+    void flexibleHoursAreASettingOfThePersonRegularByDefault() {
+        MvcTestResult regular = create("Reto");
+        assertThat(regular).bodyJson().extractingPath("$.flexibleHours").isEqualTo(false);
+
+        String flexible = request("Carina", null).replace("\"version\"", "\"flexibleHours\": true, \"version\"");
+        assertThat(send("POST", "/api/employees", flexible)).bodyJson().extractingPath("$.flexibleHours").isEqualTo(true);
+    }
+
+    @Test
     void newOnesGoToTheEndOfTheOrder() {
         create("Reto");
         create("Erich");

@@ -128,6 +128,11 @@ export function EmployeeForm({ id, values, onChange, onSubmit, error, takenColor
           onChange={(e) => set('selectableForTodos', e.target.checked)}
         />
         <Checkbox label="Pinnwand – mit eigener Spalte" checked={values.hasPinboardColumn} onChange={(e) => set('hasPinboardColumn', e.target.checked)} />
+        <Checkbox
+          label="Flexible Arbeitszeit – gilt nur an Tagen als anwesend, die als «Anwesend» eingetragen sind"
+          checked={values.flexibleHours}
+          onChange={(e) => set('flexibleHours', e.target.checked)}
+        />
       </fieldset>
     </form>
   )

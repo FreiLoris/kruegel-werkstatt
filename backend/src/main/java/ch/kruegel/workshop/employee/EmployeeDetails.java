@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
  * @param selectableAsMechanic appears as mechanic on appointments
  * @param selectableForTodos   appears as responsible person on to-dos and notes
  * @param hasPinboardColumn    has its own column on the pinboard
+ * @param flexibleHours        works flexible hours: counts as "in" only on days entered as
+ *                             "Anwesend" – everyone else is in on every working day without an absence
  */
 public record EmployeeDetails(
         String name,
@@ -29,9 +31,16 @@ public record EmployeeDetails(
         int vacationDaysPerYear,
         boolean selectableAsMechanic,
         boolean selectableForTodos,
-        boolean hasPinboardColumn) {
+        boolean hasPinboardColumn,
+        boolean flexibleHours) {
 
     private static final Pattern HEX_COLOR = Pattern.compile("^#[0-9a-f]{6}$");
+
+    /** Someone with regular hours – the usual case. */
+    public EmployeeDetails(String name, Role role, String color, LocalDate birthday, int vacationDaysPerYear,
+                           boolean selectableAsMechanic, boolean selectableForTodos, boolean hasPinboardColumn) {
+        this(name, role, color, birthday, vacationDaysPerYear, selectableAsMechanic, selectableForTodos, hasPinboardColumn, false);
+    }
 
     public EmployeeDetails {
         Objects.requireNonNull(name, "name");

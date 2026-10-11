@@ -18,14 +18,14 @@
   height: 1.1em;
 }
 
-.line strong {
-  flex: none;
-}
-
-.names {
+.text {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   color: var(--color-text);
+}
+
+.text strong {
+  color: var(--color-warning);
 }

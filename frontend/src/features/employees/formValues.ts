@@ -14,6 +14,8 @@ export interface FormValues {
   selectableAsMechanic: boolean
   selectableForTodos: boolean
   hasPinboardColumn: boolean
+  /** flexible hours: counts as "in" only on days entered as "Anwesend" */
+  flexibleHours: boolean
 }
 
 /** Values on open: an existing person – or sensible defaults for a new one. */
@@ -28,6 +30,7 @@ export function initialValues(employee: Employee | undefined, takenColors: strin
       selectableAsMechanic: employee.selectableAsMechanic,
       selectableForTodos: employee.selectableForTodos,
       hasPinboardColumn: employee.hasPinboardColumn,
+      flexibleHours: employee.flexibleHours,
     }
   }
   return {
@@ -39,6 +42,7 @@ export function initialValues(employee: Employee | undefined, takenColors: strin
     selectableAsMechanic: true,
     selectableForTodos: true,
     hasPinboardColumn: true,
+    flexibleHours: false,
   }
 }
 
@@ -53,6 +57,7 @@ export function toRequest(values: FormValues, version?: number): EmployeeRequest
     selectableAsMechanic: values.selectableAsMechanic,
     selectableForTodos: values.selectableForTodos,
     hasPinboardColumn: values.hasPinboardColumn,
+    flexibleHours: values.flexibleHours,
     version,
   }
 }

@@ -1,0 +1,32 @@
+/* One line under the title: badges of who is in, then – muted – who is away */
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.label {
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.part {
+  color: var(--color-text-muted);
+}
+
+.away {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-left: var(--space-3);
+  color: var(--color-text-muted);
+}

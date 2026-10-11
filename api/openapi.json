@@ -8154,6 +8154,10 @@
           "color" : {
             "type" : "string"
           },
+          "flexibleHours" : {
+            "type" : "boolean",
+            "description" : "Flexible hours: in only on days entered as \"Anwesend\""
+          },
           "hasPinboardColumn" : {
             "type" : "boolean"
           },
@@ -8196,7 +8200,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "active", "birthday", "color", "hasPinboardColumn", "id", "name", "role", "selectableAsMechanic", "selectableForTodos", "sortOrder", "updatedAt", "updatedBy", "vacationDaysPerYear", "version" ]
+        "required" : [ "active", "birthday", "color", "flexibleHours", "hasPinboardColumn", "id", "name", "role", "selectableAsMechanic", "selectableForTodos", "sortOrder", "updatedAt", "updatedBy", "vacationDaysPerYear", "version" ]
       },
       "EmployeeOrder" : {
         "type" : "object",
@@ -8222,6 +8226,10 @@
           "color" : {
             "type" : "string",
             "pattern" : "^#[0-9a-fA-F]{6}$"
+          },
+          "flexibleHours" : {
+            "type" : "boolean",
+            "description" : "Flexible hours: in only on days entered as \"Anwesend\". Missing = false"
           },
           "hasPinboardColumn" : {
             "type" : "boolean"

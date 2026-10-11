@@ -411,6 +411,13 @@ After the first days in use the workshop wrote down 13 wishes (`Feedback Werksta
   appointment change; a date or time typed by hand stays. Built on the wording of the feedback
   ("ausgewähltes Datum", like "Muss fertig sein") – the workshop has not answered question 6.
 
+- [x] **12h – The dashboard says who is in today**
+  Done: a line "Heute da" under the title – name badges of who is in (with "Vormittag" /
+  "Nachmittag"), behind it who is away and why. The rule (`presenceOn`): regular hours = in on
+  every working day without an absence; flexible hours = in only when entered as "Anwesend";
+  nobody with regular hours is expected on weekends and public holidays. "Flexible Arbeitszeit"
+  is a setting per person (`employee.flexible_hours`, V23) – no name in the code.
+
 Answers of the workshop (2026-10-11) and what follows from them:
 
 1. **Task number:** the app assigns it. In future the workshop only works with the order sheets
