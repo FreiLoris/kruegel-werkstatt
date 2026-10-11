@@ -10,12 +10,17 @@ import styles from './AppointmentsPage.module.css'
 import { DayView } from './day/DayView'
 import { TaskListView } from './list/TaskListView'
 import { TaskSearch } from './TaskSearch'
+import { useTasksWithoutAppointment } from './taskApi'
 import { TaskStatusLegend } from './TaskStatusBadge'
+import { UnplannedView } from './unplanned/UnplannedView'
 import { WeekView } from './week/WeekView'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
-type View = 'day' | 'week' | 'list'
+type View = 'day' | 'week' | 'list' | 'unplanned'
+
+/** Views that are no calendar: no day to page through */
+const hasDate = (view: View) => view === 'day' || view === 'week'
 
 /**
  * "Termine": day view (one column per lift), week view (one column per day) or list (table with
@@ -31,14 +36,16 @@ export function AppointmentsPage() {
   const requested = params.get('date')
   const date = requested && ISO_DATE.test(requested) ? requested : today
   const requestedView = params.get('view')
-  const view: View = requestedView === 'week' || requestedView === 'list' ? requestedView : 'day'
+  const view: View = requestedView === 'week' || requestedView === 'list' || requestedView === 'unplanned' ? requestedView : 'day'
   const monday = mondayOf(date)
   const { data: holidays } = usePublicHolidays(date, date)
+  // the number on the button – orders without appointment must not be forgotten
+  const { data: unplanned } = useTasksWithoutAppointment()
 
   function show(nextView: View, nextDate: string) {
     const next: Record<string, string> = {}
     if (nextView !== 'day') next.view = nextView
-    if (nextDate !== today && nextView !== 'list') next.date = nextDate
+    if (nextDate !== today && hasDate(nextView)) next.date = nextDate
     setParams(next)
   }
 
@@ -53,6 +60,11 @@ export function AppointmentsPage() {
           <p className={styles.date}>
             {view === 'list' ? (
               <strong>Liste</strong>
+            ) : view === 'unplanned' ? (
+              <>
+                <strong>Ohne Termin</strong>
+                <span className="muted"> · angenommen, aber nicht eingeplant</span>
+              </>
             ) : view === 'day' ? (
               <>
                 <strong>
@@ -73,7 +85,8 @@ export function AppointmentsPage() {
           </p>
         </div>
         <div className={styles.actions}>
-          <TaskSearch onOpen={(task) => show('day', task.date)} />
+          {/* a hit without appointment has no day to show – open the order itself */}
+          <TaskSearch onOpen={(task) => (task.date ? show('day', task.date) : navigate(`/tasks/${task.id}`))} />
           {canEdit && (
             <Button variant="primary" icon={Plus} onClick={() => navigate('/tasks/new')}>
               Neuer Auftrag
@@ -93,9 +106,13 @@ export function AppointmentsPage() {
           <Button variant={view === 'list' ? 'primary' : 'secondary'} aria-pressed={view === 'list'} onClick={() => show('list', date)}>
             Liste
           </Button>
+          <Button variant={view === 'unplanned' ? 'primary' : 'secondary'} aria-pressed={view === 'unplanned'} onClick={() => show('unplanned', date)}>
+            Ohne Termin
+            {unplanned && unplanned.length > 0 && <span className={styles.count}>{unplanned.length}</span>}
+          </Button>
         </div>
-        {/* the list has its own period filters */}
-        {view !== 'list' && (
+        {/* the list has its own period filters, orders without appointment have no day */}
+        {hasDate(view) && (
           <>
             <div className={styles.nav}>
               <Button
@@ -127,6 +144,8 @@ export function AppointmentsPage() {
       <div className={styles.content}>
         {view === 'list' ? (
           <TaskListView />
+        ) : view === 'unplanned' ? (
+          <UnplannedView />
         ) : view === 'day' ? (
           <DayView date={date} onGo={(day) => show('day', day)} />
         ) : (

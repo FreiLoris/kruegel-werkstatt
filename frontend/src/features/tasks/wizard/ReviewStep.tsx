@@ -36,6 +36,7 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
   const { data: serviceItems } = useAllServiceItems()
 
   const customer = customerStep.customer!
+  const planned = !f.noAppointment
   const vehicle = customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle : null
   const items = workItems(
     {
@@ -75,17 +76,21 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
       </Block>
 
       <Block title="Termin" onEdit={() => onEdit(2)}>
-        <p className={styles.strong}>
-          {WEEKDAYS_SHORT[weekdayOf(f.date)]} {formatDate(f.date)}, {f.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}
-          {timeRange(f.date, f.time, `${f.endDate}T${f.endTime}`)}
-        </p>
+        {f.noAppointment ? (
+          <p className={styles.strong}>Noch kein Termin – der Auftrag kommt in die Liste «Ohne Termin»</p>
+        ) : (
+          <p className={styles.strong}>
+            {WEEKDAYS_SHORT[weekdayOf(f.date)]} {formatDate(f.date)}, {f.timeOpen ? `${TIME_OPEN} – Lift reserviert ` : ''}
+            {timeRange(f.date, f.time, `${f.endDate}T${f.endTime}`)}
+          </p>
+        )}
         <Facts
           rows={[
-            ['Kommt früher', f.arrivesEarlier ? formatLocalDateTime(`${f.arrivesEarlierDate}T${f.arrivesEarlierTime}`) : null],
-            ['Fertig bis', f.readyBy ? formatLocalDateTime(`${f.readyByDate}T${f.readyByTime}`) : null],
-            ['Wartekunde', f.waitingCustomer ? 'Ja' : null],
+            ['Kommt früher', planned && f.arrivesEarlier ? formatLocalDateTime(`${f.arrivesEarlierDate}T${f.arrivesEarlierTime}`) : null],
+            ['Fertig bis', planned && f.readyBy ? formatLocalDateTime(`${f.readyByDate}T${f.readyByTime}`) : null],
+            ['Wartekunde', planned && f.waitingCustomer ? 'Ja' : null],
             ['Mechaniker', employees?.find((e) => e.id === f.mechanicId)?.name ?? 'noch offen'],
-            ['Lift', lifts?.find((l) => l.id === f.liftId)?.name ?? 'noch offen'],
+            ['Lift', planned ? (lifts?.find((l) => l.id === f.liftId)?.name ?? 'noch offen') : null],
           ]}
         />
       </Block>

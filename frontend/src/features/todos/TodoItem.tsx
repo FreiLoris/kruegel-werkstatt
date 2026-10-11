@@ -6,14 +6,14 @@ import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { useToast } from '../../components/ui/toastContext'
-import { formatDate, formatTimestamp } from '../../lib/format'
+import { formatTimestamp } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { useDeleteTodo, useSetTodoDone, type Todo } from './todoApi'
 import { dueLabel, dueState } from './todoDue'
 import { TodoForm } from './TodoForm'
 import styles from './TodoItem.module.css'
-import { startLabel } from '../tasks/taskTime'
+import { whenLabel } from '../tasks/taskTime'
 
 interface TodoItemProps {
   todo: Todo
@@ -116,7 +116,7 @@ export function TodoItem({
         {showTask && todo.task && (
           <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${todo.task!.id}`)}>
             <ClipboardList aria-hidden />
-            {todo.task.customerName}, {formatDate(todo.task.date).slice(0, 6)} {startLabel(todo.task)}
+            {todo.task.customerName}, {whenLabel(todo.task)}
             {todo.task.taskNumber && ` (${todo.task.taskNumber})`}
           </button>
         )}

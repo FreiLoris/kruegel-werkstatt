@@ -7,7 +7,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
-import { formatDate, formatTimestamp } from '../../lib/format'
+import { formatTimestamp } from '../../lib/format'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
 import { useTaskSearch } from '../tasks/taskApi'
@@ -16,13 +16,13 @@ import { TodoForm } from '../todos/TodoForm'
 import { TodoItem } from '../todos/TodoItem'
 import { useDeleteNote, useNote, useSaveNote, useSetNoteArchived, type Note } from './noteApi'
 import styles from './NoteDialog.module.css'
-import { startLabel } from '../tasks/taskTime'
+import { whenLabel } from '../tasks/taskTime'
 
 /** The task link while editing: what is shown, what is sent */
 type TaskLink = { id: string; label: string } | null
 
-const taskLabel = (t: { customerName: string; date: string; time: string; timeOpen: boolean; taskNumber: string | null }) =>
-  `${t.customerName}, ${formatDate(t.date).slice(0, 6)} ${startLabel(t)}${t.taskNumber ? ` (${t.taskNumber})` : ''}`
+const taskLabel = (t: { customerName: string; date: string | null; time: string | null; timeOpen: boolean; taskNumber: string | null }) =>
+  `${t.customerName}, ${whenLabel(t)}${t.taskNumber ? ` (${t.taskNumber})` : ''}`
 
 /** Opens a note by ID – from the board or the archive; closes itself when the note is deleted elsewhere. */
 export function NoteDialogById({ id, canEdit, onClose }: { id: string; canEdit: boolean; onClose: () => void }) {
@@ -260,7 +260,7 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
                           setSearch('')
                         }}
                       >
-                        <Search aria-hidden /> {t.customer.displayName}, {formatDate(t.date)} {startLabel(t)}
+                        <Search aria-hidden /> {t.customer.displayName}, {whenLabel(t, true)}
                         {t.vehicle?.licensePlate && ` · ${t.vehicle.licensePlate}`}
                       </button>
                     </li>

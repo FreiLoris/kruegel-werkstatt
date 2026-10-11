@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Customer, Vehicle } from '../../customers/customerSearchApi'
-import type { Task } from '../taskApi'
+import type { AnyTask, Task } from '../taskApi'
 import {
   appointmentErrors,
   customerStepFromTask,
@@ -253,5 +253,49 @@ describe('slots from a time grid', () => {
     expect(slotFromUrl(new URL(url, 'http://x').searchParams)).toEqual(slot)
     expect(slotFromUrl(new URLSearchParams('date=2026-10-16&time=8&end=x'))).toBeNull()
     expect(slotFromUrl(new URLSearchParams('date=2026-10-16&time=08:00&end=2026-10-16T09:00'))?.liftId).toBeNull()
+  })
+})
+
+describe('an order without appointment', () => {
+  const customer = { id: 'c1' } as Customer
+  // everything about a day is filled in, then "Noch kein Termin" is ticked
+  const waiting: AppointmentForm = {
+    ...THURSDAY,
+    noAppointment: true,
+    liftId: 'l1',
+    mechanicId: 'm1',
+    timeOpen: true,
+    waitingCustomer: true,
+    readyBy: true,
+    readyByDate: '2026-10-15',
+    workDescription: 'Kupplung ersetzen',
+  }
+
+  it('asks for no day and time – but still for who accepted it', () => {
+    expect(appointmentErrors({ ...EMPTY_APPOINTMENT, noAppointment: true, acceptedById: 'r' })).toEqual({})
+    expect(appointmentErrors({ ...EMPTY_APPOINTMENT, noAppointment: true }).acceptedById).toBeDefined()
+  })
+
+  it('sends nothing that hangs on a day; the work and the mechanic stay', () => {
+    const request = toTaskRequest({ customer, vehicle: { kind: 'open' } }, waiting)
+
+    expect(request).toMatchObject({ customerId: 'c1', mechanicId: 'm1', workDescription: 'Kupplung ersetzen', timeOpen: false, waitingCustomer: false })
+    expect(request.date).toBeUndefined()
+    expect(request.time).toBeUndefined()
+    expect(request.endAt).toBeUndefined()
+    expect(request.liftId).toBeUndefined()
+    expect(request.readyBy).toBeUndefined()
+  })
+
+  it('a place dragged in the grid plans it', () => {
+    const slot = { liftId: 'l2', date: '2026-10-16', time: '13:30', endAt: '2026-10-16T15:00' }
+
+    expect(withSlot(waiting, slot, NO_HOLIDAYS)).toMatchObject({ noAppointment: false, date: '2026-10-16', liftId: 'l2' })
+  })
+
+  it('opens for editing with the usual defaults, ready to be planned', () => {
+    const saved = { date: null, time: null, endAt: null, arrivesEarlier: null, readyBy: null, mfkAppointment: null, serviceItemIds: [], parts: null } as unknown as AnyTask
+
+    expect(formFromTask(saved)).toMatchObject({ noAppointment: true, date: '', time: '08:00', endDate: '', endTime: '09:00' })
   })
 })

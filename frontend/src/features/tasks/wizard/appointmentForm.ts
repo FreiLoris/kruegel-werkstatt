@@ -1,7 +1,7 @@
 import { previousWorkingDay } from '../../../lib/calendar'
 import { addDays, addMinutes, minutesBetween } from '../../../lib/format'
 import type { Schedule } from '../day/timeGrid'
-import type { PartsStatus, Task, TaskRequest, TireChangeKind } from '../taskApi'
+import type { AnyTask, PartsStatus, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
 /**
@@ -9,6 +9,12 @@ import type { CustomerStepValue } from './wizardState'
  * Pure functions on it below – tested without rendering anything.
  */
 export interface AppointmentForm {
+  /**
+   * "Noch kein Termin" (12d-3): the order is taken, when the car comes is open. Day, time, lift
+   * and everything that hangs on a day are then not asked for and not sent – what was typed
+   * before stays in the form, so unticking brings it back.
+   */
+  noAppointment: boolean
   date: string
   time: string
   /** Until when the lift is taken – usually the same day, a car waiting for parts may stay longer */
@@ -57,6 +63,7 @@ export const DEFAULT_DURATION_MINUTES = 60
 
 /** No date on purpose: it must be chosen (or clicked in the overview), never taken over by accident. */
 export const EMPTY_APPOINTMENT: AppointmentForm = {
+  noAppointment: false,
   date: '',
   time: '08:00',
   endDate: '',
@@ -159,7 +166,8 @@ export function withDate(form: AppointmentForm, date: string, time: string, holi
  */
 export function withSlot(form: AppointmentForm, slot: Schedule, holidays: ReadonlySet<string>): AppointmentForm {
   const [endDate, endTime] = slot.endAt.split('T')
-  return { ...withDate(form, slot.date, slot.time, holidays), endDate, endTime: endTime.slice(0, 5), liftId: slot.liftId ?? '' }
+  // dragging a place in the grid IS planning – "Noch kein Termin" is off again
+  return { ...withDate(form, slot.date, slot.time, holidays), noAppointment: false, endDate, endTime: endTime.slice(0, 5), liftId: slot.liftId ?? '' }
 }
 
 const SLOT_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -198,27 +206,30 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   const errors: AppointmentErrors = {}
   // everyone uses every PC – so it is asked for every order instead of taken from the device
   if (!form.acceptedById) errors.acceptedById = 'Bitte wählen, wer den Auftrag annimmt'
-  if (!form.date) errors.date = 'Datum wählen – oder rechts im Raster ziehen'
-  if (!form.time) errors.time = 'Uhrzeit wählen'
-  const start = form.date && form.time ? `${form.date}T${form.time}` : null
+  // without an appointment nothing about day and time is asked
+  if (!form.noAppointment) {
+    if (!form.date) errors.date = 'Datum wählen – oder rechts im Raster ziehen'
+    if (!form.time) errors.time = 'Uhrzeit wählen'
+    const start = form.date && form.time ? `${form.date}T${form.time}` : null
 
-  if (!form.endDate || !form.endTime) {
-    errors.endTime = 'Ende angeben'
-  } else if (start && `${form.endDate}T${form.endTime}` <= start) {
-    errors.endTime = 'muss nach dem Beginn liegen'
-  }
-  if (form.arrivesEarlier) {
-    if (!form.arrivesEarlierDate || !form.arrivesEarlierTime) {
-      errors.arrivesEarlierDate = 'Datum und Uhrzeit angeben'
-    } else if (start && `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` >= start) {
-      errors.arrivesEarlierDate = 'muss vor dem Termin liegen'
+    if (!form.endDate || !form.endTime) {
+      errors.endTime = 'Ende angeben'
+    } else if (start && `${form.endDate}T${form.endTime}` <= start) {
+      errors.endTime = 'muss nach dem Beginn liegen'
     }
-  }
-  if (form.readyBy) {
-    if (!form.readyByDate || !form.readyByTime) {
-      errors.readyByDate = 'Datum und Uhrzeit angeben'
-    } else if (start && `${form.readyByDate}T${form.readyByTime}` <= start) {
-      errors.readyByDate = 'muss nach dem Termin liegen'
+    if (form.arrivesEarlier) {
+      if (!form.arrivesEarlierDate || !form.arrivesEarlierTime) {
+        errors.arrivesEarlierDate = 'Datum und Uhrzeit angeben'
+      } else if (start && `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` >= start) {
+        errors.arrivesEarlierDate = 'muss vor dem Termin liegen'
+      }
+    }
+    if (form.readyBy) {
+      if (!form.readyByDate || !form.readyByTime) {
+        errors.readyByDate = 'Datum und Uhrzeit angeben'
+      } else if (start && `${form.readyByDate}T${form.readyByTime}` <= start) {
+        errors.readyByDate = 'muss nach dem Termin liegen'
+      }
     }
   }
   if (form.mfk && form.mfkTime && !form.mfkDate) errors.mfkDate = 'Datum zur Uhrzeit angeben'
@@ -232,18 +243,20 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
 export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, version?: number): TaskRequest {
   if (!step1.customer) throw new Error('Step 1 not complete')
   const text = (value: string) => value.trim() || undefined
+  const planned = !form.noAppointment
   return {
     customerId: step1.customer.id,
     vehicleId: step1.vehicle?.kind === 'vehicle' ? step1.vehicle.vehicle.id : undefined,
-    date: form.date,
-    time: form.time,
-    endAt: `${form.endDate}T${form.endTime}`,
-    timeOpen: form.timeOpen,
-    arrivesEarlier: form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
-    readyBy: form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
-    waitingCustomer: form.waitingCustomer,
+    // without an appointment nothing that hangs on a day is sent (the server refuses it)
+    date: planned ? form.date : undefined,
+    time: planned ? form.time : undefined,
+    endAt: planned ? `${form.endDate}T${form.endTime}` : undefined,
+    timeOpen: planned && form.timeOpen,
+    arrivesEarlier: planned && form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
+    readyBy: planned && form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
+    waitingCustomer: planned && form.waitingCustomer,
     mechanicId: form.mechanicId || undefined,
-    liftId: form.liftId || undefined,
+    liftId: planned ? form.liftId || undefined : undefined,
     tireChange: form.tireChange,
     tireChangeKind: form.tireChange && form.tireChangeKind ? form.tireChangeKind : undefined,
     mfk: form.mfk,
@@ -272,16 +285,18 @@ function split(dateTime: string | null): [string, string] {
 }
 
 /** A saved task back into the form – for editing. The opposite of {@link toTaskRequest}. */
-export function formFromTask(task: Task): AppointmentForm {
+export function formFromTask(task: AnyTask): AppointmentForm {
   const [endDate, endTime] = split(task.endAt)
   const [arrivesEarlierDate, arrivesEarlierTime] = split(task.arrivesEarlier)
   const [readyByDate, readyByTime] = split(task.readyBy)
   const [mfkDate, mfkTime] = split(task.mfkAppointment)
   return {
-    date: task.date,
-    time: task.time.slice(0, 5),
+    // an order without appointment opens with the usual defaults – unticking then plans it
+    noAppointment: task.date === null,
+    date: task.date ?? '',
+    time: task.time?.slice(0, 5) ?? EMPTY_APPOINTMENT.time,
     endDate,
-    endTime,
+    endTime: endTime || EMPTY_APPOINTMENT.endTime,
     timeOpen: task.timeOpen,
     arrivesEarlier: task.arrivesEarlier !== null,
     arrivesEarlierDate,
@@ -311,6 +326,6 @@ export function formFromTask(task: Task): AppointmentForm {
 }
 
 /** Customer and vehicle of a saved task as step 1 value. */
-export function customerStepFromTask(task: Task): CustomerStepValue {
+export function customerStepFromTask(task: AnyTask): CustomerStepValue {
   return { customer: task.customer, vehicle: task.vehicle ? { kind: 'vehicle', vehicle: task.vehicle } : { kind: 'open' } }
 }

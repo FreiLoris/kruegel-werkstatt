@@ -111,6 +111,12 @@ public class TaskService {
                 .toList();
     }
 
+    /** Orders without appointment: taken but not planned yet, or taken out of the plan again (12d-3). */
+    @Transactional(readOnly = true)
+    public List<TaskDto> withoutAppointment() {
+        return repository.withoutAppointment().stream().map(TaskDto::of).toList();
+    }
+
     /** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
     @Transactional(readOnly = true)
     public List<TaskDto> withPartsToOrder() {
@@ -171,6 +177,13 @@ public class TaskService {
         if (!request.endAt().isAfter(start)) {
             throw new InvalidInputException("endAt", "muss nach dem Beginn liegen");
         }
+        if (!current.isPlanned()) {
+            // an order from the list "Ohne Termin" gets its first place
+            Appointment first = new Appointment(request.date(), request.time(), request.endAt(), null, null, false);
+            checkLiftFree(lift, first, id);
+            task.schedule(first, lift);
+            return saved(task);
+        }
         LocalDateTime earlier = current.shiftedToDay(current.arrivesEarlier(), request.date());
         if (earlier != null && !earlier.isBefore(start)) {
             throw new InvalidInputException("time", "liegt vor \u201eFahrzeug kommt früher\u201c (" + WHEN.format(earlier)
@@ -185,6 +198,16 @@ public class TaskService {
         checkLiftFree(lift, moved, id);
 
         task.schedule(moved, lift);
+        return saved(task);
+    }
+
+    /**
+     * Out of the plan again – the order stays and appears in the list "Ohne Termin". No version
+     * needed, like moving: it is one click on the task, not an edit of its data.
+     */
+    public TaskDto removeAppointment(UUID id) {
+        Task task = find(id);
+        task.removeAppointment();
         return saved(task);
     }
 
@@ -266,6 +289,18 @@ public class TaskService {
     }
 
     private static Appointment appointment(TaskRequest request) {
+        if (request.date() == null) {
+            // no appointment yet – then nothing may hang on one
+            if (request.time() != null || request.endAt() != null || request.arrivesEarlier() != null || request.readyBy() != null
+                    || request.liftId() != null || request.waitingCustomer() || request.timeOpen()) {
+                throw new InvalidInputException("date", "Ohne Datum sind Uhrzeit, Lift, \u201ekommt früher\u201c, \u201efertig bis\u201c "
+                        + "und Wartekunde nicht möglich");
+            }
+            return Appointment.NONE;
+        }
+        if (request.time() == null) {
+            throw new InvalidInputException("time", "Uhrzeit angeben");
+        }
         LocalDateTime start = request.date().atTime(request.time());
         LocalDateTime end = request.endAt() != null ? request.endAt() : start.plus(Appointment.DEFAULT_DURATION);
         if (!end.isAfter(start)) {

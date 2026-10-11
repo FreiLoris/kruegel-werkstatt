@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { formatLocalDateTime } from '../../lib/format'
 import { useAllCourtesyCars } from '../courtesy-cars/courtesyCarApi'
-import type { Task } from '../tasks/taskApi'
+import type { AnyTask } from '../tasks/taskApi'
 import { useTaskBookings, type Booking } from './bookingApi'
 import { BookingEditor } from './BookingEditor'
 import { minutesOf } from './occupancy'
@@ -14,7 +14,7 @@ import { useBookingActions } from './useBookingActions'
  * Courtesy car of a task (7c): what is booked, with return and changes – or book one. A new
  * booking suggests "kommt früher"/start to "fertig bis"/end, like the wizard.
  */
-export function CourtesyCarPanel({ task, canEdit }: { task: Task; canEdit: boolean }) {
+export function CourtesyCarPanel({ task, canEdit }: { task: AnyTask; canEdit: boolean }) {
   const bookings = useTaskBookings(task.id)
   const { data: cars } = useAllCourtesyCars()
   const carName = (id: string) => cars?.find((c) => c.id === id)?.name ?? 'Ersatzwagen'
@@ -30,8 +30,9 @@ export function CourtesyCarPanel({ task, canEdit }: { task: Task; canEdit: boole
       editing === 'new'
         ? {
             courtesyCarId: '',
-            pickupAt: minutesOf(task.arrivesEarlier ?? `${task.date}T${task.time}`),
-            returnAt: minutesOf(task.readyBy ?? task.endAt),
+            // an order without appointment suggests no period – it has to be typed
+            pickupAt: task.date ? minutesOf(task.arrivesEarlier ?? `${task.date}T${task.time}`) : '',
+            returnAt: task.endAt ? minutesOf(task.readyBy ?? task.endAt) : '',
           }
         : { courtesyCarId: editing.courtesyCarId, pickupAt: minutesOf(editing.pickupAt), returnAt: minutesOf(editing.returnAt) }
     return (

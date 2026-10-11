@@ -307,6 +307,11 @@ class DevSampleData implements ApplicationRunner {
         sample.add(yaris, new Appointment(today.plusDays(1), LocalTime.of(9, 30), today.plusDays(1).atTime(11, 0), today.atTime(17, 30),
                 today.plusDays(1).atTime(16, 0), false), mechanic.apply(1), null, TaskWork.described("Klimaanlage prüfen"), null);
 
+        // taken, but not planned: the parts have to arrive first (12d-3)
+        sample.add(octavia, Appointment.NONE, mechanic.apply(2), null,
+                new TaskWork(false, null, false, null, Set.of(), PartsOrder.toOrder("Kupplungssatz"), "Kupplung ersetzen"),
+                "Termin abmachen, sobald die Teile da sind");
+
         Task yesterday = sample.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
                 lift.apply(0), TaskWork.described("Grosser Service"), null);
         yesterday.changeStatus(TaskStatus.DONE);

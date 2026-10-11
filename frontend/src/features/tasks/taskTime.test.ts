@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { periodLabel, startLabel, timeRange, timeSeenFrom } from './taskTime'
+import { periodLabel, startLabel, timeRange, timeSeenFrom, whenLabel } from './taskTime'
 
 describe('timeSeenFrom', () => {
   it('only the time on the day of the appointment, with the day otherwise', () => {
@@ -28,5 +28,14 @@ describe('a task with open time', () => {
 
   it('has a short word for narrow rows', () => {
     expect(startLabel(open, 'offen')).toBe('offen')
+  })
+})
+
+describe('whenLabel', () => {
+  it('names day and time, an open time – or that there is no appointment', () => {
+    expect(whenLabel({ date: '2026-10-15', time: '08:00:00', timeOpen: false })).toBe('15.10. 08:00')
+    expect(whenLabel({ date: '2026-10-15', time: '08:00:00', timeOpen: false }, true)).toBe('15.10.2026, 08:00')
+    expect(whenLabel({ date: '2026-10-15', time: '08:00:00', timeOpen: true })).toBe('15.10. Zeit offen')
+    expect(whenLabel({ date: null, time: null, timeOpen: false })).toBe('ohne Termin')
   })
 })

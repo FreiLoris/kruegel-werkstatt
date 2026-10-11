@@ -25,8 +25,8 @@ import java.util.UUID;
 public record TaskRequest(
         @NotNull UUID customerId,
         UUID vehicleId,
-        @NotNull LocalDate date,
-        @NotNull @Schema(type = "string", example = "08:00") LocalTime time,
+        @Schema(description = "Empty = no appointment yet (list \"Ohne Termin\"); then time, end, lift, \"kommt früher\" and \"fertig bis\" are empty too") LocalDate date,
+        @Schema(type = "string", example = "08:00", description = "Required with a date") LocalTime time,
         @Schema(example = "2026-10-15T09:00", description = "Until when the lift is taken; empty = 1 hour after the start") LocalDateTime endAt,
         @Schema(description = "The clock time is not agreed yet – start and end only reserve the lift. Missing = false") Boolean timeOpen,
         @Schema(example = "2026-10-14T18:00") LocalDateTime arrivesEarlier,

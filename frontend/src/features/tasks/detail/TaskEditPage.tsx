@@ -8,7 +8,7 @@ import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyF
 import { useToast } from '../../../components/ui/toastContext'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { ServerErrors } from '../ServerErrors'
-import { useTask, useUpdateTask, type Task } from '../taskApi'
+import { useTask, useUpdateTask, type AnyTask } from '../taskApi'
 import { appointmentErrors, customerStepFromTask, formFromTask, toTaskRequest, type AppointmentForm } from '../wizard/appointmentForm'
 import { AppointmentStep } from '../wizard/AppointmentStep'
 import { CustomerStep } from '../wizard/CustomerStep'
@@ -38,7 +38,7 @@ export function TaskEditPage() {
  * Keeps the task as it was when the form was opened (`loaded`) – its version goes with the save,
  * so a change from another device in between gives a clear conflict instead of being overwritten.
  */
-function TaskEditForm({ task: current, onReload }: { task: Task; onReload: () => void }) {
+function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: () => void }) {
   const [task] = useState(current)
   const navigate = useNavigate()
   const toast = useToast()

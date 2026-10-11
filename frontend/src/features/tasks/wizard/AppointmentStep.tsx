@@ -90,91 +90,100 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
         </Section>
 
         <Section title="Termin">
-          <div className={styles.row}>
-            <TextField
-              label="Datum"
-              type="date"
-              required
-              value={form.date}
-              onChange={(e) => onChange(withDate(form, e.target.value, form.time, holidayDates))}
-              hint="oder rechts im Raster ziehen"
-              error={form.date ? errors.date : required("date")}
-            />
-            <TextField
-              label="Uhrzeit"
-              type="time"
-              step={900}
-              required
-              value={form.time}
-              onChange={(e) => onChange(withDate(form, form.date, e.target.value, holidayDates))}
-              error={errors.time}
-            />
-          </div>
-          <div className={styles.row}>
-            <TextField
-              label="Bis (Datum)"
-              type="date"
-              required
-              value={form.endDate}
-              onChange={(e) => set('endDate', e.target.value)}
-              hint="so lange ist der Lift belegt"
-            />
-            <TextField
-              label="bis um"
-              type="time"
-              step={900}
-              required
-              value={form.endTime}
-              onChange={(e) => set('endTime', e.target.value)}
-              hint={duration === null ? undefined : `Dauer ${formatDuration(duration)}`}
-              error={form.date ? errors.endTime : undefined}
-            />
-          </div>
           <Checkbox
-            label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
-            checked={form.timeOpen}
-            onChange={(e) => set('timeOpen', e.target.checked)}
+            label="Noch kein Termin – der Auftrag kommt in die Liste «Ohne Termin»"
+            checked={form.noAppointment}
+            onChange={(e) => set('noAppointment', e.target.checked)}
           />
-          <Checkbox
-            label="Wartekunde – Kunde wartet vor Ort"
-            checked={form.waitingCustomer}
-            onChange={(e) => set('waitingCustomer', e.target.checked)}
-          />
-          <Checkbox
-            label="Fahrzeug kommt früher"
-            checked={form.arrivesEarlier}
-            onChange={(e) => onChange(withArrivesEarlier(form, e.target.checked, holidayDates))}
-          />
-          {form.arrivesEarlier && (
-            <div className={`${styles.row} ${styles.indented}`}>
-              <TextField
-                label="Kommt am"
-                type="date"
-                value={form.arrivesEarlierDate}
-                onChange={(e) => set('arrivesEarlierDate', e.target.value)}
-                error={errors.arrivesEarlierDate}
+          {!form.noAppointment && (
+            <>
+              <div className={styles.row}>
+                <TextField
+                  label="Datum"
+                  type="date"
+                  required
+                  value={form.date}
+                  onChange={(e) => onChange(withDate(form, e.target.value, form.time, holidayDates))}
+                  hint="oder rechts im Raster ziehen"
+                  error={form.date ? errors.date : required("date")}
+                />
+                <TextField
+                  label="Uhrzeit"
+                  type="time"
+                  step={900}
+                  required
+                  value={form.time}
+                  onChange={(e) => onChange(withDate(form, form.date, e.target.value, holidayDates))}
+                  error={errors.time}
+                />
+              </div>
+              <div className={styles.row}>
+                <TextField
+                  label="Bis (Datum)"
+                  type="date"
+                  required
+                  value={form.endDate}
+                  onChange={(e) => set('endDate', e.target.value)}
+                  hint="so lange ist der Lift belegt"
+                />
+                <TextField
+                  label="bis um"
+                  type="time"
+                  step={900}
+                  required
+                  value={form.endTime}
+                  onChange={(e) => set('endTime', e.target.value)}
+                  hint={duration === null ? undefined : `Dauer ${formatDuration(duration)}`}
+                  error={form.date ? errors.endTime : undefined}
+                />
+              </div>
+              <Checkbox
+                label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
+                checked={form.timeOpen}
+                onChange={(e) => set('timeOpen', e.target.checked)}
               />
-              <TextField
-                label="um"
-                type="time"
-                step={900}
-                value={form.arrivesEarlierTime}
-                onChange={(e) => set('arrivesEarlierTime', e.target.value)}
+              <Checkbox
+                label="Wartekunde – Kunde wartet vor Ort"
+                checked={form.waitingCustomer}
+                onChange={(e) => set('waitingCustomer', e.target.checked)}
               />
-            </div>
-          )}
-          <Checkbox label="Muss fertig sein bis" checked={form.readyBy} onChange={(e) => onChange(withReadyBy(form, e.target.checked))} />
-          {form.readyBy && (
-            <div className={`${styles.row} ${styles.indented}`}>
-              <TextField
-                label="Fertig am"
-                type="date"
-                value={form.readyByDate}
-                onChange={(e) => set('readyByDate', e.target.value)}
-                error={errors.readyByDate}
+              <Checkbox
+                label="Fahrzeug kommt früher"
+                checked={form.arrivesEarlier}
+                onChange={(e) => onChange(withArrivesEarlier(form, e.target.checked, holidayDates))}
               />
-              <TextField label="um" type="time" step={900} value={form.readyByTime} onChange={(e) => set('readyByTime', e.target.value)} />
-            </div>
+              {form.arrivesEarlier && (
+                <div className={`${styles.row} ${styles.indented}`}>
+                  <TextField
+                    label="Kommt am"
+                    type="date"
+                    value={form.arrivesEarlierDate}
+                    onChange={(e) => set('arrivesEarlierDate', e.target.value)}
+                    error={errors.arrivesEarlierDate}
+                  />
+                  <TextField
+                    label="um"
+                    type="time"
+                    step={900}
+                    value={form.arrivesEarlierTime}
+                    onChange={(e) => set('arrivesEarlierTime', e.target.value)}
+                  />
+                </div>
+              )}
+              <Checkbox label="Muss fertig sein bis" checked={form.readyBy} onChange={(e) => onChange(withReadyBy(form, e.target.checked))} />
+              {form.readyBy && (
+                <div className={`${styles.row} ${styles.indented}`}>
+                  <TextField
+                    label="Fertig am"
+                    type="date"
+                    value={form.readyByDate}
+                    onChange={(e) => set('readyByDate', e.target.value)}
+                    error={errors.readyByDate}
+                  />
+                  <TextField label="um" type="time" step={900} value={form.readyByTime} onChange={(e) => set('readyByTime', e.target.value)} />
+                </div>
+              )}
+            </>
           )}
         </Section>
 
@@ -188,7 +197,13 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                 </option>
               ))}
             </Select>
-            <Select label="Lift" value={form.liftId} onChange={(e) => set('liftId', e.target.value)}>
+            {/* a lift is taken for a time – without an appointment there is none to take */}
+            <Select
+              label="Lift"
+              value={form.noAppointment ? '' : form.liftId}
+              disabled={form.noAppointment}
+              onChange={(e) => set('liftId', e.target.value)}
+            >
               <option value="">noch offen</option>
               {activeLifts.map((l) => (
                 <option key={l.id} value={l.id}>
