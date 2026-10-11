@@ -8,7 +8,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDate } from '../../lib/format'
 import type { Employee } from '../employees/employeeApi'
-import { ABSENCE_CATEGORY, useDeleteAbsence, useSaveAbsence, type Absence, type AbsenceCategory, type AbsenceRequest } from './absenceApi'
+import { ABSENCE_CATEGORY, entryNoun, useDeleteAbsence, useSaveAbsence, type Absence, type AbsenceCategory, type AbsenceRequest } from './absenceApi'
 import styles from './AbsenceDialog.module.css'
 import { CATEGORY_CLASS } from './categoryColors'
 
@@ -29,12 +29,14 @@ export interface NewAbsence {
   employeeId: string
   startDate: string
   endDate: string
+  /** preset – "Ferien" without it */
+  category?: AbsenceCategory
 }
 
 function initialValues(absence: Absence | undefined, fresh: NewAbsence | undefined): FormValues {
   return {
     employeeId: absence?.employeeId ?? fresh?.employeeId ?? '',
-    category: absence?.category ?? 'VACATION',
+    category: absence?.category ?? fresh?.category ?? 'VACATION',
     company: absence?.company ?? '',
     note: absence?.note ?? '',
     startDate: absence?.startDate ?? fresh?.startDate ?? '',
@@ -108,7 +110,7 @@ export function AbsenceDialog({
         },
         onError: (error) => {
           if (error instanceof ApiError && error.isConflict) {
-            toast.error(`Diese Abwesenheit wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+            toast.error(`Dieser Eintrag wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
             // field errors appear at the field – everything else as a message
@@ -122,7 +124,7 @@ export function AbsenceDialog({
   async function deleteIt() {
     if (!absence) return
     const ok = await confirm({
-      title: 'Abwesenheit löschen?',
+      title: `${entryNoun(absence.category)} löschen?`,
       text: `${nameOf(absence.employeeId)}: ${ABSENCE_CATEGORY[absence.category]} vom ${formatDate(absence.startDate)} bis ${formatDate(absence.endDate)}. Das lässt sich nicht rückgängig machen.`,
       confirmLabel: 'Löschen',
       dangerous: true,
@@ -130,14 +132,14 @@ export function AbsenceDialog({
     if (!ok) return
     remove.mutate(absence.id, {
       onSuccess: () => {
-        toast.success('Abwesenheit gelöscht')
+        toast.success(`${entryNoun(absence.category)} gelöscht`)
         onClose()
       },
       onError: (error) => toast.error(`Nicht gelöscht: ${error.message}`),
     })
   }
 
-  const title = readOnly ? `${nameOf(values.employeeId)}: ${ABSENCE_CATEGORY[values.category]}` : absence ? 'Abwesenheit bearbeiten' : 'Abwesenheit erfassen'
+  const title = readOnly ? `${nameOf(values.employeeId)}: ${ABSENCE_CATEGORY[values.category]}` : `${entryNoun(values.category)} ${absence ? 'bearbeiten' : 'erfassen'}`
 
   return (
     <Modal

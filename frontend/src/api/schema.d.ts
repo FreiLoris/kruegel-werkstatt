@@ -1225,7 +1225,7 @@ export interface components {
     schemas: {
         AbsenceDto: {
             /** @enum {string} */
-            category: "VACATION" | "SICK" | "EXTERNAL_WORK" | "TRAINING";
+            category: "VACATION" | "SICK" | "EXTERNAL_WORK" | "TRAINING" | "PRESENT";
             /** @description Only for external work */
             company: string | null;
             /** Format: uuid */
@@ -1250,7 +1250,7 @@ export interface components {
         };
         AbsenceRequest: {
             /** @enum {string} */
-            category: "VACATION" | "SICK" | "EXTERNAL_WORK" | "TRAINING";
+            category: "VACATION" | "SICK" | "EXTERNAL_WORK" | "TRAINING" | "PRESENT";
             /** @description Only for external work – required there */
             company?: string;
             /** Format: uuid */

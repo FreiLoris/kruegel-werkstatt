@@ -14,3 +14,7 @@
 .training {
   --absence-color: var(--color-absence-training);
 }
+
+.present {
+  --absence-color: var(--color-absence-present);
+}

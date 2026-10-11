@@ -1,0 +1,40 @@
+/* Above the lifts: who is away or in, and the to-dos of the day */
+.info {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.team {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* a chip that opens its entry */
+.entry {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.entry:hover {
+  filter: brightness(1.15);
+}
+
+.todos {
+  max-width: 52rem;
+  margin: 0;
+  padding: 0 var(--space-3);
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}

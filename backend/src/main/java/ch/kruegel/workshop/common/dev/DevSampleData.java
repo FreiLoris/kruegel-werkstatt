@@ -127,10 +127,10 @@ class DevSampleData implements ApplicationRunner {
         }
     }
 
-    /** Absences around today: vacation, sick, half a day of external work, a training. */
+    /** Absences around today: vacation, sick, half a day of external work, a training – and one "in". */
     private void createAbsences() {
         List<Employee> team = employees.findByActiveTrueOrderBySortOrderAscNameAsc();
-        if (team.size() < 4) {
+        if (team.size() < 5) {
             return;
         }
         LocalDate today = LocalDate.now(clock);
@@ -140,8 +140,10 @@ class DevSampleData implements ApplicationRunner {
                 new Absence(team.get(1), AbsenceCategory.SICK, null, null, AbsencePeriod.days(today, today)),
                 new Absence(team.get(2), AbsenceCategory.EXTERNAL_WORK, "Garage Muster AG", "Aushilfe Diagnose",
                         new AbsencePeriod(today.plusDays(1), false, today.plusDays(1), true)),
-                new Absence(team.get(3), AbsenceCategory.TRAINING, null, "Kurs Hochvolt", AbsencePeriod.days(monday.plusDays(3), monday.plusDays(4)))));
-        log.info("Dev sample data created: 4 absences");
+                new Absence(team.get(3), AbsenceCategory.TRAINING, null, "Kurs Hochvolt", AbsencePeriod.days(monday.plusDays(3), monday.plusDays(4))),
+                // flexible office hours (12b): in today, mornings only
+                new Absence(team.get(team.size() - 1), AbsenceCategory.PRESENT, null, null, new AbsencePeriod(today, false, today, true))));
+        log.info("Dev sample data created: 5 absences");
     }
 
     /** Pinboard: a note for two people with sub-tasks, one about a task, one for nobody, one archived. */

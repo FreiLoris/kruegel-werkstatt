@@ -11,12 +11,16 @@ import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
 import { tasksOfDayKey, useTasksBetween, useTasksOfDay } from '../taskApi'
 import { newTaskUrl } from '../wizard/appointmentForm'
 import { DayGrid } from './DayGrid'
+import { DayInfo } from './DayInfo'
 import styles from './DayView.module.css'
 
 /** Pixels per minute in the day view – one hour = 90 px, enough for customer, vehicle and work */
 const SCALE = 1.5
 
-/** One day as a time grid per lift (6k). Dragging open the empty grid starts a new task there. */
+/**
+ * One day as a time grid per lift (6k), above it who is away or in and the to-dos of the day (12b).
+ * Dragging open the empty grid starts a new task there.
+ */
 export function DayView({ date, onGo }: { date: string; onGo: (date: string) => void }) {
   const tasks = useTasksOfDay(date)
   const { data: lifts } = useAllLifts()
@@ -33,6 +37,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
 
   return (
     <>
+      <DayInfo date={date} />
       {tasks.data.length === 0 && <NextAppointment after={date} onGo={onGo} />}
       <DayGrid
         date={date}

@@ -52,7 +52,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
               <span className={styles.meta}>{holiday ?? (day.tasks.length === 1 ? '1 Termin' : `${day.tasks.length} Termine`)}</span>
             </header>
             {away.length > 0 && (
-              <div className={styles.absences} aria-label="Abwesend">
+              <div className={styles.absences} aria-label="Abwesend und anwesend">
                 {away.map((a) => (
                   <AbsenceChip key={a.absence.id} day={a} name={employeeOf(a.absence.employeeId)?.name ?? ''} />
                 ))}

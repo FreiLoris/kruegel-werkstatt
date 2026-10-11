@@ -73,6 +73,19 @@ class AbsenceApiTest {
     }
 
     @Test
+    void someoneWithFlexibleHoursEntersWhenTheyAreIn() {
+        MvcTestResult present = create(reto, "PRESENT", null, "2026-10-13", false, "2026-10-13", true);
+
+        assertThat(present).hasStatus(HttpStatus.CREATED);
+        assertThat(present).bodyJson().extractingPath("$.category").isEqualTo("PRESENT");
+        // in and on vacation at the same time is a mistake – same rule as between two absences
+        MvcTestResult vacation = create(reto, "VACATION", null, "2026-10-12", false, "2026-10-16", false);
+        assertFieldError(vacation, "startDate");
+        assertThat(vacation).bodyJson().extractingPath("$.errors[0].message")
+                .isEqualTo("Reto ist am 13.10.2026 bereits als anwesend eingetragen");
+    }
+
+    @Test
     void impossiblePeriodsAreFieldErrors() {
         assertFieldError(create(reto, "SICK", null, "2026-10-12", false, "2026-10-11", false), "endDate");
         assertFieldError(create(reto, "SICK", null, "2026-10-12", true, "2026-10-12", true), "endsNoon");

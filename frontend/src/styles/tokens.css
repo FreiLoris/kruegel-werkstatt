@@ -45,6 +45,8 @@
   --color-absence-sick: #ff7a7a;
   --color-absence-external: #ff9442;
   --color-absence-training: #e07be0;
+  /* "Anwesend" (12b) – lime, not the green of the status "Erledigt" */
+  --color-absence-present: #b5d43a;
 
   /* Paper: printed task sheet and logo preview – always white, also in the dark app */
   --color-paper: #ffffff;

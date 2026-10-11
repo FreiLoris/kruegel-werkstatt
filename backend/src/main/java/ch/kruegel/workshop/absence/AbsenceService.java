@@ -39,7 +39,8 @@ public class AbsenceService {
             AbsenceCategory.VACATION, "Ferien",
             AbsenceCategory.SICK, "krank",
             AbsenceCategory.EXTERNAL_WORK, "Fremdarbeit",
-            AbsenceCategory.TRAINING, "Kurs");
+            AbsenceCategory.TRAINING, "Kurs",
+            AbsenceCategory.PRESENT, "anwesend");
 
     private final AbsenceRepository repository;
     private final EmployeeRepository employees;
