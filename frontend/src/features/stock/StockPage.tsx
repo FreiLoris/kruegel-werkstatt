@@ -6,54 +6,71 @@ import { useToday } from '../../lib/clock'
 import { formatDate } from '../../lib/format'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
+import { useSuppliers } from '../suppliers/supplierApi'
 import { MaterialTabs } from './MaterialTabs'
 import { CATEGORY_LABEL, useStockItems, type StockCategory, type StockItem } from './stockApi'
-import { filterStock, NO_LOCATION, sortStock, type StockSort } from './stockFilter'
+import { filterStock, NONE, sortStock, type StockLookup, type StockSort } from './stockFilter'
 import { StockItemDialog } from './StockItemDialog'
 import styles from './StockPage.module.css'
 import { useAllStorageLocations } from './storageLocationApi'
 
 type Dialog = { kind: 'new' } | { kind: 'edit'; item: StockItem } | null
+type Param = 'q' | 'category' | 'location' | 'supplier' | 'sort'
 
-const SORTS: Record<StockSort, string> = { name: 'Bezeichnung', category: 'Kategorie', quantity: 'Menge', location: 'Lagerort' }
+const SORTS: Record<StockSort, string> = {
+  name: 'Bezeichnung',
+  category: 'Kategorie',
+  quantity: 'Menge',
+  location: 'Lagerort',
+  supplier: 'Lieferant',
+}
 
 /**
  * The stock list (FB-08): a simple list kept by hand – no bookings, no minimum quantities. Search over
- * all fields, filter by category and place, sorted by a column; search, filters and sorting are in the
- * address. Printed as it is filtered, e.g. one shelf for an inventory.
+ * all fields, filter by category, place and supplier (FB-09), sorted by a column; search, filters and
+ * sorting are in the address. Printed as it is filtered, e.g. one shelf for an inventory.
  */
 export function StockPage() {
   const [params, setParams] = useSearchParams()
   const canEdit = useCanEdit()
   const items = useStockItems()
   const { data: locations = [] } = useAllStorageLocations()
+  const { data: suppliers = [] } = useSuppliers()
   const [dialog, setDialog] = useState<Dialog>(null)
   const today = useToday()
 
   const query = params.get('q') ?? ''
   const category = (params.get('category') ?? '') as StockCategory | ''
   const location = params.get('location') ?? ''
+  const supplier = params.get('supplier') ?? ''
   const sort = (params.get('sort') ?? 'name') as StockSort
 
-  function change(key: 'q' | 'category' | 'location' | 'sort', value: string) {
+  function change(key: Param, value: string) {
     const next = new URLSearchParams(params)
     if (value && !(key === 'sort' && value === 'name')) next.set(key, value)
     else next.delete(key)
     setParams(next, { replace: true })
   }
 
-  const names = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations])
-  const order = useMemo(() => new Map(locations.map((l, index) => [l.id, index])), [locations])
+  const lookup: StockLookup = useMemo(
+    () => ({
+      locationNames: new Map(locations.map((l) => [l.id, l.name])),
+      locationOrder: new Map(locations.map((l, index) => [l.id, index])),
+      supplierNames: new Map(suppliers.map((s) => [s.id, s.name])),
+    }),
+    [locations, suppliers],
+  )
   const shown = useMemo(
-    () => (items.data ? sortStock(filterStock(items.data, { query, category, location }, names), sort, order) : []),
-    [items.data, query, category, location, names, sort, order],
+    () => (items.data ? sortStock(filterStock(items.data, { query, category, location, supplier }, lookup), sort, lookup) : []),
+    [items.data, query, category, location, supplier, lookup, sort],
   )
   // the places to filter by: those in use and those an article still lies at
   const filterLocations = locations.filter((l) => l.active || items.data?.some((i) => i.storageLocationId === l.id))
 
   const filterText = [
     category && CATEGORY_LABEL[category],
-    location && (location === NO_LOCATION ? 'ohne Lagerort' : names.get(location)),
+    location && (location === NONE ? 'ohne Lagerort' : lookup.locationNames.get(location)),
+    supplier && (supplier === NONE ? 'ohne Lieferant' : lookup.supplierNames.get(supplier)),
     query && `Suche «${query}»`,
   ]
     .filter(Boolean)
@@ -87,7 +104,6 @@ export function StockPage() {
           placeholder="Bezeichnung, Nummer, Hersteller, …"
           value={query}
           onChange={(e) => change('q', e.target.value)}
-          className={styles.search}
         />
         <Select label="Kategorie" value={category} onChange={(e) => change('category', e.target.value)}>
           <option value="">Alle</option>
@@ -104,7 +120,16 @@ export function StockPage() {
               {l.name}
             </option>
           ))}
-          <option value={NO_LOCATION}>ohne Lagerort</option>
+          <option value={NONE}>ohne Lagerort</option>
+        </Select>
+        <Select label="Lieferant" value={supplier} onChange={(e) => change('supplier', e.target.value)}>
+          <option value="">Alle</option>
+          {suppliers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+          <option value={NONE}>ohne Lieferant</option>
         </Select>
       </div>
 
@@ -159,7 +184,10 @@ export function StockPage() {
                       </td>
                       <td>{CATEGORY_LABEL[item.category]}</td>
                       <td className={styles.number}>{item.quantity ?? <span className="muted">–</span>}</td>
-                      <td>{item.storageLocationId ? names.get(item.storageLocationId) : <span className="muted">–</span>}</td>
+                      <td>{item.storageLocationId ? lookup.locationNames.get(item.storageLocationId) : <span className="muted">–</span>}</td>
+                      <td>
+                        <SupplierCell item={item} names={lookup.supplierNames} />
+                      </td>
                       <td>
                         {[item.articleNumber, item.manufacturer].filter(Boolean).join(' · ') || <span className="muted">–</span>}
                       </td>
@@ -184,13 +212,35 @@ export function StockPage() {
           key={dialog.kind === 'new' ? 'new' : dialog.item.id}
           item={dialog.kind === 'edit' ? dialog.item : undefined}
           locations={locations}
+          suppliers={suppliers}
           defaults={{
             category: category || undefined,
-            storageLocationId: location && location !== NO_LOCATION && locations.some((l) => l.id === location && l.active) ? location : undefined,
+            storageLocationId: location && location !== NONE && locations.some((l) => l.id === location && l.active) ? location : undefined,
+            supplierId: supplier && supplier !== NONE && suppliers.some((s) => s.id === supplier) ? supplier : undefined,
           }}
           onClose={() => setDialog(null)}
         />
       )}
+    </>
+  )
+}
+
+/** The main supplier with its number for the article; "+ 1" when there are further ones */
+function SupplierCell({ item, names }: { item: StockItem; names: Map<string, string> }) {
+  const [main, ...further] = item.suppliers
+  if (!main) return <span className="muted">–</span>
+  return (
+    <>
+      <div>
+        {names.get(main.supplierId)}
+        {further.length > 0 && (
+          <span className="muted" title={further.map((s) => names.get(s.supplierId)).join(', ')}>
+            {' '}
+            + {further.length}
+          </span>
+        )}
+      </div>
+      {main.articleNumber && <div className={styles.remark}>{main.articleNumber}</div>}
     </>
   )
 }

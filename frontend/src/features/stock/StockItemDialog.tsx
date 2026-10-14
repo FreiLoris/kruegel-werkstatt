@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { ArrowUp, Plus, Trash2, X } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
@@ -6,6 +6,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { Select, TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import type { Supplier } from '../suppliers/supplierApi'
 import { CATEGORY_LABEL, useDeleteStockItem, useSaveStockItem, type StockCategory, type StockItem, type StockItemRequest } from './stockApi'
 import styles from './StockItemDialog.module.css'
 import type { StorageLocation } from './storageLocationApi'
@@ -19,9 +20,13 @@ interface FormValues {
   quantity: string
   storageLocationId: string
   remark: string
+  /** the main supplier first */
+  suppliers: { supplierId: string; articleNumber: string }[]
 }
 
-function initialValues(item: StockItem | undefined, defaults: Partial<FormValues>): FormValues {
+type Defaults = { category?: StockCategory; storageLocationId?: string; supplierId?: string }
+
+function initialValues(item: StockItem | undefined, defaults: Defaults): FormValues {
   return {
     name: item?.name ?? '',
     category: item?.category ?? defaults.category ?? 'SPARE_PART',
@@ -30,6 +35,11 @@ function initialValues(item: StockItem | undefined, defaults: Partial<FormValues
     quantity: item?.quantity?.toString() ?? '',
     storageLocationId: item ? (item.storageLocationId ?? '') : (defaults.storageLocationId ?? ''),
     remark: item?.remark ?? '',
+    suppliers: item
+      ? item.suppliers.map((s) => ({ supplierId: s.supplierId, articleNumber: s.articleNumber ?? '' }))
+      : defaults.supplierId
+        ? [{ supplierId: defaults.supplierId, articleNumber: '' }]
+        : [],
   }
 }
 
@@ -42,24 +52,28 @@ function toRequest(values: FormValues, version?: number): StockItemRequest {
     quantity: values.quantity === '' ? null : Number(values.quantity),
     storageLocationId: values.storageLocationId || null,
     remark: values.remark.trim() || undefined,
+    suppliers: values.suppliers.map((s) => ({ supplierId: s.supplierId, articleNumber: s.articleNumber.trim() || undefined })),
     version,
   }
 }
 
 /**
- * Add, edit or delete an article (FB-08). Mounted fresh on every open (`key`). A new article starts
- * with the category and place of the current filter – whoever walks along shelf A adds what lies there.
+ * Add, edit or delete an article (FB-08) with its suppliers (FB-09). Mounted fresh on every open
+ * (`key`). A new article starts with the category, place and supplier of the current filter – whoever
+ * walks along shelf A adds what lies there.
  */
 export function StockItemDialog({
   item,
   locations,
+  suppliers,
   defaults = {},
   onClose,
 }: {
   item?: StockItem
   /** all places, also ones no longer used (an article may still lie there) */
   locations: StorageLocation[]
-  defaults?: { category?: StockCategory; storageLocationId?: string }
+  suppliers: Supplier[]
+  defaults?: Defaults
   onClose: () => void
 }) {
   const formId = useId()
@@ -73,8 +87,12 @@ export function StockItemDialog({
   // places in use, plus the article's own one if it is no longer used
   const choosable = locations.filter((l) => l.active || l.id === item?.storageLocationId)
 
-  function set(field: keyof FormValues, value: string) {
-    setValues({ ...values, [field]: value })
+  function set(field: Exclude<keyof FormValues, 'suppliers'>, value: string) {
+    change({ ...values, [field]: value })
+  }
+
+  function change(next: FormValues) {
+    setValues(next)
     if (save.error) save.reset()
   }
 
@@ -199,7 +217,107 @@ export function StockItemDialog({
           />
         </div>
         <TextArea label="Bemerkung" rows={2} maxLength={1000} value={values.remark} onChange={(e) => set('remark', e.target.value)} error={fieldError('remark')} />
+        <SupplierRows
+          rows={values.suppliers}
+          suppliers={suppliers}
+          error={fieldError('suppliers')}
+          onChange={(rows) => change({ ...values, suppliers: rows })}
+        />
       </form>
     </Modal>
+  )
+}
+
+type SupplierRow = FormValues['suppliers'][number]
+
+/**
+ * Who sells the article: the first row is the main supplier, further ones optional, each with its own
+ * article number (FB-09). "↑" moves a further one up – to the top it becomes the main supplier.
+ */
+function SupplierRows({
+  rows,
+  suppliers,
+  error,
+  onChange,
+}: {
+  rows: SupplierRow[]
+  suppliers: Supplier[]
+  error?: string
+  onChange: (rows: SupplierRow[]) => void
+}) {
+  const unused = suppliers.filter((s) => !rows.some((r) => r.supplierId === s.id))
+  const name = (id: string) => suppliers.find((s) => s.id === id)?.name ?? ''
+
+  function update(index: number, row: SupplierRow) {
+    onChange(rows.map((r, i) => (i === index ? row : r)))
+  }
+
+  function moveUp(index: number) {
+    const next = [...rows]
+    ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+    onChange(next)
+  }
+
+  return (
+    <fieldset className={styles.suppliers}>
+      <legend>Lieferanten</legend>
+      {suppliers.length === 0 ? (
+        <p className="muted">Lieferanten werden unter Material → Lieferanten erfasst.</p>
+      ) : (
+        <>
+          {rows.map((row, index) => (
+            <div key={row.supplierId} className={styles.supplierRow}>
+              <Select
+                label={index === 0 ? 'Hauptlieferant' : 'Weiterer Lieferant'}
+                value={row.supplierId}
+                onChange={(e) => update(index, { ...row, supplierId: e.target.value })}
+              >
+                <option value={row.supplierId}>{name(row.supplierId)}</option>
+                {unused.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </Select>
+              <TextField
+                label="Seine Artikelnummer"
+                maxLength={60}
+                autoComplete="off"
+                value={row.articleNumber}
+                onChange={(e) => update(index, { ...row, articleNumber: e.target.value })}
+              />
+              <div className={styles.supplierActions}>
+                {index > 0 && (
+                  <Button
+                    variant="ghost"
+                    icon={ArrowUp}
+                    title={index === 1 ? 'Zum Hauptlieferanten machen' : 'Nach oben'}
+                    aria-label={`${name(row.supplierId)} ${index === 1 ? 'zum Hauptlieferanten machen' : 'nach oben'}`}
+                    onClick={() => moveUp(index)}
+                  />
+                )}
+                <Button
+                  variant="ghost"
+                  icon={X}
+                  title="Entfernen"
+                  aria-label={`${name(row.supplierId)} entfernen`}
+                  onClick={() => onChange(rows.filter((_, i) => i !== index))}
+                />
+              </div>
+            </div>
+          ))}
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+          {unused.length > 0 && (
+            <Button small icon={Plus} onClick={() => onChange([...rows, { supplierId: unused[0].id, articleNumber: '' }])}>
+              {rows.length === 0 ? 'Lieferant' : 'Weiterer Lieferant'}
+            </Button>
+          )}
+        </>
+      )}
+    </fieldset>
   )
 }

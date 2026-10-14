@@ -21,7 +21,7 @@ export interface paths {
          * Enter absence
          * @description Not overlapping another absence of the person (to the half day).
          */
-        post: operations["create_13"];
+        post: operations["create_14"];
         delete?: never;
         options?: never;
         head?: never;
@@ -60,10 +60,10 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         /** Delete absence */
-        delete: operations["delete_4"];
+        delete: operations["delete_5"];
         options?: never;
         head?: never;
         patch?: never;
@@ -82,7 +82,7 @@ export interface paths {
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_9"];
+        put: operations["update_10"];
         post?: never;
         delete?: never;
         options?: never;
@@ -123,7 +123,7 @@ export interface paths {
          * Book a courtesy car
          * @description 409 with a message naming the booking in the way.
          */
-        post: operations["create_12"];
+        post: operations["create_13"];
         delete?: never;
         options?: never;
         head?: never;
@@ -179,7 +179,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_8"];
+        put: operations["update_9"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -217,10 +217,10 @@ export interface paths {
             cookie?: never;
         };
         /** All courtesy cars in fixed order (default: only active ones) */
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         /** Create courtesy car (put at the end) */
-        post: operations["create_11"];
+        post: operations["create_12"];
         delete?: never;
         options?: never;
         head?: never;
@@ -256,7 +256,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_7"];
+        put: operations["update_8"];
         post?: never;
         delete?: never;
         options?: never;
@@ -328,7 +328,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create local customer (walk-in) */
-        post: operations["create_10"];
+        post: operations["create_11"];
         delete?: never;
         options?: never;
         head?: never;
@@ -348,7 +348,7 @@ export interface paths {
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_6"];
+        put: operations["update_7"];
         post?: never;
         delete?: never;
         options?: never;
@@ -398,10 +398,10 @@ export interface paths {
             cookie?: never;
         };
         /** All employees in fixed order */
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
         /** Create employee (put at the end of the order) */
-        post: operations["create_9"];
+        post: operations["create_10"];
         delete?: never;
         options?: never;
         head?: never;
@@ -438,7 +438,7 @@ export interface paths {
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_5"];
+        put: operations["update_6"];
         post?: never;
         delete?: never;
         options?: never;
@@ -488,10 +488,10 @@ export interface paths {
             cookie?: never;
         };
         /** All lifts in fixed order (default: only active ones) */
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
         /** Create lift (put at the end) */
-        post: operations["create_8"];
+        post: operations["create_9"];
         delete?: never;
         options?: never;
         head?: never;
@@ -600,13 +600,13 @@ export interface paths {
          * Notes
          * @description On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).
          */
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         /**
          * Create note
          * @description The author is the person of the device.
          */
-        post: operations["create_7"];
+        post: operations["create_8"];
         delete?: never;
         options?: never;
         head?: never;
@@ -626,13 +626,13 @@ export interface paths {
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_4"];
+        put: operations["update_5"];
         post?: never;
         /**
          * Delete note
          * @description With its sub-tasks. Normally a note is archived instead.
          */
-        delete: operations["delete_3"];
+        delete: operations["delete_4"];
         options?: never;
         head?: never;
         patch?: never;
@@ -723,10 +723,10 @@ export interface paths {
             cookie?: never;
         };
         /** All service items in fixed order (default: only active ones) */
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         /** Create service item (put at the end) */
-        post: operations["create_6"];
+        post: operations["create_7"];
         delete?: never;
         options?: never;
         head?: never;
@@ -815,10 +815,10 @@ export interface paths {
          * The whole stock list by name
          * @description Search, filters and sorting happen on the page.
          */
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         /** Add an article */
-        post: operations["create_5"];
+        post: operations["create_6"];
         delete?: never;
         options?: never;
         head?: never;
@@ -837,10 +837,10 @@ export interface paths {
          * Edit an article
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_3"];
+        put: operations["update_4"];
         post?: never;
         /** Delete an article */
-        delete: operations["delete_2"];
+        delete: operations["delete_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -854,10 +854,10 @@ export interface paths {
             cookie?: never;
         };
         /** All storage locations in fixed order (default: only active ones) */
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         /** Create storage location (put at the end) */
-        post: operations["create_4"];
+        post: operations["create_5"];
         delete?: never;
         options?: never;
         head?: never;
@@ -935,6 +935,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All suppliers by name */
+        get: operations["list_1"];
+        put?: never;
+        /** Add a supplier */
+        post: operations["create_4"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a supplier
+         * @description Needs the loaded `version` (409 if someone else changed it).
+         */
+        put: operations["update_3"];
+        post?: never;
+        /**
+         * Delete a supplier
+         * @description Its articles in the stock list lose it.
+         */
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/swissgarage-imports": {
         parameters: {
             query?: never;
@@ -943,7 +985,7 @@ export interface paths {
             cookie?: never;
         };
         /** Last 20 imports, newest first */
-        get: operations["list_8"];
+        get: operations["list_9"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2021,6 +2063,8 @@ export interface components {
             remark: string | null;
             /** Format: uuid */
             storageLocationId: string | null;
+            /** @description Main supplier first */
+            suppliers: components["schemas"]["StockItemSupplierDto"][];
             /** Format: date-time */
             updatedAt: string;
             /**
@@ -2045,11 +2089,18 @@ export interface components {
             remark?: string;
             /** Format: uuid */
             storageLocationId?: string | null;
+            /** @description Main supplier first */
+            suppliers?: components["schemas"]["SupplierRef"][];
             /**
              * Format: int64
              * @description Only needed when editing
              */
             version?: number;
+        };
+        StockItemSupplierDto: {
+            articleNumber: string | null;
+            /** Format: uuid */
+            supplierId: string;
         };
         StorageLocationDto: {
             active: boolean;
@@ -2078,6 +2129,56 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
+        };
+        SupplierDto: {
+            contactPerson: string | null;
+            /** @description Our customer number with the supplier */
+            customerNumber: string | null;
+            /** @description Delivery times or rounds */
+            delivery: string | null;
+            email: string | null;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string|null} */
+            orderChannel: "WEBSHOP" | "PHONE" | "EMAIL" | null;
+            phone: string | null;
+            remark: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            /**
+             * Format: uuid
+             * @description Who changed it last
+             */
+            updatedBy: string | null;
+            /** Format: int64 */
+            version: number;
+            /** @description Always http(s) */
+            webshopUrl: string | null;
+        };
+        SupplierRef: {
+            articleNumber?: string;
+            /** Format: uuid */
+            supplierId: string;
+        };
+        SupplierRequest: {
+            contactPerson?: string;
+            customerNumber?: string;
+            /** @description Delivery times or rounds, e.g. "2× täglich" */
+            delivery?: string;
+            /** Format: email */
+            email?: string;
+            name: string;
+            /** @enum {string|null} */
+            orderChannel?: "WEBSHOP" | "PHONE" | "EMAIL" | null;
+            phone?: string;
+            remark?: string;
+            /**
+             * Format: int64
+             * @description Only needed when editing
+             */
+            version?: number;
+            webshopUrl?: string;
         };
         SwissGarageStatusDto: {
             /**
@@ -2499,7 +2600,7 @@ export interface operations {
             };
         };
     };
-    create_13: {
+    create_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -2635,7 +2736,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -2706,7 +2807,7 @@ export interface operations {
             };
         };
     };
-    delete_4: {
+    delete_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -2836,7 +2937,7 @@ export interface operations {
             };
         };
     };
-    update_9: {
+    update_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -3175,7 +3276,7 @@ export interface operations {
             };
         };
     };
-    create_12: {
+    create_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -3380,7 +3481,7 @@ export interface operations {
             };
         };
     };
-    update_8: {
+    update_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -3654,7 +3755,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -3721,7 +3822,7 @@ export interface operations {
             };
         };
     };
-    create_11: {
+    create_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -3859,7 +3960,7 @@ export interface operations {
             };
         };
     };
-    update_7: {
+    update_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -4132,7 +4233,7 @@ export interface operations {
             };
         };
     };
-    create_10: {
+    create_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -4268,7 +4369,7 @@ export interface operations {
             };
         };
     };
-    update_6: {
+    update_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -4473,7 +4574,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -4540,7 +4641,7 @@ export interface operations {
             };
         };
     };
-    create_9: {
+    create_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -4745,7 +4846,7 @@ export interface operations {
             };
         };
     };
-    update_5: {
+    update_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -4950,7 +5051,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -5017,7 +5118,7 @@ export interface operations {
             };
         };
     };
-    create_8: {
+    create_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -5425,7 +5526,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: {
                 archived?: boolean;
@@ -5496,7 +5597,7 @@ export interface operations {
             };
         };
     };
-    create_7: {
+    create_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -5632,7 +5733,7 @@ export interface operations {
             };
         };
     };
-    update_4: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -5703,7 +5804,7 @@ export interface operations {
             };
         };
     };
-    delete_3: {
+    delete_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -6049,7 +6150,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -6116,7 +6217,7 @@ export interface operations {
             };
         };
     };
-    create_6: {
+    create_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -6459,7 +6560,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -6524,7 +6625,7 @@ export interface operations {
             };
         };
     };
-    create_5: {
+    create_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -6593,7 +6694,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -6664,7 +6765,7 @@ export interface operations {
             };
         };
     };
-    delete_2: {
+    delete_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -6729,7 +6830,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -6796,7 +6897,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -7139,7 +7240,277 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    list_9: {
         parameters: {
             query?: never;
             header?: never;

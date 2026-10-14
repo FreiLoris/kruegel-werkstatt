@@ -2,6 +2,8 @@ package ch.kruegel.workshop.stock;
 
 import ch.kruegel.workshop.common.Texts;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,9 +15,11 @@ import java.util.Objects;
  * @param quantity        how many there are; empty = not counted
  * @param storageLocation where it lies; empty = no fixed place
  * @param remark          empty = none
+ * @param suppliers       who sells it, the main supplier first; each one once
  */
 public record StockItemDetails(String name, StockCategory category, String articleNumber, String manufacturer,
-                               Integer quantity, StorageLocation storageLocation, String remark) {
+                               Integer quantity, StorageLocation storageLocation, String remark,
+                               List<StockItemSupplier> suppliers) {
 
     public StockItemDetails {
         name = Texts.checkMaxLength(Texts.emptyToNull(name), StockItem.NAME_MAX, "Name");
@@ -29,5 +33,9 @@ public record StockItemDetails(String name, StockCategory category, String artic
             throw new IllegalArgumentException("Quantity must not be negative: " + quantity);
         }
         remark = Texts.checkMaxLength(Texts.emptyToNull(remark), StockItem.REMARK_MAX, "Remark");
+        suppliers = suppliers == null ? List.of() : List.copyOf(suppliers);
+        if (!suppliers.stream().map(s -> s.supplier().getId()).allMatch(new HashSet<>()::add)) {
+            throw new IllegalArgumentException("A supplier may appear only once per article");
+        }
     }
 }

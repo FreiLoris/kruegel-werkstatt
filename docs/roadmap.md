@@ -475,11 +475,21 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   saying what and when (e.g. one shelf for an inventory). Storage locations are named freely in the
   settings (like service items: deactivated instead of deleted, in their own order). Navigation:
   one entry "Material" with the tabs "Einkaufsliste | Lager" instead of a new entry each – the TV's
-  bottom bar stays on one line; the suppliers (13e) become a third tab.
-- [ ] **13e – Suppliers** (FB-09): own page (tab under "Material"), article ↔ supplier n:m with the
-  supplier's article number, filter of the stock list by supplier.
-- [ ] **13f – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09): entry with an
-  optional article and a supplier (taken from the article), grouped by supplier, "Auf Einkaufsliste".
+  bottom bar stays on one line; the suppliers (13e) are the third tab.
+- [x] **13e – Suppliers** (FB-09)
+  Done: the tab "Lieferanten" under "Material" (`/suppliers`): one card each with company, contact
+  person, phone, e-mail, webshop (always http(s), "https://" added when typed without), our customer
+  number, order channel (Webshop/Telefon/E-Mail), delivery times and remark, and a link to its
+  articles (`/stock?supplier=…`). An article has a main supplier and optional further ones, each with
+  the supplier's own article number (`stock_item_supplier`, position 0 = main). The stock list filters
+  and sorts by supplier, the search finds supplier names and their numbers. A deleted supplier is
+  taken off its articles – a further one becomes the main supplier.
+- [ ] **13f – Storage locations as a tree** (feedback Loris 2026-10-14): places nested as deep as
+  needed (room → shelf → drawer), an article at any level, the filter of a place includes everything
+  below it.
+- [ ] **13g – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09): entry with an
+  optional article and a supplier (taken from the article), grouped by supplier, "Auf Einkaufsliste";
+  the supplier card shows its open entries.
 
 Answers of the workshop (2026-10-14):
 

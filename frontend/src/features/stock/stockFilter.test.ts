@@ -1,55 +1,91 @@
 import { describe, expect, it } from 'vitest'
 import type { StockItem } from './stockApi'
-import { filterStock, NO_LOCATION, sortStock } from './stockFilter'
+import { filterStock, NONE, sortStock, type StockLookup } from './stockFilter'
 
 // fictitious
 const item = (name: string, extra: Partial<StockItem> = {}) =>
-  ({ id: name, name, category: 'SPARE_PART', articleNumber: null, manufacturer: null, quantity: null, storageLocationId: null, remark: null, ...extra }) as StockItem
+  ({
+    id: name,
+    name,
+    category: 'SPARE_PART',
+    articleNumber: null,
+    manufacturer: null,
+    quantity: null,
+    storageLocationId: null,
+    remark: null,
+    suppliers: [],
+    ...extra,
+  }) as StockItem
 
 const shelfA = 'a'
 const shelfB = 'b'
-const names = new Map([
-  [shelfA, 'Keller'],
-  [shelfB, 'Regal B'],
-])
+const lookup: StockLookup = {
+  locationNames: new Map([
+    [shelfA, 'Keller'],
+    [shelfB, 'Regal B'],
+  ]),
+  locationOrder: new Map([
+    [shelfA, 0],
+    [shelfB, 1],
+  ]),
+  supplierNames: new Map([
+    ['m', 'Muster Teile AG'],
+    ['x', 'Beispiel Handel'],
+  ]),
+}
 const all = [
-  item('Ölfilter', { remark: 'für VW', quantity: 4, storageLocationId: shelfB }),
-  item('Bremsreiniger', { category: 'CONSUMABLE', quantity: 12, storageLocationId: shelfA }),
+  item('Ölfilter', { remark: 'für VW', quantity: 4, storageLocationId: shelfB, suppliers: [{ supplierId: 'm', articleNumber: 'MT-77' }] }),
+  item('Bremsreiniger', {
+    category: 'CONSUMABLE',
+    quantity: 12,
+    storageLocationId: shelfA,
+    suppliers: [
+      { supplierId: 'x', articleNumber: null },
+      { supplierId: 'm', articleNumber: null },
+    ],
+  }),
   item('Drehmomentschlüssel', { category: 'TOOL', manufacturer: 'Hazet' }),
 ]
-const nothing = { query: '', category: '', location: '' } as const
+const nothing = { query: '', category: '', location: '', supplier: '' } as const
+const names = (items: StockItem[]) => items.map((i) => i.name)
 
 describe('filterStock', () => {
   it('searches all fields, every word must match', () => {
-    expect(filterStock(all, { ...nothing, query: 'filter vw' }, names).map((i) => i.name)).toEqual(['Ölfilter'])
-    expect(filterStock(all, { ...nothing, query: 'hazet' }, names).map((i) => i.name)).toEqual(['Drehmomentschlüssel'])
-    // the name of the place and of the category count too
-    expect(filterStock(all, { ...nothing, query: 'keller' }, names).map((i) => i.name)).toEqual(['Bremsreiniger'])
-    expect(filterStock(all, { ...nothing, query: 'werkzeug' }, names).map((i) => i.name)).toEqual(['Drehmomentschlüssel'])
+    expect(names(filterStock(all, { ...nothing, query: 'filter vw' }, lookup))).toEqual(['Ölfilter'])
+    expect(names(filterStock(all, { ...nothing, query: 'hazet' }, lookup))).toEqual(['Drehmomentschlüssel'])
+    // the names of place, category and supplier count too, and the supplier's article number
+    expect(names(filterStock(all, { ...nothing, query: 'keller' }, lookup))).toEqual(['Bremsreiniger'])
+    expect(names(filterStock(all, { ...nothing, query: 'werkzeug' }, lookup))).toEqual(['Drehmomentschlüssel'])
+    expect(names(filterStock(all, { ...nothing, query: 'beispiel' }, lookup))).toEqual(['Bremsreiniger'])
+    expect(names(filterStock(all, { ...nothing, query: 'mt-77' }, lookup))).toEqual(['Ölfilter'])
   })
 
   it('filters by category and place, also "without place"', () => {
-    expect(filterStock(all, { ...nothing, category: 'CONSUMABLE' }, names).map((i) => i.name)).toEqual(['Bremsreiniger'])
-    expect(filterStock(all, { ...nothing, location: shelfB }, names).map((i) => i.name)).toEqual(['Ölfilter'])
-    expect(filterStock(all, { ...nothing, location: NO_LOCATION }, names).map((i) => i.name)).toEqual(['Drehmomentschlüssel'])
+    expect(names(filterStock(all, { ...nothing, category: 'CONSUMABLE' }, lookup))).toEqual(['Bremsreiniger'])
+    expect(names(filterStock(all, { ...nothing, location: shelfB }, lookup))).toEqual(['Ölfilter'])
+    expect(names(filterStock(all, { ...nothing, location: NONE }, lookup))).toEqual(['Drehmomentschlüssel'])
+  })
+
+  it('filters by supplier – main or further one – and "without supplier"', () => {
+    expect(names(filterStock(all, { ...nothing, supplier: 'm' }, lookup))).toEqual(['Ölfilter', 'Bremsreiniger'])
+    expect(names(filterStock(all, { ...nothing, supplier: NONE }, lookup))).toEqual(['Drehmomentschlüssel'])
   })
 })
 
 describe('sortStock', () => {
-  const order = new Map([
-    [shelfA, 0],
-    [shelfB, 1],
-  ])
-
   it('by name with umlauts in place', () => {
-    expect(sortStock(all, 'name', order).map((i) => i.name)).toEqual(['Bremsreiniger', 'Drehmomentschlüssel', 'Ölfilter'])
+    expect(names(sortStock(all, 'name', lookup))).toEqual(['Bremsreiniger', 'Drehmomentschlüssel', 'Ölfilter'])
   })
 
   it('by place in the order of the settings, without place last', () => {
-    expect(sortStock(all, 'location', order).map((i) => i.name)).toEqual(['Bremsreiniger', 'Ölfilter', 'Drehmomentschlüssel'])
+    expect(names(sortStock(all, 'location', lookup))).toEqual(['Bremsreiniger', 'Ölfilter', 'Drehmomentschlüssel'])
   })
 
   it('by quantity, not counted last', () => {
-    expect(sortStock(all, 'quantity', order).map((i) => i.name)).toEqual(['Ölfilter', 'Bremsreiniger', 'Drehmomentschlüssel'])
+    expect(names(sortStock(all, 'quantity', lookup))).toEqual(['Ölfilter', 'Bremsreiniger', 'Drehmomentschlüssel'])
+  })
+
+  it('by main supplier, without supplier last', () => {
+    expect(names(sortStock(all, 'supplier', lookup))).toEqual(['Bremsreiniger', 'Ölfilter', 'Drehmomentschlüssel'])
   })
 })

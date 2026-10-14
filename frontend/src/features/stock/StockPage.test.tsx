@@ -6,7 +6,7 @@ import { StockPage } from './StockPage'
 
 // fictitious
 const item = (id: string, name: string, extra: Partial<StockItem> = {}) =>
-  ({ id, name, category: 'SPARE_PART', articleNumber: null, manufacturer: null, quantity: null, storageLocationId: null, remark: null, ...extra }) as StockItem
+  ({ id, name, category: 'SPARE_PART', articleNumber: null, manufacturer: null, quantity: null, storageLocationId: null, remark: null, suppliers: [], ...extra }) as StockItem
 
 vi.mock('./stockApi', async (original) => ({
   ...(await original<typeof import('./stockApi')>()),
@@ -26,6 +26,7 @@ vi.mock('./storageLocationApi', () => ({
     ],
   }),
 }))
+vi.mock('../suppliers/supplierApi', () => ({ useSuppliers: () => ({ data: [] }) }))
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => true }))
 vi.mock('./StockItemDialog', () => ({
   StockItemDialog: ({ defaults }: { defaults: { storageLocationId?: string } }) => <p>Dialog bei {defaults.storageLocationId ?? 'nirgends'}</p>,
