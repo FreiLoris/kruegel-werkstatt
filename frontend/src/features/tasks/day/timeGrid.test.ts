@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import type { MfkSlot } from '../mfk/mfkSlots'
 import type { Task } from '../taskApi'
-import { blockingIn, movedTo, placeInColumn, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
+import { blockingIn, movedTo, placeInColumn, placeWithMfk, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
 
 const DAY = '2026-10-15'
 const task = (id: string, time: string, endAt: string, date = DAY) =>
   ({ id, date, time: `${time}:00`, endAt: `${endAt}:00`, liftId: 'l1', arrivesEarlier: null, readyBy: null }) as Task
+
+const mfk = (id: string, start: string, end: string) => ({ task: { id }, date: DAY, start, end }) as MfkSlot
 
 describe('spanOn and visibleRange', () => {
   it('a task over several days fills the day before and after', () => {
@@ -18,6 +21,8 @@ describe('spanOn and visibleRange', () => {
     expect(visibleRange([], DAY)).toEqual({ start: 420, end: 1080 })
     expect(visibleRange([task('a', '06:30', `${DAY}T19:15`)], DAY)).toEqual({ start: 360, end: 1200 })
     expect(visibleRange([task('w', '10:00', '2026-10-16T12:00', '2026-10-14')], DAY)).toEqual({ start: 420, end: 1080 })
+    // an MFK appointment late in the day widens it too
+    expect(visibleRange([], DAY, [mfk('m', '17:30', '18:30')])).toEqual({ start: 420, end: 1140 })
   })
 })
 
@@ -32,6 +37,17 @@ describe('placeInColumn', () => {
     expect([of('a').lane, of('b').lane, of('c').lane]).toEqual([0, 1, 0])
     expect(of('a').lanes).toBe(2)
     expect(of('d')).toMatchObject({ lane: 0, lanes: 1 })
+  })
+
+  it('"Ohne Lift": the MFK appointments share the lanes with the tasks there', () => {
+    const { tasks, mfk: slots } = placeWithMfk([task('a', '08:00', `${DAY}T10:00`)], [mfk('m', '09:00', '10:00'), mfk('n', '14:00', '14:00')], DAY)
+
+    expect(tasks[0]).toMatchObject({ lane: 0, lanes: 2 })
+    expect(slots.map((p) => [p.slot.task.id, p.lane, p.lanes, p.start, p.end])).toEqual([
+      ['m', 1, 2, 540, 600],
+      // never shorter than a quarter hour
+      ['n', 0, 1, 840, 855],
+    ])
   })
 })
 

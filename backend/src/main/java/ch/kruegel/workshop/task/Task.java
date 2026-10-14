@@ -40,6 +40,10 @@ public class Task extends BaseEntity {
 
     static final int TASK_NUMBER_MAX = 30;
     static final int CLAIM_NUMBER_MAX = 60;
+    /** The trip to the inspection: one hour unless said otherwise (FB-10) */
+    static final int MFK_MINUTES_DEFAULT = 60;
+    static final int MFK_MINUTES_MIN = 15;
+    static final int MFK_MINUTES_MAX = 480;
 
     /** Assigned by the app when the task is created ("26-0001"); older ones may be SwissGarage numbers. Unique */
     private String taskNumber;
@@ -75,6 +79,13 @@ public class Task extends BaseEntity {
 
     private boolean mfk;
     private LocalDateTime mfkAppointment;
+
+    /** How long the car is away for the MFK, incl. the drive – only with MFK, then always set (FB-10) */
+    private Integer mfkMinutes;
+
+    /** Who drives the car to the inspection – may be open; only a hint, it takes none of their time */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Employee mfkDriver;
 
     @ManyToMany
     @BatchSize(size = 50)
@@ -144,6 +155,28 @@ public class Task extends BaseEntity {
         this.claimNumber = number;
     }
 
+    /**
+     * The trip to the inspection (FB-10) – like the insurance case not part of {@link TaskDetails}:
+     * set with every edit, after the details (they say whether there is an MFK).
+     *
+     * @param minutes how long the car is away incl. the drive; empty = {@link #MFK_MINUTES_DEFAULT}
+     * @param driver  who drives it there; may be open
+     */
+    public void mfkTrip(Integer minutes, Employee driver) {
+        if (!mfk) {
+            if (minutes != null || driver != null) {
+                throw new IllegalArgumentException("MFK trip without MFK");
+            }
+            return;
+        }
+        int duration = minutes == null ? MFK_MINUTES_DEFAULT : minutes;
+        if (duration < MFK_MINUTES_MIN || duration > MFK_MINUTES_MAX) {
+            throw new IllegalArgumentException("MFK trip of " + duration + " minutes");
+        }
+        this.mfkMinutes = duration;
+        this.mfkDriver = driver;
+    }
+
     /** Sets the task number; empty removes it. Uniqueness is checked by the service/database. */
     public void assignTaskNumber(String number) {
         this.taskNumber = Texts.checkMaxLength(Texts.emptyToNull(number), TASK_NUMBER_MAX, "Task number");
@@ -186,6 +219,13 @@ public class Task extends BaseEntity {
         this.tireChangeKind = work.tireChangeKind();
         this.mfk = work.mfk();
         this.mfkAppointment = work.mfkAppointment();
+        // the trip goes with the MFK: gone without one, the default until mfkTrip says more
+        if (!mfk) {
+            this.mfkMinutes = null;
+            this.mfkDriver = null;
+        } else if (mfkMinutes == null) {
+            this.mfkMinutes = MFK_MINUTES_DEFAULT;
+        }
         // change the managed collection instead of replacing it – Hibernate tracks it
         this.serviceItems.clear();
         this.serviceItems.addAll(work.serviceItems());
@@ -204,6 +244,14 @@ public class Task extends BaseEntity {
 
     public Employee getAcceptedBy() {
         return acceptedBy;
+    }
+
+    public Integer getMfkMinutes() {
+        return mfkMinutes;
+    }
+
+    public Employee getMfkDriver() {
+        return mfkDriver;
     }
 
     public Insurance getInsurance() {

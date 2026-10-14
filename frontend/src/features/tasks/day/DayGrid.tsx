@@ -22,6 +22,8 @@ import { useToast } from '../../../components/ui/toastContext'
 import { useClock } from '../../../lib/clock'
 import type { Employee } from '../../employees/employeeApi'
 import type { Lift } from '../../lifts/liftApi'
+import { MfkEntry } from '../mfk/MfkEntry'
+import type { MfkSlot } from '../mfk/mfkSlots'
 import { useScheduleTask, type Task } from '../taskApi'
 import { periodLabel } from '../taskTime'
 import { dayColumns, NO_LIFT, type DayColumn } from './dayColumns'
@@ -32,6 +34,7 @@ import {
   minutesOf,
   movedTo,
   placeInColumn,
+  placeWithMfk,
   resizedTo,
   selection,
   SNAP_MINUTES,
@@ -46,6 +49,8 @@ import {
 
 /** A chosen place for a new task: lift, start and end */
 export type Slot = Schedule
+
+const NO_MFK: MfkSlot[] = []
 
 const DAY_MINUTES = 24 * 60
 
@@ -79,6 +84,8 @@ interface DayGridProps {
   serviceItemNames?: ReadonlyMap<string, string>
   /** task ID → courtesy car name, shown on the blocks */
   courtesyCars?: ReadonlyMap<string, string>
+  /** plan: the MFK appointments of the day – hints in "Ohne Lift", they take no time of anybody (FB-10) */
+  mfkSlots?: MfkSlot[]
 }
 
 /** Finger: hold this long before dragging opens a time (moving earlier = scrolling) */
@@ -115,6 +122,7 @@ export function DayGrid({
   employees = [],
   serviceItemNames = new Map(),
   courtesyCars,
+  mfkSlots = NO_MFK,
 }: DayGridProps) {
   const toast = useToast()
   const schedule = useScheduleTask(viewKey)
@@ -125,12 +133,20 @@ export function DayGrid({
   const shown = useMemo(() => (hiddenTaskId ? current.filter((t) => t.id !== hiddenTaskId) : current), [current, hiddenTaskId])
 
   const columns = useMemo(() => dayColumns(shown, lifts), [shown, lifts])
-  const placedByColumn = useMemo(
-    () => new Map(columns.map((column) => [column.id, placeInColumn(column.tasks, date)])),
-    [columns, date],
+  // "Ohne Lift" holds the MFK appointments too – side by side with its tasks
+  const layout = useMemo(
+    () =>
+      new Map(
+        columns.map((column) => [
+          column.id,
+          column.liftId === null ? placeWithMfk(column.tasks, mfkSlots, date) : { tasks: placeInColumn(column.tasks, date), mfk: [] },
+        ]),
+      ),
+    [columns, mfkSlots, date],
   )
+  const placedByColumn = useMemo(() => new Map([...layout].map(([id, placed]) => [id, placed.tasks])), [layout])
   const byId = useMemo(() => new Map(shown.map((task) => [task.id, task])), [shown])
-  const range = useMemo(() => visibleRange(shown, date), [shown, date])
+  const range = useMemo(() => visibleRange(shown, date, mfkSlots), [shown, date, mfkSlots])
   const clock = useClock()
   // the "now" line only on today – it moves every minute (one clock for the app, 10c)
   const now = date === clock.today ? minutesOf(clock.time) : null
@@ -390,6 +406,20 @@ export function DayGrid({
                     />
                   )
                 })}
+                {layout.get(column.id)?.mfk.map((p) => (
+                  <MfkEntry
+                    key={`mfk-${p.slot.task.id}`}
+                    slot={p.slot}
+                    driver={employees.find((e) => e.id === p.slot.task.mfkDriverId)}
+                    className={styles.mfk}
+                    style={{
+                      top: y(p.start),
+                      height: Math.max(y(p.end) - y(p.start), 14),
+                      left: `${(p.lane / p.lanes) * 100}%`,
+                      width: `${100 / p.lanes}%`,
+                    }}
+                  />
+                ))}
                 {ghost && (
                   <div
                     className={[styles.ghost, ghost.collides && styles.collides].filter(Boolean).join(' ')}

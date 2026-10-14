@@ -5,7 +5,7 @@ import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { Facts } from '../../../components/ui/Facts'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { formatDate, formatLocalDateTime } from '../../../lib/format'
+import { formatDate, formatDuration, formatLocalDateTime } from '../../../lib/format'
 import { periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { useActiveEmployees } from '../../employees/employeeApi'
@@ -124,6 +124,12 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
           </ul>
         )}
         {f.workDescription.trim() && <p className={styles.freeText}>{f.workDescription.trim()}</p>}
+        {f.mfk && (
+          <p>
+            <span className="muted">Zur MFK: </span>
+            {formatDuration(Number(f.mfkMinutes))} inkl. Fahrt, fährt: {employees?.find((e) => e.id === f.mfkDriverId)?.name ?? 'noch offen'}
+          </p>
+        )}
         <p>
           <span className="muted">Angenommen von: </span>
           {employees?.find((e) => e.id === f.acceptedById)?.name ?? '–'}

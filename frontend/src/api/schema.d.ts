@@ -1213,6 +1213,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/mfk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tasks with their MFK appointment in a period
+         * @description Both days inclusive, by the MFK appointment (FB-10) – the hints "MFK" in the calendars. Also orders without workshop appointment: the inspection is still booked. At most 92 days.
+         */
+        get: operations["withMfkBetween"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tasks/parts-to-order": {
         parameters: {
             query?: never;
@@ -2404,6 +2424,16 @@ export interface components {
              * @example 2026-10-15T10:00:00
              */
             mfkAppointment: string | null;
+            /**
+             * Format: uuid
+             * @description MFK: who drives the car there
+             */
+            mfkDriverId: string | null;
+            /**
+             * Format: int32
+             * @description MFK: how long the car is away incl. the drive; set with MFK
+             */
+            mfkMinutes: number | null;
             /** @description Internal notes */
             notes: string | null;
             /** @description Empty = no parts needed */
@@ -2509,6 +2539,16 @@ export interface components {
              * @example 2026-10-15T10:00
              */
             mfkAppointment?: string;
+            /**
+             * Format: uuid
+             * @description MFK: who drives the car there; may be open
+             */
+            mfkDriverId?: string;
+            /**
+             * Format: int32
+             * @description MFK: how long the car is away incl. the drive; empty = 1 hour
+             */
+            mfkMinutes?: number;
             notes?: string;
             /** @description Empty = no parts needed */
             parts?: components["schemas"]["Parts"];
@@ -8596,6 +8636,74 @@ export interface operations {
         parameters: {
             query: {
                 customerId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    withMfkBetween: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
             };
             header?: never;
             path?: never;

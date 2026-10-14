@@ -10,6 +10,8 @@ import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { PARTS_STATUS, TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
 import {
   appointmentErrors,
+  MFK_DURATIONS,
+  mfkBeforeEnd,
   withArrivesEarlier,
   withDate,
   withMfk,
@@ -69,6 +71,9 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const activeServiceItems = (serviceItems ?? []).filter((s) => s.active)
   // editing: the insurance of the task stays choosable, even if it is no longer used
   const insuranceChoice = (insurances ?? []).filter((i) => i.active || i.id === form.insuranceId)
+  // a duration saved before that is not in the list stays choosable
+  const mfkDurations = MFK_DURATIONS.includes(Number(form.mfkMinutes)) ? MFK_DURATIONS : [...MFK_DURATIONS, Number(form.mfkMinutes)].sort((a, b) => a - b)
+  const mfkWarning = mfkBeforeEnd(form)
 
   return (
     <div className={styles.layout}>
@@ -248,22 +253,50 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
           )}
           <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked))} />
           {form.mfk && (
-            <div className={`${styles.row} ${styles.indented}`}>
-              <TextField
-                label="MFK-Termin am"
-                type="date"
-                value={form.mfkDate}
-                onChange={(e) => set('mfkDate', e.target.value)}
-                error={errors.mfkDate}
-              />
-              <TextField
-                label="um"
-                type="time"
-                step={900}
-                hint="leer lassen, wenn noch nicht bekannt"
-                value={form.mfkTime}
-                onChange={(e) => set('mfkTime', e.target.value)}
-              />
+            <div className={styles.indented}>
+              <div className={styles.row}>
+                <TextField
+                  label="MFK-Termin am"
+                  type="date"
+                  value={form.mfkDate}
+                  onChange={(e) => set('mfkDate', e.target.value)}
+                  error={errors.mfkDate}
+                />
+                <TextField
+                  label="um"
+                  type="time"
+                  step={900}
+                  hint="leer lassen, wenn noch nicht bekannt"
+                  value={form.mfkTime}
+                  onChange={(e) => set('mfkTime', e.target.value)}
+                />
+              </div>
+              <div className={styles.row}>
+                <Select
+                  label="Dauer inkl. Fahrt"
+                  hint="so lange steht der MFK-Termin im Kalender"
+                  value={form.mfkMinutes}
+                  onChange={(e) => set('mfkMinutes', e.target.value)}
+                >
+                  {mfkDurations.map((minutes) => (
+                    <option key={minutes} value={String(minutes)}>
+                      {formatDuration(minutes)}
+                    </option>
+                  ))}
+                </Select>
+                <Select label="Wer fährt?" value={form.mfkDriverId} onChange={(e) => set('mfkDriverId', e.target.value)}>
+                  <option value="">noch offen</option>
+                  {(employees ?? []).map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.name}
+                    </option>
+                  ))}
+                  {form.mfkDriverId && employees && !employees.some((e) => e.id === form.mfkDriverId) && (
+                    <option value={form.mfkDriverId}>(nicht mehr aktiv)</option>
+                  )}
+                </Select>
+              </div>
+              {mfkWarning && <p className={styles.warning}>{mfkWarning}</p>}
             </div>
           )}
 

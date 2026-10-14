@@ -22,12 +22,14 @@ const task = (id: string, liftId: string, date: string, time: string, name: stri
 })
 
 let today: ReturnType<typeof task>[] = []
+let mfk: unknown[] = []
 const ahead = [task('n', '1', '2099-03-02', '08:00:00', 'Huber Peter')]
 
 vi.mock('../tasks/taskApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../tasks/taskApi')>()),
   useTasksOfDay: () => ({ data: today, error: null }),
   useTasksBetween: () => ({ data: ahead, error: null }),
+  useMfkSlots: () => ({ data: mfk }),
 }))
 vi.mock('../lifts/liftApi', () => ({ useAllLifts: () => ({ data: lifts }) }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [] }) }))
@@ -47,6 +49,16 @@ describe('TodayByLift', () => {
 
     expect(screen.getByRole('region', { name: 'Lift 1' }).textContent).toContain('Beispiel Anna')
     expect(screen.getByRole('region', { name: 'Lift 2' }).textContent).toContain('frei')
+  })
+
+  it('an MFK appointment today stands in "Ohne Lift" – also on a day without tasks', () => {
+    today = []
+    mfk = [{ task: { id: 'm', customer: { displayName: 'Muster Max' }, vehicle: null, mfkDriverId: null }, date: todayIso(), start: '10:00', end: '11:00' }]
+    renderToday()
+
+    expect(screen.getByRole('region', { name: 'Ohne Lift' }).textContent).toContain('MFK10:00–11:00Muster Max')
+    expect(screen.getByRole('region', { name: 'Lift 1' }).textContent).toContain('frei')
+    mfk = []
   })
 
   it('no appointment today: names the next one instead of an empty area', () => {

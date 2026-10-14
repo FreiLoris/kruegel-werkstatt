@@ -8,7 +8,7 @@ import { useConfirm } from '../../../components/ui/confirmContext'
 import { Facts } from '../../../components/ui/Facts'
 import { useToast } from '../../../components/ui/toastContext'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
-import { formatCount, formatDate, formatLocalDateTime, formatTime, formatTimestamp } from '../../../lib/format'
+import { formatCount, formatDate, formatDuration, formatLocalDateTime, formatTime, formatTimestamp } from '../../../lib/format'
 import { CourtesyCarPanel } from '../../bookings/CourtesyCarPanel'
 import { CustomerDialog } from '../../customers/CustomerDialog'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
@@ -221,6 +221,8 @@ function TaskDetail({ task }: { task: AnyTask }) {
               {task.mfk && (
                 <p className={styles.mfk}>
                   MFK in diesem Auftrag: {task.mfkAppointment ? formatLocalDateTime(task.mfkAppointment) : 'Termin noch offen'}
+                  {task.mfkMinutes !== null && ` · ${formatDuration(task.mfkMinutes)} inkl. Fahrt`}
+                  {` · fährt: ${employee(task.mfkDriverId)?.name ?? 'noch offen'}`}
                 </p>
               )}
               <MfkHint vehicle={v} />
