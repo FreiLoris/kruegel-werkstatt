@@ -19,6 +19,6 @@ public interface AbsenceRepository extends JpaRepository<Absence, UUID> {
             SELECT a FROM Absence a
             WHERE a.period.startDate <= :to AND a.period.endDate >= :from
               AND (:employeeId IS NULL OR a.employee.id = :employeeId)
-            ORDER BY a.period.startDate, a.period.startsAfternoon""")
+            ORDER BY a.period.startDate, a.period.startsAfternoon, a.period.startTime""")
     List<Absence> touching(LocalDate from, LocalDate to, UUID employeeId);
 }

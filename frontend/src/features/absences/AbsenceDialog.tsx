@@ -6,7 +6,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { Checkbox, Select, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
-import { formatDate } from '../../lib/format'
+import { formatDate, formatTime } from '../../lib/format'
 import type { Employee } from '../employees/employeeApi'
 import { ABSENCE_CATEGORY, entryNoun, useDeleteAbsence, useSaveAbsence, type Absence, type AbsenceCategory, type AbsenceRequest } from './absenceApi'
 import styles from './AbsenceDialog.module.css'
@@ -20,8 +20,11 @@ interface FormValues {
   note: string
   startDate: string
   startsAfternoon: boolean
+  /** "09:00", empty = whole day (not for vacation, FB-05) */
+  startTime: string
   endDate: string
   endsNoon: boolean
+  endTime: string
 }
 
 /** What a dragged-open period brings along */
@@ -41,15 +44,22 @@ function initialValues(absence: Absence | undefined, fresh: NewAbsence | undefin
     note: absence?.note ?? '',
     startDate: absence?.startDate ?? fresh?.startDate ?? '',
     startsAfternoon: absence?.startsAfternoon ?? false,
+    startTime: absence?.startTime ? formatTime(absence.startTime) : '',
     endDate: absence?.endDate ?? fresh?.endDate ?? '',
     endsNoon: absence?.endsNoon ?? false,
+    endTime: absence?.endTime ? formatTime(absence.endTime) : '',
   }
 }
 
 /** One day cannot be "only afternoon" AND "only morning" – then "only morning" does not count */
 const endsNoonCounts = (values: FormValues) => values.endsNoon && !(values.startDate === values.endDate && values.startsAfternoon)
 
+/**
+ * FB-05: vacation in half days (the statistics count them), everything else with optional times –
+ * what does not belong to the category is not sent.
+ */
 function toRequest(values: FormValues, version?: number): AbsenceRequest {
+  const vacation = values.category === 'VACATION'
   return {
     employeeId: values.employeeId,
     category: values.category,
@@ -57,16 +67,18 @@ function toRequest(values: FormValues, version?: number): AbsenceRequest {
     company: values.category === 'EXTERNAL_WORK' ? values.company.trim() || undefined : undefined,
     note: values.note.trim() || undefined,
     startDate: values.startDate,
-    startsAfternoon: values.startsAfternoon,
+    startsAfternoon: vacation && values.startsAfternoon,
+    startTime: vacation ? null : values.startTime || null,
     endDate: values.endDate,
-    endsNoon: endsNoonCounts(values),
+    endsNoon: vacation && endsNoonCounts(values),
+    endTime: vacation ? null : values.endTime || null,
     version,
   }
 }
 
 /**
- * Enter or change an absence: person, category, period with half days, company for external
- * work. Without edit rights the same dialog only shows it. Mounted fresh on every open (`key`).
+ * Enter or change an absence: person, category, period – vacation with half days, everything else
+ * with optional times (FB-05: a doctor 9:00–10:30) –, company for external work. Without edit rights the same dialog only shows it. Mounted fresh on every open (`key`).
  */
 export function AbsenceDialog({
   absence,
@@ -215,7 +227,18 @@ export function AbsenceDialog({
                 }}
                 error={fieldError('startDate')}
               />
-              <Checkbox label="erst ab Mittag" checked={values.startsAfternoon} onChange={(e) => set('startsAfternoon', e.target.checked)} />
+              {values.category === 'VACATION' ? (
+                <Checkbox label="erst ab Mittag" checked={values.startsAfternoon} onChange={(e) => set('startsAfternoon', e.target.checked)} />
+              ) : (
+                <TextField
+                  label="ab Uhrzeit"
+                  type="time"
+                  hint="Leer = ganzer Tag"
+                  value={values.startTime}
+                  onChange={(e) => set('startTime', e.target.value)}
+                  error={fieldError('startTime')}
+                />
+              )}
             </div>
             <div className={styles.day}>
               <TextField
@@ -227,13 +250,26 @@ export function AbsenceDialog({
                 onChange={(e) => set('endDate', e.target.value)}
                 error={fieldError('endDate')}
               />
-              <Checkbox
-                label="nur bis Mittag"
-                checked={endsNoonCounts(values)}
-                disabled={values.startDate === values.endDate && values.startsAfternoon}
-                onChange={(e) => set('endsNoon', e.target.checked)}
-              />
-              {fieldError('endsNoon') && <p className={styles.error}>{fieldError('endsNoon')}</p>}
+              {values.category === 'VACATION' ? (
+                <>
+                  <Checkbox
+                    label="nur bis Mittag"
+                    checked={endsNoonCounts(values)}
+                    disabled={values.startDate === values.endDate && values.startsAfternoon}
+                    onChange={(e) => set('endsNoon', e.target.checked)}
+                  />
+                  {fieldError('endsNoon') && <p className={styles.error}>{fieldError('endsNoon')}</p>}
+                </>
+              ) : (
+                <TextField
+                  label="bis Uhrzeit"
+                  type="time"
+                  hint="Leer = ganzer Tag"
+                  value={values.endTime}
+                  onChange={(e) => set('endTime', e.target.value)}
+                  error={fieldError('endTime')}
+                />
+              )}
             </div>
           </div>
 

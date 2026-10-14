@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,7 +86,7 @@ class AbsenceStatisticsApiTest {
     void sickAndTrainingInWorkingDaysToo() {
         // Fri 6.6.2025 – Mon 9.6.2025 = Friday only (weekend, Whit Monday)
         save(erich, AbsenceCategory.SICK, null, AbsencePeriod.days(day("2025-06-06"), day("2025-06-09")));
-        save(erich, AbsenceCategory.TRAINING, null, new AbsencePeriod(day("2025-09-01"), false, day("2025-09-01"), true));
+        save(erich, AbsenceCategory.TRAINING, null, AbsencePeriod.times(day("2025-09-01"), null, day("2025-09-01"), LocalTime.NOON));
 
         MvcTestResult response = statistics(2025);
 
@@ -109,7 +110,7 @@ class AbsenceStatisticsApiTest {
     @Test
     void externalWorkPerCompanyWithSpellingVariantsTogether() {
         save(erich, AbsenceCategory.EXTERNAL_WORK, "Garage Muster AG", AbsencePeriod.days(day("2025-02-03"), day("2025-02-04")));
-        save(reto, AbsenceCategory.EXTERNAL_WORK, "garage muster ag", new AbsencePeriod(day("2025-02-10"), false, day("2025-02-10"), true));
+        save(reto, AbsenceCategory.EXTERNAL_WORK, "garage muster ag", AbsencePeriod.times(day("2025-02-10"), null, day("2025-02-10"), LocalTime.NOON));
         save(reto, AbsenceCategory.EXTERNAL_WORK, "Carrosserie Beispiel", AbsencePeriod.days(day("2025-02-11"), day("2025-02-13")));
 
         MvcTestResult response = statistics(2025);

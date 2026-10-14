@@ -1,16 +1,16 @@
 import { ABSENCE_CATEGORY } from './absenceApi'
 import styles from './AbsenceChip.module.css'
-import { partLabel, type AbsenceOnDay } from './absenceDays'
+import { dayLabel, type AbsenceOnDay } from './absenceDays'
 import { CATEGORY_CLASS } from './categoryColors'
 
 /**
- * Who is away on a day, small: "Reto · Ferien", with "Vormittag"/"Nachmittag" for half days and
+ * Who is away on a day, small: "Reto · Ferien", with "Vormittag"/"Nachmittag" or the times (FB-05) and
  * the company for external work. Color AND text – not color alone.
  */
 export function AbsenceChip({ day, name }: { day: AbsenceOnDay; name: string }) {
-  const { absence, part } = day
+  const { absence } = day
   const what = absence.category === 'EXTERNAL_WORK' && absence.company ? `${ABSENCE_CATEGORY.EXTERNAL_WORK} ${absence.company}` : ABSENCE_CATEGORY[absence.category]
-  const half = partLabel(part)
+  const half = dayLabel(day)
   // the chip is cut off in narrow day columns – the tooltip always has everything
   const full = [`${name} · ${what}${half ? ` (${half})` : ''}`, absence.note].filter(Boolean).join('\n')
   return (

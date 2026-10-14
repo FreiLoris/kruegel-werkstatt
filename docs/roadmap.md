@@ -502,6 +502,14 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   number (and our customer number) on the clipboard – also over plain http on the NAS. The stock list
   has a cart button per article (with the main supplier, filled when it is on the list already), the
   supplier card shows its open entries.
+- [x] **13h – Absences with clock times** (FB-05)
+  Done: sick, external work, training and "Anwesend" have optional times ("ab" on the first day,
+  "bis" on the last day, empty = whole day) instead of "ab/bis Mittag" – a doctor 9:00–10:30.
+  Vacation keeps the half days (decided 2026-10-14: the vacation statistics count half days). The
+  half days entered so far for the other kinds became 12:00. No overlap to the minute (database
+  constraint too). The statistics count a time as the halves of the day it touches (9:00–10:30 =
+  half a day, 11:00–14:00 = a whole one). Calendar tooltip, chips and "Heute da" show the times:
+  "Reto (Krank 09:00–10:30)" away, "Reto ausser 09:00–10:30" in; away "bis 10:30" = in "ab 10:30".
 
 Answers of the workshop (2026-10-14):
 
@@ -510,7 +518,7 @@ Answers of the workshop (2026-10-14):
 3. Suppliers (FB-09) get a page of their own in the navigation.
 4. The quantity in the stock list (FB-08) is a number.
 
-Still open: FB-05 with clock times also for "Ferien" (the vacation statistics count half days);
+Decided: FB-05 times for everything except vacation (Loris 2026-10-14). Still open:
 DOT per wheel (feedback) or only the year (UI concept) – assumed: the newer concept; the mockups
 the concept mentions are not in the folder.
 

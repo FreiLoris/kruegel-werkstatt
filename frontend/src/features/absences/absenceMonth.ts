@@ -59,8 +59,11 @@ export function barsOf(absences: Absence[], from: string, days: number): Absence
   const total = days * 2
   const bars: AbsenceBar[] = []
   for (const absence of absences) {
-    const start = dayIndex(from, absence.startDate) * 2 + (absence.startsAfternoon ? 1 : 0)
-    const end = dayIndex(from, absence.endDate) * 2 + (absence.endsNoon ? 1 : 2)
+    // a time counts to the half day it lies in (FB-05): from 14:00 = afternoon, until 10:30 = morning
+    const startsLate = absence.startsAfternoon || (!!absence.startTime && absence.startTime >= '12:00')
+    const endsEarly = absence.endsNoon || (!!absence.endTime && absence.endTime <= '12:00')
+    const start = dayIndex(from, absence.startDate) * 2 + (startsLate ? 1 : 0)
+    const end = dayIndex(from, absence.endDate) * 2 + (endsEarly ? 1 : 2)
     if (end <= 0 || start >= total) continue
     bars.push({
       absence,

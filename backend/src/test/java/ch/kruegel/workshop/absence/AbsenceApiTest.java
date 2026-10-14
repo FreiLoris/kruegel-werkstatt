@@ -88,7 +88,7 @@ class AbsenceApiTest {
     @Test
     void impossiblePeriodsAreFieldErrors() {
         assertFieldError(create(reto, "SICK", null, "2026-10-12", false, "2026-10-11", false), "endDate");
-        assertFieldError(create(reto, "SICK", null, "2026-10-12", true, "2026-10-12", true), "endsNoon");
+        assertFieldError(create(reto, "VACATION", null, "2026-10-12", true, "2026-10-12", true), "endsNoon");
         assertFieldError(send("POST", "/api/absences", "{ \"employeeId\": \"%s\", \"startDate\": \"2026-10-12\", \"endDate\": \"2026-10-12\" }"
                 .formatted(reto.getId())), "category");
     }
@@ -104,8 +104,8 @@ class AbsenceApiTest {
         // the next day, another person, and morning/afternoon of one day are fine
         assertThat(create(reto, "SICK", null, "2026-10-17", false, "2026-10-17", false)).hasStatus(HttpStatus.CREATED);
         assertThat(create(erich, "SICK", null, "2026-10-15", false, "2026-10-15", false)).hasStatus(HttpStatus.CREATED);
-        assertThat(create(reto, "TRAINING", null, "2026-10-19", false, "2026-10-19", true)).hasStatus(HttpStatus.CREATED);
-        assertThat(create(reto, "SICK", null, "2026-10-19", true, "2026-10-19", false)).hasStatus(HttpStatus.CREATED);
+        assertThat(createTimed(reto, "TRAINING", "2026-10-19", null, "2026-10-19", "12:00")).hasStatus(HttpStatus.CREATED);
+        assertThat(createTimed(reto, "SICK", "2026-10-19", "12:00", "2026-10-19", null)).hasStatus(HttpStatus.CREATED);
     }
 
     @Test
@@ -115,8 +115,38 @@ class AbsenceApiTest {
         // as if a second device had not seen the first absence yet
         assertThatThrownBy(() -> jdbc.update("""
                 INSERT INTO absence (id, version, created_at, updated_at, employee_id, category, start_date, starts_afternoon, end_date, ends_noon)
-                VALUES (gen_random_uuid(), 0, now(), now(), ?, 'SICK', '2026-10-16', true, '2026-10-16', false)""", reto.getId()))
+                VALUES (gen_random_uuid(), 0, now(), now(), ?, 'VACATION', '2026-10-16', true, '2026-10-16', false)""", reto.getId()))
                 .hasMessageContaining("absence_no_overlap");
+    }
+
+    @Test
+    void timesForEverythingButVacation() {
+        // FB-05: a doctor 9:00–10:30
+        MvcTestResult doctor = createTimed(reto, "SICK", "2026-10-13", "09:00", "2026-10-13", "10:30");
+
+        assertThat(doctor).hasStatus(HttpStatus.CREATED);
+        assertThat(doctor).bodyJson().extractingPath("$.startTime").isEqualTo("09:00:00");
+        assertThat(doctor).bodyJson().extractingPath("$.endTime").isEqualTo("10:30:00");
+        // in the workshop from 10:30 – to the minute, no overlap
+        assertThat(createTimed(reto, "TRAINING", "2026-10-13", "10:30", "2026-10-13", "15:00")).hasStatus(HttpStatus.CREATED);
+        MvcTestResult overlapping = createTimed(reto, "SICK", "2026-10-13", "14:00", "2026-10-13", "16:00");
+        assertFieldError(overlapping, "startDate");
+        assertThat(overlapping).bodyJson().extractingPath("$.errors[0].message")
+                .isEqualTo("Reto ist am 13.10.2026 (10:30–15:00) bereits als Kurs eingetragen");
+        // vacation keeps half days – times sent along are dropped
+        MvcTestResult vacation = send("POST", "/api/absences", """
+                { "employeeId": "%s", "category": "VACATION", "startDate": "2026-10-20", "startTime": "09:00",
+                  "endDate": "2026-10-20", "endsNoon": true }""".formatted(reto.getId()));
+        assertThat(vacation).bodyJson().extractingPath("$.startTime").isNull();
+        assertThat(vacation).bodyJson().extractingPath("$.endsNoon").isEqualTo(true);
+    }
+
+    @Test
+    void anEndTimeMustBeAfterTheStart() {
+        assertFieldError(createTimed(reto, "SICK", "2026-10-13", "10:30", "2026-10-13", "09:00"), "endTime");
+        assertFieldError(createTimed(reto, "SICK", "2026-10-13", null, "2026-10-14", "00:00"), "endTime");
+        // over several days the end time may be earlier than the start time
+        assertThat(createTimed(reto, "TRAINING", "2026-10-13", "14:00", "2026-10-14", "11:00")).hasStatus(HttpStatus.CREATED);
     }
 
     @Test
@@ -153,6 +183,17 @@ class AbsenceApiTest {
 
     private MvcTestResult create(Employee who, String category, String company, String from, boolean afternoon, String to, boolean noon) {
         return send("POST", "/api/absences", body(who, category, company, from, afternoon, to, noon, null));
+    }
+
+    private MvcTestResult createTimed(Employee who, String category, String from, String fromTime, String to, String toTime) {
+        return send("POST", "/api/absences", """
+                { "employeeId": "%s", "category": "%s", "company": %s, "startDate": "%s", "startTime": %s,
+                  "endDate": "%s", "endTime": %s }""".formatted(who.getId(), category,
+                category.equals("EXTERNAL_WORK") ? "\"Garage Muster\"" : "null", from, quoted(fromTime), to, quoted(toTime)));
+    }
+
+    private static String quoted(String value) {
+        return value == null ? "null" : "\"" + value + "\"";
     }
 
     private static String body(Employee who, String category, String company, String from, boolean afternoon, String to, boolean noon,

@@ -1,7 +1,7 @@
 import { Cake } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { isWeekend, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
-import { formatDate } from '../../lib/format'
+import { formatDate, formatTime } from '../../lib/format'
 import type { Employee } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { ABSENCE_CATEGORY, type Absence } from './absenceApi'
@@ -212,11 +212,11 @@ function labelOf(absence: Absence): string {
 
 /** Everything in words – tooltip and screen reader (the bar itself is often too short) */
 function describe(name: string, absence: Absence): string {
-  const startPart = absence.startsAfternoon ? ' ab Mittag' : ''
-  const endPart = absence.endsNoon ? ' bis Mittag' : ''
+  const startPart = absence.startTime ? ` ab ${formatTime(absence.startTime)}` : absence.startsAfternoon ? ' ab Mittag' : ''
+  const endPart = absence.endTime ? ` bis ${formatTime(absence.endTime)}` : absence.endsNoon ? ' bis Mittag' : ''
   const when =
-    absence.startDate === absence.endDate && !absence.startsAfternoon && !absence.endsNoon
-      ? formatDate(absence.startDate)
-      : `${formatDate(absence.startDate)}${startPart} – ${formatDate(absence.endDate)}${endPart}`
+    absence.startDate !== absence.endDate
+      ? `${formatDate(absence.startDate)}${startPart} – ${formatDate(absence.endDate)}${endPart}`
+      : `${formatDate(absence.startDate)}${startPart}${endPart}`
   return [`${name}: ${labelOf(absence)}, ${when}`, absence.note].filter(Boolean).join(' · ')
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -106,14 +107,28 @@ public class AbsenceService {
         return employee;
     }
 
+    /**
+     * Vacation in half days, everything else with optional times (FB-05) – what does not belong to the
+     * category is dropped, like the company.
+     */
     private static AbsencePeriod period(AbsenceRequest request) {
         if (request.endDate().isBefore(request.startDate())) {
             throw new InvalidInputException("endDate", "darf nicht vor dem ersten Tag liegen");
         }
-        if (request.startDate().equals(request.endDate()) && request.startsAfternoon() && request.endsNoon()) {
-            throw new InvalidInputException("endsNoon", "Ein Tag kann nicht nur Nachmittag und nur Vormittag sein");
+        if (request.category() == AbsenceCategory.VACATION) {
+            if (request.startDate().equals(request.endDate()) && request.startsAfternoon() && request.endsNoon()) {
+                throw new InvalidInputException("endsNoon", "Ein Tag kann nicht nur Nachmittag und nur Vormittag sein");
+            }
+            return new AbsencePeriod(request.startDate(), request.startsAfternoon(), request.endDate(), request.endsNoon());
         }
-        return new AbsencePeriod(request.startDate(), request.startsAfternoon(), request.endDate(), request.endsNoon());
+        if (LocalTime.MIDNIGHT.equals(request.endTime())) {
+            throw new InvalidInputException("endTime", "00:00 ist schon der nächste Tag – leer lassen für den ganzen Tag");
+        }
+        if (request.startDate().equals(request.endDate()) && request.startTime() != null && request.endTime() != null
+                && !request.endTime().isAfter(request.startTime())) {
+            throw new InvalidInputException("endTime", "muss nach der Startzeit liegen");
+        }
+        return AbsencePeriod.times(request.startDate(), request.startTime(), request.endDate(), request.endTime());
     }
 
     /** External work names the company; the others have none (an old value is dropped). */
@@ -136,6 +151,9 @@ public class AbsenceService {
                     String when = p.startDate().equals(p.endDate())
                             ? "am " + DAY.format(p.startDate())
                             : "vom " + DAY.format(p.startDate()) + " bis " + DAY.format(p.endDate());
+                    if (p.startTime() != null || p.endTime() != null) {
+                        when += " (%s–%s)".formatted(p.startTime() == null ? "" : p.startTime(), p.endTime() == null ? "" : p.endTime());
+                    }
                     throw new InvalidInputException("startDate", "%s ist %s bereits als %s eingetragen".formatted(
                             employee.getName(), when, NAMES.get(other.getCategory())));
                 });

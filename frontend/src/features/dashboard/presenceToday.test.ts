@@ -61,6 +61,25 @@ describe('presenceOn', () => {
   })
 
   it('"Anwesend" entered for someone with regular hours changes nothing', () => {
-    expect(presenceOn([reto], [entry('r', 'PRESENT', { endsNoon: true })], DAY, true).present).toEqual([{ employee: reto, part: 'full' }])
+    expect(presenceOn([reto], [entry('r', 'PRESENT', { endsNoon: true })], DAY, true).present).toEqual([{ employee: reto, part: 'full', label: '' }])
+  })
+
+  it('away for some hours (FB-05) = in for the rest of the day, both with the time', () => {
+    const doctor = entry('r', 'SICK', { startTime: '09:00:00', endTime: '10:30:00' })
+    const untilTen = entry('e', 'TRAINING', { endTime: '10:30:00' })
+
+    const { present, away } = presenceOn([reto, erich], [doctor, untilTen], DAY, true)
+
+    expect(away.map((a) => a.reason)).toEqual(['Krank 09:00–10:30', 'Kurs bis 10:30'])
+    expect(present.map((p) => [p.employee.name, p.label])).toEqual([
+      ['Reto', 'ausser 09:00–10:30'],
+      ['Erich', 'ab 10:30'],
+    ])
+  })
+
+  it('flexible hours entered with times show them', () => {
+    const office8to11 = entry('o', 'PRESENT', { startTime: '08:00:00', endTime: '11:30:00' })
+
+    expect(presenceOn([office], [office8to11], DAY, true).present).toEqual([{ employee: office, part: 'morning', label: '08:00–11:30' }])
   })
 })

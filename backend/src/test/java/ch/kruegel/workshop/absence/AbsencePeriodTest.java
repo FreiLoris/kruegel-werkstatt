@@ -3,6 +3,7 @@ package ch.kruegel.workshop.absence;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,29 @@ class AbsencePeriodTest {
         assertThat(morning.overlaps(AbsencePeriod.days(MON, TUE))).isTrue();
         // back to back over the night is fine too
         assertThat(AbsencePeriod.days(MON, MON).overlaps(AbsencePeriod.days(TUE, TUE))).isFalse();
+    }
+
+    @Test
+    void timesToTheMinute() {
+        AbsencePeriod doctor = AbsencePeriod.times(MON, LocalTime.of(9, 0), MON, LocalTime.of(10, 30));
+
+        assertThat(doctor.start()).isEqualTo(MON.atTime(9, 0));
+        assertThat(doctor.end()).isEqualTo(MON.atTime(10, 30));
+        assertThat(doctor.overlaps(AbsencePeriod.times(MON, LocalTime.of(10, 30), MON, null))).isFalse();
+        assertThat(doctor.overlaps(AbsencePeriod.times(MON, null, MON, LocalTime.of(9, 30)))).isTrue();
+        assertThatThrownBy(() -> AbsencePeriod.times(MON, LocalTime.of(10, 0), MON, LocalTime.of(9, 0)))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void aTimeCountsTheHalvesOfTheDayItTouches() {
+        Predicate<LocalDate> everyDay = day -> true;
+
+        assertThat(AbsencePeriod.times(MON, LocalTime.of(9, 0), MON, LocalTime.of(10, 30)).workingHalfDays(MON, MON, everyDay)).isEqualTo(1);
+        assertThat(AbsencePeriod.times(MON, LocalTime.of(13, 0), MON, null).workingHalfDays(MON, MON, everyDay)).isEqualTo(1);
+        assertThat(AbsencePeriod.times(MON, LocalTime.of(11, 0), MON, LocalTime.of(14, 0)).workingHalfDays(MON, MON, everyDay)).isEqualTo(2);
+        // from Monday 14:00 to Tuesday 11:00: one half each
+        assertThat(AbsencePeriod.times(MON, LocalTime.of(14, 0), TUE, LocalTime.of(11, 0)).workingHalfDays(MON, TUE, everyDay)).isEqualTo(2);
     }
 
     @Test
