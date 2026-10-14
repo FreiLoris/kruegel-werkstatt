@@ -440,6 +440,34 @@ Answers of the workshop (2026-10-11) and what follows from them:
 
 ---
 
+## Phase 13 – Second test round of the workshop (10/2026)
+
+Ten tickets FB-01 … FB-10 from the second test round (2026-10-13), plus a UI concept for the
+tyre hotel. The order follows the workshop's suggestion: quick fixes → material (FB-04, FB-08,
+FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its own).
+
+- [ ] **13a – The note counter follows its sub-tasks** (FB-03)
+  Ticking off, editing or deleting a sub-task of a note left the note's counter ("0/1") as it was
+  until the page was reloaded – on this device (only the to-dos were refetched) and on the others
+  (only the topic `todos` was announced). Now both: the to-do hooks refetch the notes too, and a
+  changed sub-task announces `notes` as well.
+- [ ] **13b – Warning when a vehicle already has a task that day** (FB-01)
+  FB-01 is no bug: the "double" appointments in the live app are two tasks each, created a few
+  seconds to minutes apart (same vehicle, other lift). → a warning in the wizard instead.
+
+Answers of the workshop (2026-10-14):
+
+1. `Pneuhotel.xlsx` is the export from SwissGarage for the one-off import (FB-07).
+2. The MFK slot (FB-10) is a hint only – it does not occupy anybody in the planning.
+3. Suppliers (FB-09) get a page of their own in the navigation.
+4. The quantity in the stock list (FB-08) is a number.
+
+Still open: FB-05 with clock times also for "Ferien" (the vacation statistics count half days);
+DOT per wheel (feedback) or only the year (UI concept) – assumed: the newer concept; the mockups
+the concept mentions are not in the folder.
+
+---
+
 ## Deliberately NOT taken over
 
 | Old app | Reason |

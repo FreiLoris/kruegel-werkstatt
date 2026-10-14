@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -22,6 +22,15 @@ export interface TodoFilter {
   noteId?: string
 }
 
+/**
+ * After a change: the to-dos and the notes – a note counts its done sub-tasks ("1/2", FB-03).
+ * Other devices get the same through the live update of both topics.
+ */
+function refresh(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: ['notes'] })
+  return queryClient.invalidateQueries({ queryKey: [TOPIC] })
+}
+
 export function useTodos(filter: TodoFilter) {
   return useQuery({
     queryKey: [TOPIC, filter],
@@ -37,7 +46,7 @@ export function useSaveTodo() {
       id
         ? dataOrThrow(await api.PUT('/api/todos/{id}', { params: { path: { id } }, body: request }))
         : dataOrThrow(await api.POST('/api/todos', { body: request })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+    onSettled: () => refresh(queryClient),
   })
 }
 
@@ -47,7 +56,7 @@ export function useSetTodoDone() {
   return useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) =>
       dataOrThrow(await api.PUT('/api/todos/{id}/done', { params: { path: { id } }, body: { done } })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+    onSettled: () => refresh(queryClient),
   })
 }
 
@@ -58,7 +67,7 @@ export function useDeleteTodo() {
       const { error, response } = await api.DELETE('/api/todos/{id}', { params: { path: { id } } })
       if (!response.ok) dataOrThrow({ error, response })
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+    onSettled: () => refresh(queryClient),
   })
 }
 
@@ -79,6 +88,6 @@ export function useReassignTodo() {
       return { previous }
     },
     onError: (_error, _variables, context) => queryClient.setQueryData(key, context?.previous),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+    onSettled: () => refresh(queryClient),
   })
 }

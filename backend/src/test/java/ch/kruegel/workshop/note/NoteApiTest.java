@@ -2,6 +2,7 @@ package ch.kruegel.workshop.note;
 
 import ch.kruegel.workshop.TestDatabase;
 import ch.kruegel.workshop.TestcontainersConfiguration;
+import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.person.CurrentPerson;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerRepository;
@@ -26,6 +27,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -38,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Note API from the outside. Changes are made as person "Chef". Fictitious data only. */
 @SpringBootTest
 @AutoConfigureMockMvc
+@RecordApplicationEvents
 @Import(TestcontainersConfiguration.class)
 class NoteApiTest {
 
@@ -55,6 +59,9 @@ class NoteApiTest {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private ApplicationEvents events;
 
     private String chef;
     private Employee reto;
@@ -133,6 +140,28 @@ class NoteApiTest {
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Öl bestellen");
         assertThat(mvc.get().uri("/api/todos?noteId=" + note).exchange()).bodyJson().extractingPath("$").asArray().hasSize(1);
         assertThat(mvc.get().uri("/api/notes/" + note).exchange()).bodyJson().extractingPath("$.todoCount").isEqualTo(1);
+    }
+
+    @Test
+    void tickingOffASubTaskChangesTheNoteOnEveryDevice() {
+        String note = idOf(create("{ \"text\": \"Sortimoboden abholen\" }"));
+        String subTask = idOf(send("POST", "/api/notes/" + note + "/todos", "{ \"text\": \"Termin abmachen\", \"assigneeId\": \"%s\" }".formatted(erich.getId())));
+        String plain = idOf(send("POST", "/api/todos", "{ \"text\": \"Altöl entsorgen\" }"));
+
+        events.clear();
+        send("PUT", "/api/todos/" + plain + "/done", "{ \"done\": true }");
+        // a to-do without note: the notes stay as they are
+        assertThat(events.stream(DataChanged.class)).extracting(DataChanged::topic).containsExactly("todos");
+
+        events.clear();
+        send("PUT", "/api/todos/" + subTask + "/done", "{ \"done\": true }");
+        // FB-03: the counter "0/1" of the note was only right after reloading the page
+        assertThat(events.stream(DataChanged.class)).extracting(DataChanged::topic).containsExactly("todos", "notes");
+        assertThat(mvc.get().uri("/api/notes/" + note).exchange()).bodyJson().extractingPath("$.todoDoneCount").isEqualTo(1);
+
+        events.clear();
+        assertThat(mvc.delete().uri("/api/todos/" + subTask).header(CurrentPerson.HEADER, chef).exchange()).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(events.stream(DataChanged.class)).extracting(DataChanged::topic).containsExactly("todos", "notes");
     }
 
     @Test
