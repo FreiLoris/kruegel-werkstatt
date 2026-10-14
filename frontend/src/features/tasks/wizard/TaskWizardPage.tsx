@@ -152,7 +152,13 @@ export function TaskWizardPage() {
       {step === 2 && (
         <>
           <ChosenCustomer value={customerStep} onChange={() => setStep(1)} />
-          <AppointmentStep value={appointment} onChange={changeAppointment} holidays={holidays} showRequired={showRequired}>
+          <AppointmentStep
+            value={appointment}
+            onChange={changeAppointment}
+            holidays={holidays}
+            showRequired={showRequired}
+            vehicleId={customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle.id : undefined}
+          >
             {/* a courtesy car is booked for a period – without an appointment there is none yet */}
             {!appointment.noAppointment && (
               <CourtesyCarSection value={courtesyCar} onChange={setCourtesyCar} appointment={appointment} showRequired={showRequired} />

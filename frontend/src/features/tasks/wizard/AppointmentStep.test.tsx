@@ -17,6 +17,7 @@ vi.mock('../../service-items/serviceItemApi', () => ({
 }))
 // the week overview loads tasks – not what is tested here
 vi.mock('./CapacityOverview', () => ({ CapacityOverview: () => null }))
+vi.mock('./SameVehicleHint', () => ({ SameVehicleHint: () => null }))
 
 const THURSDAY: AppointmentForm = { ...EMPTY_APPOINTMENT, acceptedById: 'r', date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '09:00' }
 

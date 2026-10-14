@@ -132,7 +132,14 @@ function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: ()
         )}
       </section>
 
-      <AppointmentStep value={appointment} onChange={setAppointment} holidays={holidays} showRequired={showRequired} taskId={task.id} />
+      <AppointmentStep
+        value={appointment}
+        onChange={setAppointment}
+        holidays={holidays}
+        showRequired={showRequired}
+        taskId={task.id}
+        vehicleId={vehicle?.id}
+      />
 
       <StickyFooterSpacer />
       <StickyFooter>

@@ -20,6 +20,7 @@ import {
 import styles from './AppointmentStep.module.css'
 import { CapacityOverview } from './CapacityOverview'
 import { PartsDialog } from './PartsDialog'
+import { SameVehicleHint } from './SameVehicleHint'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -30,6 +31,8 @@ interface AppointmentStepProps {
   showRequired: boolean
   /** when editing: the task itself, so the overview does not count it as being in its own way */
   taskId?: string
+  /** the chosen vehicle – for the hint that it already has a task (FB-01); empty = still open */
+  vehicleId?: string
   /** more sections below the form, e.g. the courtesy car in the wizard */
   children?: ReactNode
 }
@@ -40,7 +43,7 @@ interface AppointmentStepProps {
  * day of the appointment at opening time (the evening before for an appointment at opening time),
  * "fertig bis" = the same evening.
  */
-export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, children }: AppointmentStepProps) {
+export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, children }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -96,6 +99,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             checked={form.noAppointment}
             onChange={(e) => set('noAppointment', e.target.checked)}
           />
+          {form.noAppointment && <SameVehicleHint vehicleId={vehicleId} date="" taskId={taskId} />}
           {!form.noAppointment && (
             <>
               <div className={styles.row}>
@@ -138,6 +142,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   error={form.date ? errors.endTime : undefined}
                 />
               </div>
+              <SameVehicleHint vehicleId={vehicleId} date={form.date} taskId={taskId} />
               <Checkbox
                 label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
                 checked={form.timeOpen}
