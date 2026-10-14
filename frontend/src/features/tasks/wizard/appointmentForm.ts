@@ -1,5 +1,5 @@
 import { previousWorkingDay } from '../../../lib/calendar'
-import { addDays, addMinutes, minutesBetween } from '../../../lib/format'
+import { addDays, addMinutes, formatDate, minutesBetween } from '../../../lib/format'
 import type { Schedule } from '../day/timeGrid'
 import type { AnyTask, PartsStatus, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
@@ -38,6 +38,10 @@ export interface AppointmentForm {
   mfk: boolean
   mfkDate: string
   mfkTime: string
+  /** How long the car is away for the MFK, incl. the drive (FB-10) – minutes as text, like a select */
+  mfkMinutes: string
+  /** Who drives it there – '' = still open */
+  mfkDriverId: string
   /** "Service" ticked – only then the service items are offered; unticking clears them ({@link withService}) */
   service: boolean
   serviceItemIds: string[]
@@ -68,6 +72,12 @@ export const READY_BY_TIME = '17:30'
 /** Duration of a new task, like the backend default – short enough that it gets noticed and adjusted */
 export const DEFAULT_DURATION_MINUTES = 60
 
+/** The trip to the inspection: one hour unless said otherwise – like the backend default */
+export const MFK_DEFAULT_MINUTES = 60
+
+/** "Dauer inkl. Fahrt" to choose from */
+export const MFK_DURATIONS = [30, 45, 60, 90, 120, 180, 240]
+
 /** No date on purpose: it must be chosen (or clicked in the overview), never taken over by accident. */
 export const EMPTY_APPOINTMENT: AppointmentForm = {
   noAppointment: false,
@@ -90,6 +100,8 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   mfk: false,
   mfkDate: '',
   mfkTime: '',
+  mfkMinutes: String(MFK_DEFAULT_MINUTES),
+  mfkDriverId: '',
   service: false,
   serviceItemIds: [],
   parts: false,
@@ -216,6 +228,19 @@ export function withMfk(form: AppointmentForm, on: boolean): AppointmentForm {
   return { ...form, mfk: true, mfkDate: form.mfkDate || form.date }
 }
 
+/**
+ * The MFK appointment lies before the end of the workshop appointment (FB-10, nice to have): the car
+ * may not be done by then. Only a hint – preparing the car in the morning and driving it there before
+ * noon may be just what is planned. Empty = nothing to say.
+ */
+export function mfkBeforeEnd(form: AppointmentForm): string | null {
+  if (!form.mfk || form.noAppointment || !form.mfkDate || !form.mfkTime || !form.endDate || !form.endTime) return null
+  const end = `${form.endDate}T${form.endTime}`
+  if (`${form.mfkDate}T${form.mfkTime}` >= end) return null
+  const until = form.endDate === form.mfkDate ? form.endTime : `${formatDate(form.endDate)} ${form.endTime}`
+  return `Der MFK-Termin ist vor dem Ende des Werkstatttermins (${until}) – ist das Fahrzeug bis dann bereit?`
+}
+
 export type AppointmentErrors = Partial<Record<keyof AppointmentForm, string>>
 
 /**
@@ -282,6 +307,8 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     tireChangeKind: form.tireChange && form.tireChangeKind ? form.tireChangeKind : undefined,
     mfk: form.mfk,
     mfkAppointment: form.mfk && form.mfkDate && form.mfkTime ? `${form.mfkDate}T${form.mfkTime}` : undefined,
+    mfkMinutes: form.mfk ? Number(form.mfkMinutes) || MFK_DEFAULT_MINUTES : undefined,
+    mfkDriverId: form.mfk ? form.mfkDriverId || undefined : undefined,
     serviceItemIds: form.serviceItemIds,
     parts: form.parts
       ? {
@@ -336,6 +363,8 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     mfk: task.mfk,
     mfkDate,
     mfkTime,
+    mfkMinutes: String(task.mfkMinutes ?? MFK_DEFAULT_MINUTES),
+    mfkDriverId: task.mfkDriverId ?? '',
     service: task.serviceItemIds.length > 0,
     serviceItemIds: task.serviceItemIds,
     parts: task.parts !== null,

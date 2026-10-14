@@ -526,6 +526,20 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   (may follow later). The task keeps `insurance_id` and `claim_number` (V29) – like the "Annehmer"
   outside `TaskDetails`. The sheet prints a block with the insurance, its phone and the claim number
   (a line to write on while it is open); the task detail shows it with phone and e-mail.
+- [x] **13k – The MFK appointment in the calendars** (FB-10, part 1)
+  Done: with "MFK" ticked the task also asks "Dauer inkl. Fahrt" (default 1 hour) and "Wer fährt?"
+  (optional, anyone active) – `mfk_minutes`, `mfk_driver_id` (V30), outside `TaskWork` like the
+  insurance. `GET /api/tasks/mfk?from&to` delivers the tasks by their MFK appointment – also an order
+  taken out of the plan: the inspection is still booked. The day view shows it as a dashed block in
+  "Ohne Lift" at its time (side by side with the tasks there, never draggable – it moves in the task),
+  the calendar week and the dashboard (today in "Ohne Lift", the week as a line) on top of the day.
+  A click opens the task. Only a hint: it takes nobody's time and no lift. The form says when the MFK
+  is before the end of the workshop appointment (a hint, saving stays possible). No extra tick
+  "Termin noch offen": an empty time already means that.
+- [ ] **13l – Inspection stations** (FB-10, part 2)
+  Stations in the settings (name, address, phone), the dropdown on the task presets Winterthur-
+  Wülflingen; the station on the MFK entry and an MFK block on the task sheet (date, time, station,
+  driver).
 
 Answers of the workshop (2026-10-14):
 

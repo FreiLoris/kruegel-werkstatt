@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryKey 
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
+import { mfkSlotsOf } from './mfk/mfkSlots'
 
 /** A task as the API delivers it – it may have no appointment yet (12d-3: list "Ohne Termin") */
 export type AnyTask = components['schemas']['TaskDto']
@@ -59,6 +60,18 @@ export function useTasksBetween(from: string, to: string) {
     queryKey: tasksBetweenKey(from, to),
     // by the day of their start – only planned tasks have one
     queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks', { params: { query: { from, to } }, signal })) as Task[],
+  })
+}
+
+/**
+ * The MFK appointments of a period (both inclusive) as slots – the hints in the calendars (FB-10).
+ * Also of orders without workshop appointment: the inspection is still booked.
+ */
+export function useMfkSlots(from: string, to: string) {
+  return useQuery({
+    queryKey: [TOPIC, 'mfk', from, to],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/mfk', { params: { query: { from, to } }, signal })),
+    select: mfkSlotsOf,
   })
 }
 

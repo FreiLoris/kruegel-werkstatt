@@ -91,6 +91,24 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskDto> between(LocalDate from, LocalDate to) {
+        checkPeriod(from, to);
+        return repository.findByAppointmentDateBetween(from, to, CALENDAR_ORDER).stream().map(TaskDto::of).toList();
+    }
+
+    /** Tasks with their MFK appointment in the period (both days inclusive) – the hints in the calendars (FB-10). */
+    @Transactional(readOnly = true)
+    public List<TaskDto> withMfkBetween(LocalDate from, LocalDate to) {
+        checkPeriod(from, to);
+        return repository.withMfkBetween(from.atStartOfDay(), to.plusDays(1).atStartOfDay()).stream().map(TaskDto::of).toList();
+    }
+
+    /** The day view: tasks starting that day plus those of earlier days still on their lift. */
+    @Transactional(readOnly = true)
+    public List<TaskDto> onDay(LocalDate day) {
+        return repository.occupying(day, day.atStartOfDay()).stream().map(TaskDto::of).toList();
+    }
+
+    private static void checkPeriod(LocalDate from, LocalDate to) {
         // User-facing messages, hence German
         if (to.isBefore(from)) {
             throw new InvalidInputException("to", "darf nicht vor dem Startdatum liegen");
@@ -98,13 +116,6 @@ public class TaskService {
         if (to.isAfter(from.plusDays(MAX_DAYS - 1))) {
             throw new InvalidInputException("to", "Zeitraum darf höchstens " + MAX_DAYS + " Tage umfassen");
         }
-        return repository.findByAppointmentDateBetween(from, to, CALENDAR_ORDER).stream().map(TaskDto::of).toList();
-    }
-
-    /** The day view: tasks starting that day plus those of earlier days still on their lift. */
-    @Transactional(readOnly = true)
-    public List<TaskDto> onDay(LocalDate day) {
-        return repository.occupying(day, day.atStartOfDay()).stream().map(TaskDto::of).toList();
     }
 
     /** The last 10 tasks of a customer, newest first. */
@@ -136,10 +147,12 @@ public class TaskService {
         TaskDetails details = details(request, null);
         Employee acceptedBy = acceptedBy(request, null);
         Insurance insurance = insurance(request, null);
+        Employee mfkDriver = mfkDriver(request, null);
         checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details);
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
+        task.mfkTrip(request.mfkMinutes(), mfkDriver);
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
         return saved(repository.save(task));
@@ -154,11 +167,13 @@ public class TaskService {
         TaskDetails details = details(request, task);
         Employee acceptedBy = acceptedBy(request, task.getAcceptedBy());
         Insurance insurance = insurance(request, task.getInsurance());
+        Employee mfkDriver = mfkDriver(request, task.getMfkDriver());
         checkLiftFree(details.lift(), details.appointment(), id);
 
         task.update(details);
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
+        task.mfkTrip(request.mfkMinutes(), mfkDriver);
         return saved(task);
     }
 
@@ -308,6 +323,11 @@ public class TaskService {
                 "wird nicht mehr verwendet");
     }
 
+    /** Who drives the car to the inspection – anyone active, like the "Annehmer"; only with MFK. */
+    private Employee mfkDriver(TaskRequest request, Employee current) {
+        return reference(employees, request.mfkDriverId(), current, "mfkDriverId", "Mitarbeiter", Employee::isActive, "ist nicht mehr aktiv");
+    }
+
     private static Appointment appointment(TaskRequest request) {
         if (request.date() == null) {
             // no appointment yet – then nothing may hang on one
@@ -342,6 +362,12 @@ public class TaskService {
         }
         if (!request.mfk() && request.mfkAppointment() != null) {
             throw new InvalidInputException("mfkAppointment", "nur mit MFK");
+        }
+        if (!request.mfk() && request.mfkMinutes() != null) {
+            throw new InvalidInputException("mfkMinutes", "nur mit MFK");
+        }
+        if (!request.mfk() && request.mfkDriverId() != null) {
+            throw new InvalidInputException("mfkDriverId", "nur mit MFK");
         }
         return new TaskWork(request.tireChange(), request.tireChangeKind(), request.mfk(), request.mfkAppointment(),
                 serviceItems(request.serviceItemIds(), current),

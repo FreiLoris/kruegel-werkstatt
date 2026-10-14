@@ -6,6 +6,7 @@ import {
   customerStepFromTask,
   EMPTY_APPOINTMENT,
   formFromTask,
+  mfkBeforeEnd,
   newTaskUrl,
   slotFromUrl,
   toTaskRequest,
@@ -190,6 +191,8 @@ describe('toTaskRequest', () => {
       mfk: true,
       // MFK date without time: the appointment at the station is not known yet
       mfkAppointment: undefined,
+      mfkMinutes: 60,
+      mfkDriverId: undefined,
       serviceItemIds: [],
       parts: undefined,
       workDescription: undefined,
@@ -203,6 +206,16 @@ describe('toTaskRequest', () => {
     expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, THURSDAY).vehicleId).toBeUndefined()
   })
 
+  it('the MFK trip (FB-10): duration and driver – without MFK nothing of it is sent', () => {
+    const trip: AppointmentForm = { ...THURSDAY, mfk: true, mfkDate: '2026-10-16', mfkTime: '10:00', mfkMinutes: '90', mfkDriverId: 'e1' }
+
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, trip)).toMatchObject({ mfkMinutes: 90, mfkDriverId: 'e1' })
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, { ...trip, mfk: false })).toMatchObject({
+      mfkMinutes: undefined,
+      mfkDriverId: undefined,
+    })
+  })
+
   it('insurance case (FB-06): insurance and claim number – unticked, nothing of it is sent', () => {
     const insured: AppointmentForm = { ...THURSDAY, insuranceCase: true, insuranceId: 'i1', claimNumber: ' S-42 ' }
 
@@ -214,6 +227,24 @@ describe('toTaskRequest', () => {
     // the claim number may follow later, the insurance not
     expect(appointmentErrors({ ...insured, claimNumber: '' })).toEqual({})
     expect(appointmentErrors({ ...insured, insuranceId: '' }).insuranceId).toBeDefined()
+  })
+})
+
+describe('mfkBeforeEnd', () => {
+  const planned: AppointmentForm = { ...THURSDAY, mfk: true, mfkDate: '2026-10-15', mfkTime: '10:00', endDate: '2026-10-15', endTime: '11:00' }
+
+  it('says so when the MFK is before the end of the workshop appointment', () => {
+    expect(mfkBeforeEnd(planned)).toContain('(11:00)')
+    // ends on another day: with the date
+    expect(mfkBeforeEnd({ ...planned, mfkDate: '2026-10-16', endDate: '2026-10-16' })).toContain('(11:00)')
+    expect(mfkBeforeEnd({ ...planned, endDate: '2026-10-16' })).toContain('(16.10.2026 11:00)')
+  })
+
+  it('nothing when it is after, open or there is no appointment', () => {
+    expect(mfkBeforeEnd({ ...planned, mfkTime: '11:00' })).toBeNull()
+    expect(mfkBeforeEnd({ ...planned, mfkTime: '' })).toBeNull()
+    expect(mfkBeforeEnd({ ...planned, noAppointment: true })).toBeNull()
+    expect(mfkBeforeEnd({ ...planned, mfk: false })).toBeNull()
   })
 })
 
@@ -261,6 +292,11 @@ describe('formFromTask', () => {
       notes: undefined,
       version: 3,
     })
+  })
+
+  it('the MFK trip comes back – an old task without a duration gets the hour', () => {
+    expect(formFromTask(task)).toMatchObject({ mfkMinutes: '60', mfkDriverId: '' })
+    expect(formFromTask({ ...task, mfkMinutes: 120, mfkDriverId: 'e1' } as Task)).toMatchObject({ mfkMinutes: '120', mfkDriverId: 'e1' })
   })
 
   it('an insurance case comes back ticked, with its claim number', () => {

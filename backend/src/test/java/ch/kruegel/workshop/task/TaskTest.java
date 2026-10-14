@@ -117,6 +117,22 @@ class TaskTest {
     }
 
     @Test
+    void theMfkTripGoesWithTheMfk() {
+        TaskWork mfk = new TaskWork(false, null, true, DAY.atTime(10, 0), Set.of(), null, null);
+        Task task = new Task(details(mfk));
+        // one hour until said otherwise – also for sample data that never says it
+        assertThat(task.getMfkMinutes()).isEqualTo(60);
+
+        task.mfkTrip(90, null);
+        assertThat(task.getMfkMinutes()).isEqualTo(90);
+        assertThatThrownBy(() -> task.mfkTrip(10, null)).isInstanceOf(IllegalArgumentException.class);
+
+        task.update(details(TaskWork.described(null)));
+        assertThat(task.getMfkMinutes()).isNull();
+        assertThatThrownBy(() -> task.mfkTrip(60, null)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void partsNeedADescription() {
         assertThatThrownBy(() -> PartsOrder.toOrder("  ")).isInstanceOf(IllegalArgumentException.class);
         assertThat(new PartsOrder(" Bremsscheiben ", PartsStatus.ORDERED, " ", null))

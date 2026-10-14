@@ -162,6 +162,11 @@
   overflow: hidden;
 }
 
+/* An MFK appointment in "Ohne Lift" (FB-10): placed like a block, but only a link to its task */
+.mfk {
+  position: absolute;
+}
+
 /* Where a dragged block / a new task would land */
 .ghost {
   position: absolute;

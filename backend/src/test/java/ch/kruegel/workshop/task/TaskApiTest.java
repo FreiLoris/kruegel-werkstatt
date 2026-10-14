@@ -378,6 +378,49 @@ class TaskApiTest {
     }
 
     @Test
+    void theMfkTripHasADurationAndMaybeADriverAndOnlyWithMfk() {
+        MvcTestResult plain = create("\"mfk\": true, \"mfkAppointment\": \"2026-10-16T10:00\"");
+        // one hour unless said otherwise, the driver may be open
+        assertThat(plain).bodyJson().extractingPath("$.mfkMinutes").isEqualTo(60);
+        assertThat(plain).bodyJson().extractingPath("$.mfkDriverId").isNull();
+
+        String id = idOf(plain);
+        MvcTestResult updated = send("PUT", "/api/tasks/" + id, body("""
+                "mfk": true, "mfkAppointment": "2026-10-16T10:00", "mfkMinutes": 90, "mfkDriverId": "%s", "version": 0"""
+                .formatted(reto.getId())));
+        assertThat(updated).bodyJson().extractingPath("$.mfkMinutes").isEqualTo(90);
+        assertThat(updated).bodyJson().extractingPath("$.mfkDriverId").isEqualTo(reto.getId().toString());
+
+        assertFieldError(create("\"mfkMinutes\": 60"), "mfkMinutes");
+        assertFieldError(create("\"mfkDriverId\": \"%s\"".formatted(reto.getId())), "mfkDriverId");
+        assertFieldError(create("\"mfk\": true, \"mfkMinutes\": 5"), "mfkMinutes");
+        // no MFK any more: the trip goes with it
+        MvcTestResult without = send("PUT", "/api/tasks/" + id, body("\"version\": 1"));
+        assertThat(without).bodyJson().extractingPath("$.mfkMinutes").isNull();
+        assertThat(without).bodyJson().extractingPath("$.mfkDriverId").isNull();
+    }
+
+    @Test
+    void theMfkAppointmentsOfAPeriodAlsoOfAnOrderWithoutAppointment() {
+        createAt("08:00", "\"mfk\": true, \"mfkAppointment\": \"2026-10-16T10:00\"");
+        String unplanned = idOf(send("POST", "/api/tasks", """
+                { "customerId": "%s", "acceptedById": "%s", "mfk": true, "mfkAppointment": "2026-10-15T14:00" }"""
+                .formatted(huber.getId(), reto.getId())));
+        createAt("09:00", "\"mfk\": true, \"mfkAppointment\": \"2026-10-17T00:00\"");
+        // MFK still open, and no MFK at all
+        createAt("10:00", "\"mfk\": true");
+        createAt("11:00", null);
+
+        MvcTestResult response = mvc.get().uri("/api/tasks/mfk?from=2026-10-15&to=2026-10-16").exchange();
+
+        // by the MFK appointment, both days whole – the next midnight is the next day
+        assertThat(response).bodyJson().extractingPath("$[*].mfkAppointment").asArray()
+                .containsExactly("2026-10-15T14:00:00", "2026-10-16T10:00:00");
+        assertThat(response).bodyJson().extractingPath("$[0].id").isEqualTo(unplanned);
+        assertFieldError(mvc.get().uri("/api/tasks/mfk?from=2026-10-15&to=2026-10-14").exchange(), "to");
+    }
+
+    @Test
     void historyShowsTheLastTasksOfACustomerNewestFirst() {
         Customer meier = customers.save(CustomerTestData.local("Meier"));
         send("POST", "/api/tasks", body(null).replace(DAY, "2026-09-01"));

@@ -3,10 +3,11 @@ import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { useAllLifts } from '../lifts/liftApi'
-import { useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
+import { MfkEntry } from '../tasks/mfk/MfkEntry'
+import { useMfkSlots, useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
 import { TaskRow } from './TaskRow'
 import styles from './TodayByLift.module.css'
-import { liftColumns, nextAppointment } from './todayColumns'
+import { liftColumns, nextAppointment, NO_LIFT } from './todayColumns'
 import { startLabel } from '../tasks/taskTime'
 
 /** How far ahead "nächster Termin" looks when today is empty */
@@ -20,6 +21,7 @@ const LOOK_AHEAD_DAYS = 60
 export function TodayByLift() {
   const today = useToday()
   const tasks = useTasksOfDay(today)
+  const { data: mfkSlots = [] } = useMfkSlots(today, today)
   const ahead = useTasksBetween(addDays(today, 1), addDays(today, LOOK_AHEAD_DAYS))
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
@@ -29,7 +31,7 @@ export function TodayByLift() {
 
   const mechanicOf = (id: string | null) => employees?.find((e) => e.id === id)
 
-  if (tasks.data.length === 0) {
+  if (tasks.data.length === 0 && mfkSlots.length === 0) {
     const next = ahead.data ? nextAppointment(ahead.data, today) : undefined
     return (
       <div className={styles.empty}>
@@ -45,17 +47,24 @@ export function TodayByLift() {
     )
   }
 
-  const columns = liftColumns(tasks.data, lifts)
+  // the MFK appointments stand in "Ohne Lift" – they take no lift (FB-10)
+  const columns = liftColumns(tasks.data, lifts, mfkSlots.length > 0)
   return (
     // columns shrink rather than scroll – nobody scrolls on the TV
     <div className={styles.lifts} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
       {columns.map((column) => (
         <section key={column.id} className={styles.lift} aria-label={column.name}>
           <h3 className={styles.name}>{column.name}</h3>
-          {column.tasks.length === 0 ? (
+          {column.tasks.length === 0 && column.id !== NO_LIFT ? (
             <p className={styles.free}>frei</p>
           ) : (
             <ul className={styles.tasks}>
+              {column.id === NO_LIFT &&
+                mfkSlots.map((slot) => (
+                  <li key={`mfk-${slot.task.id}`}>
+                    <MfkEntry slot={slot} driver={mechanicOf(slot.task.mfkDriverId)} />
+                  </li>
+                ))}
               {column.tasks.map((task) => (
                 <li key={task.id}>
                   <TaskRow task={task} mechanic={mechanicOf(task.mechanicId)} />

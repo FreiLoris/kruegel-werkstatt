@@ -8,7 +8,7 @@ import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
-import { tasksOfDayKey, useTasksBetween, useTasksOfDay } from '../taskApi'
+import { tasksOfDayKey, useMfkSlots, useTasksBetween, useTasksOfDay } from '../taskApi'
 import { newTaskUrl } from '../wizard/appointmentForm'
 import { DayGrid } from './DayGrid'
 import { DayInfo } from './DayInfo'
@@ -24,6 +24,7 @@ const SCALE = 1.5
  */
 export function DayView({ date, onGo }: { date: string; onGo: (date: string) => void }) {
   const tasks = useTasksOfDay(date)
+  const { data: mfkSlots } = useMfkSlots(date, date)
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: serviceItems } = useAllServiceItems()
@@ -39,7 +40,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   return (
     <>
       <DayInfo date={date} />
-      {tasks.data.length === 0 && <NextAppointment after={date} onGo={onGo} />}
+      {tasks.data.length === 0 && !mfkSlots?.length && <NextAppointment after={date} onGo={onGo} />}
       <DayGrid
         date={date}
         tasks={tasks.data}
@@ -52,6 +53,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
         employees={employees}
         serviceItemNames={serviceItemNames}
         courtesyCars={courtesyCars}
+        mfkSlots={mfkSlots}
       />
       {canEdit && <p className={styles.hint}>Im leeren Raster ziehen (oder tippen) legt dort einen neuen Auftrag an.</p>}
     </>

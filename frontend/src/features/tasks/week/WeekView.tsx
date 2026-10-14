@@ -28,7 +28,9 @@ import { useAbsences } from '../../absences/absenceApi'
 import { AbsenceChip } from '../../absences/AbsenceChip'
 import { absencesOn, type AbsenceOnDay } from '../../absences/absenceDays'
 import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
-import { tasksBetweenKey, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
+import { MfkEntry } from '../mfk/MfkEntry'
+import { mfkSlotsOn } from '../mfk/mfkSlots'
+import { tasksBetweenKey, useMfkSlots, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
 import { WeekCard } from './WeekCard'
 import { weekDays } from './weekDays'
 import styles from './WeekView.module.css'
@@ -51,6 +53,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const sunday = addDays(monday, 6)
   const viewKey = tasksBetweenKey(monday, sunday)
   const tasks = useTasksBetween(monday, sunday)
+  const { data: mfkSlots } = useMfkSlots(monday, sunday)
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: holidays } = usePublicHolidays(monday, sunday)
@@ -71,7 +74,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   )
 
   const shown = dropped && dropped.basedOn === tasks.data ? dropped.tasks : tasks.data
-  const days = useMemo(() => weekDays(monday, shown ?? []), [monday, shown])
+  // a day with only an MFK appointment is shown too (a Saturday inspection is rare, but possible)
+  const days = useMemo(() => weekDays(monday, shown ?? [], mfkSlots?.map((s) => s.date)), [monday, shown, mfkSlots])
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
   const today = useToday()
 
@@ -134,6 +138,10 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
             today={day.date === today}
             onOpen={() => onOpenDay(day.date)}
           >
+            {/* the MFK appointments first: hints, they cannot be dragged – they move in the task */}
+            {mfkSlotsOn(mfkSlots ?? [], day.date).map((slot) => (
+              <MfkEntry key={`mfk-${slot.task.id}`} slot={slot} driver={employees.find((e) => e.id === slot.task.mfkDriverId)} />
+            ))}
             {day.tasks.map((task) => (
               <DraggableCard
                 key={task.id}

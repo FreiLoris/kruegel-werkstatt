@@ -2,6 +2,8 @@ package ch.kruegel.workshop.task;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -38,6 +40,9 @@ public record TaskRequest(
         TireChangeKind tireChangeKind,
         @Schema(description = "Missing = false") Boolean mfk,
         @Schema(example = "2026-10-15T10:00") LocalDateTime mfkAppointment,
+        @Min(Task.MFK_MINUTES_MIN) @Max(Task.MFK_MINUTES_MAX)
+        @Schema(description = "MFK: how long the car is away incl. the drive; empty = 1 hour") Integer mfkMinutes,
+        @Schema(description = "MFK: who drives the car there; may be open") UUID mfkDriverId,
         List<UUID> serviceItemIds,
         @Valid @Schema(description = "Empty = no parts needed") Parts parts,
         @Size(max = TaskWork.DESCRIPTION_MAX) String workDescription,

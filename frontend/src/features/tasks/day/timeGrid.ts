@@ -1,4 +1,5 @@
 import { addMinutes, minutesBetween } from '../../../lib/format'
+import type { MfkSlot } from '../mfk/mfkSlots'
 import type { Task } from '../taskApi'
 
 /**
@@ -49,14 +50,28 @@ export function spanOn(task: Task, date: string): Span {
   }
 }
 
-/** Shown hours: the working day, widened to full hours for tasks starting earlier or ending later that day. */
-export function visibleRange(tasks: Task[], date: string): { start: number; end: number } {
+/** From/to of an MFK appointment that day in minutes – at least a quarter hour, so it can be seen */
+function mfkSpan(slot: MfkSlot): { start: number; end: number } {
+  const start = minutesOf(slot.start)
+  return { start, end: Math.max(minutesOf(slot.end), start + SNAP_MINUTES) }
+}
+
+/**
+ * Shown hours: the working day, widened to full hours for tasks starting earlier or ending later
+ * that day – and for MFK appointments (FB-10).
+ */
+export function visibleRange(tasks: Task[], date: string, mfk: MfkSlot[] = []): { start: number; end: number } {
   let start = WORKDAY_START
   let end = WORKDAY_END
   for (const task of tasks) {
     const span = spanOn(task, date)
     if (!span.startsBefore) start = Math.min(start, Math.floor(span.start / 60) * 60)
     if (!span.endsAfter) end = Math.max(end, Math.ceil(span.end / 60) * 60)
+  }
+  for (const slot of mfk) {
+    const span = mfkSpan(slot)
+    start = Math.min(start, Math.floor(span.start / 60) * 60)
+    end = Math.min(Math.max(end, Math.ceil(span.end / 60) * 60), DAY)
   }
   return { start, end }
 }
@@ -68,16 +83,25 @@ export interface Placed extends Span {
   lanes: number
 }
 
+/** An MFK appointment placed in "Ohne Lift" (FB-10) – beside the tasks, never under them */
+export interface PlacedMfk {
+  slot: MfkSlot
+  start: number
+  end: number
+  lane: number
+  lanes: number
+}
+
+type Laned<T> = T & { lane: number; lanes: number }
+
 /**
- * Lanes like in a calendar: overlapping tasks form a group; each task takes the first free lane,
+ * Lanes like in a calendar: overlapping entries form a group; each takes the first free lane,
  * all of a group share the width.
  */
-export function placeInColumn(tasks: Task[], date: string): Placed[] {
-  const spans = tasks
-    .map((task) => ({ task, ...spanOn(task, date) }))
-    .sort((a, b) => a.start - b.start || b.end - a.end)
-  const placed: Placed[] = []
-  let group: Placed[] = []
+function inLanes<T extends { start: number; end: number }>(entries: T[]): Laned<T>[] {
+  const spans = [...entries].sort((a, b) => a.start - b.start || b.end - a.end)
+  const placed: Laned<T>[] = []
+  let group: Laned<T>[] = []
   let groupEnd = -1
   const closeGroup = () => {
     const lanes = Math.max(0, ...group.map((p) => p.lane)) + 1
@@ -90,13 +114,30 @@ export function placeInColumn(tasks: Task[], date: string): Placed[] {
     for (const p of group) laneEnds.set(p.lane, Math.max(laneEnds.get(p.lane) ?? 0, p.end))
     let lane = 0
     while ((laneEnds.get(lane) ?? -1) > span.start) lane++
-    const p: Placed = { ...span, lane, lanes: 1 }
+    const p = { ...span, lane, lanes: 1 } as Laned<T>
     group.push(p)
     placed.push(p)
     groupEnd = Math.max(groupEnd, span.end)
   }
   closeGroup()
   return placed
+}
+
+/** The tasks of a column in lanes ({@link inLanes}). */
+export function placeInColumn(tasks: Task[], date: string): Placed[] {
+  return inLanes(tasks.map((task) => ({ task, ...spanOn(task, date) })))
+}
+
+/** "Ohne Lift" with the MFK appointments of the day: they share the lanes with the tasks there. */
+export function placeWithMfk(tasks: Task[], slots: MfkSlot[], date: string): { tasks: Placed[]; mfk: PlacedMfk[] } {
+  const placed = inLanes<({ task: Task } & Span) | ({ slot: MfkSlot } & { start: number; end: number })>([
+    ...tasks.map((task) => ({ task, ...spanOn(task, date) })),
+    ...slots.map((slot) => ({ slot, ...mfkSpan(slot) })),
+  ])
+  return {
+    tasks: placed.filter((p): p is Laned<{ task: Task } & Span> => 'task' in p),
+    mfk: placed.filter((p): p is Laned<{ slot: MfkSlot; start: number; end: number }> => 'slot' in p),
+  }
 }
 
 /** What the server gets for a new place of a task: `PUT /api/tasks/{id}/schedule` */

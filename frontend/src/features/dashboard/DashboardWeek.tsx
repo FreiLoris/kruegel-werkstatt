@@ -7,7 +7,9 @@ import { AbsenceChip } from '../absences/AbsenceChip'
 import { absencesOn } from '../absences/absenceDays'
 import { useAllEmployees } from '../employees/employeeApi'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
-import { useTasksBetween } from '../tasks/taskApi'
+import { MfkEntry } from '../tasks/mfk/MfkEntry'
+import { mfkSlotsOn } from '../tasks/mfk/mfkSlots'
+import { useMfkSlots, useTasksBetween } from '../tasks/taskApi'
 import { weekDays } from '../tasks/week/weekDays'
 import styles from './DashboardWeek.module.css'
 import { TaskRow } from './TaskRow'
@@ -23,6 +25,7 @@ const MAX_ROWS = 6
 export function DashboardWeek({ monday }: { monday: string }) {
   const sunday = addDays(monday, 6)
   const tasks = useTasksBetween(monday, sunday)
+  const { data: mfkSlots } = useMfkSlots(monday, sunday)
   const absences = useAbsences(monday, sunday)
   const { data: holidays } = usePublicHolidays(monday, sunday)
   const { data: employees } = useAllEmployees()
@@ -31,7 +34,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
   if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
   if (!tasks.data) return <p className="muted">Lade Woche …</p>
 
-  const days = weekDays(monday, tasks.data)
+  const days = weekDays(monday, tasks.data, mfkSlots?.map((s) => s.date))
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
   const employeeOf = (id: string | null | undefined) => employees?.find((e) => e.id === id)
 
@@ -40,6 +43,9 @@ export function DashboardWeek({ monday }: { monday: string }) {
       {days.map((day) => {
         const holiday = holidayOf.get(day.date)
         const away = absencesOn(absences.data ?? [], day.date)
+        const mfk = mfkSlotsOn(mfkSlots ?? [], day.date)
+        // the MFK appointments take rows of the TV too – at least one appointment stays visible
+        const rows = Math.max(MAX_ROWS - mfk.length, 1)
         return (
           <section
             key={day.date}
@@ -59,15 +65,20 @@ export function DashboardWeek({ monday }: { monday: string }) {
               </div>
             )}
             <ul className={styles.tasks}>
-              {day.tasks.slice(0, MAX_ROWS).map((task) => (
+              {mfk.map((slot) => (
+                <li key={`mfk-${slot.task.id}`}>
+                  <MfkEntry slot={slot} driver={employeeOf(slot.task.mfkDriverId)} oneLine />
+                </li>
+              ))}
+              {day.tasks.slice(0, rows).map((task) => (
                 <li key={task.id}>
                   <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} oneLine />
                 </li>
               ))}
-              {day.tasks.length > MAX_ROWS && (
+              {day.tasks.length > rows && (
                 <li>
                   <Link to={`/tasks?date=${day.date}`} className={styles.more}>
-                    + {day.tasks.length - MAX_ROWS} weitere
+                    + {day.tasks.length - rows} weitere
                   </Link>
                 </li>
               )}

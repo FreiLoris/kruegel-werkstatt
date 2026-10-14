@@ -36,6 +36,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> withPartsToOrder();
 
     /**
+     * Tasks with their MFK appointment in [from, until) – the hints in the calendars (FB-10). Also
+     * an order taken out of the plan: the appointment at the inspection station is still booked.
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.mfkAppointment >= :from AND t.mfkAppointment < :until
+            ORDER BY t.mfkAppointment""")
+    List<Task> withMfkBetween(LocalDateTime from, LocalDateTime until);
+
+    /**
      * Tasks that take time on {@code day}: started that day or earlier and not yet ended at its start.
      *
      * @param dayStart {@code day} at 00:00

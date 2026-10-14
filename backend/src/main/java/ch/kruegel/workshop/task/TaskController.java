@@ -45,6 +45,15 @@ class TaskController {
         return service.between(from, to);
     }
 
+    @Operation(summary = "Tasks with their MFK appointment in a period",
+            description = "Both days inclusive, by the MFK appointment (FB-10) – the hints \"MFK\" in the calendars. "
+                    + "Also orders without workshop appointment: the inspection is still booked. At most 92 days.")
+    @GetMapping("/mfk")
+    List<TaskDto> withMfkBetween(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return service.withMfkBetween(from, to);
+    }
+
     @Operation(summary = "Tasks that take time on a day",
             description = "Those starting that day and those of earlier days that are still on their lift "
                     + "(e.g. waiting for parts) – the day view. Sorted by start.")
