@@ -510,6 +510,18 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   constraint too). The statistics count a time as the halves of the day it touches (9:00–10:30 =
   half a day, 11:00–14:00 = a whole one). Calendar tooltip, chips and "Heute da" show the times:
   "Reto (Krank 09:00–10:30)" away, "Reto ausser 09:00–10:30" in; away "bis 10:30" = in "ab 10:30".
+- [x] **13i – Task sheet from blocks, tire change** (FB-06, part 1)
+  Done: the sheet is put together from what was ticked – no templates. After the work list comes
+  a block per option that has one (`sheetBlocks`; MFK, service and parts get theirs once the
+  workshop defines them). Tire change: a table per set (VL/VR/HL/HR: tread depth, brand, model,
+  dimension, DOT/age, condition) for the mounted and the removed one – the removed set's depths are
+  what goes into the tire hotel – rims Alu/Stahl for wheels, "Radschrauben mit Drehmoment
+  angezogen". From the tire hotel: "Lagerplatz" big (a line to write on until FB-07 prints it
+  and the stored tire data in); brought: "Abmontierte Räder einlagern? Ja/Nein → Lagerplatz".
+  Customer, vehicle and appointment now stand in three columns, so the sheet stays on one A4 page.
+- [ ] **13j – Insurance case** (FB-06, part 2)
+  Insurances as settings (name, phone, e-mail); the task gets "Versicherungsfall" with insurance and
+  optional claim number; the sheet prints a block with them (an empty line for the claim number).
 
 Answers of the workshop (2026-10-14):
 
