@@ -28,6 +28,8 @@ interface TodoItemProps {
   showAssignee?: boolean
   /** to-dos in columns: a grip to drag it to another person (the checkbox and buttons stay clickable) */
   dragHandle?: ReactNode
+  /** a line of its own next to the text, e.g. the supplier's article number on the shopping list */
+  detail?: ReactNode
   style?: CSSProperties
   ref?: Ref<HTMLLIElement>
 }
@@ -44,6 +46,7 @@ export function TodoItem({
   showNote = true,
   showAssignee = true,
   dragHandle,
+  detail,
   style,
   ref,
 }: TodoItemProps) {
@@ -94,6 +97,7 @@ export function TodoItem({
       <span className={styles.text}>
         {todo.shopping && <ShoppingCart aria-label="Einkaufsliste" className={styles.icon} />}
         {todo.text}
+        {detail && <span className={styles.detail}>{detail}</span>}
       </span>
       <span className={styles.meta}>
         {done ? (

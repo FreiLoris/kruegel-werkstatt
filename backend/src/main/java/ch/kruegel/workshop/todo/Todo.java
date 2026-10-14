@@ -45,6 +45,12 @@ public class Todo extends BaseEntity {
 
     private UUID doneBy;
 
+    /** Shopping list only (13g): the article in stock it is about – only the ID, like the note */
+    private UUID stockItemId;
+
+    /** Shopping list only (13g): where to order it */
+    private UUID supplierId;
+
     protected Todo() {
         // for JPA
     }
@@ -61,6 +67,15 @@ public class Todo extends BaseEntity {
 
     public void update(TodoDetails details) {
         apply(details);
+    }
+
+    /**
+     * What to buy and where (13g) – kept only on the shopping list: an entry taken off it loses both.
+     * Call after {@link #update}.
+     */
+    public void purchase(UUID stockItemId, UUID supplierId) {
+        this.stockItemId = shopping ? stockItemId : null;
+        this.supplierId = shopping ? supplierId : null;
     }
 
     /** Someone else takes care of it (dragged on the pinboard); empty = nobody yet. */
@@ -126,5 +141,13 @@ public class Todo extends BaseEntity {
 
     public boolean isDone() {
         return doneAt != null;
+    }
+
+    public UUID getStockItemId() {
+        return stockItemId;
+    }
+
+    public UUID getSupplierId() {
+        return supplierId;
     }
 }

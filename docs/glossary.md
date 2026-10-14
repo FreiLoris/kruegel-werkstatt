@@ -34,6 +34,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Lieferant | `Supplier` / `suppliers` | kept here, not in SwissGarage (FB-09) |
 | Hauptlieferant, weiterer Lieferant | `StockItemSupplier` (position 0 = main) | with the supplier's article number |
 | Bestellweg | `OrderChannel` `WEBSHOP` / `PHONE` / `EMAIL` | |
+| Auf die Einkaufsliste (Artikel, Lieferant) | `Todo.stockItemId` / `supplierId` | shopping list only (13g) |
 | Wer bin ich? / Person des Geräts | device person, `CurrentPerson` | header `X-Person` |
 | nur ansehen | view-only | |
 | geändert von / am | `updatedBy` / `updatedAt` | |

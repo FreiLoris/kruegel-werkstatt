@@ -6,6 +6,8 @@ import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
+import ch.kruegel.workshop.stock.StockItemRepository;
+import ch.kruegel.workshop.supplier.SupplierRepository;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,14 +43,18 @@ public class TodoService {
     private final TodoRepository repository;
     private final EmployeeRepository employees;
     private final TaskRepository tasks;
+    private final StockItemRepository stockItems;
+    private final SupplierRepository suppliers;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    TodoService(TodoRepository repository, EmployeeRepository employees, TaskRepository tasks,
-                ApplicationEventPublisher events, Clock clock) {
+    TodoService(TodoRepository repository, EmployeeRepository employees, TaskRepository tasks, StockItemRepository stockItems,
+                SupplierRepository suppliers, ApplicationEventPublisher events, Clock clock) {
         this.repository = repository;
         this.employees = employees;
         this.tasks = tasks;
+        this.stockItems = stockItems;
+        this.suppliers = suppliers;
         this.events = events;
         this.clock = clock;
     }
@@ -71,6 +77,7 @@ public class TodoService {
 
     public TodoDto create(TodoRequest request) {
         Todo todo = new Todo(details(request, null));
+        purchase(todo, request);
         return saved(repository.save(todo));
     }
 
@@ -79,8 +86,10 @@ public class TodoService {
      * Without task of its own: the note has the task.
      */
     public TodoDto createForNote(UUID noteId, TodoRequest request) {
-        TodoRequest withoutTask = new TodoRequest(request.text(), request.assigneeId(), request.dueDate(), request.shopping(), null, null);
+        TodoRequest withoutTask = new TodoRequest(request.text(), request.assigneeId(), request.dueDate(), request.shopping(), null,
+                request.stockItemId(), request.supplierId(), null);
         Todo todo = new Todo(details(withoutTask, null), noteId);
+        purchase(todo, withoutTask);
         return saved(repository.save(todo));
     }
 
@@ -91,6 +100,7 @@ public class TodoService {
         Todo todo = find(id);
         todo.checkVersion(request.version());
         todo.update(details(request, todo));
+        purchase(todo, request);
         return saved(todo);
     }
 
@@ -123,6 +133,23 @@ public class TodoService {
         repository.delete(todo);
         repository.flush();
         changed(todo);
+    }
+
+    /** Article and supplier of a shopping list entry – both must exist (13g); any other to-do has neither */
+    private void purchase(Todo todo, TodoRequest request) {
+        if (!request.shopping()) {
+            todo.purchase(null, null);
+            return;
+        }
+        if (request.stockItemId() != null && !request.stockItemId().equals(todo.getStockItemId())
+                && !stockItems.existsById(request.stockItemId())) {
+            throw new InvalidInputException("stockItemId", "Diesen Artikel gibt es nicht");
+        }
+        if (request.supplierId() != null && !request.supplierId().equals(todo.getSupplierId())
+                && !suppliers.existsById(request.supplierId())) {
+            throw new InvalidInputException("supplierId", "Diesen Lieferanten gibt es nicht");
+        }
+        todo.purchase(request.stockItemId(), request.supplierId());
     }
 
     private TodoDetails details(TodoRequest request, Todo current) {

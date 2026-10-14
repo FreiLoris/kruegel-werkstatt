@@ -27,6 +27,11 @@ vi.mock('./storageLocationApi', () => ({
   }),
 }))
 vi.mock('../suppliers/supplierApi', () => ({ useSuppliers: () => ({ data: [] }) }))
+vi.mock('../todos/todoApi', () => ({
+  useTodos: () => ({ data: [{ stockItemId: '1' }] }),
+  useSaveTodo: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+vi.mock('../../components/ui/toastContext', () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn() }) }))
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => true }))
 vi.mock('./StockItemDialog', () => ({
   StockItemDialog: ({ defaults }: { defaults: { storageLocationId?: string } }) => <p>Dialog bei {defaults.storageLocationId ?? 'nirgends'}</p>,
@@ -58,6 +63,14 @@ describe('StockPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Kategorie' }))
 
     expect(names()).toEqual(['Ölfilter', 'Bremsreiniger', 'Zange'])
+  })
+
+  it('an article already on the shopping list says so instead of offering the cart', () => {
+    renderAt('/stock')
+
+    screen.getByRole('button', { name: 'Ölfilter steht auf der Einkaufsliste – öffnen' })
+    screen.getByRole('button', { name: 'Bremsreiniger auf die Einkaufsliste' })
+    expect(screen.queryByRole('button', { name: 'Ölfilter auf die Einkaufsliste' })).toBeNull()
   })
 
   it('a new article starts at the filtered shelf', () => {

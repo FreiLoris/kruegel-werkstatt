@@ -120,6 +120,10 @@
   white-space: nowrap;
 }
 
+.rowActions > * + * {
+  margin-left: var(--space-1);
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

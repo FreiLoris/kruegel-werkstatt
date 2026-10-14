@@ -5,6 +5,7 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { MaterialTabs } from '../stock/MaterialTabs'
 import { useStockItems } from '../stock/stockApi'
+import { useTodos } from '../todos/todoApi'
 import { ORDER_CHANNEL_LABEL, useSuppliers, type Supplier } from './supplierApi'
 import { SupplierDialog } from './SupplierDialog'
 import styles from './SuppliersPage.module.css'
@@ -20,6 +21,7 @@ export function SuppliersPage() {
   const canEdit = useCanEdit()
   const suppliers = useSuppliers()
   const { data: items } = useStockItems()
+  const { data: shoppingList } = useTodos({ shopping: true })
   const [dialog, setDialog] = useState<Dialog>(null)
 
   // how many articles each one sells
@@ -30,6 +32,15 @@ export function SuppliersPage() {
     }
     return counts
   }, [items])
+
+  // open entries of the shopping list to order from each one (13g)
+  const openCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const entry of shoppingList ?? []) {
+      if (entry.supplierId) counts.set(entry.supplierId, (counts.get(entry.supplierId) ?? 0) + 1)
+    }
+    return counts
+  }, [shoppingList])
 
   return (
     <>
@@ -53,6 +64,7 @@ export function SuppliersPage() {
         <ul className={styles.cards}>
           {suppliers.data.map((supplier) => {
             const count = articleCounts.get(supplier.id) ?? 0
+            const open = openCounts.get(supplier.id) ?? 0
             return (
               <li key={supplier.id} className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -96,7 +108,10 @@ export function SuppliersPage() {
                 </dl>
                 {supplier.remark && <p className={styles.remark}>{supplier.remark}</p>}
                 <div className={styles.cardFooter}>
-                  <Link to={`/stock?supplier=${supplier.id}`}>{count === 1 ? '1 Artikel im Lager' : `${count} Artikel im Lager`}</Link>
+                  <span className={styles.links}>
+                    <Link to={`/stock?supplier=${supplier.id}`}>{count === 1 ? '1 Artikel im Lager' : `${count} Artikel im Lager`}</Link>
+                    {open > 0 && <Link to="/shopping">{open} auf der Einkaufsliste</Link>}
+                  </span>
                   {canEdit && (
                     <Button small icon={Pencil} onClick={() => setDialog({ kind: 'edit', supplier })} aria-label={`${supplier.name} bearbeiten`}>
                       Bearbeiten
