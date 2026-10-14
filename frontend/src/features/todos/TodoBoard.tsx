@@ -127,7 +127,9 @@ function Column({ column, children }: { column: TodoColumn; children: ReactNode 
     <section className={styles.column} aria-label={title}>
       <h2 className={styles.columnTitle} style={{ borderTopColor: column.employee?.color ?? 'var(--color-border-strong)' }}>
         {column.employee ? <NameBadge name={column.employee.name} color={column.employee.color} /> : title}
-        <span className="muted">{column.todos.length}</span>
+        <span className="muted" title="To-dos">
+          {column.todos.length}
+        </span>
       </h2>
       <ul ref={setNodeRef} className={[styles.drop, isOver && styles.over].filter(Boolean).join(' ')}>
         {children}

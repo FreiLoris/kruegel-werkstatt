@@ -67,13 +67,11 @@ export function PinboardPage() {
   const { data: employees } = useAllEmployees()
 
   const view = params.get('view')
-  const done = params.get('done') === '1' || view === 'archive'
+  const done = params.get('done') === '1'
   const openId = params.get('note')
 
   function change(key: 'done' | 'note', value: string | null) {
     const next = new URLSearchParams(params)
-    if (view === 'archive') next.set('done', '1')
-    next.delete('view')
     if (value) next.set(key, value)
     else next.delete(key)
     setParams(next, { replace: true })
@@ -83,6 +81,8 @@ export function PinboardPage() {
     const person = params.get('person')
     return <Navigate to={person ? `${MOVED[view]}?person=${encodeURIComponent(person)}` : MOVED[view]} replace />
   }
+  // the former tab "Archiv" is "Erledigt" now
+  if (view === 'archive') return <Navigate to="/pinboard?done=1" replace />
 
   return (
     // the board uses the whole screen width (AppLayout: data-wide)
