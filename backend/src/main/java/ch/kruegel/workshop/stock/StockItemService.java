@@ -3,11 +3,17 @@ package ch.kruegel.workshop.stock;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
+import ch.kruegel.workshop.supplier.Supplier;
+import ch.kruegel.workshop.supplier.SupplierDeleting;
+import ch.kruegel.workshop.supplier.SupplierRepository;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,11 +28,14 @@ public class StockItemService {
 
     private final StockItemRepository repository;
     private final StorageLocationRepository locations;
+    private final SupplierRepository suppliers;
     private final ApplicationEventPublisher events;
 
-    StockItemService(StockItemRepository repository, StorageLocationRepository locations, ApplicationEventPublisher events) {
+    StockItemService(StockItemRepository repository, StorageLocationRepository locations, SupplierRepository suppliers,
+                     ApplicationEventPublisher events) {
         this.repository = repository;
         this.locations = locations;
+        this.suppliers = suppliers;
         this.events = events;
     }
 
@@ -55,9 +64,32 @@ public class StockItemService {
         events.publishEvent(new DataChanged(TOPIC));
     }
 
+    /** A supplier is about to be deleted: its articles let go of it (same transaction). */
+    @EventListener
+    void onSupplierDeleting(SupplierDeleting event) {
+        repository.findBySupplier(event.supplierId()).forEach(item -> item.dropSupplier(event.supplierId()));
+        repository.flush();
+    }
+
     private StockItemDetails details(StockItemRequest request, StorageLocation current) {
         return new StockItemDetails(request.name(), request.category(), request.articleNumber(), request.manufacturer(),
-                request.quantity(), location(request.storageLocationId(), current), request.remark());
+                request.quantity(), location(request.storageLocationId(), current), request.remark(),
+                supplierLinks(request.suppliers()));
+    }
+
+    private List<StockItemSupplier> supplierLinks(List<StockItemRequest.SupplierRef> refs) {
+        if (refs == null) {
+            return List.of();
+        }
+        Set<UUID> seen = new HashSet<>();
+        return refs.stream().map(ref -> {
+            if (!seen.add(ref.supplierId())) {
+                throw new InvalidInputException("suppliers", "Jeder Lieferant nur einmal pro Artikel");
+            }
+            Supplier supplier = suppliers.findById(ref.supplierId())
+                    .orElseThrow(() -> new InvalidInputException("suppliers", "Diesen Lieferanten gibt es nicht"));
+            return new StockItemSupplier(supplier, ref.articleNumber());
+        }).toList();
     }
 
     private StorageLocation location(UUID id, StorageLocation current) {

@@ -20,14 +20,14 @@
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(14rem, 2fr) repeat(2, minmax(10rem, 1fr));
+  grid-template-columns: minmax(14rem, 2fr) repeat(3, minmax(9rem, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
-@media (max-width: 40rem) {
+@media (max-width: 56rem) {
   .filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   }
 }
 

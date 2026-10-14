@@ -10,10 +10,11 @@ export interface NavEntry {
   pages?: NavEntry[]
 }
 
-/** Shopping list and stock list (FB-08) – tabs above the pages (`MaterialTabs`) */
+/** Shopping list, stock list (FB-08) and suppliers (FB-09) – tabs above the pages (`MaterialTabs`) */
 export const materialPages: NavEntry[] = [
   { path: '/shopping', title: 'Einkaufsliste' },
   { path: '/stock', title: 'Lager' },
+  { path: '/suppliers', title: 'Lieferanten' },
 ]
 
 export const navigation: NavEntry[] = [

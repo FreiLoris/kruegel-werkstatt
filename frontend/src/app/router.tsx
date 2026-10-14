@@ -4,6 +4,7 @@ import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { PinboardPage } from '../features/notes/PinboardPage'
 import { StockPage } from '../features/stock/StockPage'
+import { SuppliersPage } from '../features/suppliers/SuppliersPage'
 import { ShoppingListPage } from '../features/todos/ShoppingListPage'
 import { TodosPage } from '../features/todos/TodosPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: 'shopping', element: <ShoppingListPage /> },
       // FB-08: the tab "Lager" under "Material"
       { path: 'stock', element: <StockPage /> },
+      { path: 'suppliers', element: <SuppliersPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },
