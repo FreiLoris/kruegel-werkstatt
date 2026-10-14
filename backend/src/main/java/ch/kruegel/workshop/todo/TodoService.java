@@ -135,8 +135,12 @@ public class TodoService {
         changed(todo);
     }
 
-    /** Article and supplier of a shopping list entry – both must exist (13g) */
+    /** Article and supplier of a shopping list entry – both must exist (13g); any other to-do has neither */
     private void purchase(Todo todo, TodoRequest request) {
+        if (!request.shopping()) {
+            todo.purchase(null, null);
+            return;
+        }
         if (request.stockItemId() != null && !request.stockItemId().equals(todo.getStockItemId())
                 && !stockItems.existsById(request.stockItemId())) {
             throw new InvalidInputException("stockItemId", "Diesen Artikel gibt es nicht");
