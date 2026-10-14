@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { CompanySettings } from '../company/CompanySettings'
 import { CourtesyCarSettings } from '../courtesy-cars/CourtesyCarSettings'
+import { InsuranceSettings } from '../insurances/InsuranceSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
 import { StorageLocationSettings } from '../stock/StorageLocationSettings'
@@ -24,6 +25,9 @@ export function SettingsPage() {
       </section>
       <section className={styles.section}>
         <CourtesyCarSettings />
+      </section>
+      <section className={styles.section}>
+        <InsuranceSettings />
       </section>
       <section className={styles.section}>
         <StorageLocationSettings />

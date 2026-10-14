@@ -9,6 +9,7 @@ import { formatDate, formatLocalDateTime } from '../../../lib/format'
 import { periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { useActiveEmployees } from '../../employees/employeeApi'
+import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { ServerErrors } from '../ServerErrors'
@@ -34,6 +35,7 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
   const carPeriod = periodOf(courtesyCar, f)
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
+  const { data: insurances } = useInsurances()
 
   const customer = customerStep.customer!
   const planned = !f.noAppointment
@@ -134,6 +136,13 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
           </p>
         )}
       </Block>
+
+      {f.insuranceCase && (
+        <Block title="Versicherungsfall" onEdit={() => onEdit(2)}>
+          <p className={styles.strong}>{insurances?.find((i) => i.id === f.insuranceId)?.name ?? '–'}</p>
+          <Facts rows={[['Schadennummer', f.claimNumber.trim() || 'noch offen']]} />
+        </Block>
+      )}
     </div>
   )
 }

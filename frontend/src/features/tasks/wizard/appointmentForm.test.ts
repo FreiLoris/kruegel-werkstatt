@@ -202,6 +202,19 @@ describe('toTaskRequest', () => {
   it('vehicle still open → no vehicle', () => {
     expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, THURSDAY).vehicleId).toBeUndefined()
   })
+
+  it('insurance case (FB-06): insurance and claim number – unticked, nothing of it is sent', () => {
+    const insured: AppointmentForm = { ...THURSDAY, insuranceCase: true, insuranceId: 'i1', claimNumber: ' S-42 ' }
+
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, insured)).toMatchObject({ insuranceId: 'i1', claimNumber: 'S-42' })
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, { ...insured, insuranceCase: false })).toMatchObject({
+      insuranceId: undefined,
+      claimNumber: undefined,
+    })
+    // the claim number may follow later, the insurance not
+    expect(appointmentErrors({ ...insured, claimNumber: '' })).toEqual({})
+    expect(appointmentErrors({ ...insured, insuranceId: '' }).insuranceId).toBeDefined()
+  })
 })
 
 describe('formFromTask', () => {
@@ -247,6 +260,15 @@ describe('formFromTask', () => {
       workDescription: 'Geräusch',
       notes: undefined,
       version: 3,
+    })
+  })
+
+  it('an insurance case comes back ticked, with its claim number', () => {
+    expect(formFromTask(task)).toMatchObject({ insuranceCase: false, insuranceId: '', claimNumber: '' })
+    expect(formFromTask({ ...task, insuranceId: 'i1', claimNumber: 'S-42' } as Task)).toMatchObject({
+      insuranceCase: true,
+      insuranceId: 'i1',
+      claimNumber: 'S-42',
     })
   })
 

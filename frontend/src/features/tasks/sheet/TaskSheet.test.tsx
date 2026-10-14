@@ -104,6 +104,22 @@ describe('TaskSheet', () => {
     expect(screen.queryByText(/^Felgen/)).toBeNull()
   })
 
+  it('insurance case: insurance with phone, the claim number or a line for it (FB-06)', () => {
+    // fictitious insurance
+    const insurance = { name: 'Muster Versicherung', phone: '0800 000 000', email: null }
+    const insured = { ...task, tireChange: false, tireChangeKind: null, insuranceId: 'i1', claimNumber: null }
+    const { unmount } = render(<TaskSheet task={insured} company={company} lookups={{ serviceItemNames: new Map(), insurance }} />)
+
+    expect(screen.getByRole('heading', { name: 'Versicherungsfall' })).toBeTruthy()
+    expect(screen.getByText('Muster Versicherung')).toBeTruthy()
+    expect(screen.getByText('Tel. 0800 000 000')).toBeTruthy()
+    expect(screen.getByText(/^Schadennummer:/).querySelector('strong')).toBeNull()
+    unmount()
+
+    render(<TaskSheet task={{ ...insured, claimNumber: 'S-2026-0042' }} company={company} lookups={{ serviceItemNames: new Map(), insurance }} />)
+    expect(screen.getByText('S-2026-0042')).toBeTruthy()
+  })
+
   it('no tire change = no tire block', () => {
     render(<TaskSheet task={{ ...task, tireChange: false, tireChangeKind: null }} company={company} lookups={{ serviceItemNames: new Map() }} />)
 

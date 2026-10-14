@@ -51,7 +51,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin: 6mm 0 4mm;
+  margin: 4mm 0 3mm;
 }
 
 .titleRow h1 {
@@ -260,6 +260,18 @@
   margin-top: 0;
 }
 
+/* Insurance case (FB-06): one line – insurance and phone, the claim number on the right */
+.block .insurance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1mm 6mm;
+}
+
+.claimNumber {
+  margin-left: auto;
+}
+
 /* Empty lines to write on */
 .lines {
   height: 24mm;
@@ -280,7 +292,7 @@
 .footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 5mm;
+  margin-top: 3mm;
   font-size: 9pt;
   color: var(--color-paper-muted);
 }

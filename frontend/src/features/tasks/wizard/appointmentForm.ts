@@ -48,6 +48,10 @@ export interface AppointmentForm {
   partsOrderedOn: string
   workDescription: string
   notes: string
+  /** "Versicherungsfall" (FB-06): the insurance must then be chosen, the claim number may follow later */
+  insuranceCase: boolean
+  insuranceId: string
+  claimNumber: string
   /** Who takes the order from the customer ("Annehmer") – '' = not chosen yet; required, never preset */
   acceptedById: string
 }
@@ -95,6 +99,9 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   partsOrderedOn: '',
   workDescription: '',
   notes: '',
+  insuranceCase: false,
+  insuranceId: '',
+  claimNumber: '',
   acceptedById: '',
 }
 
@@ -249,6 +256,7 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   // "Service" ticked but nothing chosen would be saved as "no service" without anyone noticing
   if (form.service && form.serviceItemIds.length === 0) errors.serviceItemIds = 'Mindestens eine Leistung wählen – oder «Service» abwählen'
   if (form.parts && !form.partsDescription.trim()) errors.partsDescription = 'Was muss bestellt werden?'
+  if (form.insuranceCase && !form.insuranceId) errors.insuranceId = 'Versicherung wählen – oder «Versicherungsfall» abwählen'
   return errors
 }
 
@@ -285,6 +293,9 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
       : undefined,
     workDescription: text(form.workDescription),
     notes: text(form.notes),
+    // unticked: what was chosen before is not sent – the task is no insurance case any more
+    insuranceId: form.insuranceCase ? form.insuranceId || undefined : undefined,
+    claimNumber: form.insuranceCase ? text(form.claimNumber) : undefined,
     acceptedById: form.acceptedById || undefined,
     version,
   }
@@ -334,6 +345,9 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     partsOrderedOn: task.parts?.orderedOn ?? '',
     workDescription: task.workDescription ?? '',
     notes: task.notes ?? '',
+    insuranceCase: !!task.insuranceId,
+    insuranceId: task.insuranceId ?? '',
+    claimNumber: task.claimNumber ?? '',
     acceptedById: task.acceptedById ?? '',
   }
 }

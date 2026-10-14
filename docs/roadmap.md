@@ -519,9 +519,13 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   angezogen". From the tire hotel: "Lagerplatz" big (a line to write on until FB-07 prints it
   and the stored tire data in); brought: "Abmontierte Räder einlagern? Ja/Nein → Lagerplatz".
   Customer, vehicle and appointment now stand in three columns, so the sheet stays on one A4 page.
-- [ ] **13j – Insurance case** (FB-06, part 2)
-  Insurances as settings (name, phone, e-mail); the task gets "Versicherungsfall" with insurance and
-  optional claim number; the sheet prints a block with them (an empty line for the claim number).
+- [x] **13j – Insurance case** (FB-06, part 2)
+  Done: insurances in the settings (name, phone, e-mail; sorted by name, "Nicht mehr verwenden"
+  instead of delete – old tasks still name them). The wizard and the edit page have a section
+  "Versicherung": ticking "Versicherungsfall" asks for the insurance (required) and the claim number
+  (may follow later). The task keeps `insurance_id` and `claim_number` (V29) – like the "Annehmer"
+  outside `TaskDetails`. The sheet prints a block with the insurance, its phone and the claim number
+  (a line to write on while it is open); the task detail shows it with phone and e-mail.
 
 Answers of the workshop (2026-10-14):
 
