@@ -68,7 +68,10 @@ export function StockPage() {
     [items.data, query, category, location, supplier, lookup, sort],
   )
   // the places to filter by, in tree order: those in use and those an article still lies at
-  const filterPlaces = places.filter((p) => p.location.active || items.data?.some((i) => i.storageLocationId === p.location.id))
+  const filterPlaces = useMemo(() => {
+    const used = new Set(items.data?.map((i) => i.storageLocationId))
+    return places.filter((p) => p.location.active || used.has(p.location.id))
+  }, [places, items.data])
 
   const filterText = [
     category && CATEGORY_LABEL[category],

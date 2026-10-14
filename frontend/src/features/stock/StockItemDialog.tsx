@@ -1,5 +1,5 @@
 import { ArrowUp, Plus, Trash2, X } from 'lucide-react'
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useMemo, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
@@ -86,7 +86,10 @@ export function StockItemDialog({
 
   const fieldError = (field: string) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
   // places in use in tree order, plus the article's own one if it is no longer used
-  const choosable = placeTree(locations).filter((p) => p.location.active || p.location.id === item?.storageLocationId)
+  const choosable = useMemo(
+    () => placeTree(locations).filter((p) => p.location.active || p.location.id === item?.storageLocationId),
+    [locations, item?.storageLocationId],
+  )
 
   function set(field: Exclude<keyof FormValues, 'suppliers'>, value: string) {
     change({ ...values, [field]: value })
