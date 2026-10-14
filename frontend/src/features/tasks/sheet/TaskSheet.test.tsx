@@ -46,7 +46,7 @@ describe('TaskSheet', () => {
   it('prints every ticked piece of work, not only the free text (F1)', () => {
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto', acceptedByName: 'Carina' }} />)
 
-    expect(screen.getByText('Radwechsel')).toBeTruthy()
+    expect(screen.getByText('Radwechsel', { selector: 'li span' })).toBeTruthy()
     expect(screen.getByText('MFK')).toBeTruthy()
     expect(screen.getByText('Ölwechsel')).toBeTruthy()
     expect(screen.getByText('Material: Bremsscheiben vorne')).toBeTruthy()
@@ -82,5 +82,31 @@ describe('TaskSheet', () => {
 
     expect(screen.getByText('Ersatzwagen')).toBeTruthy()
     expect(screen.getByText(courtesyCar)).toBeTruthy()
+  })
+
+  it('tire change from the tire hotel: storage place and a table for the mounted and the removed set (FB-06)', () => {
+    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map() }} />)
+
+    expect(screen.getByRole('heading', { name: 'Radwechsel' })).toBeTruthy()
+    expect(screen.getByText(/^Lagerplatz:/)).toBeTruthy()
+    expect(screen.getAllByRole('table').map((table) => table.getAttribute('aria-label'))).toEqual(['Montiert – Räder aus dem Pneuhotel', 'Abmontierte Räder'])
+    expect(screen.getByText(/ins Pneuhotel, Lagerplatz:/)).toBeTruthy()
+    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toEqual(['VL', 'VR', 'HL', 'HR', 'VL', 'VR', 'HL', 'HR'])
+    expect(screen.getAllByText(/^Felgen/)).toHaveLength(2)
+    expect(screen.getByText(/Radschrauben mit Drehmoment angezogen/)).toBeTruthy()
+  })
+
+  it('tires brought: asks whether the removed ones are stored, no rims for tires only', () => {
+    render(<TaskSheet task={{ ...task, tireChangeKind: 'TIRES_BROUGHT' }} company={company} lookups={{ serviceItemNames: new Map() }} />)
+
+    expect(screen.queryByText(/^Lagerplatz:/)).toBeNull()
+    expect(screen.getByText(/einlagern\?/)).toBeTruthy()
+    expect(screen.queryByText(/^Felgen/)).toBeNull()
+  })
+
+  it('no tire change = no tire block', () => {
+    render(<TaskSheet task={{ ...task, tireChange: false, tireChangeKind: null }} company={company} lookups={{ serviceItemNames: new Map() }} />)
+
+    expect(screen.queryByRole('table')).toBeNull()
   })
 })

@@ -1,10 +1,12 @@
-import type { ReactNode } from 'react'
 import { formatCount, formatDate, formatLocalDateTime, formatMonth, formatTimestamp } from '../../../lib/format'
 import type { Company } from '../../company/companyApi'
 import { isPlanned, type AnyTask } from '../taskApi'
 import { periodLabel } from '../taskTime'
 import { workItems } from '../workSummary'
+import { sheetBlocks, type SheetBlock } from './sheetBlocks'
+import { Block, Box, Facts } from './SheetParts'
 import styles from './TaskSheet.module.css'
+import { TireBlock } from './TireBlock'
 
 export interface SheetLookups {
   /** name per service item ID */
@@ -20,12 +22,14 @@ export interface SheetLookups {
 /**
  * The printed task sheet for the mechanic: white paper, the company's letterhead, customer with
  * address, vehicle, appointment and EVERY ticked piece of work as a checklist (F1 – the old sheet
- * only printed the free text). Text only, no app colors: it must work on a black-and-white printer.
+ * only printed the free text). Then a block per option that has one (FB-06, see `sheetBlocks`).
+ * Text only, no app colors: it must work on a black-and-white printer.
  */
 export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: Company; lookups: SheetLookups }) {
   const c = task.customer
   const v = task.vehicle
   const items = workItems(task, lookups.serviceItemNames)
+  const blocks = sheetBlocks(task)
   const address = [c.addition, c.street, [c.postalCode, c.city].filter(Boolean).join(' ')].filter(Boolean)
   const companyLine = [company.street, [company.postalCode, company.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const companyContact = [company.phone && `Tel. ${company.phone}`, company.email, company.website].filter(Boolean).join(' · ')
@@ -90,22 +94,22 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
             </>
           )}
         </Block>
-      </div>
 
-      <Block title="Termin">
-        <Facts
-          rows={[
-            ['Termin', isPlanned(task) ? `${formatDate(task.date)}, ${periodLabel(task)}` : 'noch offen'],
-            ['Kommt früher', task.arrivesEarlier ? formatLocalDateTime(task.arrivesEarlier) : null],
-            ['Fertig bis', task.readyBy ? formatLocalDateTime(task.readyBy) : null],
-            ['Wartekunde', task.waitingCustomer ? 'Ja – Kunde wartet vor Ort' : null],
-            ['Mechaniker', lookups.mechanicName ?? 'noch offen'],
-            ['Lift', task.date ? (lookups.liftName ?? 'noch offen') : null],
-            ['Angenommen von', lookups.acceptedByName ?? null],
-            ['Ersatzwagen', lookups.courtesyCar ?? null],
-          ]}
-        />
-      </Block>
+        <Block title="Termin">
+          <Facts
+            rows={[
+              ['Termin', isPlanned(task) ? `${formatDate(task.date)}, ${periodLabel(task)}` : 'noch offen'],
+              ['Kommt früher', task.arrivesEarlier ? formatLocalDateTime(task.arrivesEarlier) : null],
+              ['Fertig bis', task.readyBy ? formatLocalDateTime(task.readyBy) : null],
+              ['Wartekunde', task.waitingCustomer ? 'Ja – Kunde wartet vor Ort' : null],
+              ['Mechaniker', lookups.mechanicName ?? 'noch offen'],
+              ['Lift', task.date ? (lookups.liftName ?? 'noch offen') : null],
+              ['Angenommen von', lookups.acceptedByName ?? null],
+              ['Ersatzwagen', lookups.courtesyCar ?? null],
+            ]}
+          />
+        </Block>
+      </div>
 
       <Block title="Arbeiten">
         {items.length === 0 && !task.workDescription ? (
@@ -114,7 +118,7 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
           <ul className={styles.checklist}>
             {items.map((item) => (
               <li key={item.label}>
-                <span className={styles.box} aria-hidden />
+                <Box />
                 <span>
                   {item.label}
                   {item.detail && <span className={styles.detail}> – {item.detail}</span>}
@@ -126,6 +130,10 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
         {task.workDescription && <p className={styles.freeText}>{task.workDescription}</p>}
       </Block>
 
+      {blocks.map((block) => (
+        <SheetBlockView key={block.kind} block={block} />
+      ))}
+
       {task.notes && (
         <Block title="Notizen">
           <p className={styles.freeText}>{task.notes}</p>
@@ -133,7 +141,7 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
       )}
 
       <Block title="Bemerkungen Werkstatt">
-        <div className={styles.lines} aria-hidden />
+        <div className={blocks.length > 0 ? `${styles.lines} ${styles.short}` : styles.lines} aria-hidden />
       </Block>
 
       <footer className={styles.footer}>
@@ -144,27 +152,14 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
   )
 }
 
-function Block({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className={styles.block}>
-      <h2>{title}</h2>
-      {children}
-    </section>
-  )
-}
-
-/** Label/value rows; empty values are left out. */
-function Facts({ rows }: { rows: [string, string | null | undefined][] }) {
-  const filled = rows.filter((row): row is [string, string] => !!row[1])
-  if (filled.length === 0) return null
-  return (
-    <dl className={styles.facts}>
-      {filled.map(([label, value]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  )
+function SheetBlockView({ block }: { block: SheetBlock }) {
+  switch (block.kind) {
+    case 'tires':
+      return <TireBlock block={block} />
+    default: {
+      // a new kind of block without a component does not compile – instead of printing nothing
+      const unknown: never = block.kind
+      return unknown
+    }
+  }
 }

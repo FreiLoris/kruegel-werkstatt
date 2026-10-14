@@ -73,14 +73,21 @@
   letter-spacing: 0.05em;
 }
 
+/* Customer, vehicle and appointment side by side: room for the blocks below on one page (FB-06) */
 .columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8mm;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6mm;
+  font-size: 10pt;
+}
+
+.columns .facts div {
+  grid-template-columns: 24mm 1fr;
+  column-gap: 1.5mm;
 }
 
 .block {
-  margin-bottom: 5mm;
+  margin-bottom: 4mm;
   break-inside: avoid;
 }
 
@@ -156,16 +163,124 @@
   white-space: pre-wrap;
 }
 
+/* A line to write on inside a sentence */
+.writeLine,
+.writeLineWide {
+  display: inline-block;
+  width: 35mm;
+  border-bottom: 1px solid var(--color-paper-text);
+}
+
+.writeLineWide {
+  width: 60mm;
+}
+
+/* Tire change (FB-06) */
+.block .storagePlace {
+  margin-bottom: 1mm;
+  font-size: 16pt;
+  font-weight: 700;
+}
+
+.tires {
+  width: 100%;
+  margin-bottom: 2mm;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 9pt;
+}
+
+.block .tireHead {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1mm;
+  font-weight: 700;
+}
+
+.tires .narrow {
+  width: 17mm;
+}
+
+.tires .wide {
+  width: 26mm;
+}
+
+.tires .widest {
+  width: 45mm;
+}
+
+.rims {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+  font-weight: 400;
+}
+
+.rims .box {
+  margin-top: 0;
+}
+
+.tires th,
+.tires td {
+  height: 6mm;
+  padding: 0 1.5mm;
+  border: 1px solid var(--color-paper-line);
+  text-align: left;
+  font-weight: 400;
+}
+
+.tires thead th {
+  height: auto;
+  color: var(--color-paper-muted);
+}
+
+.tires thead th:first-child {
+  width: 9mm;
+}
+
+.tires tbody th {
+  font-weight: 700;
+}
+
+.tireQuestion {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+}
+
+.block .tireCheck {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+  margin: 1mm 0 0;
+}
+
+.tireQuestion .box,
+.tireCheck .box {
+  margin-top: 0;
+}
+
 /* Empty lines to write on */
 .lines {
   height: 24mm;
-  background: repeating-linear-gradient(to bottom, transparent 0, transparent 7.5mm, var(--color-paper-line) 7.5mm, var(--color-paper-line) 8mm);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 7.5mm,
+    var(--color-paper-line) 7.5mm,
+    var(--color-paper-line) 8mm
+  );
+}
+
+/* With blocks (FB-06) fewer lines – the sheet stays on one page */
+.lines.short {
+  height: 16mm;
 }
 
 .footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 8mm;
+  margin-top: 5mm;
   font-size: 9pt;
   color: var(--color-paper-muted);
 }
