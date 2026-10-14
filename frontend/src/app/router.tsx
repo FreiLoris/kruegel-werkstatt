@@ -1,8 +1,10 @@
-import { createBrowserRouter, Navigate } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { PinboardPage } from '../features/notes/PinboardPage'
+import { ShoppingListPage } from '../features/todos/ShoppingListPage'
+import { TodosPage } from '../features/todos/TodosPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
 import { AppointmentsPage } from '../features/tasks/AppointmentsPage'
@@ -32,9 +34,11 @@ export const router = createBrowserRouter([
       { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
       { path: 'courtesy-cars', element: <CourtesyCarsPage /> },
       { path: 'tasks', element: <AppointmentsPage /> },
-      // since 8e the to-do list is a view of the pinboard – old bookmarks keep working
-      { path: 'todos', element: <Navigate to="/pinboard?view=list" replace /> },
+      // FB-04: pinboard, to-dos and shopping list are pages of their own again
+      // (old addresses "/pinboard?view=list" etc. are forwarded by the pinboard)
       { path: 'pinboard', element: <PinboardPage /> },
+      { path: 'todos', element: <TodosPage /> },
+      { path: 'shopping', element: <ShoppingListPage /> },
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },

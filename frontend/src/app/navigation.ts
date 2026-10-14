@@ -14,6 +14,8 @@ export const navigation: NavEntry[] = [
   { path: '/tasks/new', title: 'Neuer Auftrag' },
   { path: '/courtesy-cars', title: 'Ersatzwagen' },
   { path: '/pinboard', title: 'Pinnwand' },
+  { path: '/todos', title: 'To-dos' },
+  { path: '/shopping', title: 'Einkaufsliste' },
   { path: '/employees', title: 'Mitarbeiter' },
   { path: '/settings', title: 'Einstellungen' },
   { path: '/system', title: 'System' },

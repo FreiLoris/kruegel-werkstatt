@@ -71,10 +71,10 @@ export function useDeleteTodo() {
   })
 }
 
-/** The open to-dos on the pinboard (not the shopping list) – updated right away when one is dragged */
+/** Everyone's open to-dos (not the shopping list) – the columns of the to-do page and the dashboard */
 export const BOARD_TODOS: TodoFilter = { shopping: false }
 
-/** Dragged to another column on the pinboard: someone else (or nobody) takes care of it. */
+/** Dragged to another column of the to-dos: someone else (or nobody) takes care of it. */
 export function useReassignTodo() {
   const queryClient = useQueryClient()
   const key = [TOPIC, BOARD_TODOS]

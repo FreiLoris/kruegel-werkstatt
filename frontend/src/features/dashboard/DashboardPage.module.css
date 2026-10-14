@@ -54,6 +54,17 @@
   font-size: var(--font-size-lg);
 }
 
+/* "Pinnwand" and "To-dos" side by side at the right end of the heading */
+.areaLinks {
+  display: inline-flex;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.areaLinks .areaLink {
+  margin-left: 0;
+}
+
 .areaLink {
   display: inline-flex;
   align-items: center;

@@ -44,8 +44,14 @@ export function BoardOverview() {
             <p className="muted">nichts offen</p>
           ) : (
             <>
-              <Limited items={column.notes} max={MAX_NOTES} className={styles.notes} render={(note) => <NoteLine note={note} />} />
-              <Limited items={byUrgency(column.todos)} max={MAX_TODOS} className={styles.todos} render={(todo) => <TodoLine todo={todo} today={today} />} />
+              <Limited items={column.notes} max={MAX_NOTES} to="/pinboard" className={styles.notes} render={(note) => <NoteLine note={note} />} />
+              <Limited
+                items={byUrgency(column.todos)}
+                max={MAX_TODOS}
+                to={column.employee ? `/todos?person=${column.employee.id}` : '/todos'}
+                className={styles.todos}
+                render={(todo) => <TodoLine todo={todo} today={today} />}
+              />
             </>
           )}
         </section>
@@ -54,8 +60,20 @@ export function BoardOverview() {
   )
 }
 
-/** The first `max` items and "+ n weitere" – linking to the pinboard where all are */
-function Limited<T extends { id: string }>({ items, max, className, render }: { items: T[]; max: number; className: string; render: (item: T) => ReactNode }) {
+/** The first `max` items and "+ n weitere" – linking to the page where all are (`to`) */
+function Limited<T extends { id: string }>({
+  items,
+  max,
+  to,
+  className,
+  render,
+}: {
+  items: T[]
+  max: number
+  to: string
+  className: string
+  render: (item: T) => ReactNode
+}) {
   if (items.length === 0) return null
   const rest = items.length - max
   return (
@@ -65,7 +83,7 @@ function Limited<T extends { id: string }>({ items, max, className, render }: { 
       ))}
       {rest > 0 && (
         <li>
-          <Link to="/pinboard" className={styles.more}>
+          <Link to={to} className={styles.more}>
             + {rest} weitere <ChevronRight size={14} aria-hidden />
           </Link>
         </li>

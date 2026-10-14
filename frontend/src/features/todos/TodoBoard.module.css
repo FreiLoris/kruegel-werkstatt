@@ -1,0 +1,90 @@
+/* columns side by side like the pinboard; on narrow screens the board scrolls sideways */
+.board {
+  display: grid;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  align-items: start;
+}
+
+.column {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 13rem;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* the person's color as a bar on top – the name stays readable on its own badge */
+.columnTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0;
+  padding: var(--space-2) var(--space-3);
+  border-top: 5px solid;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  font-size: var(--font-size-lg);
+}
+
+.drop {
+  display: grid;
+  align-content: start;
+  min-height: 8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius);
+}
+
+.over {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.empty {
+  margin: var(--space-4) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* drag a to-do by its grip – checkbox and buttons stay easy to hit */
+.grip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.grip svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.grip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  border-radius: var(--radius-sm);
+}
+
+.overlay {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  outline: 2px solid var(--color-accent);
+  cursor: grabbing;
+}
+
+.overlay svg {
+  width: 1rem;
+  height: 1rem;
+}

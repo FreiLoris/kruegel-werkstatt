@@ -22,11 +22,11 @@ interface TodoItemProps {
   showTask?: boolean
   /** show the shopping list tick in the edit form */
   withShopping?: boolean
-  /** say "Pinnwand" for a sub-task of a note (not inside the note itself) */
+  /** link "Notiz" for a sub-task of a note (not inside the note itself) */
   showNote?: boolean
-  /** hide the person – in the person's own pinboard column it is clear */
+  /** hide the person – where a column, heading or filter already says who */
   showAssignee?: boolean
-  /** pinboard: a grip to drag the to-do to another column (the checkbox and buttons stay clickable) */
+  /** to-dos in columns: a grip to drag it to another person (the checkbox and buttons stay clickable) */
   dragHandle?: ReactNode
   style?: CSSProperties
   ref?: Ref<HTMLLIElement>
@@ -109,9 +109,15 @@ export function TodoItem({
           </>
         )}
         {showNote && todo.noteId && (
-          <span className={styles.fromNote} title="Aufgabe aus einer Pinnwand-Notiz">
-            <StickyNote aria-hidden /> Pinnwand
-          </span>
+          // FB-04: to-dos and notes are on different pages – the note is one click away
+          <button
+            type="button"
+            className={styles.fromNote}
+            title="Aufgabe aus einer Pinnwand-Notiz – öffnet die Notiz"
+            onClick={() => navigate(`/pinboard?note=${todo.noteId}`)}
+          >
+            <StickyNote aria-hidden /> Notiz
+          </button>
         )}
         {showTask && todo.task && (
           <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${todo.task!.id}`)}>

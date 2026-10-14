@@ -457,6 +457,16 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   hint under the appointment when the chosen vehicle has another open task on that day or in the
   list "Ohne Termin" – with a link to it (new tab, the form stays filled). Only a hint, saving
   stays possible: a car may come twice on purpose. Done tasks do not count.
+- [x] **13c – Pinboard, to-dos and shopping list as pages of their own** (FB-04)
+  Done: three entries in the navigation – "Pinnwand" (notes only, still in columns per person),
+  "To-dos" (`/todos`, everyone's open ones in columns per person, dragged to reassign; with the
+  person filter a list) and
+  "Einkaufsliste" (`/shopping`). Each has "Offen | Erledigt" (`done=1`); "Erledigt" on the pinboard
+  is the former archive. A to-do of a note links to it ("Notiz" → `/pinboard?note=…`); the note
+  lists its to-dos as before. Old addresses (`/pinboard?view=list|shopping|archive`) are forwarded.
+  The dashboard tile
+  stays one overview per person (notes and to-dos) with links to both pages. When the stock list
+  (FB-08) comes, the shopping list moves under "Material".
 
 Answers of the workshop (2026-10-14):
 

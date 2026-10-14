@@ -98,11 +98,19 @@
   cursor: default;
 }
 
+/* a link to the note (FB-04) – looks like the task link, in the note colour */
 .fromNote {
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--color-warning);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 
 .fromNote svg {
@@ -110,7 +118,7 @@
   height: 0.95rem;
 }
 
-/* pinboard: grip, checkbox, text */
+/* in columns: grip, checkbox, text */
 .draggable {
   grid-template-columns: auto auto 1fr;
 }
