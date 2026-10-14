@@ -21,7 +21,9 @@ export function placeTree(locations: StorageLocation[]): Place[] {
   const children = new Map<string | null, StorageLocation[]>()
   for (const location of locations) {
     const parent = location.parentId && ids.has(location.parentId) ? location.parentId : null
-    children.set(parent, [...(children.get(parent) ?? []), location])
+    const list = children.get(parent)
+    if (list) list.push(location)
+    else children.set(parent, [location])
   }
   const result: Place[] = []
   const visit = (parent: string | null, depth: number, prefix: string) => {
@@ -38,6 +40,7 @@ export function placeTree(locations: StorageLocation[]): Place[] {
 /** Every place with everything inside it (itself included) – a filter for "Büro" shows the shelves in it too */
 export function placesWithin(locations: StorageLocation[]): Map<string, Set<string>> {
   const within = new Map(locations.map((l) => [l.id, new Set([l.id])]))
+  const byId = new Map(locations.map((l) => [l.id, l]))
   for (const location of locations) {
     // walk up from each place and add it to all of its parents (a loop cannot come from the server; guarded anyway)
     let parent = location.parentId
@@ -45,7 +48,7 @@ export function placesWithin(locations: StorageLocation[]): Map<string, Set<stri
     while (parent && within.has(parent) && !seen.has(parent)) {
       seen.add(parent)
       within.get(parent)!.add(location.id)
-      parent = locations.find((l) => l.id === parent)?.parentId ?? null
+      parent = byId.get(parent)?.parentId ?? null
     }
   }
   return within

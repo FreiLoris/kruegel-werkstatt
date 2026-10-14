@@ -4062,7 +4062,7 @@
     "/api/notes/{id}/move" : {
       "put" : {
         "description" : "The person `from` gives the note away, `to` takes it – other people stay. Empty = the column \"Neu\". No version needed; not on an archived note (409).",
-        "operationId" : "move_1",
+        "operationId" : "move",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5609,7 +5609,7 @@
     "/api/storage-locations/{id}/parent" : {
       "put" : {
         "description" : "With everything inside it, at the end there. Not into itself or one of its own places.",
-        "operationId" : "move",
+        "operationId" : "moveLocation",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",

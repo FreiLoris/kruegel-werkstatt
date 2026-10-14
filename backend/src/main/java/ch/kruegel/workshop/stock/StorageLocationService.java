@@ -101,8 +101,11 @@ public class StorageLocationService {
     public StorageLocationDto activate(UUID id) {
         List<StorageLocation> all = repository.findAllByOrderBySortOrderAscNameAsc();
         StorageLocation location = find(all, id);
-        if (location.getParentId() != null && !find(all, location.getParentId()).isActive()) {
-            throw new InvalidInputException("parentId", "Zuerst " + find(all, location.getParentId()).getName() + " wieder verwenden");
+        if (location.getParentId() != null) {
+            StorageLocation parent = find(all, location.getParentId());
+            if (!parent.isActive()) {
+                throw new InvalidInputException("parentId", "Zuerst " + parent.getName() + " wieder verwenden");
+            }
         }
         checkNameFree(all, location.getParentId(), location.getName(), id);
         Set<UUID> inside = subtree(all, id);

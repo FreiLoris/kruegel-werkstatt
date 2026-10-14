@@ -62,7 +62,7 @@ class StorageLocationController {
     @Operation(summary = "Move into another place or to the top level",
             description = "With everything inside it, at the end there. Not into itself or one of its own places.")
     @PutMapping("/{id}/parent")
-    StorageLocationDto move(@PathVariable UUID id, @RequestBody StorageLocationParent request) {
+    StorageLocationDto moveLocation(@PathVariable UUID id, @RequestBody StorageLocationParent request) {
         return service.move(id, request.parentId());
     }
 

@@ -670,7 +670,7 @@ export interface paths {
          * Move between pinboard columns
          * @description The person `from` gives the note away, `to` takes it – other people stay. Empty = the column "Neu". No version needed; not on an archived note (409).
          */
-        put: operations["move_1"];
+        put: operations["move"];
         post?: never;
         delete?: never;
         options?: never;
@@ -953,7 +953,7 @@ export interface paths {
          * Move into another place or to the top level
          * @description With everything inside it, at the end there. Not into itself or one of its own places.
          */
-        put: operations["move"];
+        put: operations["moveLocation"];
         post?: never;
         delete?: never;
         options?: never;
@@ -5980,7 +5980,7 @@ export interface operations {
             };
         };
     };
-    move_1: {
+    move: {
         parameters: {
             query?: never;
             header?: never;
@@ -7280,7 +7280,7 @@ export interface operations {
             };
         };
     };
-    move: {
+    moveLocation: {
         parameters: {
             query?: never;
             header?: never;
