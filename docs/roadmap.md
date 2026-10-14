@@ -467,6 +467,19 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   The dashboard tile
   stays one overview per person (notes and to-dos) with links to both pages. When the stock list
   (FB-08) comes, the shopping list moves under "Material".
+- [x] **13d – Stock list** (FB-08)
+  Done: a list kept by hand (no bookings, no minimum quantities): designation, category (Ersatzteile,
+  Verbrauchsmaterial, Werkzeuge), article number, manufacturer, quantity (a number, empty = not
+  counted), storage location and remark. Search over all fields, filters for category and place,
+  sorted by a column – all in the address (`/stock?location=…`). Printed as filtered, with a line
+  saying what and when (e.g. one shelf for an inventory). Storage locations are named freely in the
+  settings (like service items: deactivated instead of deleted, in their own order). Navigation:
+  one entry "Material" with the tabs "Einkaufsliste | Lager" instead of a new entry each – the TV's
+  bottom bar stays on one line; the suppliers (13e) become a third tab.
+- [ ] **13e – Suppliers** (FB-09): own page (tab under "Material"), article ↔ supplier n:m with the
+  supplier's article number, filter of the stock list by supplier.
+- [ ] **13f – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09): entry with an
+  optional article and a supplier (taken from the article), grouped by supplier, "Auf Einkaufsliste".
 
 Answers of the workshop (2026-10-14):
 
