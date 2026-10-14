@@ -99,7 +99,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             checked={form.noAppointment}
             onChange={(e) => set('noAppointment', e.target.checked)}
           />
-          {form.noAppointment && <SameVehicleHint vehicleId={vehicleId} date="" taskId={taskId} />}
+          {vehicleId && form.noAppointment && <SameVehicleHint vehicleId={vehicleId} date="" taskId={taskId} />}
           {!form.noAppointment && (
             <>
               <div className={styles.row}>
@@ -142,7 +142,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   error={form.date ? errors.endTime : undefined}
                 />
               </div>
-              <SameVehicleHint vehicleId={vehicleId} date={form.date} taskId={taskId} />
+              {vehicleId && <SameVehicleHint vehicleId={vehicleId} date={form.date} taskId={taskId} />}
               <Checkbox
                 label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
                 checked={form.timeOpen}

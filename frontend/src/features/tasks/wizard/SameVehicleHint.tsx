@@ -8,7 +8,8 @@ import { openTasksOfVehicle } from './sameVehicle'
 import styles from './SameVehicleHint.module.css'
 
 interface SameVehicleHintProps {
-  vehicleId: string | undefined
+  /** only rendered with a vehicle – with "Fahrzeug noch offen" there is nothing to compare */
+  vehicleId: string
   /** the chosen day; empty = no appointment (yet) – then only the list "Ohne Termin" is checked */
   date: string
   /** when editing: the task itself */
@@ -20,7 +21,7 @@ interface SameVehicleHintProps {
  * hint: the car may come twice on purpose. The links open in a new tab, so the form stays filled.
  */
 export function SameVehicleHint({ vehicleId, date, taskId }: SameVehicleHintProps) {
-  const ofDay = useTasksOfDay(vehicleId && date ? date : undefined)
+  const ofDay = useTasksOfDay(date || undefined)
   const unplanned = useTasksWithoutAppointment()
   const { data: lifts } = useAllLifts()
 
@@ -44,7 +45,7 @@ export function SameVehicleHint({ vehicleId, date, taskId }: SameVehicleHintProp
         <ul className={styles.list}>
           {others.map((task) => (
             <li key={task.id}>
-              <Link to={`/tasks/${task.id}`} target="_blank" rel="noreferrer">
+              <Link to={`/tasks/${task.id}`} target="_blank" rel="noopener noreferrer">
                 {task.taskNumber ?? 'Auftrag'}
               </Link>{' '}
               · {where(task)}
