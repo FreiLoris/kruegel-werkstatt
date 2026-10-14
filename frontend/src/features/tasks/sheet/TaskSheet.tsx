@@ -156,5 +156,10 @@ function SheetBlockView({ block }: { block: SheetBlock }) {
   switch (block.kind) {
     case 'tires':
       return <TireBlock block={block} />
+    default: {
+      // a new kind of block without a component does not compile – instead of printing nothing
+      const unknown: never = block.kind
+      return unknown
+    }
   }
 }
