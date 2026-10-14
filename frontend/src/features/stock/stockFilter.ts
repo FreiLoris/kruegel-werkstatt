@@ -10,7 +10,7 @@ export interface StockFilter {
   query: string
   /** empty = all */
   category: StockCategory | ''
-  /** a storage location ID, {@link NONE} or empty (all) */
+  /** a storage location ID – with everything inside it –, {@link NONE} or empty (all) */
   location: string
   /** a supplier ID (main or further one), {@link NONE} or empty (all) */
   supplier: string
@@ -18,8 +18,11 @@ export interface StockFilter {
 
 /** Names and order of places and suppliers – the article only has their IDs */
 export interface StockLookup {
+  /** the path of each place, e.g. "Büro › Regal 2" */
   locationNames: Map<string, string>
-  /** position in the settings (along the shelves) */
+  /** each place with everything inside it (13f) */
+  locationsWithin: Map<string, Set<string>>
+  /** position in the tree (along the shelves) */
   locationOrder: Map<string, number>
   supplierNames: Map<string, string>
 }
@@ -40,6 +43,12 @@ function searchText(item: StockItem, lookup: StockLookup) {
     .toLocaleLowerCase('de-CH')
 }
 
+/** At the place or anywhere inside it: "Büro" finds the drawer of a shelf in the office */
+function inPlace(item: StockItem, place: string, lookup: StockLookup) {
+  if (!item.storageLocationId) return false
+  return (lookup.locationsWithin.get(place) ?? new Set([place])).has(item.storageLocationId)
+}
+
 function matches(filter: string, ids: string[]) {
   if (!filter) return true
   return filter === NONE ? ids.length === 0 : ids.includes(filter)
@@ -53,7 +62,9 @@ export function filterStock(items: StockItem[], filter: StockFilter, lookup: Sto
   const words = filter.query.toLocaleLowerCase('de-CH').split(/\s+/).filter(Boolean)
   return items.filter((item) => {
     if (filter.category && item.category !== filter.category) return false
-    if (!matches(filter.location, item.storageLocationId ? [item.storageLocationId] : [])) return false
+    if (filter.location === NONE ? item.storageLocationId !== null : filter.location && !inPlace(item, filter.location, lookup)) {
+      return false
+    }
     if (!matches(filter.supplier, item.suppliers.map((s) => s.supplierId))) return false
     if (words.length === 0) return true
     const text = searchText(item, lookup)

@@ -484,9 +484,15 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   the supplier's own article number (`stock_item_supplier`, position 0 = main). The stock list filters
   and sorts by supplier, the search finds supplier names and their numbers. A deleted supplier is
   taken off its articles – a further one becomes the main supplier.
-- [ ] **13f – Storage locations as a tree** (feedback Loris 2026-10-14): places nested as deep as
-  needed (room → shelf → drawer), an article at any level, the filter of a place includes everything
-  below it.
+- [x] **13f – Storage locations as a tree** (feedback Loris 2026-10-14)
+  Done: places nested as deep as needed (`parent_id`), e.g. "1. OG › Büro › Regal 2 › Schublade 3" –
+  floors or rooms at the top is up to the workshop. A name once per level ("Lager" under "EG" and
+  under "1. OG"). An article lies at any level; the stock list shows the path, sorts in tree order,
+  and the filter of a place includes everything inside it (filter "Büro" + print = inventory of the
+  room). Settings: the tree with ↑/↓ per level, "+" for a place inside, "Mehr" → rename, move (with
+  everything inside, not into itself) and "no longer use" (with everything inside; back again only
+  inside a place in use). Existing places became top-level ones. No fixed top level "Werkstatt" –
+  everything is in the workshop anyway.
 - [ ] **13g – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09): entry with an
   optional article and a supplier (taken from the article), grouped by supplier, "Auf Einkaufsliste";
   the supplier card shows its open entries.

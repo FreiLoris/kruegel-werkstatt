@@ -8,6 +8,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import type { Supplier } from '../suppliers/supplierApi'
 import { CATEGORY_LABEL, useDeleteStockItem, useSaveStockItem, type StockCategory, type StockItem, type StockItemRequest } from './stockApi'
+import { placeTree } from './placeTree'
 import styles from './StockItemDialog.module.css'
 import type { StorageLocation } from './storageLocationApi'
 
@@ -84,8 +85,8 @@ export function StockItemDialog({
   const [values, setValues] = useState(() => initialValues(item, defaults))
 
   const fieldError = (field: string) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
-  // places in use, plus the article's own one if it is no longer used
-  const choosable = locations.filter((l) => l.active || l.id === item?.storageLocationId)
+  // places in use in tree order, plus the article's own one if it is no longer used
+  const choosable = placeTree(locations).filter((p) => p.location.active || p.location.id === item?.storageLocationId)
 
   function set(field: Exclude<keyof FormValues, 'suppliers'>, value: string) {
     change({ ...values, [field]: value })
@@ -192,9 +193,9 @@ export function StockItemDialog({
           error={fieldError('storageLocationId')}
         >
           <option value="">– kein fester Platz –</option>
-          {choosable.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.active ? l.name : `${l.name} (nicht mehr verwendet)`}
+          {choosable.map((p) => (
+            <option key={p.location.id} value={p.location.id}>
+              {p.location.active ? p.path : `${p.path} (nicht mehr verwendet)`}
             </option>
           ))}
         </Select>

@@ -1,6 +1,7 @@
 package ch.kruegel.workshop.stock;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,6 +35,10 @@ class StorageLocationController {
     record StorageLocationOrder(@NotEmpty List<UUID> ids) {
     }
 
+    /** Where it goes; empty = top level */
+    record StorageLocationParent(@Schema(types = {"string", "null"}, format = "uuid") UUID parentId) {
+    }
+
     @Operation(summary = "All storage locations in fixed order (default: only active ones)")
     @GetMapping
     List<StorageLocationDto> list(@RequestParam(defaultValue = "false") boolean includeInactive) {
@@ -54,19 +59,26 @@ class StorageLocationController {
         return service.rename(id, request);
     }
 
-    @Operation(summary = "No longer use (instead of delete)")
+    @Operation(summary = "Move into another place or to the top level",
+            description = "With everything inside it, at the end there. Not into itself or one of its own places.")
+    @PutMapping("/{id}/parent")
+    StorageLocationDto move(@PathVariable UUID id, @RequestBody StorageLocationParent request) {
+        return service.move(id, request.parentId());
+    }
+
+    @Operation(summary = "No longer use (instead of delete)", description = "Everything inside it too.")
     @PostMapping("/{id}/deactivate")
     StorageLocationDto deactivate(@PathVariable UUID id) {
         return service.deactivate(id);
     }
 
-    @Operation(summary = "Use again")
+    @Operation(summary = "Use again", description = "Everything inside it too; only inside a place in use.")
     @PostMapping("/{id}/activate")
     StorageLocationDto activate(@PathVariable UUID id) {
         return service.activate(id);
     }
 
-    @Operation(summary = "Set order (first ID = top)")
+    @Operation(summary = "Set order within one level (first ID = top)")
     @PutMapping("/order")
     List<StorageLocationDto> reorder(@Valid @RequestBody StorageLocationOrder order) {
         return service.reorder(order.ids());

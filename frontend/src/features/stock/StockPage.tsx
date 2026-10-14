@@ -9,6 +9,7 @@ import { Select, TextField } from '../../components/ui/Fields'
 import { useSuppliers } from '../suppliers/supplierApi'
 import { MaterialTabs } from './MaterialTabs'
 import { CATEGORY_LABEL, useStockItems, type StockCategory, type StockItem } from './stockApi'
+import { placesWithin, placeTree } from './placeTree'
 import { filterStock, NONE, sortStock, type StockLookup, type StockSort } from './stockFilter'
 import { StockItemDialog } from './StockItemDialog'
 import styles from './StockPage.module.css'
@@ -52,20 +53,22 @@ export function StockPage() {
     setParams(next, { replace: true })
   }
 
+  const places = useMemo(() => placeTree(locations), [locations])
   const lookup: StockLookup = useMemo(
     () => ({
-      locationNames: new Map(locations.map((l) => [l.id, l.name])),
-      locationOrder: new Map(locations.map((l, index) => [l.id, index])),
+      locationNames: new Map(places.map((p) => [p.location.id, p.path])),
+      locationsWithin: placesWithin(locations),
+      locationOrder: new Map(places.map((p, index) => [p.location.id, index])),
       supplierNames: new Map(suppliers.map((s) => [s.id, s.name])),
     }),
-    [locations, suppliers],
+    [places, locations, suppliers],
   )
   const shown = useMemo(
     () => (items.data ? sortStock(filterStock(items.data, { query, category, location, supplier }, lookup), sort, lookup) : []),
     [items.data, query, category, location, supplier, lookup, sort],
   )
-  // the places to filter by: those in use and those an article still lies at
-  const filterLocations = locations.filter((l) => l.active || items.data?.some((i) => i.storageLocationId === l.id))
+  // the places to filter by, in tree order: those in use and those an article still lies at
+  const filterPlaces = places.filter((p) => p.location.active || items.data?.some((i) => i.storageLocationId === p.location.id))
 
   const filterText = [
     category && CATEGORY_LABEL[category],
@@ -115,9 +118,9 @@ export function StockPage() {
         </Select>
         <Select label="Lagerort" value={location} onChange={(e) => change('location', e.target.value)}>
           <option value="">Alle</option>
-          {filterLocations.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
+          {filterPlaces.map((p) => (
+            <option key={p.location.id} value={p.location.id}>
+              {p.path}
             </option>
           ))}
           <option value={NONE}>ohne Lagerort</option>
