@@ -1,6 +1,12 @@
+import { MaterialTabs } from '../stock/MaterialTabs'
 import { TodoListView } from './TodoListView'
 
-/** The shopping list – a page of its own since FB-04; later part of the material pages (FB-08, FB-09) */
+/** The shopping list – a page of its own since FB-04, a tab under "Material" since FB-08 */
 export function ShoppingListPage() {
-  return <TodoListView shopping />
+  return (
+    <>
+      <MaterialTabs />
+      <TodoListView shopping />
+    </>
+  )
 }

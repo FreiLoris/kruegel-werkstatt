@@ -79,13 +79,16 @@ export function AppLayout() {
 
 /** The pages of the app – in the header, or at the bottom on the TV */
 function MainLinks() {
+  const { pathname } = useLocation()
   return navigation.map((entry) => (
     <NavLink
       key={entry.path}
       to={entry.path}
       // "end": home link only active for exactly "/", not for every sub page
       end={entry.path === '/'}
-      className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
+      className={({ isActive }) =>
+        isActive || entry.pages?.some((page) => pathname.startsWith(page.path)) ? `${styles.link} ${styles.active}` : styles.link
+      }
     >
       {entry.title}
     </NavLink>

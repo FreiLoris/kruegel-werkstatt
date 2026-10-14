@@ -28,6 +28,9 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Stammdaten | master data | |
 | Lift (Hebebühne) | `Lift` / `lifts` | |
 | Serviceleistung | `ServiceItem` / `service-items` | Ölwechsel, Wischblätter, … |
+| Lagerort | `StorageLocation` / `storage-locations` | Regal, Fach – in the settings |
+| Lager(liste), Artikel | `StockItem` / `stock-items` | kept by hand, no bookings (FB-08) |
+| Ersatzteile / Verbrauchsmaterial / Werkzeuge | `StockCategory` `SPARE_PART` / `CONSUMABLE` / `TOOL` | |
 | Wer bin ich? / Person des Geräts | device person, `CurrentPerson` | header `X-Person` |
 | nur ansehen | view-only | |
 | geändert von / am | `updatedBy` / `updatedAt` | |

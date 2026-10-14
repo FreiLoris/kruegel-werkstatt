@@ -106,3 +106,15 @@
   gap: var(--space-4);
   margin-left: auto;
 }
+
+/* printing a list page (e.g. the stock list): only the page, without header and navigation */
+@media print {
+  .header {
+    display: none;
+  }
+
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+}
