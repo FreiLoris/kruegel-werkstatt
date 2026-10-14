@@ -71,5 +71,23 @@ export function useDeleteTodo() {
   })
 }
 
-/** The open to-dos of the pinboard overview on the dashboard (not the shopping list) */
+/** Everyone's open to-dos (not the shopping list) – the columns of the to-do page and the dashboard */
 export const BOARD_TODOS: TodoFilter = { shopping: false }
+
+/** Dragged to another column of the to-dos: someone else (or nobody) takes care of it. */
+export function useReassignTodo() {
+  const queryClient = useQueryClient()
+  const key = [TOPIC, BOARD_TODOS]
+  return useMutation({
+    mutationFn: async ({ id, assigneeId }: { id: string; assigneeId: string | null; arranged: Todo[] }) =>
+      dataOrThrow(await api.PUT('/api/todos/{id}/assignee', { params: { path: { id } }, body: { assigneeId } })),
+    onMutate: async ({ arranged }) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      const previous = queryClient.getQueryData<Todo[]>(key)
+      queryClient.setQueryData(key, arranged)
+      return { previous }
+    },
+    onError: (_error, _variables, context) => queryClient.setQueryData(key, context?.previous),
+    onSettled: () => refresh(queryClient),
+  })
+}

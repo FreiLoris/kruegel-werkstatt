@@ -459,11 +459,12 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   stays possible: a car may come twice on purpose. Done tasks do not count.
 - [x] **13c – Pinboard, to-dos and shopping list as pages of their own** (FB-04)
   Done: three entries in the navigation – "Pinnwand" (notes only, still in columns per person),
-  "To-dos" (`/todos`, everyone's open ones grouped by person, the person filter stays) and
+  "To-dos" (`/todos`, everyone's open ones in columns per person, dragged to reassign; with the
+  person filter a list) and
   "Einkaufsliste" (`/shopping`). Each has "Offen | Erledigt" (`done=1`); "Erledigt" on the pinboard
   is the former archive. A to-do of a note links to it ("Notiz" → `/pinboard?note=…`); the note
   lists its to-dos as before. Old addresses (`/pinboard?view=list|shopping|archive`) are forwarded.
-  To-dos can no longer be dragged between people – reassigned in the edit form. The dashboard tile
+  The dashboard tile
   stays one overview per person (notes and to-dos) with links to both pages. When the stock list
   (FB-08) comes, the shopping list moves under "Material".
 

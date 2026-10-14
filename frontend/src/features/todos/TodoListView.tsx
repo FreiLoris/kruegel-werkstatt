@@ -4,12 +4,11 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { DoneFilter } from '../../components/ui/DoneFilter'
 import { useActiveEmployees } from '../employees/employeeApi'
-import { NameBadge } from '../employees/NameBadge'
 import { PartsToOrder } from '../tasks/parts/PartsToOrder'
 import { useTodos, type Todo, type TodoFilter } from './todoApi'
 import { dueState } from './todoDue'
+import { TodoBoard } from './TodoBoard'
 import { TodoForm } from './TodoForm'
-import { todosByPerson } from './todoGroups'
 import { TodoItem } from './TodoItem'
 import styles from './TodoListView.module.css'
 
@@ -20,7 +19,7 @@ const NOBODY = 'none'
  * The to-dos or the shopping list – each a page of its own since FB-04 (before: views of the
  * pinboard). Filtered by person from the employee list (bug #3), "Offen | Erledigt" like on the
  * pinboard. Person and filter are in the address (`person=`, `done=1`), so a tablet can open
- * "Reto's to-dos" directly. Everyone's open to-dos are grouped by person.
+ * "Reto's to-dos" directly. Everyone's open to-dos are in columns per person, dragged to reassign.
  */
 export function TodoListView({ shopping }: { shopping: boolean }) {
   const [params, setParams] = useSearchParams()
@@ -47,11 +46,12 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
   }
 
   const overdue = (open.data ?? []).filter((t) => dueState(t.dueDate, today) === 'overdue').length
-  // grouped only for everyone's to-dos – one person, or the shopping list, is one list
-  const grouped = !shopping && person === ''
+  // columns only for everyone's open to-dos – one person, or the shopping list, is one list
+  const columns = !shopping && !showDone && person === ''
 
   return (
-    <>
+    // the columns use the whole screen width, like the pinboard (AppLayout: data-wide)
+    <div data-wide={columns ? '' : undefined}>
       <div className={styles.header}>
         <h1>{shopping ? 'Einkaufsliste' : 'To-dos'}</h1>
         <DoneFilter done={showDone} onChange={(on) => change('done', on ? '1' : '')} openCount={open.data?.length} />
@@ -116,20 +116,12 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
             <p className="muted">To-dos konnten nicht geladen werden: {open.error.message}</p>
           ) : !open.data ? (
             <p className="muted">Lade …</p>
+          ) : columns ? (
+            <TodoBoard todos={open.data} people={people} canEdit={canEdit} />
           ) : open.data.length === 0 ? (
             <section className={styles.card}>
               <p className="muted">{shopping ? 'Nichts einzukaufen.' : 'Nichts offen – schön.'}</p>
             </section>
-          ) : grouped ? (
-            todosByPerson(open.data, people).map((group) => (
-              <section key={group.id ?? 'rest'} className={styles.card} aria-label={group.employee?.name ?? 'Nicht zugewiesen'}>
-                <h2 className={styles.groupTitle}>
-                  {group.employee ? <NameBadge name={group.employee.name} color={group.employee.color} /> : 'Nicht zugewiesen'}
-                  <span className="muted">{group.todos.length}</span>
-                </h2>
-                <OpenList todos={group.todos} canEdit={canEdit} showAssignee={group.employee === null} />
-              </section>
-            ))
           ) : (
             <section className={styles.card} aria-label={shopping ? 'Einkaufsliste' : 'Offene To-dos'}>
               <OpenList todos={open.data} canEdit={canEdit} showAssignee={person === ''} />
@@ -137,14 +129,11 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
           )}
         </>
       )}
-    </>
+    </div>
   )
 }
 
-/**
- * Open to-dos with the shopping list tick in the edit form. `showAssignee` where neither a group
- * heading nor the person filter says who – never "nicht zugewiesen" (the rest group says it).
- */
+/** Open to-dos with the shopping list tick in the edit form; the person only where no filter says who */
 function OpenList({ todos, canEdit, showAssignee }: { todos: Todo[]; canEdit: boolean; showAssignee: boolean }) {
   return (
     <ul className={styles.list}>

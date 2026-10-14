@@ -1,5 +1,5 @@
 import { ClipboardList, Pencil, ShoppingCart, StickyNote, Trash2, Undo2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { useToday } from '../../lib/clock'
 import { reasonOf } from '../../api/errors'
@@ -24,8 +24,12 @@ interface TodoItemProps {
   withShopping?: boolean
   /** link "Notiz" for a sub-task of a note (not inside the note itself) */
   showNote?: boolean
-  /** hide the person – where a heading or filter already says who */
+  /** hide the person – where a column, heading or filter already says who */
   showAssignee?: boolean
+  /** to-dos in columns: a grip to drag it to another person (the checkbox and buttons stay clickable) */
+  dragHandle?: ReactNode
+  style?: CSSProperties
+  ref?: Ref<HTMLLIElement>
 }
 
 /**
@@ -39,6 +43,9 @@ export function TodoItem({
   withShopping = false,
   showNote = true,
   showAssignee = true,
+  dragHandle,
+  style,
+  ref,
 }: TodoItemProps) {
   const navigate = useNavigate()
   const setDone = useSetTodoDone()
@@ -74,7 +81,8 @@ export function TodoItem({
   const assignee = person(todo.assigneeId)
   const due = dueState(todo.dueDate, today)
   return (
-    <li className={[styles.item, done && styles.done].filter(Boolean).join(' ')}>
+    <li ref={ref} style={style} className={[styles.item, dragHandle !== undefined && styles.draggable, done && styles.done].filter(Boolean).join(' ')}>
+      {dragHandle}
       <input
         type="checkbox"
         className={styles.check}
