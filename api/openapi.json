@@ -10676,6 +10676,16 @@
           "shopping" : {
             "type" : "boolean"
           },
+          "stockItemId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Shopping list: the article in stock"
+          },
+          "supplierId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Shopping list: where to order it"
+          },
           "task" : {
             "description" : "The task it is about – enough to name it and open it",
             "oneOf" : [ {
@@ -10692,7 +10702,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "assigneeId", "createdAt", "createdBy", "doneAt", "doneBy", "dueDate", "id", "noteId", "shopping", "task", "text", "version" ]
+        "required" : [ "assigneeId", "createdAt", "createdBy", "doneAt", "doneBy", "dueDate", "id", "noteId", "shopping", "stockItemId", "supplierId", "task", "text", "version" ]
       },
       "TodoRequest" : {
         "type" : "object",
@@ -10708,6 +10718,16 @@
           "shopping" : {
             "type" : "boolean",
             "description" : "Missing = false"
+          },
+          "stockItemId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Shopping list only"
+          },
+          "supplierId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Shopping list only"
           },
           "taskId" : {
             "type" : [ "string", "null" ],

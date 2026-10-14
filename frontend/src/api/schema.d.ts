@@ -2468,6 +2468,16 @@ export interface components {
              */
             noteId: string | null;
             shopping: boolean;
+            /**
+             * Format: uuid
+             * @description Shopping list: the article in stock
+             */
+            stockItemId: string | null;
+            /**
+             * Format: uuid
+             * @description Shopping list: where to order it
+             */
+            supplierId: string | null;
             /** @description The task it is about – enough to name it and open it */
             task: components["schemas"]["TaskRefDto"] | null;
             text: string;
@@ -2481,6 +2491,16 @@ export interface components {
             dueDate?: string | null;
             /** @description Missing = false */
             shopping?: boolean;
+            /**
+             * Format: uuid
+             * @description Shopping list only
+             */
+            stockItemId?: string | null;
+            /**
+             * Format: uuid
+             * @description Shopping list only
+             */
+            supplierId?: string | null;
             /** Format: uuid */
             taskId?: string | null;
             text: string;

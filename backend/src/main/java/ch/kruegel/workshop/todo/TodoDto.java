@@ -19,6 +19,8 @@ public record TodoDto(
         @Schema(types = {"string", "null"}, format = "uuid", description = "The note it is a sub-task of (pinboard)") UUID noteId,
         @Schema(types = {"string", "null"}, description = "Empty = open") Instant doneAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID doneBy,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Shopping list: the article in stock") UUID stockItemId,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Shopping list: where to order it") UUID supplierId,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy) {
 
@@ -27,6 +29,6 @@ public record TodoDto(
         UUID assigneeId = todo.getAssignee() == null ? null : todo.getAssignee().getId();
         return new TodoDto(todo.getId(), todo.getVersion(), todo.getText(), assigneeId, todo.getDueDate(), todo.isShopping(),
                 TaskRefDto.of(todo.getTask()), todo.getNoteId(), todo.getDoneAt(), todo.getDoneBy(),
-                todo.getCreatedAt(), todo.getCreatedBy());
+                todo.getStockItemId(), todo.getSupplierId(), todo.getCreatedAt(), todo.getCreatedBy());
     }
 }

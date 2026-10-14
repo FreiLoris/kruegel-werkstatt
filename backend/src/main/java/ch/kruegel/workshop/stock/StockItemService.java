@@ -25,6 +25,8 @@ import java.util.UUID;
 public class StockItemService {
 
     static final String TOPIC = "stock-items";
+    /** A deleted article disappears from its shopping list entries (13g). Same value as {@code TodoService.TOPIC}. */
+    private static final String TODO_TOPIC = "todos";
 
     private final StockItemRepository repository;
     private final StorageLocationRepository locations;
@@ -62,6 +64,7 @@ public class StockItemService {
         repository.delete(find(id));
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
+        events.publishEvent(new DataChanged(TODO_TOPIC));
     }
 
     /** A supplier is about to be deleted: its articles let go of it (same transaction). */

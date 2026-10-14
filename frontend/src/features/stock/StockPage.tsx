@@ -1,12 +1,15 @@
-import { ArrowDownWideNarrow, Pencil, Plus, Printer } from 'lucide-react'
+import { ArrowDownWideNarrow, Pencil, Plus, Printer, ShoppingCart } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
+import { reasonOf } from '../../api/errors'
+import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
 import { formatDate } from '../../lib/format'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
 import { useSuppliers } from '../suppliers/supplierApi'
+import { useSaveTodo, useTodos } from '../todos/todoApi'
 import { MaterialTabs } from './MaterialTabs'
 import { CATEGORY_LABEL, useStockItems, type StockCategory, type StockItem } from './stockApi'
 import { placesWithin, placeTree } from './placeTree'
@@ -39,6 +42,23 @@ export function StockPage() {
   const { data: suppliers = [] } = useSuppliers()
   const [dialog, setDialog] = useState<Dialog>(null)
   const today = useToday()
+  const toast = useToast()
+  const navigate = useNavigate()
+  const { data: shoppingList } = useTodos({ shopping: true })
+  const addToList = useSaveTodo()
+  // articles with an open entry on the shopping list
+  const onList = useMemo(() => new Set(shoppingList?.map((t) => t.stockItemId).filter(Boolean)), [shoppingList])
+
+  /** FB-08 nice to have: one tap – with the main supplier (FB-09) */
+  function putOnList(item: StockItem) {
+    addToList.mutate(
+      { request: { text: item.name, shopping: true, stockItemId: item.id, supplierId: item.suppliers[0]?.supplierId } },
+      {
+        onSuccess: () => toast.success(`${item.name} steht auf der Einkaufsliste`),
+        onError: (error) => toast.error(`${item.name} nicht auf die Einkaufsliste gesetzt: ${reasonOf(error)}`),
+      },
+    )
+  }
 
   const query = params.get('q') ?? ''
   const category = (params.get('category') ?? '') as StockCategory | ''
@@ -199,6 +219,27 @@ export function StockPage() {
                       </td>
                       {canEdit && (
                         <td className={`${styles.rowActions} ${styles.noPrint}`}>
+                          {onList.has(item.id) ? (
+                            // the same button, filled: as wide as before – the other rows' buttons stay where they are
+                            <Button
+                              small
+                              variant="primary"
+                              icon={ShoppingCart}
+                              aria-label={`${item.name} steht auf der Einkaufsliste – öffnen`}
+                              title="Steht auf der Einkaufsliste"
+                              onClick={() => navigate('/shopping')}
+                            />
+                          ) : (
+                            <Button
+                              small
+                              variant="ghost"
+                              icon={ShoppingCart}
+                              aria-label={`${item.name} auf die Einkaufsliste`}
+                              title="Auf die Einkaufsliste"
+                              disabled={addToList.isPending}
+                              onClick={() => putOnList(item)}
+                            />
+                          )}
                           <Button small icon={Pencil} onClick={() => setDialog({ kind: 'edit', item })} aria-label={`${item.name} bearbeiten`}>
                             Bearbeiten
                           </Button>

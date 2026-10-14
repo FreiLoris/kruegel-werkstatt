@@ -6,6 +6,7 @@ import { Checkbox, Select, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
 import { useAddNoteTodo } from '../notes/noteApi'
+import { PurchaseFields } from './PurchaseFields'
 import { useSaveTodo, type Todo } from './todoApi'
 import styles from './TodoForm.module.css'
 
@@ -25,8 +26,9 @@ interface TodoFormProps {
 }
 
 /**
- * New or changed to-do: text, who, until when (and shopping list). A person who is not selectable
- * any more stays in the list while it is on the to-do – the server accepts it unchanged.
+ * New or changed to-do: text, who, until when (and shopping list – there also article and supplier,
+ * 13g). A person who is not selectable any more stays in the list while it is on the to-do – the
+ * server accepts it unchanged.
  */
 export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false, onSaved, onCancel }: TodoFormProps) {
   const saveTodo = useSaveTodo()
@@ -40,6 +42,8 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
     assigneeId: todo?.assigneeId ?? defaults?.assigneeId ?? '',
     dueDate: todo?.dueDate ?? '',
     shopping: todo?.shopping ?? defaults?.shopping ?? false,
+    stockItemId: todo?.stockItemId ?? '',
+    supplierId: todo?.supplierId ?? '',
   }
   const [draft, setDraft] = useState(initial)
   // the version from when the form was opened (conventions: never the live one)
@@ -58,11 +62,13 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
       dueDate: draft.dueDate || undefined,
       shopping: draft.shopping,
       taskId: todo ? (todo.task?.id ?? undefined) : taskId,
+      stockItemId: (draft.shopping && draft.stockItemId) || undefined,
+      supplierId: (draft.shopping && draft.supplierId) || undefined,
       version: openedVersion,
     }
     const callbacks = {
       onSuccess: () => {
-        if (!todo) setDraft({ ...initial, text: '', dueDate: '' })
+        if (!todo) setDraft({ ...initial, text: '', dueDate: '', stockItemId: '', supplierId: '' })
         onSaved?.()
       },
       onError: (error: Error) => toast.error(`To-do nicht gespeichert: ${reasonOf(error)}`),
@@ -92,6 +98,12 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
       <TextField label="Bis" type="date" value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} />
       {withShopping && (
         <Checkbox label="Einkaufsliste" checked={draft.shopping} onChange={(e) => setDraft({ ...draft, shopping: e.target.checked })} />
+      )}
+      {withShopping && draft.shopping && (
+        <PurchaseFields
+          value={{ stockItemId: draft.stockItemId, supplierId: draft.supplierId, text: draft.text }}
+          onChange={(purchase) => setDraft({ ...draft, ...purchase })}
+        />
       )}
       <div className={styles.actions}>
         {onCancel && (

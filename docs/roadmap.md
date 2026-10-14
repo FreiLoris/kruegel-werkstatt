@@ -493,9 +493,15 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   everything inside, not into itself) and "no longer use" (with everything inside; back again only
   inside a place in use). Existing places became top-level ones. No fixed top level "Werkstatt" –
   everything is in the workshop anyway.
-- [ ] **13g – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09): entry with an
-  optional article and a supplier (taken from the article), grouped by supplier, "Auf Einkaufsliste";
-  the supplier card shows its open entries.
+- [x] **13g – Shopping list ↔ stock and suppliers** (FB-08 nice to have, FB-09)
+  Done: an entry of the shopping list may name the article in stock and the supplier (`todo.stock_item_id`,
+  `supplier_id`, only on the shopping list; a deleted article or supplier leaves the entry). Choosing
+  the article fills in its main supplier and, if empty, the text. The open shopping list is grouped
+  by supplier ("Ohne Lieferant" last) with order channel, phone and webshop in the heading and the
+  supplier's article number at each entry; "Bestellung kopieren" puts one line per entry with the
+  number (and our customer number) on the clipboard – also over plain http on the NAS. The stock list
+  has a cart button per article (with the main supplier, filled when it is on the list already), the
+  supplier card shows its open entries.
 
 Answers of the workshop (2026-10-14):
 

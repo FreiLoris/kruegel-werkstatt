@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button'
 import { DoneFilter } from '../../components/ui/DoneFilter'
 import { useActiveEmployees } from '../employees/employeeApi'
 import { PartsToOrder } from '../tasks/parts/PartsToOrder'
+import { ShoppingBySupplier } from './ShoppingBySupplier'
 import { useTodos, type Todo, type TodoFilter } from './todoApi'
 import { dueState } from './todoDue'
 import { TodoBoard } from './TodoBoard'
@@ -118,6 +119,9 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
             <p className="muted">Lade …</p>
           ) : columns ? (
             <TodoBoard todos={open.data} people={people} canEdit={canEdit} />
+          ) : shopping && open.data.length > 0 ? (
+            // 13g: by supplier – order everything from one at once
+            <ShoppingBySupplier entries={open.data} canEdit={canEdit} showAssignee={person === ''} />
           ) : open.data.length === 0 ? (
             <section className={styles.card}>
               <p className="muted">{shopping ? 'Nichts einzukaufen.' : 'Nichts offen – schön.'}</p>
