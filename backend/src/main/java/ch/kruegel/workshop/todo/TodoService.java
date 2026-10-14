@@ -31,7 +31,8 @@ public class TodoService {
     public static final String TOPIC = "todos";
     /**
      * The note shows how many of its sub-tasks are done (FB-03): a changed sub-task changes the
-     * note too. Same text as NoteService.TOPIC – not referenced, the note package uses this one.
+     * note too. Same value as {@code NoteService.TOPIC} – a copy, because the note package already
+     * uses this one and a reference back would be a cycle.
      */
     private static final String NOTES_TOPIC = "notes";
     /** How many done to-dos a list shows at most – the newest */

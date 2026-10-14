@@ -446,8 +446,8 @@ Ten tickets FB-01 … FB-10 from the second test round (2026-10-13), plus a UI c
 tyre hotel. The order follows the workshop's suggestion: quick fixes → material (FB-04, FB-08,
 FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its own).
 
-- [ ] **13a – The note counter follows its sub-tasks** (FB-03)
-  Ticking off, editing or deleting a sub-task of a note left the note's counter ("0/1") as it was
+- [x] **13a – The note counter follows its sub-tasks** (FB-03)
+  Done: ticking off, editing or deleting a sub-task of a note left the note's counter ("0/1") as it was
   until the page was reloaded – on this device (only the to-dos were refetched) and on the others
   (only the topic `todos` was announced). Now both: the to-do hooks refetch the notes too, and a
   changed sub-task announces `notes` as well.
