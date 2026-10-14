@@ -1511,14 +1511,24 @@ export interface components {
             employeeId: string;
             /** Format: date */
             endDate: string;
-            /** @description Only the morning of the last day */
+            /**
+             * Format: time
+             * @description Until this time on the last day (not vacation)
+             */
+            endTime: string | null;
+            /** @description Vacation: only the morning of the last day */
             endsNoon: boolean;
             /** Format: uuid */
             id: string;
             note: string | null;
             /** Format: date */
             startDate: string;
-            /** @description Only the afternoon of the first day */
+            /**
+             * Format: time
+             * @description From this time on the first day (not vacation)
+             */
+            startTime: string | null;
+            /** @description Vacation: only the afternoon of the first day */
             startsAfternoon: boolean;
             /** Format: date-time */
             updatedAt: string;
@@ -1536,12 +1546,22 @@ export interface components {
             employeeId: string;
             /** Format: date */
             endDate: string;
-            /** @description Only the morning of the last day; missing = false */
+            /**
+             * Format: time
+             * @description Not for vacation: until this time on the last day; empty = whole day
+             */
+            endTime?: string | null;
+            /** @description Vacation only: only the morning of the last day; missing = false */
             endsNoon?: boolean;
             note?: string;
             /** Format: date */
             startDate: string;
-            /** @description Only the afternoon of the first day; missing = false */
+            /**
+             * Format: time
+             * @description Not for vacation: from this time on the first day; empty = whole day
+             */
+            startTime?: string | null;
+            /** @description Vacation only: only the afternoon of the first day; missing = false */
             startsAfternoon?: boolean;
             /**
              * Format: int64

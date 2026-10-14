@@ -8665,9 +8665,14 @@
             "type" : "string",
             "format" : "date"
           },
+          "endTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Until this time on the last day (not vacation)"
+          },
           "endsNoon" : {
             "type" : "boolean",
-            "description" : "Only the morning of the last day"
+            "description" : "Vacation: only the morning of the last day"
           },
           "id" : {
             "type" : "string",
@@ -8680,9 +8685,14 @@
             "type" : "string",
             "format" : "date"
           },
+          "startTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "From this time on the first day (not vacation)"
+          },
           "startsAfternoon" : {
             "type" : "boolean",
-            "description" : "Only the afternoon of the first day"
+            "description" : "Vacation: only the afternoon of the first day"
           },
           "updatedAt" : {
             "type" : "string",
@@ -8697,7 +8707,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "category", "company", "employeeId", "endDate", "endsNoon", "id", "note", "startDate", "startsAfternoon", "updatedAt", "updatedBy", "version" ]
+        "required" : [ "category", "company", "employeeId", "endDate", "endTime", "endsNoon", "id", "note", "startDate", "startTime", "startsAfternoon", "updatedAt", "updatedBy", "version" ]
       },
       "AbsenceRequest" : {
         "type" : "object",
@@ -8720,9 +8730,14 @@
             "type" : "string",
             "format" : "date"
           },
+          "endTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Not for vacation: until this time on the last day; empty = whole day"
+          },
           "endsNoon" : {
             "type" : "boolean",
-            "description" : "Only the morning of the last day; missing = false"
+            "description" : "Vacation only: only the morning of the last day; missing = false"
           },
           "note" : {
             "type" : "string",
@@ -8733,9 +8748,14 @@
             "type" : "string",
             "format" : "date"
           },
+          "startTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Not for vacation: from this time on the first day; empty = whole day"
+          },
           "startsAfternoon" : {
             "type" : "boolean",
-            "description" : "Only the afternoon of the first day; missing = false"
+            "description" : "Vacation only: only the afternoon of the first day; missing = false"
           },
           "version" : {
             "type" : "integer",

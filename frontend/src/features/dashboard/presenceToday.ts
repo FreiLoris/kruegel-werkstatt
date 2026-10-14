@@ -1,17 +1,19 @@
 import { ABSENCE_CATEGORY, type Absence } from '../absences/absenceApi'
-import { absencesOn, partLabel, type DayPart } from '../absences/absenceDays'
+import { absencesOn, dayLabel, partLabel, type DayPart } from '../absences/absenceDays'
 import type { Employee } from '../employees/employeeApi'
 
 /** Someone who is in today – `part` when only for half the day */
 export interface Present {
   employee: Employee
   part: DayPart
+  /** shown next to the name: "Vormittag", "ab 10:30" (FB-05); empty = the whole day */
+  label: string
 }
 
 /** Someone who would be in today but is away – with the reason in words */
 export interface Away {
   employee: Employee
-  /** "Ferien", "Fremdarbeit Garage Muster AG", with "(Vormittag)" for half a day */
+  /** "Ferien", "Fremdarbeit Garage Muster AG", "Ferien (Vormittag)" for half a day, "Krank bis 10:30" with times */
   reason: string
 }
 
@@ -21,6 +23,13 @@ export interface Presence {
 }
 
 const OTHER_HALF: Record<DayPart, DayPart | null> = { full: null, morning: 'afternoon', afternoon: 'morning' }
+
+/** Away "bis 10:30" → in "ab 10:30"; "ab 14:00" → "bis 14:00"; "09:00–10:30" → "ausser 09:00–10:30" */
+function otherTime(time: string): string {
+  if (time.startsWith('bis ')) return `ab ${time.slice(4)}`
+  if (time.startsWith('ab ')) return `bis ${time.slice(3)}`
+  return `ausser ${time}`
+}
 
 /**
  * Who is in the workshop on `date` (12h) – from the settings of the people, nobody is named here:
@@ -45,7 +54,8 @@ export function presenceOn(employees: Employee[], absences: Absence[], date: str
 
     if (employee.flexibleHours) {
       // morning and afternoon entered separately = the whole day
-      if (presentEntries.length > 0) present.push({ employee, part: presentEntries.length > 1 ? 'full' : presentEntries[0].part })
+      if (presentEntries.length > 1) present.push({ employee, part: 'full', label: '' })
+      else if (presentEntries.length === 1) present.push({ employee, part: presentEntries[0].part, label: dayLabel(presentEntries[0]) })
       continue
     }
     if (!workingDay) continue
@@ -55,15 +65,22 @@ export function presenceOn(employees: Employee[], absences: Absence[], date: str
         entry.absence.category === 'EXTERNAL_WORK' && entry.absence.company
           ? `${ABSENCE_CATEGORY.EXTERNAL_WORK} ${entry.absence.company}`
           : ABSENCE_CATEGORY[entry.absence.category]
-      const half = partLabel(entry.part)
-      away.push({ employee, reason: half ? `${what} (${half})` : what })
+      // "Krank bis 10:30" like the workshop's example (FB-05) – "Ferien (Vormittag)" for half days
+      const reason = entry.time ? `${what} ${entry.time}` : entry.part !== 'full' ? `${what} (${dayLabel(entry)})` : what
+      away.push({ employee, reason })
     }
     if (awayEntries.length === 0) {
-      present.push({ employee, part: 'full' })
+      present.push({ employee, part: 'full', label: '' })
     } else if (awayEntries.length === 1) {
-      // away for one half → in for the other
-      const other = OTHER_HALF[awayEntries[0].part]
-      if (other) present.push({ employee, part: other })
+      const [only] = awayEntries
+      if (only.time) {
+        // away for some hours (FB-05) → in for the rest of the day
+        present.push({ employee, part: OTHER_HALF[only.part] ?? 'full', label: otherTime(only.time) })
+      } else {
+        // away for one half → in for the other
+        const other = OTHER_HALF[only.part]
+        if (other) present.push({ employee, part: other, label: partLabel(other) })
+      }
     }
   }
   return { present, away }

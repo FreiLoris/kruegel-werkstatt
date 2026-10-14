@@ -139,10 +139,11 @@ class DevSampleData implements ApplicationRunner {
                 new Absence(team.get(0), AbsenceCategory.VACATION, null, "Herbstferien", AbsencePeriod.days(monday.plusDays(7), monday.plusDays(11))),
                 new Absence(team.get(1), AbsenceCategory.SICK, null, null, AbsencePeriod.days(today, today)),
                 new Absence(team.get(2), AbsenceCategory.EXTERNAL_WORK, "Garage Muster AG", "Aushilfe Diagnose",
-                        new AbsencePeriod(today.plusDays(1), false, today.plusDays(1), true)),
+                        AbsencePeriod.times(today.plusDays(1), null, today.plusDays(1), LocalTime.NOON)),
                 new Absence(team.get(3), AbsenceCategory.TRAINING, null, "Kurs Hochvolt", AbsencePeriod.days(monday.plusDays(3), monday.plusDays(4))),
                 // flexible office hours (12b): in today, mornings only
-                new Absence(team.get(team.size() - 1), AbsenceCategory.PRESENT, null, null, new AbsencePeriod(today, false, today, true))));
+                new Absence(team.get(team.size() - 1), AbsenceCategory.PRESENT, null, null,
+                        AbsencePeriod.times(today, LocalTime.of(8, 0), today, LocalTime.of(11, 30)))));
         log.info("Dev sample data created: 5 absences");
     }
 

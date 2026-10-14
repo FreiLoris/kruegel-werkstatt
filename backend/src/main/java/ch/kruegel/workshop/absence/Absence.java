@@ -15,8 +15,8 @@ import jakarta.persistence.ManyToOne;
 import java.util.Objects;
 
 /**
- * An absence of an employee: vacation, sick, external work at a company, training – from/to with
- * half days. Deleted when entered by mistake (no archive: it is history, not a message).
+ * An absence of an employee: vacation, sick, external work at a company, training – from/to;
+ * vacation with half days, everything else with optional clock times (FB-05). Deleted when entered by mistake (no archive: it is history, not a message).
  */
 @Entity
 public class Absence extends BaseEntity {
@@ -60,7 +60,15 @@ public class Absence extends BaseEntity {
         }
         this.company = cleanCompany;
         this.note = Texts.checkMaxLength(Texts.emptyToNull(note), NOTE_MAX, "Note");
-        this.period = Objects.requireNonNull(period, "period");
+        Objects.requireNonNull(period, "period");
+        // FB-05: vacation in half days (the statistics count them), everything else with times
+        boolean vacation = category == AbsenceCategory.VACATION;
+        boolean times = period.startTime() != null || period.endTime() != null;
+        boolean halfDays = period.startsAfternoon() || period.endsNoon();
+        if (vacation ? times : halfDays) {
+            throw new IllegalArgumentException("Vacation with half days, everything else with times: " + category + " / " + period);
+        }
+        this.period = period;
     }
 
     public Employee getEmployee() {

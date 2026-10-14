@@ -1,7 +1,6 @@
 import { isWeekend } from '../../lib/calendar'
 import { useToday } from '../../lib/clock'
 import { useAbsences } from '../absences/absenceApi'
-import { partLabel } from '../absences/absenceDays'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { usePublicHolidays } from '../publicholidays/publicHolidayApi'
@@ -28,10 +27,10 @@ export function PresentToday() {
     <p className={styles.line} aria-label="Wer ist heute da">
       <span className={styles.label}>Heute da</span>
       {present.length === 0 && <span className="muted">niemand</span>}
-      {present.map(({ employee, part }) => (
+      {present.map(({ employee, label }) => (
         <span key={employee.id} className={styles.person}>
           <NameBadge name={employee.name} color={employee.color} />
-          {part !== 'full' && <span className={styles.part}>{partLabel(part)}</span>}
+          {label && <span className={styles.part}>{label}</span>}
         </span>
       ))}
       {away.length > 0 && (
