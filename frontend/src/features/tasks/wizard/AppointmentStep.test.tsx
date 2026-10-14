@@ -7,6 +7,14 @@ import { AppointmentStep } from './AppointmentStep'
 // fictitious
 vi.mock('../../employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../../lifts/liftApi', () => ({ useAllLifts: () => ({ data: [] }) }))
+vi.mock('../../insurances/insuranceApi', () => ({
+  useInsurances: () => ({
+    data: [
+      { id: 'muster', name: 'Muster Versicherung', active: true },
+      { id: 'alt', name: 'Alte Versicherung', active: false },
+    ],
+  }),
+}))
 vi.mock('../../service-items/serviceItemApi', () => ({
   useAllServiceItems: () => ({
     data: [
@@ -127,5 +135,32 @@ describe('AppointmentStep – Material bestellen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Übernehmen' }))
     expect(screen.getByText('Was muss bestellt werden?')).toBeTruthy()
     expect(seen.form.parts).toBe(false)
+  })
+})
+
+describe('AppointmentStep – Versicherungsfall', () => {
+  const choices = () => screen.getAllByRole<HTMLOptionElement>('option').filter((o) => o.closest('select')?.labels?.[0]?.textContent?.startsWith('Versicherung'))
+
+  it('ticking asks for the insurance (only ones in use) and the claim number', () => {
+    const step = renderStep()
+    expect(screen.queryByRole('textbox', { name: /^Schadennummer/ })).toBeNull()
+
+    fireEvent.click(tick('Versicherungsfall – Versicherung und Schadennummer kommen auf den Auftragszettel'))
+
+    expect(choices().map((o) => o.textContent)).toEqual(['Bitte wählen …', 'Muster Versicherung'])
+    fireEvent.change(screen.getByRole('textbox', { name: /^Schadennummer/ }), { target: { value: 'S-42' } })
+    expect(step.form).toMatchObject({ insuranceCase: true, claimNumber: 'S-42' })
+  })
+
+  it('editing: the insurance of the task stays choosable although it is no longer used', () => {
+    renderStep({ ...THURSDAY, insuranceCase: true, insuranceId: 'alt' })
+
+    expect(choices().map((o) => o.textContent)).toEqual(['Bitte wählen …', 'Muster Versicherung', 'Alte Versicherung (nicht mehr verwendet)'])
+  })
+
+  it('says that the insurance is missing only after trying to continue', () => {
+    renderStep({ ...THURSDAY, insuranceCase: true }, true)
+
+    expect(screen.getByText('Versicherung wählen – oder «Versicherungsfall» abwählen')).toBeTruthy()
   })
 })

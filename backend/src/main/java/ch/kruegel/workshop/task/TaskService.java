@@ -10,6 +10,8 @@ import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
+import ch.kruegel.workshop.insurance.Insurance;
+import ch.kruegel.workshop.insurance.InsuranceRepository;
 import ch.kruegel.workshop.lift.Lift;
 import ch.kruegel.workshop.lift.LiftRepository;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
@@ -67,19 +69,21 @@ public class TaskService {
     private final EmployeeRepository employees;
     private final LiftRepository lifts;
     private final ServiceItemRepository serviceItems;
+    private final InsuranceRepository insurances;
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final TaskNumbers numbers;
 
     TaskService(TaskRepository repository, CustomerRepository customers, VehicleRepository vehicles,
                 EmployeeRepository employees, LiftRepository lifts, ServiceItemRepository serviceItems,
-                ApplicationEventPublisher events, Clock clock, TaskNumbers numbers) {
+                InsuranceRepository insurances, ApplicationEventPublisher events, Clock clock, TaskNumbers numbers) {
         this.repository = repository;
         this.customers = customers;
         this.vehicles = vehicles;
         this.employees = employees;
         this.lifts = lifts;
         this.serviceItems = serviceItems;
+        this.insurances = insurances;
         this.events = events;
         this.clock = clock;
         this.numbers = numbers;
@@ -131,9 +135,11 @@ public class TaskService {
     public TaskDto create(TaskRequest request) {
         TaskDetails details = details(request, null);
         Employee acceptedBy = acceptedBy(request, null);
+        Insurance insurance = insurance(request, null);
         checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details);
         task.acceptedBy(acceptedBy);
+        task.insuranceCase(insurance, request.claimNumber());
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
         return saved(repository.save(task));
@@ -147,10 +153,12 @@ public class TaskService {
         task.checkVersion(request.version());
         TaskDetails details = details(request, task);
         Employee acceptedBy = acceptedBy(request, task.getAcceptedBy());
+        Insurance insurance = insurance(request, task.getInsurance());
         checkLiftFree(details.lift(), details.appointment(), id);
 
         task.update(details);
         task.acceptedBy(acceptedBy);
+        task.insuranceCase(insurance, request.claimNumber());
         return saved(task);
     }
 
@@ -286,6 +294,18 @@ public class TaskService {
             throw new InvalidInputException("acceptedById", "Bitte wählen, wer den Auftrag angenommen hat");
         }
         return reference(employees, request.acceptedById(), current, "acceptedById", "Mitarbeiter", Employee::isActive, "ist nicht mehr aktiv");
+    }
+
+    /** Insurance case: a newly chosen insurance must be in use; the claim number needs one. */
+    private Insurance insurance(TaskRequest request, Insurance current) {
+        if (request.insuranceId() == null) {
+            if (request.claimNumber() != null && !request.claimNumber().isBlank()) {
+                throw new InvalidInputException("claimNumber", "nur mit Versicherung");
+            }
+            return null;
+        }
+        return reference(insurances, request.insuranceId(), current, "insuranceId", "Versicherung", Insurance::isActive,
+                "wird nicht mehr verwendet");
     }
 
     private static Appointment appointment(TaskRequest request) {

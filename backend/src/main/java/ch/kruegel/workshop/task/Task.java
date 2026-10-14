@@ -4,6 +4,7 @@ import ch.kruegel.workshop.common.Texts;
 import ch.kruegel.workshop.common.persistence.BaseEntity;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.employee.Employee;
+import ch.kruegel.workshop.insurance.Insurance;
 import ch.kruegel.workshop.lift.Lift;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
 import ch.kruegel.workshop.vehicle.Vehicle;
@@ -38,6 +39,7 @@ import java.util.Set;
 public class Task extends BaseEntity {
 
     static final int TASK_NUMBER_MAX = 30;
+    static final int CLAIM_NUMBER_MAX = 60;
 
     /** Assigned by the app when the task is created ("26-0001"); older ones may be SwissGarage numbers. Unique */
     private String taskNumber;
@@ -88,6 +90,13 @@ public class Task extends BaseEntity {
     private String workDescription;
     private String notes;
 
+    /** Insurance case (FB-06): empty = none */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Insurance insurance;
+
+    /** The insurance's claim number ("Schadennummer") – only in an insurance case, may still be open */
+    private String claimNumber;
+
     protected Task() {
         // for JPA
     }
@@ -118,6 +127,21 @@ public class Task extends BaseEntity {
     /** Who took the order from the customer – required from 12d on, so it cannot be removed again. */
     public void acceptedBy(Employee employee) {
         this.acceptedBy = Objects.requireNonNull(employee, "acceptedBy");
+    }
+
+    /**
+     * Insurance case (FB-06) – like the "Annehmer" not part of {@link TaskDetails}: set with every edit.
+     *
+     * @param insurance   empty = no insurance case
+     * @param claimNumber may still be open; only with an insurance
+     */
+    public void insuranceCase(Insurance insurance, String claimNumber) {
+        String number = Texts.checkMaxLength(Texts.emptyToNull(claimNumber), CLAIM_NUMBER_MAX, "Claim number");
+        if (insurance == null && number != null) {
+            throw new IllegalArgumentException("Claim number without insurance: " + number);
+        }
+        this.insurance = insurance;
+        this.claimNumber = number;
     }
 
     /** Sets the task number; empty removes it. Uniqueness is checked by the service/database. */
@@ -180,6 +204,14 @@ public class Task extends BaseEntity {
 
     public Employee getAcceptedBy() {
         return acceptedBy;
+    }
+
+    public Insurance getInsurance() {
+        return insurance;
+    }
+
+    public String getClaimNumber() {
+        return claimNumber;
     }
 
     public String getTaskNumber() {

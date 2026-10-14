@@ -4,6 +4,7 @@ import { isPlanned, type AnyTask } from '../taskApi'
 import { periodLabel } from '../taskTime'
 import { workItems } from '../workSummary'
 import { sheetBlocks, type SheetBlock } from './sheetBlocks'
+import { InsuranceBlock } from './InsuranceBlock'
 import { Block, Box, Facts } from './SheetParts'
 import styles from './TaskSheet.module.css'
 import { TireBlock } from './TireBlock'
@@ -17,6 +18,8 @@ export interface SheetLookups {
   liftName?: string
   /** e.g. "Ersatzwagen 2 (Skoda Fabia, ZH 10002), 06.10.2026, 13:00 – 06.10.2026, 15:00" */
   courtesyCar?: string
+  /** the insurance of an insurance case (FB-06) */
+  insurance?: { name: string; phone: string | null; email: string | null }
 }
 
 /**
@@ -131,7 +134,7 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
       </Block>
 
       {blocks.map((block) => (
-        <SheetBlockView key={block.kind} block={block} />
+        <SheetBlockView key={block.kind} block={block} task={task} lookups={lookups} />
       ))}
 
       {task.notes && (
@@ -152,13 +155,15 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
   )
 }
 
-function SheetBlockView({ block }: { block: SheetBlock }) {
+function SheetBlockView({ block, task, lookups }: { block: SheetBlock; task: AnyTask; lookups: SheetLookups }) {
   switch (block.kind) {
     case 'tires':
       return <TireBlock block={block} />
+    case 'insurance':
+      return <InsuranceBlock insurance={lookups.insurance} claimNumber={task.claimNumber} />
     default: {
       // a new kind of block without a component does not compile – instead of printing nothing
-      const unknown: never = block.kind
+      const unknown: never = block
       return unknown
     }
   }

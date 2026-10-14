@@ -20,6 +20,8 @@ const FIELD_LABELS: Record<string, string> = {
   'parts.supplier': 'Lieferant',
   workDescription: 'Weitere Arbeiten',
   notes: 'Notizen',
+  insuranceId: 'Versicherung',
+  claimNumber: 'Schadennummer',
   taskNumber: 'Auftragsnummer',
   version: 'Version',
   'courtesyCar.courtesyCarId': 'Ersatzwagen',

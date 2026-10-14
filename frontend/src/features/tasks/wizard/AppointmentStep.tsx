@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
 import { formatDate, formatDuration, minutesBetween } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
+import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { PARTS_STATUS, TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
@@ -47,12 +48,13 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
+  const { data: insurances } = useInsurances()
   const holidayDates = new Set(holidays.keys())
   // the material order is entered in its own window; the form only changes on "Übernehmen"
   const [partsOpen, setPartsOpen] = useState(false)
   const errors = appointmentErrors(form)
   // "missing" errors only after trying to continue – not while the user is still filling in
-  const required = (field: 'date' | 'serviceItemIds' | 'acceptedById') => (showRequired ? errors[field] : undefined)
+  const required = (field: 'date' | 'serviceItemIds' | 'acceptedById' | 'insuranceId') => (showRequired ? errors[field] : undefined)
 
   const set = <K extends keyof AppointmentForm>(field: K, fieldValue: AppointmentForm[K]) => onChange({ ...form, [field]: fieldValue })
 
@@ -65,6 +67,8 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const mechanics = (employees ?? []).filter((e) => e.selectableAsMechanic)
   const activeLifts = (lifts ?? []).filter((l) => l.active)
   const activeServiceItems = (serviceItems ?? []).filter((s) => s.active)
+  // editing: the insurance of the task stays choosable, even if it is no longer used
+  const insuranceChoice = (insurances ?? []).filter((i) => i.active || i.id === form.insuranceId)
 
   return (
     <div className={styles.layout}>
@@ -329,6 +333,43 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             value={form.workDescription}
             onChange={(e) => set('workDescription', e.target.value)}
           />
+        </Section>
+
+        <Section title="Versicherung">
+          <Checkbox
+            label="Versicherungsfall – Versicherung und Schadennummer kommen auf den Auftragszettel"
+            checked={form.insuranceCase}
+            onChange={(e) => set('insuranceCase', e.target.checked)}
+          />
+          {form.insuranceCase && (
+            <div className={`${styles.row} ${styles.indented}`}>
+              <Select
+                label="Versicherung"
+                required
+                value={form.insuranceId}
+                onChange={(e) => set('insuranceId', e.target.value)}
+                hint={insurances && insuranceChoice.length === 0 ? 'Noch keine erfasst – in den Einstellungen unter «Versicherungen»' : undefined}
+                error={form.insuranceId ? undefined : required('insuranceId')}
+              >
+                <option value="" disabled>
+                  Bitte wählen …
+                </option>
+                {insuranceChoice.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.active ? i.name : `${i.name} (nicht mehr verwendet)`}
+                  </option>
+                ))}
+              </Select>
+              <TextField
+                label="Schadennummer"
+                hint="leer lassen, wenn noch nicht bekannt"
+                maxLength={60}
+                autoComplete="off"
+                value={form.claimNumber}
+                onChange={(e) => set('claimNumber', e.target.value)}
+              />
+            </div>
+          )}
         </Section>
 
         <Section title="Interne Notizen">

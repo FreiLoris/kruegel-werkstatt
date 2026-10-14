@@ -13,6 +13,7 @@ import { CourtesyCarPanel } from '../../bookings/CourtesyCarPanel'
 import { CustomerDialog } from '../../customers/CustomerDialog'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
+import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TaskPinboard } from '../../notes/TaskPinboard'
@@ -269,6 +270,12 @@ function TaskDetail({ task }: { task: AnyTask }) {
           {task.workDescription && <p className={styles.freeText}>{task.workDescription}</p>}
         </Card>
 
+        {task.insuranceId && (
+          <Card title="Versicherungsfall">
+            <InsuranceFacts insuranceId={task.insuranceId} claimNumber={task.claimNumber} />
+          </Card>
+        )}
+
         <Card title="Pinnwand & To-dos">
           <TaskPinboard taskId={task.id} canEdit={canEdit} />
         </Card>
@@ -334,5 +341,21 @@ function Who({ at, employee }: { at: string; employee: Employee | undefined }) {
       {formatTimestamp(at)}
       {employee && <NameBadge name={employee.name} color={employee.color} />}
     </span>
+  )
+}
+
+/** The insurance of an insurance case (FB-06) with its phone – to call about the claim. */
+function InsuranceFacts({ insuranceId, claimNumber }: { insuranceId: string; claimNumber: string | null }) {
+  const { data: insurances } = useInsurances()
+  const insurance = insurances?.find((i) => i.id === insuranceId)
+  return (
+    <Facts
+      rows={[
+        ['Versicherung', insurance?.name ?? '–'],
+        ['Telefon', insurance?.phone ?? null],
+        ['E-Mail', insurance?.email ?? null],
+        ['Schadennummer', claimNumber ?? 'noch offen'],
+      ]}
+    />
   )
 }

@@ -43,6 +43,8 @@ public record TaskDto(
         @Schema(types = {"object", "null"}, description = "Empty = no parts needed") PartsOrderDto parts,
         @Schema(types = {"string", "null"}, description = "Further work as free text") String workDescription,
         @Schema(types = {"string", "null"}, description = "Internal notes") String notes,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Insurance case: the insurance; empty = none") UUID insuranceId,
+        @Schema(types = {"string", "null"}, description = "The insurance's claim number") String claimNumber,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy,
         Instant updatedAt,
@@ -55,6 +57,7 @@ public record TaskDto(
         UUID mechanicId = task.getMechanic() == null ? null : task.getMechanic().getId();
         UUID liftId = task.getLift() == null ? null : task.getLift().getId();
         UUID acceptedById = task.getAcceptedBy() == null ? null : task.getAcceptedBy().getId();
+        UUID insuranceId = task.getInsurance() == null ? null : task.getInsurance().getId();
         List<UUID> serviceItemIds = w.serviceItems().stream()
                 .sorted(Comparator.comparingInt(ServiceItem::getSortOrder).thenComparing(ServiceItem::getName))
                 .map(ServiceItem::getId)
@@ -63,7 +66,7 @@ public record TaskDto(
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), serviceItemIds,
-                PartsOrderDto.of(w.parts()), w.description(), task.getNotes(),
+                PartsOrderDto.of(w.parts()), w.description(), task.getNotes(), insuranceId, task.getClaimNumber(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());
     }
 }

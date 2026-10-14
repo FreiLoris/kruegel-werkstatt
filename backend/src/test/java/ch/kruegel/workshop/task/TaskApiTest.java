@@ -11,6 +11,8 @@ import ch.kruegel.workshop.employee.EmployeeDetails;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.EmployeeTestData;
 import ch.kruegel.workshop.employee.Role;
+import ch.kruegel.workshop.insurance.Insurance;
+import ch.kruegel.workshop.insurance.InsuranceRepository;
 import ch.kruegel.workshop.lift.Lift;
 import ch.kruegel.workshop.lift.LiftRepository;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
@@ -61,6 +63,9 @@ class TaskApiTest {
 
     @Autowired
     private ServiceItemRepository serviceItems;
+
+    @Autowired
+    private InsuranceRepository insurances;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -341,6 +346,35 @@ class TaskApiTest {
         assertThat(send("PUT", "/api/tasks/" + id, byGone.replace("\"version\": 0", "\"version\": 1"))).hasStatusOk();
         // but not newly chosen
         assertFieldError(send("POST", "/api/tasks", bodyAt("11:00", null).replace(reto.getId().toString(), gone.getId().toString())), "acceptedById");
+    }
+
+    @Test
+    void anInsuranceCaseNamesTheInsuranceAndLaterTheClaimNumber() {
+        // fictitious insurances
+        Insurance muster = insurances.save(new Insurance("Muster Versicherung", "0800 000 000", null));
+        Insurance old = insurances.save(new Insurance("Alte Versicherung", null, null));
+
+        MvcTestResult created = create("\"insuranceId\": \"%s\"".formatted(muster.getId()));
+        assertThat(created).hasStatus(HttpStatus.CREATED);
+        assertThat(created).bodyJson().extractingPath("$.insuranceId").isEqualTo(muster.getId().toString());
+        assertThat(created).bodyJson().extractingPath("$.claimNumber").isNull();
+
+        // the claim number comes later
+        String id = idOf(created);
+        MvcTestResult updated = send("PUT", "/api/tasks/" + id, body("\"insuranceId\": \"%s\", \"claimNumber\": \" S-2026-0042 \", \"version\": 0"
+                .formatted(muster.getId())));
+        assertThat(updated).bodyJson().extractingPath("$.claimNumber").isEqualTo("S-2026-0042");
+
+        // no longer used: stays on the task, but cannot be chosen anew
+        jdbc.update("UPDATE insurance SET active = false WHERE id = ?", muster.getId());
+        assertThat(send("PUT", "/api/tasks/" + id, body("\"insuranceId\": \"%s\", \"version\": 1".formatted(muster.getId())))).hasStatusOk();
+        jdbc.update("UPDATE insurance SET active = false WHERE id = ?", old.getId());
+        assertFieldError(create("\"insuranceId\": \"%s\"".formatted(old.getId())), "insuranceId");
+        // a claim number without an insurance makes no sense
+        assertFieldError(create("\"claimNumber\": \"S-1\""), "claimNumber");
+
+        // not an insurance case any more
+        assertThat(send("PUT", "/api/tasks/" + id, body("\"version\": 2"))).bodyJson().extractingPath("$.insuranceId").isNull();
     }
 
     @Test
