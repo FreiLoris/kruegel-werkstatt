@@ -28,7 +28,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Stammdaten | master data | |
 | Lift (Hebebühne) | `Lift` / `lifts` | |
 | Serviceleistung | `ServiceItem` / `service-items` | Ölwechsel, Wischblätter, … |
-| Lagerort | `StorageLocation` / `storage-locations` | Regal, Fach – in the settings |
+| Lagerort | `StorageLocation` / `storage-locations` | a tree: Stockwerk/Raum › Regal › Schublade (`parentId`) |
 | Lager(liste), Artikel | `StockItem` / `stock-items` | kept by hand, no bookings (FB-08) |
 | Ersatzteile / Verbrauchsmaterial / Werkzeuge | `StockCategory` `SPARE_PART` / `CONSUMABLE` / `TOOL` | |
 | Lieferant | `Supplier` / `suppliers` | kept here, not in SwissGarage (FB-09) |

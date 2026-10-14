@@ -17,14 +17,24 @@ export function useAllStorageLocations() {
   })
 }
 
-/** Create (without `id`) or rename (with `id` and the loaded `version`). */
+/** Create (without `id`, inside `parentId` or at the top level) or rename (with `id` and the loaded `version`). */
 export function useSaveStorageLocation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, name, version }: { id?: string; name: string; version?: number }) =>
+    mutationFn: async ({ id, name, parentId, version }: { id?: string; name: string; parentId?: string | null; version?: number }) =>
       id
         ? dataOrThrow(await api.PUT('/api/storage-locations/{id}', { params: { path: { id } }, body: { name, version } }))
-        : dataOrThrow(await api.POST('/api/storage-locations', { body: { name } })),
+        : dataOrThrow(await api.POST('/api/storage-locations', { body: { name, parentId: parentId ?? null } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** Into another place (`parentId`) or to the top level (`null`) – with everything inside it. */
+export function useMoveStorageLocation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, parentId }: { id: string; parentId: string | null }) =>
+      dataOrThrow(await api.PUT('/api/storage-locations/{id}/parent', { params: { path: { id } }, body: { parentId } })),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
@@ -41,7 +51,7 @@ export function useSetStorageLocationActive() {
   })
 }
 
-/** New order: first ID = top (filter and form of the stock list). */
+/** New order within one level: first ID = top. */
 export function useReorderStorageLocations() {
   const queryClient = useQueryClient()
   return useMutation({

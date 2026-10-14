@@ -12,11 +12,12 @@ public record StorageLocationDto(
         String name,
         boolean active,
         int sortOrder,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "The place it is in; empty = top level") UUID parentId,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last") UUID updatedBy) {
 
     static StorageLocationDto of(StorageLocation location) {
         return new StorageLocationDto(location.getId(), location.getVersion(), location.getName(), location.isActive(),
-                location.getSortOrder(), location.getUpdatedAt(), location.getUpdatedBy());
+                location.getSortOrder(), location.getParentId(), location.getUpdatedAt(), location.getUpdatedBy());
     }
 }

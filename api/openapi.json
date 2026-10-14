@@ -5355,7 +5355,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Set order (first ID = top)",
+        "summary" : "Set order within one level (first ID = top)",
         "tags" : [ "Storage locations" ]
       }
     },
@@ -5450,6 +5450,7 @@
     },
     "/api/storage-locations/{id}/activate" : {
       "post" : {
+        "description" : "Everything inside it too; only inside a place in use.",
         "operationId" : "activate_1",
         "parameters" : [ {
           "in" : "path",
@@ -5528,6 +5529,7 @@
     },
     "/api/storage-locations/{id}/deactivate" : {
       "post" : {
+        "description" : "Everything inside it too.",
         "operationId" : "deactivate_1",
         "parameters" : [ {
           "in" : "path",
@@ -5601,6 +5603,95 @@
           }
         },
         "summary" : "No longer use (instead of delete)",
+        "tags" : [ "Storage locations" ]
+      }
+    },
+    "/api/storage-locations/{id}/parent" : {
+      "put" : {
+        "description" : "With everything inside it, at the end there. Not into itself or one of its own places.",
+        "operationId" : "moveLocation",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StorageLocationParent"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StorageLocationDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Move into another place or to the top level",
         "tags" : [ "Storage locations" ]
       }
     },
@@ -9955,6 +10046,11 @@
           "name" : {
             "type" : "string"
           },
+          "parentId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "The place it is in; empty = top level"
+          },
           "sortOrder" : {
             "type" : "integer",
             "format" : "int32"
@@ -9973,7 +10069,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "active", "id", "name", "sortOrder", "updatedAt", "updatedBy", "version" ]
+        "required" : [ "active", "id", "name", "parentId", "sortOrder", "updatedAt", "updatedBy", "version" ]
       },
       "StorageLocationOrder" : {
         "type" : "object",
@@ -9989,6 +10085,15 @@
         },
         "required" : [ "ids" ]
       },
+      "StorageLocationParent" : {
+        "type" : "object",
+        "properties" : {
+          "parentId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          }
+        }
+      },
       "StorageLocationRequest" : {
         "type" : "object",
         "properties" : {
@@ -9996,6 +10101,11 @@
             "type" : "string",
             "maxLength" : 40,
             "minLength" : 0
+          },
+          "parentId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Only when creating; empty = top level"
           },
           "version" : {
             "type" : "integer",

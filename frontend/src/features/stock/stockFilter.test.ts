@@ -22,7 +22,13 @@ const shelfB = 'b'
 const lookup: StockLookup = {
   locationNames: new Map([
     [shelfA, 'Keller'],
-    [shelfB, 'Regal B'],
+    [shelfB, 'Büro › Regal B'],
+    ['office', 'Büro'],
+  ]),
+  locationsWithin: new Map([
+    [shelfA, new Set([shelfA])],
+    [shelfB, new Set([shelfB])],
+    ['office', new Set(['office', shelfB])],
   ]),
   locationOrder: new Map([
     [shelfA, 0],
@@ -64,6 +70,11 @@ describe('filterStock', () => {
     expect(names(filterStock(all, { ...nothing, category: 'CONSUMABLE' }, lookup))).toEqual(['Bremsreiniger'])
     expect(names(filterStock(all, { ...nothing, location: shelfB }, lookup))).toEqual(['Ölfilter'])
     expect(names(filterStock(all, { ...nothing, location: NONE }, lookup))).toEqual(['Drehmomentschlüssel'])
+  })
+
+  it('a place includes everything inside it – and the search finds the room of a shelf', () => {
+    expect(names(filterStock(all, { ...nothing, location: 'office' }, lookup))).toEqual(['Ölfilter'])
+    expect(names(filterStock(all, { ...nothing, query: 'büro' }, lookup))).toEqual(['Ölfilter'])
   })
 
   it('filters by supplier – main or further one – and "without supplier"', () => {

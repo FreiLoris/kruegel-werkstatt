@@ -872,7 +872,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Set order (first ID = top) */
+        /** Set order within one level (first ID = top) */
         put: operations["reorder"];
         post?: never;
         delete?: never;
@@ -910,7 +910,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Use again */
+        /**
+         * Use again
+         * @description Everything inside it too; only inside a place in use.
+         */
         post: operations["activate_1"];
         delete?: never;
         options?: never;
@@ -927,8 +930,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** No longer use (instead of delete) */
+        /**
+         * No longer use (instead of delete)
+         * @description Everything inside it too.
+         */
         post: operations["deactivate_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/storage-locations/{id}/parent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Move into another place or to the top level
+         * @description With everything inside it, at the end there. Not into itself or one of its own places.
+         */
+        put: operations["moveLocation"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2107,6 +2133,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            /**
+             * Format: uuid
+             * @description The place it is in; empty = top level
+             */
+            parentId: string | null;
             /** Format: int32 */
             sortOrder: number;
             /** Format: date-time */
@@ -2122,8 +2153,17 @@ export interface components {
         StorageLocationOrder: {
             ids: string[];
         };
+        StorageLocationParent: {
+            /** Format: uuid */
+            parentId?: string | null;
+        };
         StorageLocationRequest: {
             name: string;
+            /**
+             * Format: uuid
+             * @description Only when creating; empty = top level
+             */
+            parentId?: string | null;
             /**
              * Format: int64
              * @description Only needed when editing
@@ -7183,6 +7223,77 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StorageLocationDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    moveLocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StorageLocationParent"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
