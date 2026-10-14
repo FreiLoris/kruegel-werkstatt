@@ -1,5 +1,5 @@
 import { ClipboardList, Pencil, ShoppingCart, StickyNote, Trash2, Undo2 } from 'lucide-react'
-import { useState, type CSSProperties, type ReactNode, type Ref } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useToday } from '../../lib/clock'
 import { reasonOf } from '../../api/errors'
@@ -22,14 +22,10 @@ interface TodoItemProps {
   showTask?: boolean
   /** show the shopping list tick in the edit form */
   withShopping?: boolean
-  /** say "Pinnwand" for a sub-task of a note (not inside the note itself) */
+  /** link "Notiz" for a sub-task of a note (not inside the note itself) */
   showNote?: boolean
-  /** hide the person – in the person's own pinboard column it is clear */
+  /** hide the person – where a heading or filter already says who */
   showAssignee?: boolean
-  /** pinboard: a grip to drag the to-do to another column (the checkbox and buttons stay clickable) */
-  dragHandle?: ReactNode
-  style?: CSSProperties
-  ref?: Ref<HTMLLIElement>
 }
 
 /**
@@ -43,9 +39,6 @@ export function TodoItem({
   withShopping = false,
   showNote = true,
   showAssignee = true,
-  dragHandle,
-  style,
-  ref,
 }: TodoItemProps) {
   const navigate = useNavigate()
   const setDone = useSetTodoDone()
@@ -81,8 +74,7 @@ export function TodoItem({
   const assignee = person(todo.assigneeId)
   const due = dueState(todo.dueDate, today)
   return (
-    <li ref={ref} style={style} className={[styles.item, dragHandle !== undefined && styles.draggable, done && styles.done].filter(Boolean).join(' ')}>
-      {dragHandle}
+    <li className={[styles.item, done && styles.done].filter(Boolean).join(' ')}>
       <input
         type="checkbox"
         className={styles.check}
@@ -109,9 +101,15 @@ export function TodoItem({
           </>
         )}
         {showNote && todo.noteId && (
-          <span className={styles.fromNote} title="Aufgabe aus einer Pinnwand-Notiz">
-            <StickyNote aria-hidden /> Pinnwand
-          </span>
+          // FB-04: to-dos and notes are on different pages – the note is one click away
+          <button
+            type="button"
+            className={styles.fromNote}
+            title="Aufgabe aus einer Pinnwand-Notiz – öffnet die Notiz"
+            onClick={() => navigate(`/pinboard?note=${todo.noteId}`)}
+          >
+            <StickyNote aria-hidden /> Notiz
+          </button>
         )}
         {showTask && todo.task && (
           <button type="button" className={styles.task} onClick={() => navigate(`/tasks/${todo.task!.id}`)}>

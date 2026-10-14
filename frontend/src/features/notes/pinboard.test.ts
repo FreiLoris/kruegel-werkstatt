@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Employee } from '../employees/employeeApi'
 import type { Todo } from '../todos/todoApi'
 import type { Note } from './noteApi'
-import { archiveByMonth, movedNote, movedTodo, NEW_COLUMN, pinboardColumns } from './pinboard'
+import { archiveByMonth, movedNote, NEW_COLUMN, pinboardColumns } from './pinboard'
 
 const person = (id: string, hasPinboardColumn = true, active = true) => ({ id, name: id, active, hasPinboardColumn }) as Employee
 const note = (id: string, assigneeIds: string[], archivedAt: string | null = null) => ({ id, assigneeIds, archivedAt }) as Note
@@ -38,11 +38,6 @@ describe('to-dos on the board', () => {
 
     expect(columns.find((c) => c.id === 'reto')!.todos.map((t) => t.id)).toEqual(['reto'])
     expect(columns[0].todos.map((t) => t.id)).toEqual(['frei', 'lehrling'])
-  })
-
-  it('dragging gives the to-do to the person of the column, "Neu" = nobody', () => {
-    expect(movedTodo([todo('a', 'reto')], 'a', 'erich')[0].assigneeId).toBe('erich')
-    expect(movedTodo([todo('a', 'reto')], 'a', NEW_COLUMN)[0].assigneeId).toBeNull()
   })
 })
 

@@ -46,9 +46,15 @@ export function DashboardPage() {
         <section className={styles.area} aria-labelledby="board-heading">
           <h2 id="board-heading" className={styles.areaTitle}>
             Pinnwand & To-dos
-            <Link to="/pinboard" className={styles.areaLink}>
-              Zur Pinnwand <ChevronRight size={16} aria-hidden />
-            </Link>
+            {/* FB-04: two pages now – the overview stays one, per person */}
+            <span className={styles.areaLinks}>
+              <Link to="/pinboard" className={styles.areaLink}>
+                Pinnwand <ChevronRight size={16} aria-hidden />
+              </Link>
+              <Link to="/todos" className={styles.areaLink}>
+                To-dos <ChevronRight size={16} aria-hidden />
+              </Link>
+            </span>
           </h2>
           <BoardOverview />
         </section>

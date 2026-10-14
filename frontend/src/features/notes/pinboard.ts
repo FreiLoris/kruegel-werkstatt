@@ -40,11 +40,6 @@ export function pinboardColumns(notes: Note[], todos: Todo[], employees: Employe
   ]
 }
 
-/** The to-dos after dragging one to another column – shown right away while the server saves */
-export function movedTodo(todos: Todo[], todoId: string, toColumn: string): Todo[] {
-  return todos.map((t) => (t.id === todoId ? { ...t, assigneeId: toColumn === NEW_COLUMN ? null : toColumn } : t))
-}
-
 /**
  * The notes after dragging one from a column to another – shown right away while the server saves
  * (the same rule as the server: only that person is swapped).

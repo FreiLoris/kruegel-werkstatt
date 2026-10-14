@@ -13,25 +13,22 @@ import {
   type CollisionDetection,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { Archive, ClipboardList, GripVertical, LayoutGrid, ListChecks, ListTodo, Plus, ShoppingCart, StickyNote } from 'lucide-react'
+import { ClipboardList, ListChecks, Plus, StickyNote } from 'lucide-react'
 import { useMemo, useState, type FormEvent, type HTMLAttributes, type ReactNode, type Ref } from 'react'
-import { useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
+import { DoneFilter } from '../../components/ui/DoneFilter'
 import { TextArea, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDate, formatTimestamp } from '../../lib/format'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useAllEmployees, type Employee } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
-import { BOARD_TODOS, useReassignTodo, useTodos, type Todo } from '../todos/todoApi'
-import { TodoForm } from '../todos/TodoForm'
-import { TodoItem } from '../todos/TodoItem'
-import { TodoListView } from '../todos/TodoListView'
 import { BOARD, useMoveNote, useNotes, useSaveNote, type Note } from './noteApi'
 import { NoteDialogById } from './NoteDialog'
-import { archiveByMonth, movedNote, movedTodo, NEW_COLUMN, pinboardColumns, type PinboardColumn } from './pinboard'
+import { archiveByMonth, movedNote, NEW_COLUMN, pinboardColumns, type PinboardColumn } from './pinboard'
 import styles from './PinboardPage.module.css'
 import { NO_APPOINTMENT } from '../tasks/taskTime'
 
@@ -41,112 +38,94 @@ const dropTarget: CollisionDetection = (args) => {
   return underPointer.length > 0 ? underPointer : closestCorners(args)
 }
 
-/** Stable empty lists while loading – a new [] on every render would recompute the columns each time */
+/** Stable empty list while loading – a new [] on every render would recompute the columns each time */
 const NO_NOTES: Note[] = []
-const NO_TODOS: Todo[] = []
 
-/** What is dragged: a note (once per column it is in) or a to-do – "note|id|column", "todo|id|column" */
-type Dragged = { kind: 'note' | 'todo'; id: string; columnId: string }
-const dragId = (kind: Dragged['kind'], id: string, columnId: string) => `${kind}|${id}|${columnId}`
+/** The to-dos have their own page since FB-04 – the board shows only notes */
+const NO_TODOS: never[] = []
+
+/** What is dragged: a note, once per column it is in – "id|column" */
+type Dragged = { id: string; columnId: string }
+const dragId = (id: string, columnId: string) => `${id}|${columnId}`
 const parseDragId = (value: string): Dragged => {
-  const [kind, id, columnId] = value.split('|')
-  return { kind: kind as Dragged['kind'], id, columnId }
+  const [id, columnId] = value.split('|')
+  return { id, columnId }
 }
 
-type View = 'board' | 'list' | 'shopping' | 'archive'
-const VIEWS: { view: View; label: string; icon: typeof LayoutGrid }[] = [
-  { view: 'board', label: 'Pinnwand', icon: LayoutGrid },
-  { view: 'list', label: 'To-do-Liste', icon: ListTodo },
-  { view: 'shopping', label: 'Einkaufsliste', icon: ShoppingCart },
-  { view: 'archive', label: 'Archiv', icon: Archive },
-]
+/** Old addresses (views of the pinboard until FB-04) – bookmarks on the tablets keep working */
+const MOVED: Record<string, string> = { list: '/todos', shopping: '/shopping' }
 
 /**
- * Pinboard and to-dos in one place (8e): per person what to know (notes) and what to do (to-dos).
- * The board, the to-do list with filters, the shopping list and the archive are views of it –
- * in the address (`view=`), so a tablet can open the shopping list directly.
+ * The pinboard (8e, FB-04): per person what to know – notes only; the to-dos and the shopping list
+ * have pages of their own. "Erledigt" shows the archived notes (before: a tab "Archiv"). A note can
+ * be opened by address (`note=`), e.g. from a to-do that belongs to it.
  */
 export function PinboardPage() {
   const [params, setParams] = useSearchParams()
   const canEdit = useCanEdit()
-  const [openId, setOpenId] = useState<string | null>(null)
-  const requested = params.get('view')
-  const view: View = VIEWS.some((v) => v.view === requested) ? (requested as View) : 'board'
-  const openTodos = useTodos(BOARD_TODOS)
-  const shopping = useTodos({ shopping: true })
   const notes = useNotes(BOARD)
   const { data: employees } = useAllEmployees()
 
-  const counts: Record<View, number | undefined> = {
-    board: notes.data && openTodos.data ? notes.data.length + openTodos.data.length : undefined,
-    list: openTodos.data?.length,
-    shopping: shopping.data?.length,
-    archive: undefined,
+  const view = params.get('view')
+  const done = params.get('done') === '1' || view === 'archive'
+  const openId = params.get('note')
+
+  function change(key: 'done' | 'note', value: string | null) {
+    const next = new URLSearchParams(params)
+    if (view === 'archive') next.set('done', '1')
+    next.delete('view')
+    if (value) next.set(key, value)
+    else next.delete(key)
+    setParams(next, { replace: true })
   }
 
-  function show(next: View) {
-    const query = new URLSearchParams()
-    if (next !== 'board') query.set('view', next)
-    // the person filter belongs to the lists
+  if (view && MOVED[view]) {
     const person = params.get('person')
-    if (person && (next === 'list' || next === 'shopping')) query.set('person', person)
-    setParams(query, { replace: true })
+    return <Navigate to={person ? `${MOVED[view]}?person=${encodeURIComponent(person)}` : MOVED[view]} replace />
   }
 
   return (
     // the board uses the whole screen width (AppLayout: data-wide)
-    <div data-wide={view === 'board' ? '' : undefined}>
+    <div data-wide={done ? undefined : ''}>
       <div className={styles.header}>
         <h1>Pinnwand</h1>
-        <div className={styles.views} role="group" aria-label="Ansicht">
-          {VIEWS.map(({ view: v, label, icon }) => (
-            <Button key={v} icon={icon} variant={view === v ? 'primary' : 'secondary'} aria-pressed={view === v} onClick={() => show(v)}>
-              {label}
-              {counts[v] !== undefined && <span className={styles.count}>{counts[v]}</span>}
-            </Button>
-          ))}
-        </div>
+        <DoneFilter done={done} onChange={(on) => change('done', on ? '1' : null)} openCount={notes.data?.length} />
       </div>
 
-      {view === 'board' && (
-        <Board notes={notes.data} notesError={notes.error} todos={openTodos.data} employees={employees} canEdit={canEdit} onOpen={setOpenId} />
+      {done ? (
+        <ArchiveView employees={employees ?? []} onOpen={(id) => change('note', id)} />
+      ) : (
+        <Board notes={notes.data} notesError={notes.error} employees={employees} canEdit={canEdit} onOpen={(id) => change('note', id)} />
       )}
-      {view === 'list' && <TodoListView shopping={false} />}
-      {view === 'shopping' && <TodoListView shopping />}
-      {view === 'archive' && <ArchiveView employees={employees ?? []} onOpen={setOpenId} />}
 
-      {openId && <NoteDialogById id={openId} canEdit={canEdit} onClose={() => setOpenId(null)} />}
+      {openId && <NoteDialogById id={openId} canEdit={canEdit} onClose={() => change('note', null)} />}
     </div>
   )
 }
 
 /**
- * The board: "Neu" and one column per person from the employee list (bug #3) with their notes and
- * their open to-dos. Drag a note to another person (only that person is swapped – the old board
- * overwrote several people with one) or a to-do (it gets the new person). Click a note for the rest.
+ * The board: "Neu" and one column per person from the employee list (bug #3) with their notes. Drag
+ * a note to another person (only that person is swapped – the old board overwrote several people
+ * with one). Click a note for the rest.
  */
 function Board({
   notes: loadedNotes,
   notesError,
-  todos: loadedTodos,
   employees,
   canEdit,
   onOpen,
 }: {
   notes: Note[] | undefined
   notesError: Error | null
-  todos: Todo[] | undefined
   employees: Employee[] | undefined
   canEdit: boolean
   onOpen: (id: string) => void
 }) {
   const toast = useToast()
   const moveNote = useMoveNote()
-  const reassign = useReassignTodo()
   const [dragging, setDragging] = useState<Dragged | null>(null)
   // after dropping: the card stays in its new column until the data itself shows it (no flash back)
   const [droppedNotes, setDroppedNotes] = useState<{ notes: Note[]; basedOn: Note[] } | null>(null)
-  const [droppedTodos, setDroppedTodos] = useState<{ todos: Todo[]; basedOn: Todo[] } | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -156,36 +135,18 @@ function Board({
   )
 
   const notes = droppedNotes && droppedNotes.basedOn === loadedNotes ? droppedNotes.notes : (loadedNotes ?? NO_NOTES)
-  const todos = droppedTodos && droppedTodos.basedOn === loadedTodos ? droppedTodos.todos : (loadedTodos ?? NO_TODOS)
-  const columns = useMemo(() => pinboardColumns(notes, todos, employees ?? []), [notes, todos, employees])
+  const columns = useMemo(() => pinboardColumns(notes, NO_TODOS, employees ?? []), [notes, employees])
   const columnTitle = (id: string) => (id === NEW_COLUMN ? 'Neu' : employees?.find((e) => e.id === id)?.name ?? '')
 
   if (notesError) return <p className="muted">Notizen konnten nicht geladen werden: {notesError.message}</p>
-  if (!loadedNotes || !loadedTodos || !employees) return <p className="muted">Lade Pinnwand …</p>
+  if (!loadedNotes || !employees) return <p className="muted">Lade Pinnwand …</p>
 
   function onDragEnd({ active, over }: DragEndEvent) {
     setDragging(null)
-    if (!over || !loadedNotes || !loadedTodos) return
+    if (!over || !loadedNotes) return
     const dragged = parseDragId(String(active.id))
     const toColumn = String(over.id)
     if (toColumn === dragged.columnId) return
-    const fail = (what: string) => (error: Error) => toast.error(`«${what.slice(0, 40)}» nicht verschoben: ${reasonOf(error)}`)
-
-    if (dragged.kind === 'todo') {
-      const todo = loadedTodos.find((t) => t.id === dragged.id)!
-      const arranged = movedTodo(loadedTodos, dragged.id, toColumn)
-      setDroppedTodos({ todos: arranged, basedOn: loadedTodos })
-      reassign.mutate(
-        { id: dragged.id, assigneeId: toColumn === NEW_COLUMN ? null : toColumn, arranged },
-        {
-          onError: (error) => {
-            setDroppedTodos(null)
-            fail(todo.text)(error)
-          },
-        },
-      )
-      return
-    }
     const note = loadedNotes.find((n) => n.id === dragged.id)!
     const arranged = movedNote(loadedNotes, dragged.id, dragged.columnId, toColumn)
     setDroppedNotes({ notes: arranged, basedOn: loadedNotes })
@@ -199,14 +160,13 @@ function Board({
       {
         onError: (error) => {
           setDroppedNotes(null)
-          fail(note.text)(error)
+          toast.error(`«${note.text.slice(0, 40)}» nicht verschoben: ${reasonOf(error)}`)
         },
       },
     )
   }
 
-  const draggedNote = dragging?.kind === 'note' ? notes.find((n) => n.id === dragging.id) : undefined
-  const draggedTodo = dragging?.kind === 'todo' ? todos.find((t) => t.id === dragging.id) : undefined
+  const draggedNote = dragging ? notes.find((n) => n.id === dragging.id) : undefined
 
   return (
     <DndContext
@@ -220,7 +180,7 @@ function Board({
           draggable: 'Leertaste zum Aufnehmen, Pfeiltasten zu einer anderen Spalte, Leertaste zum Ablegen, Escape zum Abbrechen.',
         },
         announcements: {
-          onDragStart: ({ active }) => (parseDragId(String(active.id)).kind === 'todo' ? 'To-do aufgenommen.' : 'Notiz aufgenommen.'),
+          onDragStart: () => 'Notiz aufgenommen.',
           onDragOver: ({ over }) => (over ? `Über ${columnTitle(String(over.id))}.` : ''),
           onDragEnd: ({ over }) => (over ? `Abgelegt bei ${columnTitle(String(over.id))}.` : 'Abgebrochen.'),
           onDragCancel: () => 'Verschieben abgebrochen.',
@@ -233,23 +193,11 @@ function Board({
             {column.notes.map((note) => (
               <DraggableCard key={note.id} note={note} column={column} employees={employees} canEdit={canEdit} onOpen={() => onOpen(note.id)} />
             ))}
-            {column.todos.length > 0 && (
-              <ul className={styles.todos} aria-label={`To-dos ${column.employee?.name ?? 'ohne Person'}`}>
-                {column.todos.map((todo) => (
-                  <DraggableTodo key={todo.id} todo={todo} column={column} canEdit={canEdit} />
-                ))}
-              </ul>
-            )}
           </Column>
         ))}
       </div>
       <DragOverlay dropAnimation={null}>
         {draggedNote && dragging && <NoteCard note={draggedNote} columnId={dragging.columnId} employees={employees} dragging onOpen={() => undefined} />}
-        {draggedTodo && (
-          <div className={styles.todoOverlay}>
-            <ListTodo aria-hidden /> {draggedTodo.text}
-          </div>
-        )}
       </DragOverlay>
     </DndContext>
   )
@@ -258,44 +206,33 @@ function Board({
 function Column({ column, canEdit, children }: { column: PinboardColumn; canEdit: boolean; children: ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
   const title = column.employee?.name ?? 'Neu'
-  const empty = column.notes.length === 0 && column.todos.length === 0
+  const empty = column.notes.length === 0
   return (
     <section className={styles.column} aria-label={title}>
       {/* name on the color bar, white/dark text – readable (UI review: yellow on yellow) */}
       <h2 className={styles.columnTitle} style={{ borderTopColor: column.employee?.color ?? 'var(--color-border-strong)' }}>
         {column.employee ? <NameBadge name={column.employee.name} color={column.employee.color} /> : 'Neu'}
-        <span className="muted" title="Notizen · To-dos">
-          {column.notes.length} · {column.todos.length}
+        <span className="muted" title="Notizen">
+          {column.notes.length}
         </span>
       </h2>
       {canEdit && <NewEntry column={column} />}
       <div ref={setNodeRef} className={[styles.drop, isOver && styles.over].filter(Boolean).join(' ')}>
         {children}
-        {empty && <p className={styles.empty}>Nichts offen</p>}
+        {empty && <p className={styles.empty}>Keine Notizen</p>}
       </div>
     </section>
   )
 }
 
-/** "+ Notiz" / "+ To-do" at the top of a column – for that person, or nobody in "Neu" */
+/** "+ Notiz" at the top of a column – for that person, or nobody in "Neu". To-dos are added on their page. */
 function NewEntry({ column }: { column: PinboardColumn }) {
-  const [open, setOpen] = useState<'note' | 'todo' | null>(null)
-
-  if (open === 'todo') {
-    return (
-      <div className={styles.newEntry}>
-        <TodoForm defaults={{ assigneeId: column.employee?.id }} onSaved={() => setOpen(null)} onCancel={() => setOpen(null)} />
-      </div>
-    )
-  }
-  if (open === 'note') return <NewNote column={column} onDone={() => setOpen(null)} />
+  const [open, setOpen] = useState(false)
+  if (open) return <NewNote column={column} onDone={() => setOpen(false)} />
   return (
     <div className={styles.addButtons}>
-      <Button small variant="ghost" icon={Plus} onClick={() => setOpen('note')}>
+      <Button small variant="ghost" icon={Plus} onClick={() => setOpen(true)}>
         Notiz
-      </Button>
-      <Button small variant="ghost" icon={Plus} onClick={() => setOpen('todo')}>
-        To-do
       </Button>
     </div>
   )
@@ -340,30 +277,6 @@ function NewNote({ column, onDone }: { column: PinboardColumn; onDone: () => voi
   )
 }
 
-/** A to-do in a person's column – dragged by its grip, so checkbox and buttons stay simple to hit */
-function DraggableTodo({ todo, column, canEdit }: { todo: Todo; column: PinboardColumn; canEdit: boolean }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: dragId('todo', todo.id, column.id), disabled: !canEdit })
-  return (
-    <TodoItem
-      ref={setNodeRef}
-      todo={todo}
-      canEdit={canEdit}
-      showTask
-      showAssignee={column.employee === null}
-      style={{ opacity: isDragging ? 0.35 : undefined }}
-      dragHandle={
-        canEdit ? (
-          <button type="button" className={styles.grip} aria-label={`«${todo.text}» verschieben`} {...attributes} {...listeners}>
-            <GripVertical aria-hidden />
-          </button>
-        ) : (
-          <span />
-        )
-      }
-    />
-  )
-}
-
 function DraggableCard({
   note,
   column,
@@ -377,7 +290,7 @@ function DraggableCard({
   canEdit: boolean
   onOpen: () => void
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: dragId('note', note.id, column.id), disabled: !canEdit })
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: dragId(note.id, column.id), disabled: !canEdit })
   return (
     <NoteCard
       ref={setNodeRef}
@@ -455,13 +368,13 @@ function ArchiveView({ employees, onOpen }: { employees: Employee[]; onOpen: (id
 
   return (
     <section className={styles.archive} aria-label="Archiv">
-      <TextField label="Im Archiv suchen" type="search" value={query} placeholder="Text oder Infos …" onChange={(e) => setQuery(e.target.value)} />
+      <TextField label="In erledigten Notizen suchen" type="search" value={query} placeholder="Text oder Infos …" onChange={(e) => setQuery(e.target.value)} />
       {archive.error ? (
         <p className="muted">Archiv konnte nicht geladen werden: {archive.error.message}</p>
       ) : !archive.data ? (
         <p className="muted">Lade Archiv …</p>
       ) : groups.length === 0 ? (
-        <p className="muted">{q ? 'Nichts gefunden.' : 'Das Archiv ist leer.'}</p>
+        <p className="muted">{q ? 'Nichts gefunden.' : 'Noch keine erledigten Notizen.'}</p>
       ) : (
         groups.map((group) => (
           <div key={group.month} className={styles.month}>
