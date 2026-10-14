@@ -451,9 +451,12 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   until the page was reloaded – on this device (only the to-dos were refetched) and on the others
   (only the topic `todos` was announced). Now both: the to-do hooks refetch the notes too, and a
   changed sub-task announces `notes` as well.
-- [ ] **13b – Warning when a vehicle already has a task that day** (FB-01)
+- [x] **13b – Warning when a vehicle already has a task that day** (FB-01)
   FB-01 is no bug: the "double" appointments in the live app are two tasks each, created a few
-  seconds to minutes apart (same vehicle, other lift). → a warning in the wizard instead.
+  seconds to minutes apart (same vehicle, other lift). Done: the wizard and the edit page show a
+  hint under the appointment when the chosen vehicle has another open task on that day or in the
+  list "Ohne Termin" – with a link to it (new tab, the form stays filled). Only a hint, saving
+  stays possible: a car may come twice on purpose. Done tasks do not count.
 
 Answers of the workshop (2026-10-14):
 
