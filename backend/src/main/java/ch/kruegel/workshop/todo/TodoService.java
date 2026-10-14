@@ -29,6 +29,12 @@ import java.util.UUID;
 public class TodoService {
 
     public static final String TOPIC = "todos";
+    /**
+     * The note shows how many of its sub-tasks are done (FB-03): a changed sub-task changes the
+     * note too. Same value as {@code NoteService.TOPIC} – a copy, because the note package already
+     * uses this one and a reference back would be a cycle.
+     */
+    private static final String NOTES_TOPIC = "notes";
     /** How many done to-dos a list shows at most – the newest */
     static final int DONE_LIMIT = 200;
 
@@ -113,9 +119,10 @@ public class TodoService {
     }
 
     public void delete(UUID id) {
-        repository.delete(find(id));
+        Todo todo = find(id);
+        repository.delete(todo);
         repository.flush();
-        events.publishEvent(new DataChanged(TOPIC));
+        changed(todo);
     }
 
     private TodoDetails details(TodoRequest request, Todo current) {
@@ -154,7 +161,14 @@ public class TodoService {
 
     private TodoDto saved(Todo todo) {
         repository.flush();
-        events.publishEvent(new DataChanged(TOPIC));
+        changed(todo);
         return TodoDto.of(todo);
+    }
+
+    private void changed(Todo todo) {
+        events.publishEvent(new DataChanged(TOPIC));
+        if (todo.getNoteId() != null) {
+            events.publishEvent(new DataChanged(NOTES_TOPIC));
+        }
     }
 }
