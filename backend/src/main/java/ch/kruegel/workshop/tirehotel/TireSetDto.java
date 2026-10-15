@@ -1,0 +1,39 @@
+package ch.kruegel.workshop.tirehotel;
+
+import ch.kruegel.workshop.customer.CustomerDto;
+import ch.kruegel.workshop.vehicle.VehicleDto;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+
+/** A set as delivered by the API, with customer and vehicle (list, labels, receipt). */
+public record TireSetDto(
+        UUID id,
+        long version,
+        CustomerDto customer,
+        @Schema(types = {"object", "null"}, description = "Still open if empty") VehicleDto vehicle,
+        Season season,
+        TireSetKind kind,
+        @Schema(types = {"string", "null"}) RimKind rims,
+        boolean hubCaps,
+        boolean wheelBolts,
+        @Schema(types = {"string", "null"}) String brand,
+        @Schema(types = {"string", "null"}) String model,
+        @Schema(types = {"string", "null"}) String dimension,
+        @Schema(types = {"integer", "null"}, description = "Year of manufacture (DOT)") Integer year,
+        @Schema(types = {"string", "null"}) String remark,
+        @Schema(description = "As last measured") TreadDepths depths,
+        LocalDate storedOn,
+        @Schema(types = {"string", "null"}, format = "date", description = "Empty = in the hotel") LocalDate retrievedOn,
+        Instant updatedAt,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last") UUID updatedBy) {
+
+    static TireSetDto of(TireSet s) {
+        TireSetDetails d = s.getDetails();
+        return new TireSetDto(s.getId(), s.getVersion(), CustomerDto.of(d.customer()), d.vehicle() == null ? null : VehicleDto.of(d.vehicle()),
+                d.season(), d.kind(), d.rims(), d.hubCaps(), d.wheelBolts(), d.brand(), d.model(), d.dimension(), d.year(), d.remark(),
+                s.getDepths(), s.getStoredOn(), s.getRetrievedOn(), s.getUpdatedAt(), s.getUpdatedBy());
+    }
+}

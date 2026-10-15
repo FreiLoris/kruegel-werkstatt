@@ -1,0 +1,163 @@
+import { ArrowLeft, LogOut, Pencil, Ruler } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
+import { reasonOf } from '../../api/errors'
+import { useCanEdit } from '../../app/person/useDevicePerson'
+import { LicensePlate } from '../../components/licenseplate/LicensePlate'
+import { Button } from '../../components/ui/Button'
+import { useConfirm } from '../../components/ui/confirmContext'
+import { Facts } from '../../components/ui/Facts'
+import { useToast } from '../../components/ui/toastContext'
+import { formatDate } from '../../lib/format'
+import { useAllEmployees } from '../employees/employeeApi'
+import { MeasureDialog } from './MeasureDialog'
+import {
+  KINDS,
+  RIMS,
+  SEASONS,
+  useRetrieveTireSet,
+  useTireSet,
+  useTireSetHistory,
+  useTreadLimits,
+  type TireSet,
+  type TireSetEvent,
+} from './tireHotelApi'
+import styles from './TireHotel.module.css'
+import { formatDepth, WHEELS } from './tread'
+import { AdviseBanner, TreadDepthsView } from './TreadDepthsView'
+
+const EVENT_TEXT: Record<TireSetEvent['kind'], string> = { STORED: 'Eingelagert', MEASURED: 'Nachgemessen', RETRIEVED: 'Ausgelagert' }
+
+/** One set of the tyre hotel (FB-07): its data, the depths around the car, and the history of the wear. */
+export function TireSetPage() {
+  const { id } = useParams()
+  const set = useTireSet(id)
+  if (set.error) return <p className="muted">Satz konnte nicht geladen werden: {set.error.message}</p>
+  if (!set.data) return <p className="muted">Lade …</p>
+  return <TireSetDetail set={set.data} />
+}
+
+function TireSetDetail({ set }: { set: TireSet }) {
+  const { data: limits } = useTreadLimits()
+  const history = useTireSetHistory(set.id)
+  const { data: employees } = useAllEmployees()
+  const canEdit = useCanEdit()
+  const confirm = useConfirm()
+  const toast = useToast()
+  const navigate = useNavigate()
+  const retrieve = useRetrieveTireSet()
+  const [measuring, setMeasuring] = useState(false)
+  const inHotel = !set.retrievedOn
+  const v = set.vehicle
+
+  async function retrieveSet() {
+    const ok = await confirm({
+      title: 'Satz auslagern?',
+      text: `Der Satz von ${set.customer.displayName} verlässt heute das Pneuhotel. Er bleibt mit seinem Verlauf unter «Ausgelagert».`,
+      confirmLabel: 'Auslagern',
+    })
+    if (!ok) return
+    retrieve.mutate(
+      // today – the server's day
+      { id: set.id },
+      {
+        onSuccess: () => toast.success(`Satz von ${set.customer.displayName} ausgelagert`),
+        onError: (error) => toast.error(`Nicht ausgelagert: ${reasonOf(error)}`),
+      },
+    )
+  }
+
+  return (
+    <>
+      <p>
+        <Link to={inHotel ? '/tires' : '/tires?view=retrieved'}>
+          <ArrowLeft aria-hidden size={16} /> Zum Pneuhotel
+        </Link>
+      </p>
+      <div className={styles.header}>
+        <div>
+          <h1>{set.customer.displayName}</h1>
+          <p className={styles.nowrap}>
+            {v ? (
+              <>
+                {v.licensePlate && <LicensePlate text={v.licensePlate} size="sm" />} {v.description}
+              </>
+            ) : (
+              <span className="muted">Fahrzeug noch offen</span>
+            )}
+          </p>
+        </div>
+        {canEdit && (
+          <div className={styles.actions}>
+            <Button icon={Pencil} onClick={() => navigate(`/tires/${set.id}/edit`)}>
+              Bearbeiten
+            </Button>
+            {inHotel && (
+              <>
+                <Button icon={Ruler} onClick={() => setMeasuring(true)}>
+                  Nachmessen
+                </Button>
+                <Button variant="primary" icon={LogOut} onClick={retrieveSet} loading={retrieve.isPending}>
+                  Auslagern
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      {!inHotel && set.retrievedOn && <p className={styles.retrieved}>Ausgelagert am {formatDate(set.retrievedOn)}.</p>}
+
+      <div className={styles.columns}>
+        <section className={styles.section} aria-labelledby="set-title">
+          <h2 id="set-title">Satz</h2>
+          <Facts
+            rows={[
+              ['Saison', SEASONS[set.season]],
+              ['Typ', KINDS[set.kind]],
+              ['Felgen', set.rims ? RIMS[set.rims] : null],
+              ['Dabei', [set.hubCaps && 'Radkappen', set.wheelBolts && 'Radschrauben'].filter(Boolean).join(', ') || null],
+              ['Reifen', [set.brand, set.model].filter(Boolean).join(' ') || null],
+              ['Dimension', set.dimension],
+              ['Jahrgang', set.year?.toString()],
+              ['Bemerkung', set.remark],
+              ['Eingelagert', formatDate(set.storedOn)],
+              // the places follow with 13n; a retrieved set has none
+              ['Lagerplatz', inHotel ? 'noch nicht zugewiesen' : null],
+            ]}
+          />
+        </section>
+        <section className={styles.section} aria-labelledby="tread-title">
+          <h2 id="tread-title">Profiltiefe</h2>
+          {limits && (
+            <>
+              <TreadDepthsView depths={set.depths} season={set.season} limits={limits} />
+              <AdviseBanner depths={set.depths} season={set.season} limits={limits} />
+            </>
+          )}
+        </section>
+        <section className={styles.section} aria-labelledby="history-title">
+          <h2 id="history-title">Verlauf</h2>
+          {history.data ? (
+            <ol className={styles.history}>
+              {[...history.data].reverse().map((event) => (
+                <li key={event.id}>
+                  <span>
+                    <strong>{EVENT_TEXT[event.kind]}</strong> am {formatDate(event.happenedOn)}
+                    {event.createdBy && <span className="muted"> · {employees?.find((e) => e.id === event.createdBy)?.name}</span>}
+                  </span>
+                  {/* the wear over the seasons */}
+                  <span className="muted">{WHEELS.map((w) => `${w.short} ${formatDepth(event.depths[w.key])}`).join(' · ')}</span>
+                  {event.note && <span>{event.note}</span>}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="muted">Lade …</p>
+          )}
+        </section>
+      </div>
+
+      {measuring && <MeasureDialog set={set} onClose={() => setMeasuring(false)} />}
+    </>
+  )
+}

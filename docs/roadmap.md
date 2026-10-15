@@ -545,6 +545,30 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   station in the request = the standard. The station shows on the MFK entry in the calendars, in the
   detail and the summary; the sheet has an MFK block (station with address and phone, appointment
   with duration, who drives – lines to write on while open).
+- [x] **13m – Tyre hotel: store, measure, retrieve** (FB-07, part 1)
+  Done: a page "Pneuhotel" in the navigation (`/tires`): the sets in the hotel, newest first, searched
+  in the browser by customer, plate (with or without spaces), vehicle or tyres; "Ausgelagert" on its
+  own tab. "Einlagern": customer and vehicle as in the task wizard, then season (preset by the time of
+  year – in autumn the summer tyres come in), wheels or tyres, rims (only wheels), hub caps, bolts,
+  brand/model/dimension/year for the set (the newer concept: no DOT per wheel) and the tread depths
+  ("Alle vier gleich" or wheel by wheel around the car) with their status right away. After saving
+  the page is empty for the next customer. A set has its history (`tire_set_event`: stored, measured,
+  retrieved – each with the depths, so the wear can be followed); its depths change only by
+  "Nachmessen". The limits are in the settings (summer 3.0, winter 4.0 – all-season like winter –,
+  legal minimum 1.6 mm); below: "ansprechen" with the hint "Kunde auf neue Reifen ansprechen".
+- [ ] **13n – Storage places** (FB-07, part 2)
+  Locations (floor grid of the workshop, shelves of the container) generated in the settings; a set
+  takes one place; the place view per location (free / taken / to talk about); choosing a place when
+  storing (next free one after the last used proposed), moving with history.
+- [ ] **13o – Import from SwissGarage** (FB-07, part 3)
+  One-off import of `Pneuhotel.xlsx` (77 sets): plate → vehicle and customer, "Art" → season/rims,
+  depths; places "noch nicht zugewiesen" with a list to assign them.
+- [ ] **13p – Prints** (FB-07, part 4)
+  Labels on A4 sheets (formats in the settings, start position for opened sheets) and the storage
+  receipt for the customer with a signature field.
+- [ ] **13q – Tyre hotel ↔ task** (FB-06, FB-07)
+  The place and stored data on the task sheet; the depths noted there entered from the task; done
+  with a tire change: the removed set stored, the stored one retrieved.
 
 Answers of the workshop (2026-10-14):
 
