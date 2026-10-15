@@ -67,7 +67,7 @@ export function TireLabelsPage() {
                 </option>
               ))}
             </Select>
-            <Select label="Start bei Etikett" value={String(from)} onChange={(e) => setStart(Number(e.target.value))} hint="für angebrochene Bögen">
+            <Select label="Start bei Etikett (angebrochener Bogen)" value={String(from)} onChange={(e) => setStart(Number(e.target.value))}>
               {starts.map((n) => (
                 <option key={n} value={n}>
                   {n}
