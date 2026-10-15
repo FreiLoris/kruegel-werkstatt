@@ -107,7 +107,7 @@
       },
       "post" : {
         "description" : "Not overlapping another absence of the person (to the half day).",
-        "operationId" : "create_16",
+        "operationId" : "create_17",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -265,7 +265,7 @@
     },
     "/api/absences/{id}" : {
       "delete" : {
-        "operationId" : "delete_5",
+        "operationId" : "delete_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -335,7 +335,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_14",
+        "operationId" : "update_15",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -491,7 +491,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_13",
+        "operationId" : "update_14",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -878,7 +878,7 @@
       },
       "post" : {
         "description" : "409 with a message naming the booking in the way.",
-        "operationId" : "create_15",
+        "operationId" : "create_16",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1206,7 +1206,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_12",
+        "operationId" : "update_13",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1458,7 +1458,7 @@
     },
     "/api/courtesy-cars" : {
       "get" : {
-        "operationId" : "list_11",
+        "operationId" : "list_12",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -1537,7 +1537,7 @@
         "tags" : [ "Courtesy cars" ]
       },
       "post" : {
-        "operationId" : "create_14",
+        "operationId" : "create_15",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1699,7 +1699,7 @@
     "/api/courtesy-cars/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409.",
-        "operationId" : "update_11",
+        "operationId" : "update_12",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2030,7 +2030,7 @@
     },
     "/api/customers" : {
       "post" : {
-        "operationId" : "create_13",
+        "operationId" : "create_14",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2186,7 +2186,7 @@
       },
       "put" : {
         "description" : "SwissGarage customers → 409. Needs the loaded `version`.",
-        "operationId" : "update_10",
+        "operationId" : "update_11",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2430,7 +2430,7 @@
     },
     "/api/employees" : {
       "get" : {
-        "operationId" : "list_10",
+        "operationId" : "list_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -2509,7 +2509,7 @@
         "tags" : [ "Employees" ]
       },
       "post" : {
-        "operationId" : "create_12",
+        "operationId" : "create_13",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2747,7 +2747,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409 if changed in the meantime.",
-        "operationId" : "update_9",
+        "operationId" : "update_10",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2991,7 +2991,7 @@
     },
     "/api/inspection-stations" : {
       "get" : {
-        "operationId" : "list_9",
+        "operationId" : "list_10",
         "responses" : {
           "200" : {
             "content" : {
@@ -3061,7 +3061,7 @@
         "tags" : [ "Inspection stations" ]
       },
       "post" : {
-        "operationId" : "create_11",
+        "operationId" : "create_12",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -3141,7 +3141,7 @@
     "/api/inspection-stations/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_8",
+        "operationId" : "update_9",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3463,7 +3463,7 @@
     },
     "/api/insurances" : {
       "get" : {
-        "operationId" : "list_8",
+        "operationId" : "list_9",
         "responses" : {
           "200" : {
             "content" : {
@@ -3533,7 +3533,7 @@
         "tags" : [ "Insurances" ]
       },
       "post" : {
-        "operationId" : "create_10",
+        "operationId" : "create_11",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -3613,7 +3613,7 @@
     "/api/insurances/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_7",
+        "operationId" : "update_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3857,7 +3857,7 @@
     },
     "/api/lifts" : {
       "get" : {
-        "operationId" : "list_7",
+        "operationId" : "list_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -3936,7 +3936,7 @@
         "tags" : [ "Lifts" ]
       },
       "post" : {
-        "operationId" : "create_9",
+        "operationId" : "create_10",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -4413,7 +4413,7 @@
     "/api/notes" : {
       "get" : {
         "description" : "On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).",
-        "operationId" : "list_6",
+        "operationId" : "list_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "archived",
@@ -4524,7 +4524,7 @@
       },
       "post" : {
         "description" : "The author is the person of the device.",
-        "operationId" : "create_8",
+        "operationId" : "create_9",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -4604,7 +4604,7 @@
     "/api/notes/{id}" : {
       "delete" : {
         "description" : "With its sub-tasks. Normally a note is archived instead.",
-        "operationId" : "delete_4",
+        "operationId" : "delete_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4750,7 +4750,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_6",
+        "operationId" : "update_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5194,7 +5194,7 @@
     },
     "/api/service-items" : {
       "get" : {
-        "operationId" : "list_5",
+        "operationId" : "list_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -5273,7 +5273,7 @@
         "tags" : [ "Service items" ]
       },
       "post" : {
-        "operationId" : "create_7",
+        "operationId" : "create_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -5680,7 +5680,7 @@
     "/api/stock-items" : {
       "get" : {
         "description" : "Search, filters and sorting happen on the page.",
-        "operationId" : "list_4",
+        "operationId" : "list_5",
         "responses" : {
           "200" : {
             "content" : {
@@ -5750,7 +5750,7 @@
         "tags" : [ "Stock list" ]
       },
       "post" : {
-        "operationId" : "create_6",
+        "operationId" : "create_7",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -5829,7 +5829,7 @@
     },
     "/api/stock-items/{id}" : {
       "delete" : {
-        "operationId" : "delete_3",
+        "operationId" : "delete_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5899,7 +5899,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_5",
+        "operationId" : "update_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5987,7 +5987,7 @@
     },
     "/api/storage-locations" : {
       "get" : {
-        "operationId" : "list_3",
+        "operationId" : "list_4",
         "parameters" : [ {
           "in" : "query",
           "name" : "includeInactive",
@@ -6066,7 +6066,7 @@
         "tags" : [ "Storage locations" ]
       },
       "post" : {
-        "operationId" : "create_5",
+        "operationId" : "create_6",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -6563,7 +6563,7 @@
     },
     "/api/suppliers" : {
       "get" : {
-        "operationId" : "list_2",
+        "operationId" : "list_3",
         "responses" : {
           "200" : {
             "content" : {
@@ -6633,7 +6633,7 @@
         "tags" : [ "Suppliers" ]
       },
       "post" : {
-        "operationId" : "create_4",
+        "operationId" : "create_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -6713,7 +6713,7 @@
     "/api/suppliers/{id}" : {
       "delete" : {
         "description" : "Its articles in the stock list lose it.",
-        "operationId" : "delete_2",
+        "operationId" : "delete_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6783,7 +6783,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_4",
+        "operationId" : "update_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6871,7 +6871,7 @@
     },
     "/api/swissgarage-imports" : {
       "get" : {
-        "operationId" : "list_12",
+        "operationId" : "list_13",
         "responses" : {
           "200" : {
             "content" : {
@@ -7273,7 +7273,7 @@
       },
       "post" : {
         "description" : "Starts as RECEIVED. The lift must be free for the whole time.",
-        "operationId" : "create_2",
+        "operationId" : "create_3",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -7767,7 +7767,7 @@
     "/api/tasks/with-courtesy-car" : {
       "post" : {
         "description" : "Both or neither: if the car is taken (409, names the booking in the way) or a field is wrong (car fields as `courtesyCar.*`), the task is not saved either.",
-        "operationId" : "create_3",
+        "operationId" : "create_4",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -7919,7 +7919,7 @@
     },
     "/api/tasks/{id}" : {
       "delete" : {
-        "operationId" : "delete_1",
+        "operationId" : "delete_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -8065,7 +8065,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_3",
+        "operationId" : "update_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -8733,6 +8733,387 @@
         "tags" : [ "Tyre hotel" ]
       }
     },
+    "/api/tire-locations" : {
+      "get" : {
+        "operationId" : "list_2",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TireLocationDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The locations, in their order",
+        "tags" : [ "Tyre hotel" ]
+      },
+      "post" : {
+        "description" : "Its places are generated from the sizes.",
+        "operationId" : "create_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TireLocationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireLocationDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Add a location",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-locations/{id}" : {
+      "delete" : {
+        "operationId" : "delete_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Delete a location – only while no set lies there",
+        "tags" : [ "Tyre hotel" ]
+      },
+      "put" : {
+        "description" : "Code, name and sizes – not the kind. Smaller only where no set lies. Needs the loaded `version`.",
+        "operationId" : "update_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TireLocationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireLocationDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Edit a location",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-places" : {
+      "get" : {
+        "description" : "Which set lies where: the sets name their place.",
+        "operationId" : "places",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TirePlaceDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "All places, by location and position",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
     "/api/tire-sets" : {
       "get" : {
         "operationId" : "list_1",
@@ -9226,8 +9607,98 @@
         "tags" : [ "Tyre hotel" ]
       }
     },
+    "/api/tire-sets/{id}/move" : {
+      "post" : {
+        "description" : "The place must be in use and free.",
+        "operationId" : "move_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MoveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireSetDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Move the set onto another place – or give it its first one",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
     "/api/tire-sets/{id}/retrieve" : {
       "post" : {
+        "description" : "Its place is free again.",
         "operationId" : "retrieve",
         "parameters" : [ {
           "in" : "path",
@@ -11464,6 +11935,26 @@
         },
         "required" : [ "depths" ]
       },
+      "MoveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "on" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Empty = today"
+          },
+          "placeId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "placeId" ]
+      },
       "NoteArchivedRequest" : {
         "type" : "object",
         "properties" : {
@@ -12623,6 +13114,132 @@
         },
         "required" : [ "minimumMm", "summerMm", "version", "winterMm" ]
       },
+      "TireLocationDto" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "OG"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "FLOOR", "SHELVES" ]
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "sizeA" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Columns (A, B, …) or shelves"
+          },
+          "sizeB" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Rows or levels"
+          },
+          "sizeC" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Sets per field or compartments"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "code", "id", "kind", "name", "sizeA", "sizeB", "sizeC", "version" ]
+      },
+      "TireLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "Start of every address",
+            "example" : "OG",
+            "minLength" : 1,
+            "pattern" : "^\\s*[A-Za-z0-9]{1,6}\\s*$"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "FLOOR", "SHELVES" ]
+          },
+          "name" : {
+            "type" : "string",
+            "example" : "Werkstatt 1. Stock",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "sizeA" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Columns (A, B, …) or shelves",
+            "maximum" : 26,
+            "minimum" : 1
+          },
+          "sizeB" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Rows or levels",
+            "maximum" : 30,
+            "minimum" : 1
+          },
+          "sizeC" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Sets per field or compartments",
+            "maximum" : 30,
+            "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Only needed when editing"
+          }
+        },
+        "required" : [ "code", "kind", "name", "sizeA", "sizeB", "sizeC" ]
+      },
+      "TirePlaceDto" : {
+        "type" : "object",
+        "properties" : {
+          "a" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Column / shelf, from 1"
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "False beyond the sizes of its location (made smaller)"
+          },
+          "address" : {
+            "type" : "string",
+            "example" : "OG-B3-1"
+          },
+          "b" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Row / level, from 1"
+          },
+          "c" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Set on the trolley / compartment, from 1"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "locationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "a", "active", "address", "b", "c", "id", "locationId" ]
+      },
       "TireSetDto" : {
         "type" : "object",
         "properties" : {
@@ -12652,6 +13269,15 @@
           },
           "model" : {
             "type" : [ "string", "null" ]
+          },
+          "place" : {
+            "type" : [ "string", "null" ],
+            "example" : "OG-B3-1"
+          },
+          "placeId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Where it lies; empty = not assigned (or retrieved)"
           },
           "remark" : {
             "type" : [ "string", "null" ]
@@ -12703,7 +13329,7 @@
             "description" : "Year of manufacture (DOT)"
           }
         },
-        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "remark", "retrievedOn", "rims", "season", "storedOn", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
+        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "remark", "retrievedOn", "rims", "season", "storedOn", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
       },
       "TireSetEventDto" : {
         "type" : "object",
@@ -12731,13 +13357,18 @@
           },
           "kind" : {
             "type" : "string",
-            "enum" : [ "STORED", "MEASURED", "RETRIEVED" ]
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED" ]
           },
           "note" : {
             "type" : [ "string", "null" ]
+          },
+          "place" : {
+            "type" : [ "string", "null" ],
+            "description" : "The place of that moment",
+            "example" : "OG-B3-1"
           }
         },
-        "required" : [ "createdAt", "createdBy", "depths", "happenedOn", "id", "kind", "note" ]
+        "required" : [ "createdAt", "createdBy", "depths", "happenedOn", "id", "kind", "note", "place" ]
       },
       "TireSetRequest" : {
         "type" : "object",
@@ -12773,6 +13404,11 @@
             "type" : "string",
             "maxLength" : 60,
             "minLength" : 0
+          },
+          "placeId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Only when storing: the place; empty = assigned later (then by moving)"
           },
           "remark" : {
             "type" : "string",

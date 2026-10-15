@@ -1,4 +1,4 @@
-import { Archive, Plus, Warehouse } from 'lucide-react'
+import { Archive, LayoutGrid, Plus, Warehouse } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
@@ -6,22 +6,28 @@ import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { formatDate } from '../../lib/format'
-import { KINDS, SEASONS, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
+import { PlaceMap } from './PlaceMap'
+import { KINDS, SEASONS, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
+import { freeCount, occupancy } from './tirePlaces'
 import { searchTireSets } from './tireSetSearch'
 import { formatDepth, worstStatus } from './tread'
 import { TreadChip } from './TreadDepthsView'
 
 /**
  * The tyre hotel (FB-07): the sets in the hotel, newest first, searched by customer, plate, vehicle
- * or tyres; the retrieved ones on their own tab. Search and tab are in the address. The storage
- * places (grid, shelves) follow with 13n.
+ * or tyres; the places as they are in the workshop (13n); the retrieved ones on their own tab.
+ * Search and tab are in the address.
  */
 export function TireHotelPage() {
   const [params, setParams] = useSearchParams()
-  const retrieved = params.get('view') === 'retrieved'
+  const view = params.get('view') === 'retrieved' ? 'retrieved' : params.get('view') === 'places' ? 'places' : 'list'
+  const retrieved = view === 'retrieved'
   const query = params.get('q') ?? ''
   const sets = useTireSets(!retrieved)
+  const { data: locations } = useTireLocations()
+  const { data: places } = useTirePlaces()
+  const free = places && sets.data && !retrieved ? freeCount(places, occupancy(sets.data)) : undefined
   const { data: limits } = useTreadLimits()
   const canEdit = useCanEdit()
   const navigate = useNavigate()
@@ -38,7 +44,14 @@ export function TireHotelPage() {
   return (
     <>
       <div className={styles.header}>
-        <h1>Pneuhotel</h1>
+        <div>
+          <h1>Pneuhotel</h1>
+          {free !== undefined && sets.data && (
+            <p className={styles.summary}>
+              {sets.data.length} eingelagert · {free} {free === 1 ? 'freier Platz' : 'freie Plätze'}
+            </p>
+          )}
+        </div>
         {canEdit && (
           <Button variant="primary" icon={Plus} onClick={() => navigate('/tires/new')}>
             Einlagern
@@ -47,7 +60,8 @@ export function TireHotelPage() {
       </div>
 
       <div className={styles.toolbar}>
-        <div className={styles.search}>
+        {/* the place view shows every place – a search would not narrow it */}
+        <div className={styles.search} hidden={view === 'places'}>
           <TextField
             label="Suche"
             type="search"
@@ -57,8 +71,11 @@ export function TireHotelPage() {
           />
         </div>
         <div className={styles.actions} role="group" aria-label="Anzeigen">
-          <Button icon={Warehouse} variant={retrieved ? 'secondary' : 'primary'} aria-pressed={!retrieved} onClick={() => change('view', '')}>
+          <Button icon={Warehouse} variant={view === 'list' ? 'primary' : 'secondary'} aria-pressed={view === 'list'} onClick={() => change('view', '')}>
             Eingelagert
+          </Button>
+          <Button icon={LayoutGrid} variant={view === 'places' ? 'primary' : 'secondary'} aria-pressed={view === 'places'} onClick={() => change('view', 'places')}>
+            Plätze
           </Button>
           <Button icon={Archive} variant={retrieved ? 'primary' : 'secondary'} aria-pressed={retrieved} onClick={() => change('view', 'retrieved')}>
             Ausgelagert
@@ -66,7 +83,17 @@ export function TireHotelPage() {
         </div>
       </div>
 
-      {sets.error ? (
+      {view === 'places' ? (
+        !locations || !places || !sets.data ? (
+          <p className="muted">Lade …</p>
+        ) : locations.length === 0 ? (
+          <p className={styles.empty}>
+            Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.
+          </p>
+        ) : (
+          <PlaceMap locations={locations} places={places} sets={sets.data} limits={limits} mode="view" />
+        )
+      ) : sets.error ? (
         <p className="muted">Pneuhotel konnte nicht geladen werden: {sets.error.message}</p>
       ) : !sets.data ? (
         <p className="muted">Lade …</p>
@@ -86,6 +113,7 @@ export function TireHotelPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
+                    {!retrieved && <th>Platz</th>}
                     <th>Kunde</th>
                     <th>Fahrzeug</th>
                     <th>Satz</th>
@@ -115,6 +143,7 @@ function TireSetRow({ set, limits, retrieved }: { set: TireSet; limits: ReturnTy
   const tyres = [set.brand, set.model, set.dimension].filter(Boolean).join(' ')
   return (
     <tr>
+      {!retrieved && <td className={styles.nowrap}>{set.place ?? <span className="muted">offen</span>}</td>}
       <td>
         <Link to={`/tires/${set.id}`}>{set.customer.displayName}</Link>
       </td>

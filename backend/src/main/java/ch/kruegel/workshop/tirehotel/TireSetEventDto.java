@@ -13,10 +13,11 @@ public record TireSetEventDto(
         LocalDate happenedOn,
         @Schema(description = "The depths of that moment") TreadDepths depths,
         @Schema(types = {"string", "null"}) String note,
+        @Schema(types = {"string", "null"}, example = "OG-B3-1", description = "The place of that moment") String place,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who did it") UUID createdBy) {
 
     static TireSetEventDto of(TireSetEvent e) {
-        return new TireSetEventDto(e.getId(), e.getKind(), e.getHappenedOn(), e.getDepths(), e.getNote(), e.getCreatedAt(), e.getCreatedBy());
+        return new TireSetEventDto(e.getId(), e.getKind(), e.getHappenedOn(), e.getDepths(), e.getNote(), e.getPlace(), e.getCreatedAt(), e.getCreatedBy());
     }
 }

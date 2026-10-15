@@ -4,5 +4,7 @@ package ch.kruegel.workshop.tirehotel;
 public enum TireSetEventKind {
     STORED,
     MEASURED,
+    /** onto another place – also the first place of a set stored without one */
+    MOVED,
     RETRIEVED
 }

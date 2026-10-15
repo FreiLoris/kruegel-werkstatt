@@ -66,7 +66,13 @@ class TireHotelController {
         return service.measure(id, request);
     }
 
-    @Operation(summary = "Retrieve: the set leaves the hotel (it stays in the list of retrieved sets)")
+    @Operation(summary = "Move the set onto another place – or give it its first one", description = "The place must be in use and free.")
+    @PostMapping("/api/tire-sets/{id}/move")
+    TireSetDto move(@PathVariable UUID id, @Valid @RequestBody MoveRequest request) {
+        return service.move(id, request);
+    }
+
+    @Operation(summary = "Retrieve: the set leaves the hotel (it stays in the list of retrieved sets)", description = "Its place is free again.")
     @PostMapping("/api/tire-sets/{id}/retrieve")
     TireSetDto retrieve(@PathVariable UUID id, @Valid @RequestBody RetrieveRequest request) {
         return service.retrieve(id, request);

@@ -30,15 +30,17 @@ public class TireHotelService {
 
     private final TireSetRepository repository;
     private final TireHotelSettingsRepository settings;
+    private final TirePlaceRepository places;
     private final CustomerRepository customers;
     private final VehicleRepository vehicles;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    TireHotelService(TireSetRepository repository, TireHotelSettingsRepository settings, CustomerRepository customers,
-                     VehicleRepository vehicles, ApplicationEventPublisher events, Clock clock) {
+    TireHotelService(TireSetRepository repository, TireHotelSettingsRepository settings, TirePlaceRepository places,
+                     CustomerRepository customers, VehicleRepository vehicles, ApplicationEventPublisher events, Clock clock) {
         this.repository = repository;
         this.settings = settings;
+        this.places = places;
         this.customers = customers;
         this.vehicles = vehicles;
         this.events = events;
@@ -70,8 +72,41 @@ public class TireHotelService {
         if (day.isAfter(today)) {
             throw new InvalidInputException("storedOn", "darf nicht in der Zukunft liegen");
         }
-        TireSet set = new TireSet(details, DepthsRequest.toDepths(request.depths()), day, null);
+        TirePlace place = request.placeId() == null ? null : freePlace(request.placeId(), null);
+        TireSet set = new TireSet(details, DepthsRequest.toDepths(request.depths()), day, place, null);
         return saved(repository.save(set));
+    }
+
+    /** Onto another place – or its first one (e.g. a set taken over from SwissGarage). */
+    public TireSetDto move(UUID id, MoveRequest request) {
+        TireSet set = find(id);
+        if (!set.isInHotel()) {
+            throw new BusinessRuleException("Dieser Satz ist ausgelagert – er hat keinen Platz.");
+        }
+        if (set.getPlace() != null && set.getPlace().getId().equals(request.placeId())) {
+            throw new InvalidInputException("placeId", "Der Satz liegt schon dort");
+        }
+        TirePlace place = freePlace(request.placeId(), set);
+        set.moveTo(place, day(request.on(), set, "on"), request.note());
+        return saved(set);
+    }
+
+    /**
+     * A place in use and free – else it says who lies there. Two devices taking the same place in the
+     * same second: the unique index of V33 refuses the second.
+     *
+     * @param moving the set being moved; empty when storing
+     */
+    private TirePlace freePlace(UUID placeId, TireSet moving) {
+        TirePlace place = places.findById(placeId).orElseThrow(() -> new InvalidInputException("placeId", "Platz gibt es nicht"));
+        if (!place.isActive()) {
+            throw new InvalidInputException("placeId", place.getAddress() + " wird nicht mehr verwendet");
+        }
+        repository.onPlace(placeId).filter(other -> !other.equals(moving)).ifPresent(other -> {
+            throw new InvalidInputException("placeId", "%s ist belegt (%s)".formatted(place.getAddress(),
+                    other.getCustomer().getDetails().displayName()));
+        });
+        return place;
     }
 
     /** The data of the set – its depths change by {@link #measure}, so they are in the history. */
@@ -81,6 +116,11 @@ public class TireHotelService {
         }
         TireSet set = find(id);
         set.checkVersion(request.version());
+        // the place changes by moving – it goes into the history
+        UUID current = set.getPlace() == null ? null : set.getPlace().getId();
+        if (request.placeId() != null && !request.placeId().equals(current)) {
+            throw new InvalidInputException("placeId", "Den Platz über «Umlagern» ändern");
+        }
         set.update(details(request, set));
         return saved(set);
     }

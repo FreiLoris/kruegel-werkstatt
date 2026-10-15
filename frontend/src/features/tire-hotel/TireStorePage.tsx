@@ -9,10 +9,12 @@ import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
 import { CustomerStep } from '../tasks/wizard/CustomerStep'
 import type { CustomerStepValue } from '../tasks/wizard/wizardState'
-import { useSaveTireSet, useTreadLimits, type TireSet } from './tireHotelApi'
+import { PlaceMap } from './PlaceMap'
+import { useSaveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
 import { emptyForm, tireSetErrors, toTireSetRequest, type TireSetForm } from './tireSetForm'
+import { lastUsedPlace, nextFreePlace, occupancy } from './tirePlaces'
 import { TreadDepthsInput } from './TreadDepthsInput'
 
 const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
@@ -21,7 +23,8 @@ const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
  * Store a set (FB-07): customer and vehicle as in the task wizard, then the set with its tyres and
  * the tread depths. In the weeks of the tyre change many come one after the other – after saving
  * the page is empty again for the next customer, with a link to the set just stored.
- * The storage place (13n) and the prints (13p) become steps of their own.
+ * The place is proposed: the next free one after the place used last – a busy day fills one trolley
+ * after the other (13n). The prints (13p) follow.
  */
 export function TireStorePage() {
   const today = useToday()
@@ -31,7 +34,16 @@ export function TireStorePage() {
   const [showRequired, setShowRequired] = useState(false)
   const [last, setLast] = useState<TireSet | null>(null)
   const { data: limits } = useTreadLimits()
+  const { data: locations } = useTireLocations()
+  const { data: places } = useTirePlaces()
+  const { data: inHotel } = useTireSets(true)
+  // undefined = the proposal; null = "später zuweisen"
+  const [placeChoice, setPlaceChoice] = useState<string | null | undefined>(undefined)
   const save = useSaveTireSet()
+
+  const proposal = places && inHotel ? nextFreePlace(places, occupancy(inHotel), lastUsedPlace(inHotel)) : undefined
+  const placeId = placeChoice === undefined ? (proposal?.id ?? null) : placeChoice
+  const place = places?.find((p) => p.id === placeId)
   const toast = useToast()
 
   const errors = tireSetErrors(form, today)
@@ -53,7 +65,7 @@ export function TireStorePage() {
       return
     }
     save.mutate(
-      { request: toTireSetRequest(customerStep, form) },
+      { request: { ...toTireSetRequest(customerStep, form), placeId: placeId ?? undefined } },
       {
         onSuccess: (saved) => {
           toast.success(`Satz von ${saved.customer.displayName} eingelagert`)
@@ -62,6 +74,8 @@ export function TireStorePage() {
           setCustomerStep(EMPTY_CUSTOMER_STEP)
           setForm({ ...emptyForm(today), season: form.season })
           setShowRequired(false)
+          // the next proposal: after the place just used
+          setPlaceChoice(undefined)
           setStep(1)
           window.scrollTo({ top: 0 })
         },
@@ -114,6 +128,37 @@ export function TireStorePage() {
             <h2 id="tread-title">Profiltiefe</h2>
             <TreadDepthsInput form={form} onChange={setForm} errors={errors} limits={limits} />
           </section>
+          <section className={styles.section} aria-labelledby="place-title">
+            <h2 id="place-title">Lagerplatz: {place ? place.address : 'später zuweisen'}</h2>
+            {locations && locations.length === 0 ? (
+              <p className="muted">
+                Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> anlegen. Bis dann: später zuweisen.
+              </p>
+            ) : (
+              locations &&
+              places &&
+              inHotel && (
+                <>
+                  <PlaceMap
+                    locations={locations}
+                    places={places}
+                    sets={inHotel}
+                    limits={limits}
+                    mode="pick"
+                    selected={placeId}
+                    onPick={(p) => setPlaceChoice(p.id)}
+                  />
+                  {placeId && (
+                    <p>
+                      <Button variant="ghost" small onClick={() => setPlaceChoice(null)}>
+                        Später zuweisen
+                      </Button>
+                    </p>
+                  )}
+                </>
+              )
+            )}
+          </section>
         </>
       )}
 
@@ -133,7 +178,7 @@ export function TireStorePage() {
             </Button>
             {showRequired && !complete && <span className={styles.hint}>Bitte die markierten Felder prüfen</span>}
             <Button variant="primary" icon={Save} onClick={store} loading={save.isPending}>
-              Einlagern
+              {place ? `Auf ${place.address} einlagern` : 'Einlagern'}
             </Button>
           </>
         )}

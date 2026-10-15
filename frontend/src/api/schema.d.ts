@@ -21,7 +21,7 @@ export interface paths {
          * Enter absence
          * @description Not overlapping another absence of the person (to the half day).
          */
-        post: operations["create_16"];
+        post: operations["create_17"];
         delete?: never;
         options?: never;
         head?: never;
@@ -60,10 +60,10 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_14"];
+        put: operations["update_15"];
         post?: never;
         /** Delete absence */
-        delete: operations["delete_5"];
+        delete: operations["delete_6"];
         options?: never;
         head?: never;
         patch?: never;
@@ -82,7 +82,7 @@ export interface paths {
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         delete?: never;
         options?: never;
@@ -123,7 +123,7 @@ export interface paths {
          * Book a courtesy car
          * @description 409 with a message naming the booking in the way.
          */
-        post: operations["create_15"];
+        post: operations["create_16"];
         delete?: never;
         options?: never;
         head?: never;
@@ -179,7 +179,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -217,10 +217,10 @@ export interface paths {
             cookie?: never;
         };
         /** All courtesy cars in fixed order (default: only active ones) */
-        get: operations["list_11"];
+        get: operations["list_12"];
         put?: never;
         /** Create courtesy car (put at the end) */
-        post: operations["create_14"];
+        post: operations["create_15"];
         delete?: never;
         options?: never;
         head?: never;
@@ -256,7 +256,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_11"];
+        put: operations["update_12"];
         post?: never;
         delete?: never;
         options?: never;
@@ -328,7 +328,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create local customer (walk-in) */
-        post: operations["create_13"];
+        post: operations["create_14"];
         delete?: never;
         options?: never;
         head?: never;
@@ -348,7 +348,7 @@ export interface paths {
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         delete?: never;
         options?: never;
@@ -398,10 +398,10 @@ export interface paths {
             cookie?: never;
         };
         /** All employees in fixed order */
-        get: operations["list_10"];
+        get: operations["list_11"];
         put?: never;
         /** Create employee (put at the end of the order) */
-        post: operations["create_12"];
+        post: operations["create_13"];
         delete?: never;
         options?: never;
         head?: never;
@@ -438,7 +438,7 @@ export interface paths {
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_9"];
+        put: operations["update_10"];
         post?: never;
         delete?: never;
         options?: never;
@@ -488,10 +488,10 @@ export interface paths {
             cookie?: never;
         };
         /** All inspection stations, the standard first, then by name – also the deactivated ones */
-        get: operations["list_9"];
+        get: operations["list_10"];
         put?: never;
         /** Add an inspection station */
-        post: operations["create_11"];
+        post: operations["create_12"];
         delete?: never;
         options?: never;
         head?: never;
@@ -510,7 +510,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_8"];
+        put: operations["update_9"];
         post?: never;
         delete?: never;
         options?: never;
@@ -577,10 +577,10 @@ export interface paths {
             cookie?: never;
         };
         /** All insurances by name, also the deactivated ones */
-        get: operations["list_8"];
+        get: operations["list_9"];
         put?: never;
         /** Add an insurance */
-        post: operations["create_10"];
+        post: operations["create_11"];
         delete?: never;
         options?: never;
         head?: never;
@@ -599,7 +599,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_7"];
+        put: operations["update_8"];
         post?: never;
         delete?: never;
         options?: never;
@@ -649,10 +649,10 @@ export interface paths {
             cookie?: never;
         };
         /** All lifts in fixed order (default: only active ones) */
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         /** Create lift (put at the end) */
-        post: operations["create_9"];
+        post: operations["create_10"];
         delete?: never;
         options?: never;
         head?: never;
@@ -761,13 +761,13 @@ export interface paths {
          * Notes
          * @description On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).
          */
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
         /**
          * Create note
          * @description The author is the person of the device.
          */
-        post: operations["create_8"];
+        post: operations["create_9"];
         delete?: never;
         options?: never;
         head?: never;
@@ -787,13 +787,13 @@ export interface paths {
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_6"];
+        put: operations["update_7"];
         post?: never;
         /**
          * Delete note
          * @description With its sub-tasks. Normally a note is archived instead.
          */
-        delete: operations["delete_4"];
+        delete: operations["delete_5"];
         options?: never;
         head?: never;
         patch?: never;
@@ -884,10 +884,10 @@ export interface paths {
             cookie?: never;
         };
         /** All service items in fixed order (default: only active ones) */
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
         /** Create service item (put at the end) */
-        post: operations["create_7"];
+        post: operations["create_8"];
         delete?: never;
         options?: never;
         head?: never;
@@ -976,10 +976,10 @@ export interface paths {
          * The whole stock list by name
          * @description Search, filters and sorting happen on the page.
          */
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         /** Add an article */
-        post: operations["create_6"];
+        post: operations["create_7"];
         delete?: never;
         options?: never;
         head?: never;
@@ -998,10 +998,10 @@ export interface paths {
          * Edit an article
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_5"];
+        put: operations["update_6"];
         post?: never;
         /** Delete an article */
-        delete: operations["delete_3"];
+        delete: operations["delete_4"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1015,10 +1015,10 @@ export interface paths {
             cookie?: never;
         };
         /** All storage locations in fixed order (default: only active ones) */
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         /** Create storage location (put at the end) */
-        post: operations["create_5"];
+        post: operations["create_6"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1130,10 +1130,10 @@ export interface paths {
             cookie?: never;
         };
         /** All suppliers by name */
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         /** Add a supplier */
-        post: operations["create_4"];
+        post: operations["create_5"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1152,13 +1152,13 @@ export interface paths {
          * Edit a supplier
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_4"];
+        put: operations["update_5"];
         post?: never;
         /**
          * Delete a supplier
          * @description Its articles in the stock list lose it.
          */
-        delete: operations["delete_2"];
+        delete: operations["delete_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1172,7 +1172,7 @@ export interface paths {
             cookie?: never;
         };
         /** Last 20 imports, newest first */
-        get: operations["list_12"];
+        get: operations["list_13"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1255,7 +1255,7 @@ export interface paths {
          * Create task
          * @description Starts as RECEIVED. The lift must be free for the whole time.
          */
-        post: operations["create_2"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1375,7 +1375,7 @@ export interface paths {
          * Create task with courtesy car
          * @description Both or neither: if the car is taken (409, names the booking in the way) or a field is wrong (car fields as `courtesyCar.*`), the task is not saved either.
          */
-        post: operations["create_3"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1415,10 +1415,10 @@ export interface paths {
          * Edit task
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_3"];
+        put: operations["update_4"];
         post?: never;
         /** Delete task */
-        delete: operations["delete_1"];
+        delete: operations["delete_2"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1545,6 +1545,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tire-locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The locations, in their order */
+        get: operations["list_2"];
+        put?: never;
+        /**
+         * Add a location
+         * @description Its places are generated from the sizes.
+         */
+        post: operations["create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-locations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a location
+         * @description Code, name and sizes – not the kind. Smaller only where no set lies. Needs the loaded `version`.
+         */
+        put: operations["update_3"];
+        post?: never;
+        /** Delete a location – only while no set lies there */
+        delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-places": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * All places, by location and position
+         * @description Which set lies where: the sets name their place.
+         */
+        get: operations["places"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tire-sets": {
         parameters: {
             query?: never;
@@ -1621,6 +1683,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tire-sets/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move the set onto another place – or give it its first one
+         * @description The place must be in use and free.
+         */
+        post: operations["move_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tire-sets/{id}/retrieve": {
         parameters: {
             query?: never;
@@ -1630,7 +1712,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retrieve: the set leaves the hotel (it stays in the list of retrieved sets) */
+        /**
+         * Retrieve: the set leaves the hotel (it stays in the list of retrieved sets)
+         * @description Its place is free again.
+         */
         post: operations["retrieve"];
         delete?: never;
         options?: never;
@@ -2317,6 +2402,16 @@ export interface components {
              */
             on?: string;
         };
+        MoveRequest: {
+            note?: string;
+            /**
+             * Format: date
+             * @description Empty = today
+             */
+            on?: string;
+            /** Format: uuid */
+            placeId: string;
+        };
         NoteArchivedRequest: {
             archived: boolean;
         };
@@ -2913,6 +3008,88 @@ export interface components {
             version: number;
             winterMm: number;
         };
+        TireLocationDto: {
+            /** @example OG */
+            code: string;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "FLOOR" | "SHELVES";
+            name: string;
+            /**
+             * Format: int32
+             * @description Columns (A, B, …) or shelves
+             */
+            sizeA: number;
+            /**
+             * Format: int32
+             * @description Rows or levels
+             */
+            sizeB: number;
+            /**
+             * Format: int32
+             * @description Sets per field or compartments
+             */
+            sizeC: number;
+            /** Format: int64 */
+            version: number;
+        };
+        TireLocationRequest: {
+            /**
+             * @description Start of every address
+             * @example OG
+             */
+            code: string;
+            /** @enum {string} */
+            kind: "FLOOR" | "SHELVES";
+            /** @example Werkstatt 1. Stock */
+            name: string;
+            /**
+             * Format: int32
+             * @description Columns (A, B, …) or shelves
+             */
+            sizeA: number;
+            /**
+             * Format: int32
+             * @description Rows or levels
+             */
+            sizeB: number;
+            /**
+             * Format: int32
+             * @description Sets per field or compartments
+             */
+            sizeC: number;
+            /**
+             * Format: int64
+             * @description Only needed when editing
+             */
+            version?: number;
+        };
+        TirePlaceDto: {
+            /**
+             * Format: int32
+             * @description Column / shelf, from 1
+             */
+            a: number;
+            /** @description False beyond the sizes of its location (made smaller) */
+            active: boolean;
+            /** @example OG-B3-1 */
+            address: string;
+            /**
+             * Format: int32
+             * @description Row / level, from 1
+             */
+            b: number;
+            /**
+             * Format: int32
+             * @description Set on the trolley / compartment, from 1
+             */
+            c: number;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            locationId: string;
+        };
         TireSetDto: {
             brand: string | null;
             customer: components["schemas"]["CustomerDto"];
@@ -2925,6 +3102,13 @@ export interface components {
             /** @enum {string} */
             kind: "WHEELS" | "TIRES";
             model: string | null;
+            /** @example OG-B3-1 */
+            place: string | null;
+            /**
+             * Format: uuid
+             * @description Where it lies; empty = not assigned (or retrieved)
+             */
+            placeId: string | null;
             remark: string | null;
             /**
              * Format: date
@@ -2970,8 +3154,13 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "STORED" | "MEASURED" | "RETRIEVED";
+            kind: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED";
             note: string | null;
+            /**
+             * @description The place of that moment
+             * @example OG-B3-1
+             */
+            place: string | null;
         };
         TireSetRequest: {
             brand?: string;
@@ -2986,6 +3175,11 @@ export interface components {
             /** @enum {string} */
             kind: "WHEELS" | "TIRES";
             model?: string;
+            /**
+             * Format: uuid
+             * @description Only when storing: the place; empty = assigned later (then by moving)
+             */
+            placeId?: string;
             remark?: string;
             /**
              * @description Only with complete wheels; may be unknown
@@ -3248,7 +3442,7 @@ export interface operations {
             };
         };
     };
-    create_16: {
+    create_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -3384,7 +3578,7 @@ export interface operations {
             };
         };
     };
-    update_14: {
+    update_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -3455,7 +3649,7 @@ export interface operations {
             };
         };
     };
-    delete_5: {
+    delete_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -3585,7 +3779,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -3924,7 +4118,7 @@ export interface operations {
             };
         };
     };
-    create_15: {
+    create_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -4129,7 +4323,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -4403,7 +4597,7 @@ export interface operations {
             };
         };
     };
-    list_11: {
+    list_12: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -4470,7 +4664,7 @@ export interface operations {
             };
         };
     };
-    create_14: {
+    create_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -4608,7 +4802,7 @@ export interface operations {
             };
         };
     };
-    update_11: {
+    update_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -4881,7 +5075,7 @@ export interface operations {
             };
         };
     };
-    create_13: {
+    create_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -5017,7 +5211,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -5222,7 +5416,7 @@ export interface operations {
             };
         };
     };
-    list_10: {
+    list_11: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -5289,7 +5483,7 @@ export interface operations {
             };
         };
     };
-    create_12: {
+    create_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -5494,7 +5688,7 @@ export interface operations {
             };
         };
     };
-    update_9: {
+    update_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -5699,7 +5893,7 @@ export interface operations {
             };
         };
     };
-    list_9: {
+    list_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -5764,7 +5958,7 @@ export interface operations {
             };
         };
     };
-    create_11: {
+    create_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -5833,7 +6027,7 @@ export interface operations {
             };
         };
     };
-    update_8: {
+    update_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -6105,7 +6299,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -6170,7 +6364,7 @@ export interface operations {
             };
         };
     };
-    create_10: {
+    create_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -6239,7 +6433,7 @@ export interface operations {
             };
         };
     };
-    update_7: {
+    update_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -6444,7 +6638,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -6511,7 +6705,7 @@ export interface operations {
             };
         };
     };
-    create_9: {
+    create_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -6919,7 +7113,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: {
                 archived?: boolean;
@@ -6990,7 +7184,7 @@ export interface operations {
             };
         };
     };
-    create_8: {
+    create_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -7126,7 +7320,7 @@ export interface operations {
             };
         };
     };
-    update_6: {
+    update_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -7197,7 +7391,7 @@ export interface operations {
             };
         };
     };
-    delete_4: {
+    delete_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -7543,7 +7737,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -7610,7 +7804,7 @@ export interface operations {
             };
         };
     };
-    create_7: {
+    create_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -7953,7 +8147,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -8018,7 +8212,7 @@ export interface operations {
             };
         };
     };
-    create_6: {
+    create_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -8087,7 +8281,7 @@ export interface operations {
             };
         };
     };
-    update_5: {
+    update_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -8158,7 +8352,7 @@ export interface operations {
             };
         };
     };
-    delete_3: {
+    delete_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -8223,7 +8417,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -8290,7 +8484,7 @@ export interface operations {
             };
         };
     };
-    create_5: {
+    create_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -8704,7 +8898,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -8769,7 +8963,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -8838,7 +9032,7 @@ export interface operations {
             };
         };
     };
-    update_4: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -8909,7 +9103,7 @@ export interface operations {
             };
         };
     };
-    delete_2: {
+    delete_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -8974,7 +9168,7 @@ export interface operations {
             };
         };
     };
-    list_12: {
+    list_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -9316,7 +9510,7 @@ export interface operations {
             };
         };
     };
-    create_2: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -9720,7 +9914,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -9921,7 +10115,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -9992,7 +10186,7 @@ export interface operations {
             };
         };
     };
-    delete_1: {
+    delete_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -10542,6 +10736,341 @@ export interface operations {
             };
         };
     };
+    list_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireLocationDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireLocationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireLocationDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireLocationRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireLocationDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    delete_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    places: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TirePlaceDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     list_1: {
         parameters: {
             query?: {
@@ -10895,6 +11424,77 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["MeasurementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    move_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveRequest"];
             };
         };
         responses: {

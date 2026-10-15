@@ -34,16 +34,20 @@ public class TireSetEvent extends BaseEntity {
 
     private String note;
 
+    /** The place of that moment as text – the history stays as it was, also when a location is renamed */
+    private String place;
+
     protected TireSetEvent() {
         // for JPA
     }
 
-    TireSetEvent(TireSet tireSet, TireSetEventKind kind, LocalDate happenedOn, TreadDepths depths, String note) {
+    TireSetEvent(TireSet tireSet, TireSetEventKind kind, LocalDate happenedOn, TreadDepths depths, TirePlace place, String note) {
         this.tireSet = Objects.requireNonNull(tireSet, "tireSet");
         this.kind = Objects.requireNonNull(kind, "kind");
         this.happenedOn = Objects.requireNonNull(happenedOn, "happenedOn");
         this.depths = depths;
         this.note = Texts.checkMaxLength(Texts.emptyToNull(note), NOTE_MAX, "Note");
+        this.place = place == null ? null : place.getAddress();
     }
 
     public TireSetEventKind getKind() {
@@ -60,5 +64,9 @@ public class TireSetEvent extends BaseEntity {
 
     public String getNote() {
         return note;
+    }
+
+    public String getPlace() {
+        return place;
     }
 }

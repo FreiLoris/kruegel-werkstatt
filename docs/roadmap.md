@@ -556,10 +556,16 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   retrieved – each with the depths, so the wear can be followed); its depths change only by
   "Nachmessen". The limits are in the settings (summer 3.0, winter 4.0 – all-season like winter –,
   legal minimum 1.6 mm); below: "ansprechen" with the hint "Kunde auf neue Reifen ansprechen".
-- [ ] **13n – Storage places** (FB-07, part 2)
-  Locations (floor grid of the workshop, shelves of the container) generated in the settings; a set
-  takes one place; the place view per location (free / taken / to talk about); choosing a place when
-  storing (next free one after the last used proposed), moving with history.
+- [x] **13n – Storage places** (FB-07, part 2)
+  Done: locations in the settings ("Pneuhotel – Standorte"): a floor grid (columns A, B, … × rows ×
+  sets per field, e.g. `OG-B3-1`) or shelves (shelves × levels × compartments, e.g. `CT-R1-E2-F4`);
+  the code is free, nothing is fixed in the code. The places are generated (`tire_place`, V33);
+  made smaller, the places beyond are no longer used – refused while a set lies there; a location is
+  deleted only while it is empty. One set per place (unique index). The tyre hotel has a view
+  "Plätze": the grid or the shelves (top level on top) with free / taken (customer) / taken with
+  worn tyres; a click opens the set. Storing proposes the next free place after the one used last (a
+  busy day fills one trolley after the other) – "später zuweisen" stays possible. "Umlagern" / "Platz
+  zuweisen" on the set; every step of the history names its place as text. Retrieving frees it.
 - [ ] **13o – Import from SwissGarage** (FB-07, part 3)
   One-off import of `Pneuhotel.xlsx` (77 sets): plate → vehicle and customer, "Art" → season/rims,
   depths; places "noch nicht zugewiesen" with a list to assign them.

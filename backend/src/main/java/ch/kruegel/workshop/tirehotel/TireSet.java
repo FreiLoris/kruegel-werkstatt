@@ -64,6 +64,10 @@ public class TireSet extends BaseEntity {
     /** Empty = in the hotel */
     private LocalDate retrievedOn;
 
+    /** Where it lies – empty while not assigned (e.g. taken over from SwissGarage) and once retrieved */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private TirePlace place;
+
     @OneToMany(mappedBy = "tireSet", cascade = CascadeType.ALL)
     @OrderBy("happenedOn, createdAt")
     private List<TireSetEvent> events = new ArrayList<>();
@@ -72,12 +76,37 @@ public class TireSet extends BaseEntity {
         // for JPA
     }
 
-    /** Stored on {@code day} with the depths measured then – the first entry of its history. */
-    public TireSet(TireSetDetails details, TreadDepths depths, LocalDate day, String note) {
+    /**
+     * Stored on {@code day} with the depths measured then – the first entry of its history.
+     *
+     * @param place may be open (assigned later); that it is free is checked by the service
+     */
+    public TireSet(TireSetDetails details, TreadDepths depths, LocalDate day, TirePlace place, String note) {
         apply(details);
         this.depths = Objects.requireNonNull(depths, "depths");
         this.storedOn = Objects.requireNonNull(day, "day");
-        events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, depths, note));
+        this.place = checkedPlace(place);
+        events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, depths, place, note));
+    }
+
+    /** Onto another place (or its first one) – kept in the history. That it is free is checked by the service. */
+    public void moveTo(TirePlace newPlace, LocalDate day, String note) {
+        if (!isInHotel()) {
+            throw new IllegalStateException("A retrieved set has no place");
+        }
+        Objects.requireNonNull(newPlace, "place");
+        if (day.isBefore(storedOn)) {
+            throw new IllegalArgumentException("Moved before it was stored: " + day);
+        }
+        this.place = checkedPlace(newPlace);
+        events.add(new TireSetEvent(this, TireSetEventKind.MOVED, day, getDepths(), newPlace, note));
+    }
+
+    private static TirePlace checkedPlace(TirePlace place) {
+        if (place != null && !place.isActive()) {
+            throw new IllegalArgumentException("Place no longer used: " + place.getAddress());
+        }
+        return place;
     }
 
     /** New data – the depths and days stay; they change by measuring and retrieving. */
@@ -91,7 +120,7 @@ public class TireSet extends BaseEntity {
             throw new IllegalArgumentException("Measured before it was stored: " + day);
         }
         this.depths = Objects.requireNonNull(newDepths, "depths");
-        events.add(new TireSetEvent(this, TireSetEventKind.MEASURED, day, newDepths, note));
+        events.add(new TireSetEvent(this, TireSetEventKind.MEASURED, day, newDepths, place, note));
     }
 
     /** Out of the hotel (back on the car or to the customer) – with the depths as last measured. */
@@ -103,7 +132,9 @@ public class TireSet extends BaseEntity {
             throw new IllegalArgumentException("Retrieved before it was stored: " + day);
         }
         this.retrievedOn = day;
-        events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), note));
+        // the place it came from, then it is free for the next set
+        events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), place, note));
+        this.place = null;
     }
 
     private void apply(TireSetDetails details) {
@@ -143,6 +174,10 @@ public class TireSet extends BaseEntity {
 
     public LocalDate getRetrievedOn() {
         return retrievedOn;
+    }
+
+    public TirePlace getPlace() {
+        return place;
     }
 
     public boolean isInHotel() {

@@ -27,6 +27,8 @@ public record TireSetDto(
         @Schema(description = "As last measured") TreadDepths depths,
         LocalDate storedOn,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = in the hotel") LocalDate retrievedOn,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "Where it lies; empty = not assigned (or retrieved)") UUID placeId,
+        @Schema(types = {"string", "null"}, example = "OG-B3-1") String place,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last") UUID updatedBy) {
 
@@ -34,6 +36,7 @@ public record TireSetDto(
         TireSetDetails d = s.getDetails();
         return new TireSetDto(s.getId(), s.getVersion(), CustomerDto.of(d.customer()), d.vehicle() == null ? null : VehicleDto.of(d.vehicle()),
                 d.season(), d.kind(), d.rims(), d.hubCaps(), d.wheelBolts(), d.brand(), d.model(), d.dimension(), d.year(), d.remark(),
-                s.getDepths(), s.getStoredOn(), s.getRetrievedOn(), s.getUpdatedAt(), s.getUpdatedBy());
+                s.getDepths(), s.getStoredOn(), s.getRetrievedOn(), s.getPlace() == null ? null : s.getPlace().getId(),
+                s.getPlace() == null ? null : s.getPlace().getAddress(), s.getUpdatedAt(), s.getUpdatedBy());
     }
 }
