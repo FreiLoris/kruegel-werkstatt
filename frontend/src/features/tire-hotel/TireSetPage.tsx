@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, Pencil, Ruler } from 'lucide-react'
+import { ArrowLeft, LogOut, MapPin, Pencil, Ruler } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { reasonOf } from '../../api/errors'
@@ -11,6 +11,7 @@ import { useToast } from '../../components/ui/toastContext'
 import { formatDate } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { MeasureDialog } from './MeasureDialog'
+import { MoveDialog } from './MoveDialog'
 import {
   KINDS,
   RIMS,
@@ -26,7 +27,25 @@ import styles from './TireHotel.module.css'
 import { formatDepth, WHEELS } from './tread'
 import { AdviseBanner, TreadDepthsView } from './TreadDepthsView'
 
-const EVENT_TEXT: Record<TireSetEvent['kind'], string> = { STORED: 'Eingelagert', MEASURED: 'Nachgemessen', RETRIEVED: 'Ausgelagert' }
+const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
+  STORED: 'Eingelagert',
+  MEASURED: 'Nachgemessen',
+  MOVED: 'Umgelagert',
+  RETRIEVED: 'Ausgelagert',
+}
+
+/** "auf OG-B3-1", "nach OG-B3-2", "von OG-B3-2" – the place of a step in words */
+function placeOf(event: TireSetEvent): string | null {
+  if (!event.place) return null
+  switch (event.kind) {
+    case 'MOVED':
+      return `nach ${event.place}`
+    case 'RETRIEVED':
+      return `von ${event.place}`
+    default:
+      return `auf ${event.place}`
+  }
+}
 
 /** One set of the tyre hotel (FB-07): its data, the depths around the car, and the history of the wear. */
 export function TireSetPage() {
@@ -46,7 +65,7 @@ function TireSetDetail({ set }: { set: TireSet }) {
   const toast = useToast()
   const navigate = useNavigate()
   const retrieve = useRetrieveTireSet()
-  const [measuring, setMeasuring] = useState(false)
+  const [dialog, setDialog] = useState<'measure' | 'move' | null>(null)
   const inHotel = !set.retrievedOn
   const v = set.vehicle
 
@@ -94,7 +113,10 @@ function TireSetDetail({ set }: { set: TireSet }) {
             </Button>
             {inHotel && (
               <>
-                <Button icon={Ruler} onClick={() => setMeasuring(true)}>
+                <Button icon={MapPin} onClick={() => setDialog('move')}>
+                  {set.place ? 'Umlagern' : 'Platz zuweisen'}
+                </Button>
+                <Button icon={Ruler} onClick={() => setDialog('measure')}>
                   Nachmessen
                 </Button>
                 <Button variant="primary" icon={LogOut} onClick={retrieveSet} loading={retrieve.isPending}>
@@ -121,8 +143,8 @@ function TireSetDetail({ set }: { set: TireSet }) {
               ['Jahrgang', set.year?.toString()],
               ['Bemerkung', set.remark],
               ['Eingelagert', formatDate(set.storedOn)],
-              // the places follow with 13n; a retrieved set has none
-              ['Lagerplatz', inHotel ? 'noch nicht zugewiesen' : null],
+              // a retrieved set has none
+              ['Lagerplatz', inHotel ? (set.place ?? 'noch nicht zugewiesen') : null],
             ]}
           />
         </section>
@@ -143,10 +165,13 @@ function TireSetDetail({ set }: { set: TireSet }) {
                 <li key={event.id}>
                   <span>
                     <strong>{EVENT_TEXT[event.kind]}</strong> am {formatDate(event.happenedOn)}
+                    {placeOf(event) && ` ${placeOf(event)}`}
                     {event.createdBy && <span className="muted"> · {employees?.find((e) => e.id === event.createdBy)?.name}</span>}
                   </span>
-                  {/* the wear over the seasons */}
-                  <span className="muted">{WHEELS.map((w) => `${w.short} ${formatDepth(event.depths[w.key])}`).join(' · ')}</span>
+                  {/* the wear over the seasons – nothing when nothing was measured */}
+                  {WHEELS.some((w) => event.depths[w.key] != null) && (
+                    <span className="muted">{WHEELS.map((w) => `${w.short} ${formatDepth(event.depths[w.key])}`).join(' · ')}</span>
+                  )}
                   {event.note && <span>{event.note}</span>}
                 </li>
               ))}
@@ -157,7 +182,8 @@ function TireSetDetail({ set }: { set: TireSet }) {
         </section>
       </div>
 
-      {measuring && <MeasureDialog set={set} onClose={() => setMeasuring(false)} />}
+      {dialog === 'measure' && <MeasureDialog set={set} onClose={() => setDialog(null)} />}
+      {dialog === 'move' && <MoveDialog set={set} onClose={() => setDialog(null)} />}
     </>
   )
 }

@@ -31,6 +31,7 @@ public record TireSetRequest(
         @Size(max = TireSetDetails.REMARK_MAX) String remark,
         @Valid @Schema(description = "Only when storing: the depths measured then") DepthsRequest depths,
         @Schema(description = "Only when storing: the day; empty = today") LocalDate storedOn,
+        @Schema(description = "Only when storing: the place; empty = assigned later (then by moving)") UUID placeId,
         @Schema(description = "Only needed when editing") Long version) {
 
     public TireSetRequest {
