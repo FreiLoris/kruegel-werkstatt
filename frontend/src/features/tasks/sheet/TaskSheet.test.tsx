@@ -85,24 +85,39 @@ describe('TaskSheet', () => {
     expect(screen.getByText(courtesyCar)).toBeTruthy()
   })
 
-  it('tire change from the tire hotel: storage place and a table for the mounted and the removed set (FB-06)', () => {
+  it('tire change from the tire hotel, its data unknown: a line per set to fill in and ONE table for the depths (FB-06)', () => {
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map() }} />)
 
-    expect(screen.getByRole('heading', { name: 'Radwechsel' })).toBeTruthy()
-    expect(screen.getByText(/^Lagerplatz:/)).toBeTruthy()
-    expect(screen.getAllByRole('table').map((table) => table.getAttribute('aria-label'))).toEqual(['Montiert – Räder aus dem Pneuhotel', 'Abmontierte Räder'])
-    expect(screen.getByText(/ins Pneuhotel, Lagerplatz:/)).toBeTruthy()
-    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toEqual(['VL', 'VR', 'HL', 'HR', 'VL', 'VR', 'HL', 'HR'])
-    expect(screen.getAllByText(/^Felgen/)).toHaveLength(2)
+    const block = screen.getByRole('heading', { name: 'Radwechsel' }).parentElement!
+    expect(screen.getByText(/^Lagerplatz/)).toBeTruthy()
+    expect(screen.getByRole('table', { name: 'Profiltiefen' })).toBeTruthy()
+    expect(screen.getByText(/ins Pneuhotel, Platz:/)).toBeTruthy()
+    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toEqual(['VL', 'VR', 'HL', 'HR'])
+    // the data once per set, not per wheel
+    expect(block.textContent?.match(/Felgen/g)).toHaveLength(2)
     expect(screen.getByText(/Radschrauben mit Drehmoment angezogen/)).toBeTruthy()
+  })
+
+  it('tire change from the tire hotel: its set, place and last depths printed, the set probably on the car too (13q)', () => {
+    // fictitious tyres
+    const depths = { frontLeft: 6, frontRight: 6, rearLeft: 5.5, rearRight: null }
+    const winter = { id: 'w', season: 'WINTER', kind: 'WHEELS', rims: 'ALU', brand: 'Muster', model: 'Snow', dimension: '205/55 R16', year: 2022, depths, place: 'OG-B3-1' }
+    const summer = { id: 's', season: 'SUMMER', kind: 'WHEELS', rims: null, brand: 'Sommer', model: null, dimension: null, year: null, depths, place: null }
+    const tires = { mounted: null, removed: null, inHotel: [winter], retrieved: [summer] } as never
+    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map(), tires }} />)
+
+    expect(screen.getByText(/Winter · Kompletträder Alu · Muster Snow · 205\/55 R16 · 2022/)).toBeTruthy()
+    expect(screen.getByText('Lagerplatz OG-B3-1')).toBeTruthy()
+    expect(screen.getByText(/Sommer · Kompletträder · Sommer/)).toBeTruthy()
+    expect(screen.getAllByText(/^zuletzt/).map((cell) => cell.textContent)).toEqual(['zuletzt 6,0 mm', 'zuletzt 6,0 mm', 'zuletzt 5,5 mm'])
   })
 
   it('tires brought: asks whether the removed ones are stored, no rims for tires only', () => {
     render(<TaskSheet task={{ ...task, tireChangeKind: 'TIRES_BROUGHT' }} company={company} lookups={{ serviceItemNames: new Map() }} />)
 
-    expect(screen.queryByText(/^Lagerplatz:/)).toBeNull()
+    expect(screen.queryByText(/^Lagerplatz/)).toBeNull()
     expect(screen.getByText(/einlagern\?/)).toBeTruthy()
-    expect(screen.queryByText(/^Felgen/)).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Radwechsel' }).parentElement!.textContent).not.toContain('Felgen')
   })
 
   it('insurance case: insurance with phone, the claim number or a line for it (FB-06)', () => {

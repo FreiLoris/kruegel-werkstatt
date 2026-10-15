@@ -22,6 +22,7 @@ import { TireReceiptPage } from '../features/tire-hotel/TireReceiptPage'
 import { TireSetEditPage } from '../features/tire-hotel/TireSetEditPage'
 import { TireSetPage } from '../features/tire-hotel/TireSetPage'
 import { TireStorePage } from '../features/tire-hotel/TireStorePage'
+import { TaskTireBookingPage } from '../features/tire-hotel/TaskTireBookingPage'
 import { AppLayout } from './AppLayout'
 import { CrashPage, NotFoundPage } from './ErrorPages'
 
@@ -53,6 +54,8 @@ export const router = createBrowserRouter([
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },
+      // 13q: the tyre change of a task booked in the tyre hotel
+      { path: 'tasks/:id/tires', element: <TaskTireBookingPage /> },
       // FB-07: the tyre hotel
       { path: 'tires', element: <TireHotelPage /> },
       { path: 'tires/new', element: <TireStorePage /> },

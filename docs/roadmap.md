@@ -588,9 +588,17 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   ticked when there is one and can be left out. Both from the set ("Etiketten", "Einlagerungsschein")
   and right after storing. Not yet: the QR code (nice to have) and a single-label printer (a format
   of 1 × 1 on its own page size later).
-- [ ] **13q – Tyre hotel ↔ task** (FB-06, FB-07)
-  The place and stored data on the task sheet; the depths noted there entered from the task; done
-  with a tire change: the removed set stored, the stored one retrieved.
+- [x] **13q – Tyre hotel ↔ task** (FB-06, FB-07)
+  Done: the tire block of the task sheet is compact (69 instead of 105 mm, Loris 2026-10-15): one
+  line per set – printed from the tyre hotel (season, kind, tyres, dimension, year), else to fill in
+  once per set – the place big, and ONE table with the depths of both sets (the last measured
+  printed small to compare). On the task a card "Pneuhotel" and the page "Radwechsel buchen"
+  (`/tasks/:id/tires`, `POST /api/tasks/{id}/tires`): the set mounted is measured and retrieved,
+  the one taken off stored – a new set, or the set retrieved last season stored again (same tyres,
+  one history: `TireSet.storeAgain`). Proposed is the swap onto the place just freed. The history
+  keeps the task (`tire_set_event.task_id`, V36; one stored and one retrieved per task). Marking
+  a task "Fertig" with wheels still in the hotel asks to book (or later). Not automatic on "Fertig":
+  the status is also set on the dashboard, where no depths can be entered.
 
 Answers of the workshop (2026-10-14):
 

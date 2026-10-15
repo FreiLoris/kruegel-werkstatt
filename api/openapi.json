@@ -8980,6 +8980,171 @@
         "tags" : [ "Tasks" ]
       }
     },
+    "/api/tasks/{id}/tires" : {
+      "get" : {
+        "operationId" : "tires",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskTiresDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The tyre hotel seen from a task: what its tyre change booked, and the sets of its vehicle",
+        "tags" : [ "Tyre hotel" ]
+      },
+      "post" : {
+        "description" : "The set mounted is retrieved (measured first if depths are given), the one taken off is stored – a new set or one retrieved earlier, stored again. Each once per task; the day is today.",
+        "operationId" : "book",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TaskTireBookingRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskTiresDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Book the tyre change of a task",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
     "/api/tire-hotel-settings" : {
       "get" : {
         "operationId" : "settings",
@@ -12436,6 +12601,19 @@
         },
         "required" : [ "depths" ]
       },
+      "MountedSet" : {
+        "type" : "object",
+        "properties" : {
+          "depths" : {
+            "$ref" : "#/components/schemas/DepthsRequest"
+          },
+          "setId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "setId" ]
+      },
       "MoveRequest" : {
         "type" : "object",
         "properties" : {
@@ -12716,6 +12894,74 @@
           }
         },
         "required" : [ "date", "name" ]
+      },
+      "RemovedSet" : {
+        "type" : "object",
+        "properties" : {
+          "brand" : {
+            "type" : "string",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "depths" : {
+            "$ref" : "#/components/schemas/DepthsRequest",
+            "description" : "As noted on the task sheet"
+          },
+          "dimension" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "hubCaps" : {
+            "type" : "boolean",
+            "description" : "Only for a new set; missing = false"
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Only for a new set (needed then)",
+            "enum" : [ "WHEELS", "TIRES" ]
+          },
+          "model" : {
+            "type" : "string",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "placeId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Empty = assigned later"
+          },
+          "remark" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "rims" : {
+            "type" : "string",
+            "description" : "Only for a new set with complete wheels",
+            "enum" : [ "ALU", "STEEL" ]
+          },
+          "season" : {
+            "type" : "string",
+            "description" : "Only for a new set (needed then)",
+            "enum" : [ "SUMMER", "WINTER", "ALL_SEASON" ]
+          },
+          "setId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "A retrieved set of the customer – empty = a new set"
+          },
+          "wheelBolts" : {
+            "type" : "boolean",
+            "description" : "Only for a new set; missing = false"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 2100,
+            "minimum" : 1990
+          }
+        }
       },
       "RetrieveRequest" : {
         "type" : "object",
@@ -13540,6 +13786,53 @@
           }
         },
         "required" : [ "status" ]
+      },
+      "TaskTireBookingRequest" : {
+        "type" : "object",
+        "properties" : {
+          "mounted" : {
+            "$ref" : "#/components/schemas/MountedSet",
+            "description" : "The set from the hotel now on the car – missing = none mounted from the hotel"
+          },
+          "removed" : {
+            "$ref" : "#/components/schemas/RemovedSet",
+            "description" : "The set taken off, into the hotel – missing = not stored"
+          }
+        }
+      },
+      "TaskTiresDto" : {
+        "type" : "object",
+        "properties" : {
+          "inHotel" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TireSetDto"
+            }
+          },
+          "mounted" : {
+            "description" : "The set the task mounted – empty = not booked yet",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/TireSetDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "removed" : {
+            "description" : "The set the task stored – empty = not booked yet",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/TireSetDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "retrieved" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TireSetDto"
+            }
+          }
+        },
+        "required" : [ "inHotel", "mounted", "removed", "retrieved" ]
       },
       "TaskWithBookingDto" : {
         "type" : "object",

@@ -97,7 +97,7 @@ public class TireHotelService {
      *
      * @param moving the set being moved; empty when storing
      */
-    private TirePlace freePlace(UUID placeId, TireSet moving) {
+    TirePlace freePlace(UUID placeId, TireSet moving) {
         TirePlace place = places.findById(placeId).orElseThrow(() -> new InvalidInputException("placeId", "Platz gibt es nicht"));
         if (!place.isActive()) {
             throw new InvalidInputException("placeId", place.getAddress() + " wird nicht mehr verwendet");

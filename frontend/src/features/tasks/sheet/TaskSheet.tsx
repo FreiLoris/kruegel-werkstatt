@@ -1,5 +1,6 @@
 import { formatCount, formatDate, formatLocalDateTime, formatMonth, formatTimestamp } from '../../../lib/format'
 import type { Company } from '../../company/companyApi'
+import type { TaskTires } from '../../tire-hotel/tireHotelApi'
 import { isPlanned, type AnyTask } from '../taskApi'
 import { periodLabel } from '../taskTime'
 import { workItems } from '../workSummary'
@@ -24,6 +25,8 @@ export interface SheetLookups {
   /** where the MFK is, and who drives the car there (FB-10) */
   mfkStation?: { name: string; address: string | null; phone: string | null }
   mfkDriverName?: string
+  /** the sets of the tire change from the tire hotel (13q) */
+  tires?: TaskTires
 }
 
 /**
@@ -162,7 +165,7 @@ export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: 
 function SheetBlockView({ block, task, lookups }: { block: SheetBlock; task: AnyTask; lookups: SheetLookups }) {
   switch (block.kind) {
     case 'tires':
-      return <TireBlock block={block} />
+      return <TireBlock block={block} tires={lookups.tires} />
     case 'mfk':
       return (
         <MfkBlock station={lookups.mfkStation} appointment={task.mfkAppointment} minutes={task.mfkMinutes} driverName={lookups.mfkDriverName} />

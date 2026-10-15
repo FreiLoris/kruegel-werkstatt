@@ -1586,6 +1586,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/{id}/tires": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The tyre hotel seen from a task: what its tyre change booked, and the sets of its vehicle */
+        get: operations["tires"];
+        put?: never;
+        /**
+         * Book the tyre change of a task
+         * @description The set mounted is retrieved (measured first if depths are given), the one taken off is stored – a new set or one retrieved earlier, stored again. Each once per task; the day is today.
+         */
+        post: operations["book"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tire-hotel-settings": {
         parameters: {
             query?: never;
@@ -2505,6 +2526,11 @@ export interface components {
              */
             on?: string;
         };
+        MountedSet: {
+            depths?: components["schemas"]["DepthsRequest"];
+            /** Format: uuid */
+            setId: string;
+        };
         MoveRequest: {
             note?: string;
             /**
@@ -2632,6 +2658,45 @@ export interface components {
             /** Format: date */
             date: string;
             name: string;
+        };
+        RemovedSet: {
+            brand?: string;
+            /** @description As noted on the task sheet */
+            depths?: components["schemas"]["DepthsRequest"];
+            dimension?: string;
+            /** @description Only for a new set; missing = false */
+            hubCaps?: boolean;
+            /**
+             * @description Only for a new set (needed then)
+             * @enum {string}
+             */
+            kind?: "WHEELS" | "TIRES";
+            model?: string;
+            /**
+             * Format: uuid
+             * @description Empty = assigned later
+             */
+            placeId?: string;
+            remark?: string;
+            /**
+             * @description Only for a new set with complete wheels
+             * @enum {string}
+             */
+            rims?: "ALU" | "STEEL";
+            /**
+             * @description Only for a new set (needed then)
+             * @enum {string}
+             */
+            season?: "SUMMER" | "WINTER" | "ALL_SEASON";
+            /**
+             * Format: uuid
+             * @description A retrieved set of the customer – empty = a new set
+             */
+            setId?: string;
+            /** @description Only for a new set; missing = false */
+            wheelBolts?: boolean;
+            /** Format: int32 */
+            year?: number;
         };
         RetrieveRequest: {
             note?: string;
@@ -3076,6 +3141,20 @@ export interface components {
         TaskStatusRequest: {
             /** @enum {string} */
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
+        };
+        TaskTireBookingRequest: {
+            /** @description The set from the hotel now on the car – missing = none mounted from the hotel */
+            mounted?: components["schemas"]["MountedSet"];
+            /** @description The set taken off, into the hotel – missing = not stored */
+            removed?: components["schemas"]["RemovedSet"];
+        };
+        TaskTiresDto: {
+            inHotel: components["schemas"]["TireSetDto"][];
+            /** @description The set the task mounted – empty = not booked yet */
+            mounted: components["schemas"]["TireSetDto"] | null;
+            /** @description The set the task stored – empty = not booked yet */
+            removed: components["schemas"]["TireSetDto"] | null;
+            retrieved: components["schemas"]["TireSetDto"][];
         };
         TaskWithBookingDto: {
             booking: components["schemas"]["BookingDto"];
@@ -10998,6 +11077,144 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    tires: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTiresDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    book: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskTireBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTiresDto"];
                 };
             };
             /** @description Bad Request */

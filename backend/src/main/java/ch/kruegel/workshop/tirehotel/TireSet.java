@@ -2,6 +2,7 @@ package ch.kruegel.workshop.tirehotel;
 
 import ch.kruegel.workshop.common.persistence.BaseEntity;
 import ch.kruegel.workshop.customer.Customer;
+import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.vehicle.Vehicle;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -24,7 +25,8 @@ import java.util.Objects;
  * A set of tyres or wheels in the tyre hotel (FB-07). It is stored, may be {@linkplain #measure
  * measured} again and is {@linkplain #retrieve retrieved} – each step is kept in its
  * {@linkplain #getEvents() history} with the tread depths of that moment, so the wear can be
- * followed over the seasons. A retrieved set stays (history), it is not deleted.
+ * followed over the seasons. A retrieved set stays (history), it is not deleted – and comes back
+ * {@linkplain #storeAgain stored again} the next season: the same tyres, one history.
  */
 @Entity
 public class TireSet extends BaseEntity {
@@ -82,11 +84,34 @@ public class TireSet extends BaseEntity {
      * @param place may be open (assigned later); that it is free is checked by the service
      */
     public TireSet(TireSetDetails details, TreadDepths depths, LocalDate day, TirePlace place, String note) {
+        this(details, depths, day, place, note, null);
+    }
+
+    /** @param task the task whose tyre change stored it (13q); may be empty */
+    public TireSet(TireSetDetails details, TreadDepths depths, LocalDate day, TirePlace place, String note, Task task) {
         apply(details);
         this.depths = Objects.requireNonNull(depths, "depths");
         this.storedOn = Objects.requireNonNull(day, "day");
         this.place = checkedPlace(place);
-        events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, depths, place, note));
+        events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, depths, place, note, task));
+    }
+
+    /**
+     * A retrieved set back into the hotel – the next season's tyre change: same tyres, same history.
+     * That the place is free is checked by the service.
+     */
+    public void storeAgain(TreadDepths newDepths, LocalDate day, TirePlace newPlace, String note, Task task) {
+        if (isInHotel()) {
+            throw new IllegalStateException("Already in the hotel since " + storedOn);
+        }
+        if (day.isBefore(retrievedOn)) {
+            throw new IllegalArgumentException("Stored again before it was retrieved: " + day);
+        }
+        this.depths = Objects.requireNonNull(newDepths, "depths");
+        this.storedOn = day;
+        this.retrievedOn = null;
+        this.place = checkedPlace(newPlace);
+        events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, newDepths, newPlace, note, task));
     }
 
     /** Onto another place (or its first one) – kept in the history. That it is free is checked by the service. */
@@ -99,7 +124,7 @@ public class TireSet extends BaseEntity {
             throw new IllegalArgumentException("Moved before it was stored: " + day);
         }
         this.place = checkedPlace(newPlace);
-        events.add(new TireSetEvent(this, TireSetEventKind.MOVED, day, getDepths(), newPlace, note));
+        events.add(new TireSetEvent(this, TireSetEventKind.MOVED, day, getDepths(), newPlace, note, null));
     }
 
     private static TirePlace checkedPlace(TirePlace place) {
@@ -116,15 +141,25 @@ public class TireSet extends BaseEntity {
 
     /** Measured again (e.g. on the hand-written task sheet): the new depths, kept in the history. */
     public void measure(TreadDepths newDepths, LocalDate day, String note) {
+        measure(newDepths, day, note, null);
+    }
+
+    /** @param task the task whose sheet the depths were noted on (13q); may be empty */
+    public void measure(TreadDepths newDepths, LocalDate day, String note, Task task) {
         if (day.isBefore(storedOn)) {
             throw new IllegalArgumentException("Measured before it was stored: " + day);
         }
         this.depths = Objects.requireNonNull(newDepths, "depths");
-        events.add(new TireSetEvent(this, TireSetEventKind.MEASURED, day, newDepths, place, note));
+        events.add(new TireSetEvent(this, TireSetEventKind.MEASURED, day, newDepths, place, note, task));
     }
 
     /** Out of the hotel (back on the car or to the customer) – with the depths as last measured. */
     public void retrieve(LocalDate day, String note) {
+        retrieve(day, note, null);
+    }
+
+    /** @param task the task whose tyre change mounted it (13q); may be empty */
+    public void retrieve(LocalDate day, String note, Task task) {
         if (!isInHotel()) {
             throw new IllegalStateException("Already retrieved on " + retrievedOn);
         }
@@ -133,7 +168,7 @@ public class TireSet extends BaseEntity {
         }
         this.retrievedOn = day;
         // the place it came from, then it is free for the next set
-        events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), place, note));
+        events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), place, note, task));
         this.place = null;
     }
 

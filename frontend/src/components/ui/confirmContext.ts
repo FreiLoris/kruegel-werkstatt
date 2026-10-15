@@ -5,6 +5,8 @@ export interface ConfirmOptions {
   text: string
   /** Label of the confirm button, e.g. "Löschen" (default: "Bestätigen") */
   confirmLabel?: string
+  /** Label of the other button (default: "Abbrechen") – e.g. "Später" when it does not stop the action */
+  cancelLabel?: string
   /** Red button – for actions that cannot be undone */
   dangerous?: boolean
 }

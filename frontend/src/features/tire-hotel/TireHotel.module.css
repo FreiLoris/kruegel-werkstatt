@@ -139,6 +139,45 @@
   font-size: var(--font-size-sm);
 }
 
+/* Booking the tyre change of a task (13q): which set */
+.choices {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-surface-raised);
+}
+
+.section h3 {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-md);
+}
+
+/* The tyre hotel on the task (13q) */
+.panel p {
+  margin: 0 0 var(--space-2);
+}
+
+.prints {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-left: var(--space-3);
+}
+
 /* Detail page */
 .columns {
   display: grid;

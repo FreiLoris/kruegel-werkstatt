@@ -11,6 +11,7 @@ import { useInspectionStations } from '../../inspection-stations/inspectionStati
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { useTaskTires } from '../../tire-hotel/tireHotelApi'
 import { useTask } from '../taskApi'
 import { TaskSheet } from './TaskSheet'
 import styles from './TaskSheetPage.module.css'
@@ -31,12 +32,14 @@ export function TaskSheetPage() {
   const { data: cars } = useAllCourtesyCars()
   const { data: insurances } = useInsurances()
   const { data: stations } = useInspectionStations()
+  const tireChange = !!task.data?.tireChange
+  const tires = useTaskTires(id, tireChange)
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
-  const error = task.error ?? company.error
+  const error = task.error ?? company.error ?? tires.error
   // all lists loaded – otherwise a quick print would say "Mechaniker: noch offen" although one is assigned
-  const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars && insurances && stations
+  const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars && insurances && stations && (!tireChange || tires.data)
   // the car still out (or not yet picked up) – a returned one is history, not for the mechanic
   const booking = bookings.data?.find((b) => !b.returnedAt)
   const car = booking && cars?.find((c) => c.id === booking.courtesyCarId)
@@ -73,6 +76,7 @@ export function TaskSheetPage() {
             insurance: insurances?.find((i) => i.id === task.data.insuranceId),
             mfkStation: stations?.find((s) => s.id === task.data.mfkStationId),
             mfkDriverName: employees?.find((e) => e.id === task.data.mfkDriverId)?.name,
+            tires: tires.data,
           }}
         />
       )}
