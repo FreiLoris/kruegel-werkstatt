@@ -60,7 +60,7 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         /** Delete absence */
         delete: operations["delete_5"];
@@ -77,12 +77,12 @@ export interface paths {
             cookie?: never;
         };
         /** Company profile */
-        get: operations["get_5"];
+        get: operations["get_6"];
         /**
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         delete?: never;
         options?: never;
@@ -179,7 +179,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_11"];
+        put: operations["update_12"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -217,7 +217,7 @@ export interface paths {
             cookie?: never;
         };
         /** All courtesy cars in fixed order (default: only active ones) */
-        get: operations["list_10"];
+        get: operations["list_11"];
         put?: never;
         /** Create courtesy car (put at the end) */
         post: operations["create_14"];
@@ -256,7 +256,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         delete?: never;
         options?: never;
@@ -343,12 +343,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single customer */
-        get: operations["get_4"];
+        get: operations["get_5"];
         /**
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_9"];
+        put: operations["update_10"];
         post?: never;
         delete?: never;
         options?: never;
@@ -398,7 +398,7 @@ export interface paths {
             cookie?: never;
         };
         /** All employees in fixed order */
-        get: operations["list_9"];
+        get: operations["list_10"];
         put?: never;
         /** Create employee (put at the end of the order) */
         post: operations["create_12"];
@@ -433,12 +433,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single employee */
-        get: operations["get_3"];
+        get: operations["get_4"];
         /**
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_8"];
+        put: operations["update_9"];
         post?: never;
         delete?: never;
         options?: never;
@@ -488,7 +488,7 @@ export interface paths {
             cookie?: never;
         };
         /** All inspection stations, the standard first, then by name – also the deactivated ones */
-        get: operations["list_8"];
+        get: operations["list_9"];
         put?: never;
         /** Add an inspection station */
         post: operations["create_11"];
@@ -510,7 +510,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_7"];
+        put: operations["update_8"];
         post?: never;
         delete?: never;
         options?: never;
@@ -577,7 +577,7 @@ export interface paths {
             cookie?: never;
         };
         /** All insurances by name, also the deactivated ones */
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         /** Add an insurance */
         post: operations["create_10"];
@@ -599,7 +599,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_6"];
+        put: operations["update_7"];
         post?: never;
         delete?: never;
         options?: never;
@@ -649,7 +649,7 @@ export interface paths {
             cookie?: never;
         };
         /** All lifts in fixed order (default: only active ones) */
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
         /** Create lift (put at the end) */
         post: operations["create_9"];
@@ -761,7 +761,7 @@ export interface paths {
          * Notes
          * @description On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).
          */
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
         /**
          * Create note
@@ -782,12 +782,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single note */
-        get: operations["get_2"];
+        get: operations["get_3"];
         /**
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_5"];
+        put: operations["update_6"];
         post?: never;
         /**
          * Delete note
@@ -884,7 +884,7 @@ export interface paths {
             cookie?: never;
         };
         /** All service items in fixed order (default: only active ones) */
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         /** Create service item (put at the end) */
         post: operations["create_7"];
@@ -976,7 +976,7 @@ export interface paths {
          * The whole stock list by name
          * @description Search, filters and sorting happen on the page.
          */
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         /** Add an article */
         post: operations["create_6"];
@@ -998,7 +998,7 @@ export interface paths {
          * Edit an article
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_4"];
+        put: operations["update_5"];
         post?: never;
         /** Delete an article */
         delete: operations["delete_3"];
@@ -1015,7 +1015,7 @@ export interface paths {
             cookie?: never;
         };
         /** All storage locations in fixed order (default: only active ones) */
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         /** Create storage location (put at the end) */
         post: operations["create_5"];
@@ -1130,7 +1130,7 @@ export interface paths {
             cookie?: never;
         };
         /** All suppliers by name */
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         /** Add a supplier */
         post: operations["create_4"];
@@ -1152,7 +1152,7 @@ export interface paths {
          * Edit a supplier
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_3"];
+        put: operations["update_4"];
         post?: never;
         /**
          * Delete a supplier
@@ -1172,7 +1172,7 @@ export interface paths {
             cookie?: never;
         };
         /** Last 20 imports, newest first */
-        get: operations["list_11"];
+        get: operations["list_12"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1293,7 +1293,7 @@ export interface paths {
          * The last 10 tasks of a customer, newest first
          * @description History in the wizard.
          */
-        get: operations["history"];
+        get: operations["history_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1410,12 +1410,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single task */
-        get: operations["get_1"];
+        get: operations["get_2"];
         /**
          * Edit task
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_2"];
+        put: operations["update_3"];
         post?: never;
         /** Delete task */
         delete: operations["delete_1"];
@@ -1518,6 +1518,120 @@ export interface paths {
          */
         put: operations["assignTaskNumber"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-hotel-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tread limits of the tyre hotel */
+        get: operations["settings"];
+        /**
+         * Change the tread limits
+         * @description Needs the loaded `version`.
+         */
+        put: operations["updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-sets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The sets in the hotel (newest first) – or the retrieved ones (last retrieved first) */
+        get: operations["list_1"];
+        put?: never;
+        /**
+         * Store a set
+         * @description With the depths measured then; the day defaults to today.
+         */
+        post: operations["store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-sets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One set */
+        get: operations["get_1"];
+        /**
+         * Edit the data of a set
+         * @description Not its depths (→ measurements). Needs the loaded `version`.
+         */
+        put: operations["update_2"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-sets/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Its history: stored, measured, retrieved – with the depths of each moment, oldest first */
+        get: operations["history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-sets/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Measured again – the new depths, kept in the history */
+        post: operations["measure"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-sets/{id}/retrieve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retrieve: the set leaves the hotel (it stays in the list of retrieved sets) */
+        post: operations["retrieve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2009,6 +2123,13 @@ export interface components {
             /** @example employees */
             topic: string;
         };
+        DepthsRequest: {
+            /** @example 6.5 */
+            frontLeft?: number;
+            frontRight?: number;
+            rearLeft?: number;
+            rearRight?: number;
+        };
         EmployeeDto: {
             active: boolean;
             /** Format: date */
@@ -2187,6 +2308,15 @@ export interface components {
              */
             version?: number;
         };
+        MeasurementRequest: {
+            depths: components["schemas"]["DepthsRequest"];
+            note?: string;
+            /**
+             * Format: date
+             * @description Empty = today
+             */
+            on?: string;
+        };
         NoteArchivedRequest: {
             archived: boolean;
         };
@@ -2304,6 +2434,14 @@ export interface components {
             /** Format: date */
             date: string;
             name: string;
+        };
+        RetrieveRequest: {
+            note?: string;
+            /**
+             * Format: date
+             * @description Empty = today
+             */
+            on?: string;
         };
         ReturnRequest: {
             /**
@@ -2749,6 +2887,137 @@ export interface components {
             courtesyCar: components["schemas"]["CourtesyCarChoice"];
             task: components["schemas"]["TaskRequest"];
         };
+        TireHotelSettingsDto: {
+            /**
+             * @description Legal minimum
+             * @example 1.6
+             */
+            minimumMm: number;
+            /**
+             * @description Summer tyres below this: talk to the customer
+             * @example 3
+             */
+            summerMm: number;
+            /** Format: int64 */
+            version: number;
+            /**
+             * @description Winter and all-season tyres below this: talk to the customer
+             * @example 4
+             */
+            winterMm: number;
+        };
+        TireHotelSettingsRequest: {
+            minimumMm: number;
+            summerMm: number;
+            /** Format: int64 */
+            version: number;
+            winterMm: number;
+        };
+        TireSetDto: {
+            brand: string | null;
+            customer: components["schemas"]["CustomerDto"];
+            /** @description As last measured */
+            depths: components["schemas"]["TreadDepths"];
+            dimension: string | null;
+            hubCaps: boolean;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "WHEELS" | "TIRES";
+            model: string | null;
+            remark: string | null;
+            /**
+             * Format: date
+             * @description Empty = in the hotel
+             */
+            retrievedOn: string | null;
+            /** @enum {string|null} */
+            rims: "ALU" | "STEEL" | null;
+            /** @enum {string} */
+            season: "SUMMER" | "WINTER" | "ALL_SEASON";
+            /** Format: date */
+            storedOn: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /**
+             * Format: uuid
+             * @description Who changed it last
+             */
+            updatedBy: string | null;
+            /** @description Still open if empty */
+            vehicle: components["schemas"]["VehicleDto"] | null;
+            /** Format: int64 */
+            version: number;
+            wheelBolts: boolean;
+            /**
+             * Format: int32
+             * @description Year of manufacture (DOT)
+             */
+            year: number | null;
+        };
+        TireSetEventDto: {
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @description Who did it
+             */
+            createdBy: string | null;
+            /** @description The depths of that moment */
+            depths: components["schemas"]["TreadDepths"];
+            /** Format: date */
+            happenedOn: string;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "STORED" | "MEASURED" | "RETRIEVED";
+            note: string | null;
+        };
+        TireSetRequest: {
+            brand?: string;
+            /** Format: uuid */
+            customerId: string;
+            /** @description Only when storing: the depths measured then */
+            depths?: components["schemas"]["DepthsRequest"];
+            /** @example 205/55 R16 91H */
+            dimension?: string;
+            /** @description Missing = false */
+            hubCaps?: boolean;
+            /** @enum {string} */
+            kind: "WHEELS" | "TIRES";
+            model?: string;
+            remark?: string;
+            /**
+             * @description Only with complete wheels; may be unknown
+             * @enum {string}
+             */
+            rims?: "ALU" | "STEEL";
+            /** @enum {string} */
+            season: "SUMMER" | "WINTER" | "ALL_SEASON";
+            /**
+             * Format: date
+             * @description Only when storing: the day; empty = today
+             */
+            storedOn?: string;
+            /**
+             * Format: uuid
+             * @description May be open
+             */
+            vehicleId?: string;
+            /**
+             * Format: int64
+             * @description Only needed when editing
+             */
+            version?: number;
+            /** @description Missing = false */
+            wheelBolts?: boolean;
+            /**
+             * Format: int32
+             * @description Year of manufacture (DOT)
+             * @example 2022
+             */
+            year?: number;
+        };
         TodoAssigneeRequest: {
             /** Format: uuid */
             assigneeId?: string | null;
@@ -2821,6 +3090,13 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
+        };
+        TreadDepths: {
+            /** @example 6.5 */
+            frontLeft?: number | null;
+            frontRight?: number | null;
+            rearLeft?: number | null;
+            rearRight?: number | null;
         };
         VehicleDto: {
             active: boolean;
@@ -3108,7 +3384,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -3244,7 +3520,7 @@ export interface operations {
             };
         };
     };
-    get_5: {
+    get_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -3309,7 +3585,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -3853,7 +4129,7 @@ export interface operations {
             };
         };
     };
-    update_11: {
+    update_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -4127,7 +4403,7 @@ export interface operations {
             };
         };
     };
-    list_10: {
+    list_11: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -4332,7 +4608,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -4674,7 +4950,7 @@ export interface operations {
             };
         };
     };
-    get_4: {
+    get_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -4741,7 +5017,7 @@ export interface operations {
             };
         };
     };
-    update_9: {
+    update_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -4946,7 +5222,7 @@ export interface operations {
             };
         };
     };
-    list_9: {
+    list_10: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -5151,7 +5427,7 @@ export interface operations {
             };
         };
     };
-    get_3: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -5218,7 +5494,7 @@ export interface operations {
             };
         };
     };
-    update_8: {
+    update_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -5423,7 +5699,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -5557,7 +5833,7 @@ export interface operations {
             };
         };
     };
-    update_7: {
+    update_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -5829,7 +6105,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -5963,7 +6239,7 @@ export interface operations {
             };
         };
     };
-    update_6: {
+    update_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -6168,7 +6444,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -6643,7 +6919,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: {
                 archived?: boolean;
@@ -6783,7 +7059,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -6850,7 +7126,7 @@ export interface operations {
             };
         };
     };
-    update_5: {
+    update_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -7267,7 +7543,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -7677,7 +7953,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -7811,7 +8087,7 @@ export interface operations {
             };
         };
     };
-    update_4: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -7947,7 +8223,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -8428,7 +8704,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -8562,7 +8838,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -8698,7 +8974,7 @@ export interface operations {
             };
         };
     };
-    list_11: {
+    list_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -9176,7 +9452,7 @@ export interface operations {
             };
         };
     };
-    history: {
+    history_1: {
         parameters: {
             query: {
                 customerId: string;
@@ -9578,7 +9854,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -9645,7 +9921,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -10083,6 +10359,623 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireHotelSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    updateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireHotelSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireHotelSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: {
+                inHotel?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    store: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireSetRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireSetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetEventDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    measure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeasurementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetrieveRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
                 };
             };
             /** @description Bad Request */

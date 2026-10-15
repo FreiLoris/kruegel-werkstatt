@@ -1,0 +1,87 @@
+/* The four wheels around the car, seen from above: VL VR in front, HL HR at the back */
+.car {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.body {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 7rem;
+  padding-top: var(--space-1);
+  border: 2px solid var(--color-border-strong);
+  border-radius: 1.75rem 1.75rem var(--radius-lg) var(--radius-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.wheel {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.right {
+  text-align: right;
+}
+
+.right .chip {
+  justify-self: end;
+}
+
+.value {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+/* One field for all four – usually the case for a set */
+.single {
+  max-width: 14rem;
+}
+
+/* ok / talk to the customer / below the legal minimum / not measured */
+.chip {
+  justify-self: start;
+  padding: 0 var(--space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  /* "unter gesetzlichem Minimum" wraps in a narrow column instead of running out of it */
+  overflow-wrap: anywhere;
+}
+
+.ok {
+  color: var(--color-success);
+}
+
+.advise {
+  color: var(--color-warning);
+}
+
+.illegal {
+  color: var(--color-danger);
+}
+
+.unknown {
+  color: var(--color-text-muted);
+}
+
+/* "Kunde auf neue Reifen ansprechen" */
+.banner {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-surface-raised);
+}
+
+.banner.illegalBanner {
+  border-left-color: var(--color-danger);
+}

@@ -16,6 +16,10 @@ import { TaskSheetPage } from '../features/tasks/sheet/TaskSheetPage'
 import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
 import { SystemPage } from '../features/system/SystemPage'
+import { TireHotelPage } from '../features/tire-hotel/TireHotelPage'
+import { TireSetEditPage } from '../features/tire-hotel/TireSetEditPage'
+import { TireSetPage } from '../features/tire-hotel/TireSetPage'
+import { TireStorePage } from '../features/tire-hotel/TireStorePage'
 import { AppLayout } from './AppLayout'
 import { CrashPage, NotFoundPage } from './ErrorPages'
 
@@ -47,6 +51,11 @@ export const router = createBrowserRouter([
       { path: 'tasks/new', element: <TaskWizardPage /> },
       { path: 'tasks/:id', element: <TaskDetailPage /> },
       { path: 'tasks/:id/edit', element: <TaskEditPage /> },
+      // FB-07: the tyre hotel
+      { path: 'tires', element: <TireHotelPage /> },
+      { path: 'tires/new', element: <TireStorePage /> },
+      { path: 'tires/:id', element: <TireSetPage /> },
+      { path: 'tires/:id/edit', element: <TireSetEditPage /> },
       { path: 'system', element: <SystemPage /> },
       { path: 'system/components', element: <ComponentsPage /> },
       { path: '*', element: <NotFoundPage /> },

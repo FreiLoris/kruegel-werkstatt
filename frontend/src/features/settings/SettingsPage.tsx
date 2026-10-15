@@ -6,6 +6,7 @@ import { InsuranceSettings } from '../insurances/InsuranceSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
 import { StorageLocationSettings } from '../stock/StorageLocationSettings'
+import { TreadLimitsSettings } from '../tire-hotel/TreadLimitsSettings'
 import styles from './SettingsPage.module.css'
 
 /**
@@ -35,6 +36,9 @@ export function SettingsPage() {
       </section>
       <section className={styles.section}>
         <StorageLocationSettings />
+      </section>
+      <section className={styles.section}>
+        <TreadLimitsSettings />
       </section>
       <section className={styles.section}>
         <h2>Kunden und Fahrzeuge</h2>
