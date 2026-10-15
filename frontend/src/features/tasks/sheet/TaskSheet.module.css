@@ -272,6 +272,14 @@
   margin-left: auto;
 }
 
+/* MFK (FB-10): station, then appointment and driver – each one line, wrapping when long */
+.block .inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6mm;
+}
+
 /* Empty lines to write on */
 .lines {
   height: 24mm;

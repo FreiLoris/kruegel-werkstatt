@@ -536,10 +536,15 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   A click opens the task. Only a hint: it takes nobody's time and no lift. The form says when the MFK
   is before the end of the workshop appointment (a hint, saving stays possible). No extra tick
   "Termin noch offen": an empty time already means that.
-- [ ] **13l – Inspection stations** (FB-10, part 2)
-  Stations in the settings (name, address, phone), the dropdown on the task presets Winterthur-
-  Wülflingen; the station on the MFK entry and an MFK block on the task sheet (date, time, station,
-  driver).
+- [x] **13l – Inspection stations** (FB-10, part 2)
+  Done: stations in the settings (name, address, phone, "Dauer inkl. Fahrt"); V31 creates
+  "Strassenverkehrsamt Winterthur-Wülflingen" as the standard (address and phone left to the
+  workshop) and gives it to the tasks with MFK so far. Exactly one standard, always in use ("Als
+  Standard" moves it; the standard cannot be deactivated). The task gets `mfk_station_id`: ticking
+  MFK presets the standard with its duration, another station presets its own duration; an empty
+  station in the request = the standard. The station shows on the MFK entry in the calendars, in the
+  detail and the summary; the sheet has an MFK block (station with address and phone, appointment
+  with duration, who drives – lines to write on while open).
 
 Answers of the workshop (2026-10-14):
 

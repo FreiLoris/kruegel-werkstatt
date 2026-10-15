@@ -123,13 +123,13 @@ class TaskTest {
         // one hour until said otherwise – also for sample data that never says it
         assertThat(task.getMfkMinutes()).isEqualTo(60);
 
-        task.mfkTrip(90, null);
+        task.mfkTrip(null, 90, null);
         assertThat(task.getMfkMinutes()).isEqualTo(90);
-        assertThatThrownBy(() -> task.mfkTrip(10, null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> task.mfkTrip(null, 10, null)).isInstanceOf(IllegalArgumentException.class);
 
         task.update(details(TaskWork.described(null)));
         assertThat(task.getMfkMinutes()).isNull();
-        assertThatThrownBy(() -> task.mfkTrip(60, null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> task.mfkTrip(null, 60, null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

@@ -43,6 +43,7 @@ public record TaskRequest(
         @Min(Task.MFK_MINUTES_MIN) @Max(Task.MFK_MINUTES_MAX)
         @Schema(description = "MFK: how long the car is away incl. the drive; empty = 1 hour") Integer mfkMinutes,
         @Schema(description = "MFK: who drives the car there; may be open") UUID mfkDriverId,
+        @Schema(description = "MFK: the inspection station; empty = the standard one") UUID mfkStationId,
         List<UUID> serviceItemIds,
         @Valid @Schema(description = "Empty = no parts needed") Parts parts,
         @Size(max = TaskWork.DESCRIPTION_MAX) String workDescription,

@@ -33,6 +33,10 @@ vi.mock('../tasks/taskApi', async (importOriginal) => ({
 }))
 vi.mock('../lifts/liftApi', () => ({ useAllLifts: () => ({ data: lifts }) }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [] }) }))
+vi.mock('../inspection-stations/inspectionStationApi', () => ({
+  // fictitious
+  useInspectionStations: () => ({ data: [{ id: 's1', name: 'Prüfstelle Muster' }] }),
+}))
 
 function renderToday() {
   render(
@@ -53,10 +57,12 @@ describe('TodayByLift', () => {
 
   it('an MFK appointment today stands in "Ohne Lift" – also on a day without tasks', () => {
     today = []
-    mfk = [{ task: { id: 'm', customer: { displayName: 'Muster Max' }, vehicle: null, mfkDriverId: null }, date: todayIso(), start: '10:00', end: '11:00' }]
+    mfk = [
+      { task: { id: 'm', customer: { displayName: 'Muster Max' }, vehicle: null, mfkDriverId: null, mfkStationId: 's1' }, date: todayIso(), start: '10:00', end: '11:00' },
+    ]
     renderToday()
 
-    expect(screen.getByRole('region', { name: 'Ohne Lift' }).textContent).toContain('MFK10:00–11:00Muster Max')
+    expect(screen.getByRole('region', { name: 'Ohne Lift' }).textContent).toContain('MFK10:00–11:00Muster MaxPrüfstelle Muster')
     expect(screen.getByRole('region', { name: 'Lift 1' }).textContent).toContain('frei')
     mfk = []
   })

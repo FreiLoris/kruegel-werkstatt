@@ -15,6 +15,7 @@ import ch.kruegel.workshop.employee.EmployeeDetails;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.Role;
 import ch.kruegel.workshop.lift.Lift;
+import ch.kruegel.workshop.inspectionstation.InspectionStationRepository;
 import ch.kruegel.workshop.lift.LiftRepository;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
 import ch.kruegel.workshop.serviceitem.ServiceItemRepository;
@@ -83,11 +84,13 @@ class DevSampleData implements ApplicationRunner {
     private final TodoRepository todos;
     private final NoteRepository notes;
     private final AbsenceRepository absences;
+    private final InspectionStationRepository stations;
     private final Clock clock;
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
                   VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
-                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, AbsenceRepository absences, Clock clock) {
+                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, AbsenceRepository absences,
+                  InspectionStationRepository stations, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
@@ -98,6 +101,7 @@ class DevSampleData implements ApplicationRunner {
         this.todos = todos;
         this.notes = notes;
         this.absences = absences;
+        this.stations = stations;
         this.clock = clock;
     }
 
@@ -290,8 +294,10 @@ class DevSampleData implements ApplicationRunner {
                 new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, "Winterräder montieren"), null);
         wheels.changeStatus(TaskStatus.IN_PROGRESS);
 
-        sample.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
+        Task inspection = sample.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
                 new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null, null), "Schlüssel im Briefkasten");
+        // to the standard station (the migration creates it), driven by the mechanic of the task
+        inspection.mfkTrip(stations.findStandard().orElse(null), null, mechanic.apply(1));
 
         Task waiting = sample.add(octavia, new Appointment(today, LocalTime.of(10, 0), today.plusDays(1).atTime(12, 0), null, null, false), mechanic.apply(2), lift.apply(2),
                 new TaskWork(false, null, false, null, Set.of(),

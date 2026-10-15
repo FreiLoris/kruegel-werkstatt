@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
 import { formatDate, formatDuration, minutesBetween } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
+import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -15,6 +16,7 @@ import {
   withArrivesEarlier,
   withDate,
   withMfk,
+  withMfkStation,
   withReadyBy,
   withService,
   withSlot,
@@ -51,6 +53,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
   const { data: insurances } = useInsurances()
+  const { data: stations } = useInspectionStations()
   const holidayDates = new Set(holidays.keys())
   // the material order is entered in its own window; the form only changes on "Übernehmen"
   const [partsOpen, setPartsOpen] = useState(false)
@@ -74,6 +77,9 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   // a duration saved before that is not in the list stays choosable
   const mfkDurations = MFK_DURATIONS.includes(Number(form.mfkMinutes)) ? MFK_DURATIONS : [...MFK_DURATIONS, Number(form.mfkMinutes)].sort((a, b) => a - b)
   const mfkWarning = mfkBeforeEnd(form)
+  const standardStation = stations?.find((s) => s.standard)
+  // editing: the station of the task stays choosable, even if it is no longer used
+  const stationChoice = (stations ?? []).filter((s) => s.active || s.id === form.mfkStationId)
 
   return (
     <div className={styles.layout}>
@@ -251,7 +257,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
               </Select>
             </div>
           )}
-          <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked))} />
+          <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked, standardStation))} />
           {form.mfk && (
             <div className={styles.indented}>
               <div className={styles.row}>
@@ -271,6 +277,21 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   onChange={(e) => set('mfkTime', e.target.value)}
                 />
               </div>
+              <Select
+                label="Prüfstelle"
+                // empty (a task from before 13l): the standard, as the server takes it
+                value={form.mfkStationId || standardStation?.id || ''}
+                onChange={(e) => {
+                  const station = stations?.find((s) => s.id === e.target.value)
+                  if (station) onChange(withMfkStation(form, station))
+                }}
+              >
+                {stationChoice.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.active ? s.name : `${s.name} (nicht mehr verwendet)`}
+                  </option>
+                ))}
+              </Select>
               <div className={styles.row}>
                 <Select
                   label="Dauer inkl. Fahrt"

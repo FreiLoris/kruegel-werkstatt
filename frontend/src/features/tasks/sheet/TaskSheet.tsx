@@ -5,6 +5,7 @@ import { periodLabel } from '../taskTime'
 import { workItems } from '../workSummary'
 import { sheetBlocks, type SheetBlock } from './sheetBlocks'
 import { InsuranceBlock } from './InsuranceBlock'
+import { MfkBlock } from './MfkBlock'
 import { Block, Box, Facts } from './SheetParts'
 import styles from './TaskSheet.module.css'
 import { TireBlock } from './TireBlock'
@@ -20,6 +21,9 @@ export interface SheetLookups {
   courtesyCar?: string
   /** the insurance of an insurance case (FB-06) */
   insurance?: { name: string; phone: string | null; email: string | null }
+  /** where the MFK is, and who drives the car there (FB-10) */
+  mfkStation?: { name: string; address: string | null; phone: string | null }
+  mfkDriverName?: string
 }
 
 /**
@@ -159,6 +163,10 @@ function SheetBlockView({ block, task, lookups }: { block: SheetBlock; task: Any
   switch (block.kind) {
     case 'tires':
       return <TireBlock block={block} />
+    case 'mfk':
+      return (
+        <MfkBlock station={lookups.mfkStation} appointment={task.mfkAppointment} minutes={task.mfkMinutes} driverName={lookups.mfkDriverName} />
+      )
     case 'insurance':
       return <InsuranceBlock insurance={lookups.insurance} claimNumber={task.claimNumber} />
     default: {

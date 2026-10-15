@@ -47,7 +47,8 @@ describe('TaskSheet', () => {
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto', acceptedByName: 'Carina' }} />)
 
     expect(screen.getByText('Radwechsel', { selector: 'li span' })).toBeTruthy()
-    expect(screen.getByText('MFK')).toBeTruthy()
+    // in the list to tick off – and as its own block
+    expect(screen.getAllByText('MFK')).toHaveLength(2)
     expect(screen.getByText('Ölwechsel')).toBeTruthy()
     expect(screen.getByText('Material: Bremsscheiben vorne')).toBeTruthy()
     expect(screen.getByText('Geräusch hinten links')).toBeTruthy()
@@ -118,6 +119,25 @@ describe('TaskSheet', () => {
 
     render(<TaskSheet task={{ ...insured, claimNumber: 'S-2026-0042' }} company={company} lookups={{ serviceItemNames: new Map(), insurance }} />)
     expect(screen.getByText('S-2026-0042')).toBeTruthy()
+  })
+
+  it('MFK: station with address, appointment and who drives – lines while open (FB-10)', () => {
+    // fictitious station
+    const mfkStation = { name: 'Prüfstelle Muster', address: 'Musterstrasse 1, 8000 Musterhausen', phone: null }
+    const inspected = { ...task, tireChange: false, tireChangeKind: null, mfk: true, mfkAppointment: '2026-10-15T10:00:00', mfkMinutes: 90 }
+    const { unmount } = render(
+      <TaskSheet task={inspected} company={company} lookups={{ serviceItemNames: new Map(), mfkStation, mfkDriverName: 'Erich' }} />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'MFK' })).toBeTruthy()
+    expect(screen.getByText('Prüfstelle Muster')).toBeTruthy()
+    expect(screen.getByText('Musterstrasse 1, 8000 Musterhausen')).toBeTruthy()
+    expect(screen.getByText(/^Termin:/).textContent).toBe('Termin: 15.10.2026, 10:00 (1 Std. 30 Min. inkl. Fahrt)')
+    expect(screen.getByText(/^Fährt:/).textContent).toBe('Fährt: Erich')
+    unmount()
+
+    render(<TaskSheet task={{ ...inspected, mfkAppointment: null }} company={company} lookups={{ serviceItemNames: new Map(), mfkStation }} />)
+    expect(screen.getByText(/^Termin:/).querySelector('strong')).toBeNull()
   })
 
   it('no tire change = no tire block', () => {

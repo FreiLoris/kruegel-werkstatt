@@ -41,6 +41,7 @@ public record TaskDto(
         @Schema(types = {"string", "null"}, example = "2026-10-15T10:00:00") LocalDateTime mfkAppointment,
         @Schema(types = {"integer", "null"}, description = "MFK: how long the car is away incl. the drive; set with MFK") Integer mfkMinutes,
         @Schema(types = {"string", "null"}, format = "uuid", description = "MFK: who drives the car there") UUID mfkDriverId,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "MFK: the inspection station") UUID mfkStationId,
         @Schema(description = "Ticked service items, in the order of the service item list") List<UUID> serviceItemIds,
         @Schema(types = {"object", "null"}, description = "Empty = no parts needed") PartsOrderDto parts,
         @Schema(types = {"string", "null"}, description = "Further work as free text") String workDescription,
@@ -61,6 +62,7 @@ public record TaskDto(
         UUID acceptedById = task.getAcceptedBy() == null ? null : task.getAcceptedBy().getId();
         UUID insuranceId = task.getInsurance() == null ? null : task.getInsurance().getId();
         UUID mfkDriverId = task.getMfkDriver() == null ? null : task.getMfkDriver().getId();
+        UUID mfkStationId = task.getMfkStation() == null ? null : task.getMfkStation().getId();
         List<UUID> serviceItemIds = w.serviceItems().stream()
                 .sorted(Comparator.comparingInt(ServiceItem::getSortOrder).thenComparing(ServiceItem::getName))
                 .map(ServiceItem::getId)
@@ -68,7 +70,7 @@ public record TaskDto(
         return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
-                w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, serviceItemIds,
+                w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, mfkStationId, serviceItemIds,
                 PartsOrderDto.of(w.parts()), w.description(), task.getNotes(), insuranceId, task.getClaimNumber(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());
     }

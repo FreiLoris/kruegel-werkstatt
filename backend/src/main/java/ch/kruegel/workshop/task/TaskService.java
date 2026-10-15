@@ -10,6 +10,8 @@ import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
+import ch.kruegel.workshop.inspectionstation.InspectionStation;
+import ch.kruegel.workshop.inspectionstation.InspectionStationRepository;
 import ch.kruegel.workshop.insurance.Insurance;
 import ch.kruegel.workshop.insurance.InsuranceRepository;
 import ch.kruegel.workshop.lift.Lift;
@@ -70,13 +72,15 @@ public class TaskService {
     private final LiftRepository lifts;
     private final ServiceItemRepository serviceItems;
     private final InsuranceRepository insurances;
+    private final InspectionStationRepository stations;
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final TaskNumbers numbers;
 
     TaskService(TaskRepository repository, CustomerRepository customers, VehicleRepository vehicles,
                 EmployeeRepository employees, LiftRepository lifts, ServiceItemRepository serviceItems,
-                InsuranceRepository insurances, ApplicationEventPublisher events, Clock clock, TaskNumbers numbers) {
+                InsuranceRepository insurances, InspectionStationRepository stations, ApplicationEventPublisher events,
+                Clock clock, TaskNumbers numbers) {
         this.repository = repository;
         this.customers = customers;
         this.vehicles = vehicles;
@@ -84,6 +88,7 @@ public class TaskService {
         this.lifts = lifts;
         this.serviceItems = serviceItems;
         this.insurances = insurances;
+        this.stations = stations;
         this.events = events;
         this.clock = clock;
         this.numbers = numbers;
@@ -148,11 +153,12 @@ public class TaskService {
         Employee acceptedBy = acceptedBy(request, null);
         Insurance insurance = insurance(request, null);
         Employee mfkDriver = mfkDriver(request, null);
+        InspectionStation mfkStation = mfkStation(request, null);
         checkLiftFree(details.lift(), details.appointment(), null);
         Task task = new Task(details);
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
-        task.mfkTrip(request.mfkMinutes(), mfkDriver);
+        task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
         return saved(repository.save(task));
@@ -168,12 +174,13 @@ public class TaskService {
         Employee acceptedBy = acceptedBy(request, task.getAcceptedBy());
         Insurance insurance = insurance(request, task.getInsurance());
         Employee mfkDriver = mfkDriver(request, task.getMfkDriver());
+        InspectionStation mfkStation = mfkStation(request, task.getMfkStation());
         checkLiftFree(details.lift(), details.appointment(), id);
 
         task.update(details);
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
-        task.mfkTrip(request.mfkMinutes(), mfkDriver);
+        task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
         return saved(task);
     }
 
@@ -328,6 +335,21 @@ public class TaskService {
         return reference(employees, request.mfkDriverId(), current, "mfkDriverId", "Mitarbeiter", Employee::isActive, "ist nicht mehr aktiv");
     }
 
+    /**
+     * Where the MFK is: a newly chosen station must be in use, the one of the task stays valid;
+     * none given = the standard (nearly every inspection is there).
+     */
+    private InspectionStation mfkStation(TaskRequest request, InspectionStation current) {
+        if (!request.mfk()) {
+            return null;
+        }
+        if (request.mfkStationId() == null) {
+            return stations.findStandard().orElse(null);
+        }
+        return reference(stations, request.mfkStationId(), current, "mfkStationId", "Prüfstelle", InspectionStation::isActive,
+                "wird nicht mehr verwendet");
+    }
+
     private static Appointment appointment(TaskRequest request) {
         if (request.date() == null) {
             // no appointment yet – then nothing may hang on one
@@ -368,6 +390,9 @@ public class TaskService {
         }
         if (!request.mfk() && request.mfkDriverId() != null) {
             throw new InvalidInputException("mfkDriverId", "nur mit MFK");
+        }
+        if (!request.mfk() && request.mfkStationId() != null) {
+            throw new InvalidInputException("mfkStationId", "nur mit MFK");
         }
         return new TaskWork(request.tireChange(), request.tireChangeKind(), request.mfk(), request.mfkAppointment(),
                 serviceItems(request.serviceItemIds(), current),

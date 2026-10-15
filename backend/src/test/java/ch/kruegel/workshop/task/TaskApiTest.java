@@ -401,6 +401,27 @@ class TaskApiTest {
     }
 
     @Test
+    void theMfkIsAtTheStandardStationUnlessAnotherIsChosen() {
+        String standard = jdbc.queryForObject("SELECT id::text FROM inspection_station WHERE is_default", String.class);
+        String other = jdbc.queryForObject("""
+                INSERT INTO inspection_station (id, version, created_at, updated_at, name, minutes, is_default, active)
+                VALUES (uuidv7(), 0, now(), now(), 'Prüfstelle Muster', 120, false, true) RETURNING id::text""", String.class);
+
+        assertThat(create("\"mfk\": true")).bodyJson().extractingPath("$.mfkStationId").isEqualTo(standard);
+        MvcTestResult chosen = create("\"mfk\": true, \"mfkStationId\": \"%s\"".formatted(other));
+        assertThat(chosen).bodyJson().extractingPath("$.mfkStationId").isEqualTo(other);
+        assertThat(create(null)).bodyJson().extractingPath("$.mfkStationId").isNull();
+        assertFieldError(create("\"mfkStationId\": \"%s\"".formatted(other)), "mfkStationId");
+
+        // no longer used: stays on the task, but cannot be chosen anew
+        jdbc.update("UPDATE inspection_station SET active = false WHERE id = ?::uuid", other);
+        String id = idOf(chosen);
+        assertThat(send("PUT", "/api/tasks/" + id, body("\"mfk\": true, \"mfkStationId\": \"%s\", \"version\": 0".formatted(other))))
+                .hasStatusOk();
+        assertFieldError(create("\"mfk\": true, \"mfkStationId\": \"%s\"".formatted(other)), "mfkStationId");
+    }
+
+    @Test
     void theMfkAppointmentsOfAPeriodAlsoOfAnOrderWithoutAppointment() {
         createAt("08:00", "\"mfk\": true, \"mfkAppointment\": \"2026-10-16T10:00\"");
         String unplanned = idOf(send("POST", "/api/tasks", """

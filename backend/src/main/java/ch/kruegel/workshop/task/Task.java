@@ -4,6 +4,7 @@ import ch.kruegel.workshop.common.Texts;
 import ch.kruegel.workshop.common.persistence.BaseEntity;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.employee.Employee;
+import ch.kruegel.workshop.inspectionstation.InspectionStation;
 import ch.kruegel.workshop.insurance.Insurance;
 import ch.kruegel.workshop.lift.Lift;
 import ch.kruegel.workshop.serviceitem.ServiceItem;
@@ -87,6 +88,10 @@ public class Task extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Employee mfkDriver;
 
+    /** Where the MFK is (FB-10) – only with MFK; empty only for tasks of sample data and tests */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private InspectionStation mfkStation;
+
     @ManyToMany
     @BatchSize(size = 50)
     @JoinTable(name = "task_service_item",
@@ -159,12 +164,13 @@ public class Task extends BaseEntity {
      * The trip to the inspection (FB-10) – like the insurance case not part of {@link TaskDetails}:
      * set with every edit, after the details (they say whether there is an MFK).
      *
+     * @param station where the inspection is
      * @param minutes how long the car is away incl. the drive; empty = {@link #MFK_MINUTES_DEFAULT}
      * @param driver  who drives it there; may be open
      */
-    public void mfkTrip(Integer minutes, Employee driver) {
+    public void mfkTrip(InspectionStation station, Integer minutes, Employee driver) {
         if (!mfk) {
-            if (minutes != null || driver != null) {
+            if (station != null || minutes != null || driver != null) {
                 throw new IllegalArgumentException("MFK trip without MFK");
             }
             return;
@@ -173,6 +179,7 @@ public class Task extends BaseEntity {
         if (duration < MFK_MINUTES_MIN || duration > MFK_MINUTES_MAX) {
             throw new IllegalArgumentException("MFK trip of " + duration + " minutes");
         }
+        this.mfkStation = station;
         this.mfkMinutes = duration;
         this.mfkDriver = driver;
     }
@@ -221,6 +228,7 @@ public class Task extends BaseEntity {
         this.mfkAppointment = work.mfkAppointment();
         // the trip goes with the MFK: gone without one, the default until mfkTrip says more
         if (!mfk) {
+            this.mfkStation = null;
             this.mfkMinutes = null;
             this.mfkDriver = null;
         } else if (mfkMinutes == null) {
@@ -252,6 +260,10 @@ public class Task extends BaseEntity {
 
     public Employee getMfkDriver() {
         return mfkDriver;
+    }
+
+    public InspectionStation getMfkStation() {
+        return mfkStation;
     }
 
     public Insurance getInsurance() {

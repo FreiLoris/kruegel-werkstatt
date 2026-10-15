@@ -42,6 +42,8 @@ export interface AppointmentForm {
   mfkMinutes: string
   /** Who drives it there – '' = still open */
   mfkDriverId: string
+  /** Where the inspection is – '' = the standard station (the server takes it) */
+  mfkStationId: string
   /** "Service" ticked – only then the service items are offered; unticking clears them ({@link withService}) */
   service: boolean
   serviceItemIds: string[]
@@ -102,6 +104,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   mfkTime: '',
   mfkMinutes: String(MFK_DEFAULT_MINUTES),
   mfkDriverId: '',
+  mfkStationId: '',
   service: false,
   serviceItemIds: [],
   parts: false,
@@ -222,10 +225,19 @@ export function slotFromUrl(params: URLSearchParams): Schedule | null {
   return { date, time, endAt, liftId: params.get('lift') }
 }
 
-/** "MFK" ticked: the inspection is usually on the day of the appointment. */
-export function withMfk(form: AppointmentForm, on: boolean): AppointmentForm {
+/**
+ * "MFK" ticked: the inspection is usually on the day of the appointment, at the standard station
+ * with its duration (FB-10). What was chosen before stays – unticking and ticking again changes nothing.
+ */
+export function withMfk(form: AppointmentForm, on: boolean, standard?: { id: string; minutes: number }): AppointmentForm {
   if (!on) return { ...form, mfk: false }
-  return { ...form, mfk: true, mfkDate: form.mfkDate || form.date }
+  const preset = !form.mfkStationId && standard ? { mfkStationId: standard.id, mfkMinutes: String(standard.minutes) } : {}
+  return { ...form, mfk: true, mfkDate: form.mfkDate || form.date, ...preset }
+}
+
+/** Another inspection station: its trip is preset as the duration – it depends on where it is. */
+export function withMfkStation(form: AppointmentForm, station: { id: string; minutes: number }): AppointmentForm {
+  return { ...form, mfkStationId: station.id, mfkMinutes: String(station.minutes) }
 }
 
 /**
@@ -309,6 +321,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     mfkAppointment: form.mfk && form.mfkDate && form.mfkTime ? `${form.mfkDate}T${form.mfkTime}` : undefined,
     mfkMinutes: form.mfk ? Number(form.mfkMinutes) || MFK_DEFAULT_MINUTES : undefined,
     mfkDriverId: form.mfk ? form.mfkDriverId || undefined : undefined,
+    mfkStationId: form.mfk ? form.mfkStationId || undefined : undefined,
     serviceItemIds: form.serviceItemIds,
     parts: form.parts
       ? {
@@ -365,6 +378,7 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     mfkTime,
     mfkMinutes: String(task.mfkMinutes ?? MFK_DEFAULT_MINUTES),
     mfkDriverId: task.mfkDriverId ?? '',
+    mfkStationId: task.mfkStationId ?? '',
     service: task.serviceItemIds.length > 0,
     serviceItemIds: task.serviceItemIds,
     parts: task.parts !== null,

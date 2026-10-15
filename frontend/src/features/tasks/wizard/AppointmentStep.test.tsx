@@ -7,6 +7,7 @@ import { AppointmentStep } from './AppointmentStep'
 // fictitious
 vi.mock('../../employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../../lifts/liftApi', () => ({ useAllLifts: () => ({ data: [] }) }))
+vi.mock('../../inspection-stations/inspectionStationApi', () => ({ useInspectionStations: () => ({ data: [] }) }))
 vi.mock('../../insurances/insuranceApi', () => ({
   useInsurances: () => ({
     data: [

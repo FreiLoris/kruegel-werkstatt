@@ -13,6 +13,7 @@ import {
   withArrivesEarlier,
   withDate,
   withMfk,
+  withMfkStation,
   withReadyBy,
   withService,
   withSlot,
@@ -193,6 +194,7 @@ describe('toTaskRequest', () => {
       mfkAppointment: undefined,
       mfkMinutes: 60,
       mfkDriverId: undefined,
+      mfkStationId: undefined,
       serviceItemIds: [],
       parts: undefined,
       workDescription: undefined,
@@ -204,6 +206,17 @@ describe('toTaskRequest', () => {
 
   it('vehicle still open → no vehicle', () => {
     expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, THURSDAY).vehicleId).toBeUndefined()
+  })
+
+  it('MFK ticked: the standard station with its duration – a station chosen before stays', () => {
+    const standard = { id: 's1', minutes: 90 }
+
+    expect(withMfk(THURSDAY, true, standard)).toMatchObject({ mfk: true, mfkStationId: 's1', mfkMinutes: '90' })
+    const chosen = withMfkStation(withMfk(THURSDAY, true, standard), { id: 's2', minutes: 120 })
+    expect(chosen).toMatchObject({ mfkStationId: 's2', mfkMinutes: '120' })
+    expect(withMfk(withMfk(chosen, false), true, standard)).toMatchObject({ mfkStationId: 's2', mfkMinutes: '120' })
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, chosen).mfkStationId).toBe('s2')
+    expect(toTaskRequest({ customer, vehicle: { kind: 'open' } }, { ...chosen, mfk: false }).mfkStationId).toBeUndefined()
   })
 
   it('the MFK trip (FB-10): duration and driver – without MFK nothing of it is sent', () => {

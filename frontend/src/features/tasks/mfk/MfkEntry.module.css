@@ -69,6 +69,14 @@
   white-space: nowrap;
 }
 
+.station {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .driver {
   display: inline-flex;
 }

@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest'
 import type { Task } from '../taskApi'
 import { sheetBlocks } from './sheetBlocks'
 
-const task = (more: Partial<Pick<Task, 'tireChange' | 'tireChangeKind' | 'insuranceId'>> = {}) => ({
+const task = (more: Partial<Pick<Task, 'tireChange' | 'tireChangeKind' | 'mfk' | 'insuranceId'>> = {}) => ({
   tireChange: false,
   tireChangeKind: null,
+  mfk: false,
   insuranceId: null,
   ...more,
 })
@@ -30,5 +31,10 @@ describe('sheetBlocks', () => {
       { kind: 'tires', stored: true, wheels: true },
       { kind: 'insurance' },
     ])
+  })
+
+  it('MFK (FB-10): its block between the tires and the insurance', () => {
+    expect(sheetBlocks(task({ mfk: true }))).toEqual([{ kind: 'mfk' }])
+    expect(sheetBlocks(task({ tireChange: true, mfk: true, insuranceId: 'i1' })).map((b) => b.kind)).toEqual(['tires', 'mfk', 'insurance'])
   })
 })

@@ -7,13 +7,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * and are therefore not rolled back automatically.
  *
  * <p>All tables in ONE statement: they refer to {@code employee} via {@code created_by}/{@code updated_by}.
+ * The rows a migration creates (company profile, standard inspection station) are created again.
  * Emptied one by one, foreign key errors could occur depending on the order.
  *
  * <p><b>New table → add it here.</b>
  */
 public final class TestDatabase {
 
-    private static final String BUSINESS_TABLES = "stock_item_supplier, stock_item, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
+    private static final String BUSINESS_TABLES = "stock_item_supplier, stock_item, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, inspection_station, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
 
     private TestDatabase() {
     }
@@ -24,5 +25,9 @@ public final class TestDatabase {
         jdbc.execute("""
                 INSERT INTO company_profile (id, version, created_at, updated_at, name)
                 VALUES (uuidv7(), 0, now(), now(), 'Krügel Fahrzeugtechnik')""");
+        // the standard inspection station, as the migration creates it
+        jdbc.execute("""
+                INSERT INTO inspection_station (id, version, created_at, updated_at, name, minutes, is_default, active)
+                VALUES (uuidv7(), 0, now(), now(), 'Strassenverkehrsamt Winterthur-Wülflingen', 60, true, true)""");
     }
 }
