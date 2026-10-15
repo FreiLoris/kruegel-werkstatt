@@ -101,6 +101,10 @@ export function TireStorePage() {
         <p className={styles.chosen} role="status">
           Zuletzt eingelagert: <Link to={`/tires/${last.id}`}>{last.customer.displayName}</Link>
           {last.vehicle?.licensePlate && <LicensePlate text={last.vehicle.licensePlate} size="sm" />}
+          {last.place && <strong>{last.place}</strong>}
+          {/* the prints of the set just stored – then on to the next customer */}
+          <Link to={`/tires/${last.id}/labels`}>Etiketten drucken</Link>
+          <Link to={`/tires/${last.id}/receipt`}>Einlagerungsschein</Link>
         </p>
       )}
 

@@ -1,0 +1,107 @@
+/* On screen: the sheet lies on a desk, the choices above it */
+.desk {
+  min-height: 100vh;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  background: var(--color-background);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  max-width: 210mm;
+  margin: 0 auto var(--space-4);
+}
+
+.message {
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/*
+ * The A4 sheet without printer margins: the positions are those of the label sheet, measured from
+ * its edge. A named page – the task sheet keeps its own margins (@page is global).
+ */
+@page labels {
+  size: A4;
+  margin: 0;
+}
+
+.sheet {
+  page: labels;
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--color-paper);
+  color: var(--color-paper-text);
+  box-shadow: var(--shadow);
+  line-height: 1.2;
+}
+
+/* the places left free – only on screen, so the start position can be checked */
+.empty {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px dashed var(--color-paper-line);
+  border-radius: 1.5mm;
+}
+
+.label {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4mm;
+  padding: 1.5mm 2.5mm;
+  overflow: hidden;
+  border: 1px solid var(--color-paper-line);
+  border-radius: 1.5mm;
+}
+
+.place {
+  font-size: 1.45em;
+  letter-spacing: 0.02em;
+}
+
+.wheel {
+  font-weight: 700;
+}
+
+.line,
+.wheel,
+.place {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media print {
+  :global(body) {
+    background: var(--color-paper);
+  }
+
+  .desk {
+    min-height: 0;
+    padding: 0;
+    background: none;
+  }
+
+  .toolbar,
+  .empty {
+    display: none;
+  }
+
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+  }
+
+  /* the cut of the sheet is the edge – no frame on paper */
+  .label {
+    border-color: transparent;
+  }
+}

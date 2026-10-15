@@ -17,6 +17,8 @@ import { TaskWizardPage } from '../features/tasks/wizard/TaskWizardPage'
 import { ComponentsPage } from '../features/system/ComponentsPage'
 import { SystemPage } from '../features/system/SystemPage'
 import { TireHotelPage } from '../features/tire-hotel/TireHotelPage'
+import { TireLabelsPage } from '../features/tire-hotel/TireLabelsPage'
+import { TireReceiptPage } from '../features/tire-hotel/TireReceiptPage'
 import { TireSetEditPage } from '../features/tire-hotel/TireSetEditPage'
 import { TireSetPage } from '../features/tire-hotel/TireSetPage'
 import { TireStorePage } from '../features/tire-hotel/TireStorePage'
@@ -63,4 +65,7 @@ export const router = createBrowserRouter([
   },
   // Print view without the app frame – only the paper is printed
   { path: '/tasks/:id/sheet', element: <TaskSheetPage />, errorElement: <CrashPage /> },
+  // FB-07: the labels of a set and the storage receipt for the customer
+  { path: '/tires/:id/labels', element: <TireLabelsPage />, errorElement: <CrashPage /> },
+  { path: '/tires/:id/receipt', element: <TireReceiptPage />, errorElement: <CrashPage /> },
 ])
