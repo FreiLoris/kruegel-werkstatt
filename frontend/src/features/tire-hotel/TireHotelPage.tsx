@@ -126,14 +126,12 @@ export function TireHotelPage() {
             <p className={styles.empty}>Nichts gefunden.</p>
           ) : (
             <div className={styles.tableWrapper}>
-              <table className={styles.table}>
+              <table className={`${styles.table} ${styles.setTable}`}>
                 <thead>
                   <tr>
                     {!retrieved && <th>Platz</th>}
-                    <th>Kunde</th>
-                    <th>Fahrzeug</th>
+                    <th>Kunde / Fahrzeug</th>
                     <th>Satz</th>
-                    <th>Reifen</th>
                     <th>Profil</th>
                     <th>{retrieved ? 'Ausgelagert' : 'Eingelagert'}</th>
                   </tr>
@@ -183,27 +181,28 @@ function TireSetRow({
             ))}
         </td>
       )}
-      <td>
+      {/* two lines per cell instead of more columns – the list fits without scrolling sideways */}
+      <td className={styles.owner}>
         <Link to={`/tires/${set.id}`}>{set.customer.displayName}</Link>
+        <span className={styles.sub}>
+          {set.vehicle ? (
+            <>
+              {set.vehicle.licensePlate && <LicensePlate text={set.vehicle.licensePlate} size="sm" />} {set.vehicle.description}
+            </>
+          ) : (
+            <span className="muted">Fahrzeug noch offen</span>
+          )}
+        </span>
       </td>
-      <td>
-        {set.vehicle ? (
-          <span className={styles.nowrap}>
-            {set.vehicle.licensePlate && <LicensePlate text={set.vehicle.licensePlate} size="sm" />} {set.vehicle.description}
-          </span>
-        ) : (
-          <span className="muted">noch offen</span>
-        )}
-      </td>
-      <td className={styles.nowrap}>
+      <td className={styles.setCell}>
         {SEASONS[set.season]} · {KINDS[set.kind]}
+        {tyres && <span className={`${styles.sub} muted`}>{tyres}</span>}
       </td>
-      <td>{tyres || <span className="muted">–</span>}</td>
-      <td className={styles.nowrap}>
+      <td className={styles.depth}>
         {/* the lowest wheel counts – the one to talk about */}
-        {formatDepth(lowest)} {limits && <TreadChip status={worstStatus(set.depths, set.season, limits)} />}
+        <span className={styles.nowrap}>{formatDepth(lowest)}</span> {limits && <TreadChip status={worstStatus(set.depths, set.season, limits)} />}
       </td>
-      <td className={styles.nowrap}>{formatDate(retrieved && set.retrievedOn ? set.retrievedOn : set.storedOn)}</td>
+      <td className={`${styles.nowrap} ${styles.day}`}>{formatDate(retrieved && set.retrievedOn ? set.retrievedOn : set.storedOn)}</td>
     </tr>
   )
 }

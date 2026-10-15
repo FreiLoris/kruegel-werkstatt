@@ -18,6 +18,11 @@
   gap: var(--space-2);
 }
 
+/* the save button below a form – apart from its last field */
+.formActions {
+  margin-top: var(--space-4);
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -92,6 +97,20 @@
 
 .nowrap {
   white-space: nowrap;
+}
+
+/* The list of sets: second lines instead of more columns – fits a laptop without scrolling sideways */
+.setTable .sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+.setTable .depth {
+  min-width: 7rem;
 }
 
 /* Form */

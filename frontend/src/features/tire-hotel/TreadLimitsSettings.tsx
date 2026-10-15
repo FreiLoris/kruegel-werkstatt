@@ -79,11 +79,11 @@ function LimitsForm({ limits }: { limits: TreadLimits }) {
         />
       </form>
       {canEdit && (
-        <p>
+        <div className={styles.formActions}>
           <Button variant="primary" type="submit" form={formId} disabled={!changed} loading={save.isPending}>
             Speichern
           </Button>
-        </p>
+        </div>
       )}
     </>
   )

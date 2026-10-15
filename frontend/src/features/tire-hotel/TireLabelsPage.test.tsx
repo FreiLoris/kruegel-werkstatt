@@ -44,7 +44,7 @@ describe('TireLabelsPage', () => {
 
   it('an opened sheet: from the chosen position on – the four must still fit', () => {
     renderPage()
-    const start = screen.getByLabelText('Start bei Etikett') as HTMLSelectElement
+    const start = screen.getByLabelText('Start bei Etikett (angebrochener Bogen)') as HTMLSelectElement
     expect(start.options).toHaveLength(21)
 
     fireEvent.change(start, { target: { value: '5' } })
