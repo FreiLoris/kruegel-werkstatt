@@ -180,3 +180,25 @@ export function useDeleteLabelFormat() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [LABEL_FORMATS_TOPIC] }),
   })
 }
+
+export type TaskTires = components['schemas']['TaskTiresDto']
+export type TaskTireBookingRequest = components['schemas']['TaskTireBookingRequest']
+
+/** The tyre hotel seen from a task (13q): what its tyre change booked, and the sets of its vehicle */
+export function useTaskTires(taskId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: [TOPIC, 'task', taskId],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/{id}/tires', { params: { path: { id: taskId! } }, signal })),
+    enabled: !!taskId && enabled,
+  })
+}
+
+/** The set mounted out of the hotel, the one taken off into it – in one step */
+export function useBookTaskTires() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ taskId, request }: { taskId: string; request: TaskTireBookingRequest }) =>
+      dataOrThrow(await api.POST('/api/tasks/{id}/tires', { params: { path: { id: taskId } }, body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}

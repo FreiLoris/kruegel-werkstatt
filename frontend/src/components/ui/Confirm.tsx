@@ -39,7 +39,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             {/* For dangerous actions the focus is on "Abbrechen" – an accidental Enter then
                 deletes nothing. */}
             <Button onClick={() => answer(false)} data-autofocus={question?.dangerous || undefined}>
-              Abbrechen
+              {question?.cancelLabel ?? 'Abbrechen'}
             </Button>
             <Button
               variant={question?.dangerous ? 'danger' : 'primary'}

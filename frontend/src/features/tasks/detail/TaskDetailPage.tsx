@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarX, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarX, CircleDot, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
@@ -18,6 +18,9 @@ import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TaskPinboard } from '../../notes/TaskPinboard'
+import { isBooked } from '../../tire-hotel/taskTires'
+import { TaskTiresPanel } from '../../tire-hotel/TaskTiresPanel'
+import { useTaskTires } from '../../tire-hotel/tireHotelApi'
 import { MfkHint } from '../../vehicles/MfkHint'
 import { VehicleDialog } from '../../vehicles/VehicleDialog'
 import { isPlanned, TASK_STATUS, useChangeTaskStatus, useDeleteTask, useRemoveAppointment, useTask, type AnyTask, type TaskStatus } from '../taskApi'
@@ -53,6 +56,8 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const { data: serviceItems } = useAllServiceItems()
   const { data: stations } = useInspectionStations()
   const [dialog, setDialog] = useState<'customer' | 'vehicle' | null>(null)
+  const tires = useTaskTires(task.id, task.tireChange)
+  const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
 
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
   const employee = (id: string | null) => employees?.find((e) => e.id === id)
@@ -63,11 +68,24 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const items = workItems(task, names)
   const mfkStation = stations?.find((s) => s.id === task.mfkStationId)
 
-  function setStatus(status: TaskStatus) {
+  async function setStatus(status: TaskStatus) {
+    // done, but the wheels of the hotel are not booked out: the place would still show them (13q)
+    const book =
+      status === 'DONE' &&
+      fromHotel &&
+      tires.data &&
+      !isBooked(tires.data) &&
+      (await confirm({
+        title: 'Radwechsel im Pneuhotel buchen?',
+        text: 'Der Auftrag wird fertig gemeldet. Die Räder sind im Pneuhotel noch nicht ausgelagert – jetzt mit den Profiltiefen vom Auftragszettel buchen?',
+        confirmLabel: 'Jetzt buchen',
+        cancelLabel: 'Später',
+      }))
     changeStatus.mutate(
       { id: task.id, status },
       { onError: (error) => toast.error(`Status konnte nicht geändert werden: ${error.message}`) },
     )
+    if (book) navigate(`/tasks/${task.id}/tires`)
   }
 
   async function deleteTask() {
@@ -275,6 +293,29 @@ function TaskDetail({ task }: { task: AnyTask }) {
           )}
           {task.workDescription && <p className={styles.freeText}>{task.workDescription}</p>}
         </Card>
+
+        {task.tireChange && (
+          <Card
+            title="Pneuhotel"
+            action={
+              canEdit &&
+              tires.data &&
+              !(tires.data.mounted && tires.data.removed) && (
+                <Button small icon={CircleDot} onClick={() => navigate(`/tasks/${task.id}/tires`)}>
+                  Radwechsel buchen
+                </Button>
+              )
+            }
+          >
+            {tires.error ? (
+              <p className="muted">Pneuhotel konnte nicht geladen werden: {tires.error.message}</p>
+            ) : !tires.data ? (
+              <p className="muted">Lade …</p>
+            ) : (
+              <TaskTiresPanel tires={tires.data} fromHotel={fromHotel} />
+            )}
+          </Card>
+        )}
 
         {task.insuranceId && (
           <Card title="Versicherungsfall">

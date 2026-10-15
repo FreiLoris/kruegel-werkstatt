@@ -175,49 +175,58 @@
   width: 60mm;
 }
 
-/* Tire change (FB-06) */
-.block .storagePlace {
+/* Tire change (FB-06, 13q): a line per set, the place on the right, one table for the depths */
+.tireRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4mm;
   margin-bottom: 1mm;
+}
+
+.block .tireSet {
+  flex: 1;
+  margin: 0;
+}
+
+.block .storagePlace {
+  margin: 0;
   font-size: 16pt;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.setWriteIn {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5mm;
+}
+
+.setWriteIn .writeLine {
+  width: 28mm;
+}
+
+.writeLineShort {
+  display: inline-block;
+  width: 12mm;
+  border-bottom: 1px solid var(--color-paper-text);
+}
+
+.setWriteIn .box {
+  margin-top: 0;
 }
 
 .tires {
   width: 100%;
-  margin-bottom: 2mm;
+  margin: 1mm 0 2mm;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 9pt;
 }
 
-.block .tireHead {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1mm;
-  font-weight: 700;
-}
-
-.tires .narrow {
-  width: 17mm;
-}
-
 .tires .wide {
-  width: 26mm;
-}
-
-.tires .widest {
-  width: 45mm;
-}
-
-.rims {
-  display: flex;
-  align-items: center;
-  gap: 1.5mm;
-  font-weight: 400;
-}
-
-.rims .box {
-  margin-top: 0;
+  width: 32mm;
 }
 
 .tires th,
@@ -242,10 +251,19 @@
   font-weight: 700;
 }
 
-.tireQuestion {
+/* the depth from the tire hotel: small on the right, the new one is written on the left */
+.lastDepth {
+  float: right;
+  font-size: 7.5pt;
+  color: var(--color-paper-muted);
+}
+
+.block .tireQuestion {
   display: flex;
   align-items: center;
   gap: 1.5mm;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .block .tireCheck {
