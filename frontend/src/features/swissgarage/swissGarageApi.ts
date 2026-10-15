@@ -22,7 +22,18 @@ export const IMPORT_FILES: Record<ImportKind, { title: string; fileName: string;
     fileName: 'Fahrzeug.xlsx',
     howToExport: 'SwissGarage → Fahrzeuge → Export → Excel',
   },
+  TIRE_HOTEL: {
+    title: 'Pneuhotel (einmalig)',
+    fileName: 'Pneuhotel.xlsx',
+    howToExport: 'SwissGarage → Pneuhotel → Export → Excel – nach Adress- und Fahrzeugliste',
+  },
 }
+
+const ENDPOINTS = {
+  CUSTOMERS: '/api/swissgarage-imports/customers',
+  VEHICLES: '/api/swissgarage-imports/vehicles',
+  TIRE_HOTEL: '/api/swissgarage-imports/tire-hotel',
+} as const
 
 /** The last 20 imports, newest first. */
 export function useImportRuns() {
@@ -58,15 +69,14 @@ export function useImportFile() {
         body: { file: file.name },
         bodySerializer: () => form,
       }
-      return kind === 'CUSTOMERS'
-        ? dataOrThrow(await api.POST('/api/swissgarage-imports/customers', options))
-        : dataOrThrow(await api.POST('/api/swissgarage-imports/vehicles', options))
+      return dataOrThrow(await api.POST(ENDPOINTS[kind], options))
     },
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: [TOPIC] }),
         queryClient.invalidateQueries({ queryKey: ['customers'] }),
         queryClient.invalidateQueries({ queryKey: ['vehicles'] }),
+        queryClient.invalidateQueries({ queryKey: ['tire-sets'] }),
       ]),
   })
 }

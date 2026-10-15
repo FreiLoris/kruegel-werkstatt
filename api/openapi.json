@@ -7096,6 +7096,92 @@
         "tags" : [ "SwissGarage import" ]
       }
     },
+    "/api/swissgarage-imports/tire-hotel" : {
+      "post" : {
+        "description" : "Import address and vehicle list first – the sets are matched by plate, else by customer name. The sets get no place; a second run takes nothing twice.",
+        "operationId" : "importTireHotel",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportRunDto"
+                }
+              }
+            },
+            "description" : "Imported – the result is in the log entry"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Take over the SwissGarage tyre hotel once (xlsx)",
+        "tags" : [ "SwissGarage import" ]
+      }
+    },
     "/api/swissgarage-imports/vehicles" : {
       "post" : {
         "description" : "Import the address list first – holders are matched by address number. Vehicles missing from the file are deactivated.",
@@ -11686,7 +11772,7 @@
           },
           "kind" : {
             "type" : "string",
-            "enum" : [ "CUSTOMERS", "VEHICLES" ]
+            "enum" : [ "CUSTOMERS", "VEHICLES", "TIRE_HOTEL" ]
           },
           "problems" : {
             "type" : "array",

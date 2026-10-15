@@ -566,9 +566,18 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   worn tyres; a click opens the set. Storing proposes the next free place after the one used last (a
   busy day fills one trolley after the other) – "später zuweisen" stays possible. "Umlagern" / "Platz
   zuweisen" on the set; every step of the history names its place as text. Retrieving frees it.
-- [ ] **13o – Import from SwissGarage** (FB-07, part 3)
-  One-off import of `Pneuhotel.xlsx` (77 sets): plate → vehicle and customer, "Art" → season/rims,
-  depths; places "noch nicht zugewiesen" with a list to assign them.
+- [x] **13o – Import from SwissGarage** (FB-07, part 3)
+  Done: a third card "Pneuhotel (einmalig)" on the SwissGarage import page (after address and vehicle
+  list), logged like the others (`import_run.kind` TIRE_HOTEL, V34). Plate → vehicle and holder; else
+  the customer by name, whatever the order of the words, only a single hit. "Art" → season and rims
+  (Alu-/Stahlfelgen = complete wheels, else tyres only); "Reifen" → the dimension by its pattern, the
+  rest brand and model; the depths. The second block of the export ("Anzahl, Art, Reifen" a second
+  time – the Excel reader keeps duplicate columns as "Art#2"), RDKS, the remarks and the old place go
+  into the remark. No place: the tyre hotel lists them under "Ohne Platz" with "Zuweisen" per row. A
+  second run takes nothing twice (same customer, vehicle and season in the hotel = unchanged); a
+  row without customer is logged and left to be stored by hand. On the real file (counts only): the
+  season of all 77 rows, the dimension of 74 of 76 tyre texts – the customers can only be matched on
+  the real data at go-live.
 - [ ] **13p – Prints** (FB-07, part 4)
   Labels on A4 sheets (formats in the settings, start position for opened sheets) and the storage
   receipt for the customer with a signature field.

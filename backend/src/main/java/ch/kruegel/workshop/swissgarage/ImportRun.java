@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 public class ImportRun extends BaseEntity {
 
-    public enum Kind { CUSTOMERS, VEHICLES }
+    public enum Kind { CUSTOMERS, VEHICLES, TIRE_HOTEL }
 
     /** More problems are cut off – the first ones show what is wrong with the file. */
     static final int MAX_PROBLEMS = 50;

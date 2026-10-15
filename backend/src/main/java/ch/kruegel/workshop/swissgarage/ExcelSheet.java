@@ -43,10 +43,18 @@ final class ExcelSheet {
                 Map<String, String> values = new HashMap<>();
                 for (int i = 0; i < headers.size(); i++) {
                     // Excel does not store empty cells at the end of a row – the row is shorter than the header.
-                    // The same header twice: the FIRST column counts. The address list has a second block
-                    // "Name, Vorname, Strasse, PLZ, Ort" for the customer addition (mostly empty) further right –
-                    // it must not overwrite the customer's own name.
-                    values.putIfAbsent(headers.get(i), i < row.getCellCount() ? text(row.getCell(i)) : "");
+                    // The same header twice: the FIRST column counts under its name. The address list has a second
+                    // block "Name, Vorname, Strasse, PLZ, Ort" for the customer addition (mostly empty) further
+                    // right – it must not overwrite the customer's own name. The later ones are kept as "Name#2",
+                    // "Name#3" (the tyre hotel export has a second block "Anzahl, Art, Reifen").
+                    String value = i < row.getCellCount() ? text(row.getCell(i)) : "";
+                    String header = headers.get(i);
+                    int occurrence = 1;
+                    String key = header;
+                    while (values.containsKey(key)) {
+                        key = header + "#" + ++occurrence;
+                    }
+                    values.put(key, value);
                 }
                 rows.add(new ExcelRow(row.getRowNum(), values));
             });
