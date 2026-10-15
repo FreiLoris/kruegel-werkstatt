@@ -146,3 +146,37 @@ export function useDeleteTireLocation() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [LOCATIONS_TOPIC] }),
   })
 }
+
+export type LabelFormat = components['schemas']['LabelFormatDto']
+export type LabelFormatRequest = components['schemas']['LabelFormatRequest']
+const LABEL_FORMATS_TOPIC = 'label-formats'
+
+/** The label sheet formats (A4) */
+export function useLabelFormats() {
+  return useQuery({
+    queryKey: [LABEL_FORMATS_TOPIC],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/label-formats', { signal })),
+  })
+}
+
+export function useSaveLabelFormat() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, request }: { id?: string; request: LabelFormatRequest }) =>
+      id
+        ? dataOrThrow(await api.PUT('/api/label-formats/{id}', { params: { path: { id } }, body: request }))
+        : dataOrThrow(await api.POST('/api/label-formats', { body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [LABEL_FORMATS_TOPIC] }),
+  })
+}
+
+export function useDeleteLabelFormat() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error, response } = await api.DELETE('/api/label-formats/{id}', { params: { path: { id } } })
+      if (!response.ok) dataOrThrow({ error, response })
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [LABEL_FORMATS_TOPIC] }),
+  })
+}

@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, MapPin, Pencil, Ruler } from 'lucide-react'
+import { ArrowLeft, FileText, LogOut, MapPin, Pencil, Ruler, Tag } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { reasonOf } from '../../api/errors'
@@ -108,6 +108,16 @@ function TireSetDetail({ set }: { set: TireSet }) {
         </div>
         {canEdit && (
           <div className={styles.actions}>
+            {inHotel && (
+              <>
+                <Button icon={Tag} onClick={() => navigate(`/tires/${set.id}/labels`)}>
+                  Etiketten
+                </Button>
+                <Button icon={FileText} onClick={() => navigate(`/tires/${set.id}/receipt`)}>
+                  Einlagerungsschein
+                </Button>
+              </>
+            )}
             <Button icon={Pencil} onClick={() => navigate(`/tires/${set.id}/edit`)}>
               Bearbeiten
             </Button>

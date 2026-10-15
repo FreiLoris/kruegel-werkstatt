@@ -578,9 +578,16 @@ FB-09) → FB-05 → FB-06, FB-10 → tyre hotel FB-07 (several packages of its 
   row without customer is logged and left to be stored by hand. On the real file (counts only): the
   season of all 77 rows, the dimension of 74 of 76 tyre texts – the customers can only be matched on
   the real data at go-live.
-- [ ] **13p – Prints** (FB-07, part 4)
-  Labels on A4 sheets (formats in the settings, start position for opened sheets) and the storage
-  receipt for the customer with a signature field.
+- [x] **13p – Prints** (FB-07, part 4)
+  Done: labels for the four wheels (place big, customer · plate, wheel, season · day stored) on A4
+  label sheets – the formats in the settings ("Pneuhotel – Etiketten", `label_format`, V35; three
+  common ones come with it, to be checked with a test print), checked to fit on A4; the start
+  position for opened sheets; the device remembers its sheet. A named page (`@page labels`, no
+  margins) keeps the task sheet's margins apart. The storage receipt for the customer (letterhead,
+  vehicle, set, depths with status, place, day, two signature lines); the hint about worn tyres is
+  ticked when there is one and can be left out. Both from the set ("Etiketten", "Einlagerungsschein")
+  and right after storing. Not yet: the QR code (nice to have) and a single-label printer (a format
+  of 1 × 1 on its own page size later).
 - [ ] **13q – Tyre hotel ↔ task** (FB-06, FB-07)
   The place and stored data on the task sheet; the depths noted there entered from the task; done
   with a tire change: the removed set stored, the stored one retrieved.
