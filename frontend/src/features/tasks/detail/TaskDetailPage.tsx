@@ -12,6 +12,7 @@ import { formatCount, formatDate, formatDuration, formatLocalDateTime, formatTim
 import { CourtesyCarPanel } from '../../bookings/CourtesyCarPanel'
 import { CustomerDialog } from '../../customers/CustomerDialog'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
+import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
 import { NameBadge } from '../../employees/NameBadge'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
@@ -50,6 +51,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const { data: employees } = useAllEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
+  const { data: stations } = useInspectionStations()
   const [dialog, setDialog] = useState<'customer' | 'vehicle' | null>(null)
 
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
@@ -59,6 +61,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const c = task.customer
   const v = task.vehicle
   const items = workItems(task, names)
+  const mfkStation = stations?.find((s) => s.id === task.mfkStationId)
 
   function setStatus(status: TaskStatus) {
     changeStatus.mutate(
@@ -221,6 +224,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
               {task.mfk && (
                 <p className={styles.mfk}>
                   MFK in diesem Auftrag: {task.mfkAppointment ? formatLocalDateTime(task.mfkAppointment) : 'Termin noch offen'}
+                  {mfkStation && ` · ${mfkStation.name}`}
                   {task.mfkMinutes !== null && ` · ${formatDuration(task.mfkMinutes)} inkl. Fahrt`}
                   {` · fährt: ${employee(task.mfkDriverId)?.name ?? 'noch offen'}`}
                 </p>

@@ -14,15 +14,20 @@ export interface InsuranceBlock {
   kind: 'insurance'
 }
 
-export type SheetBlock = TiresBlock | InsuranceBlock
+/** The MFK (FB-10): station with address and phone, appointment, duration and who drives. */
+export interface MfkBlock {
+  kind: 'mfk'
+}
+
+export type SheetBlock = TiresBlock | MfkBlock | InsuranceBlock
 
 /**
  * The blocks of the task sheet between the work list and the remarks (FB-06): the sheet is put
  * together from what was ticked when the task was taken – no templates. Each option may add a
- * block, several combine. MFK, service and parts get theirs later (the workshop defines them):
+ * block, several combine. Service and parts get theirs later (the workshop defines them):
  * one more kind here and one more component on the sheet.
  */
-export function sheetBlocks(task: Pick<Task, 'tireChange' | 'tireChangeKind' | 'insuranceId'>): SheetBlock[] {
+export function sheetBlocks(task: Pick<Task, 'tireChange' | 'tireChangeKind' | 'mfk' | 'insuranceId'>): SheetBlock[] {
   const blocks: SheetBlock[] = []
   if (task.tireChange) {
     const kind = task.tireChangeKind
@@ -32,6 +37,7 @@ export function sheetBlocks(task: Pick<Task, 'tireChange' | 'tireChangeKind' | '
       wheels: kind !== 'TIRES_STORED' && kind !== 'TIRES_BROUGHT',
     })
   }
+  if (task.mfk) blocks.push({ kind: 'mfk' })
   if (task.insuranceId) blocks.push({ kind: 'insurance' })
   return blocks
 }

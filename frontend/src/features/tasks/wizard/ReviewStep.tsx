@@ -9,6 +9,7 @@ import { formatDate, formatDuration, formatLocalDateTime } from '../../../lib/fo
 import { periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { useActiveEmployees } from '../../employees/employeeApi'
+import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -36,6 +37,7 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
   const { data: insurances } = useInsurances()
+  const { data: stations } = useInspectionStations()
 
   const customer = customerStep.customer!
   const planned = !f.noAppointment
@@ -127,6 +129,8 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
         {f.mfk && (
           <p>
             <span className="muted">Zur MFK: </span>
+            {(stations?.find((s) => s.id === f.mfkStationId) ?? stations?.find((s) => s.standard))?.name}
+            {', '}
             {formatDuration(Number(f.mfkMinutes))} inkl. Fahrt, fährt: {employees?.find((e) => e.id === f.mfkDriverId)?.name ?? 'noch offen'}
           </p>
         )}
