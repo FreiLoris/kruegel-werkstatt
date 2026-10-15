@@ -25,7 +25,8 @@ export function SwissGarageImportPage() {
       <p className={`muted ${styles.intro}`}>
         Kunden und Fahrzeuge werden in SwissGarage gepflegt. Hier die beiden Exporte hochladen – zuerst die Adressliste,
         dann die Fahrzeugliste (Fahrzeuge werden über die Adressnummer ihrem Halter zugeordnet). Neue Einträge kommen dazu,
-        geänderte werden aktualisiert, fehlende deaktiviert.
+        geänderte werden aktualisiert, fehlende deaktiviert. Das Pneuhotel wird nur einmal übernommen – danach wird es in der
+        App geführt; die Sätze bekommen ihren Lagerplatz im Pneuhotel unter «Ohne Platz».
       </p>
 
       {status.data && (
@@ -47,6 +48,8 @@ export function SwissGarageImportPage() {
         <div className={styles.cards}>
           <ImportCard kind="CUSTOMERS" lastRun={lastRun('CUSTOMERS')} canEdit={canEdit} />
           <ImportCard kind="VEHICLES" lastRun={lastRun('VEHICLES')} canEdit={canEdit} />
+          {/* FB-07: once – the tyre hotel is run in the app from then on */}
+          <ImportCard kind="TIRE_HOTEL" lastRun={lastRun('TIRE_HOTEL')} canEdit={canEdit} />
         </div>
       )}
 

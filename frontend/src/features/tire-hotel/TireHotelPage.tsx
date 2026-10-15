@@ -1,11 +1,12 @@
-import { Archive, LayoutGrid, Plus, Warehouse } from 'lucide-react'
-import { useMemo } from 'react'
+import { Archive, LayoutGrid, MapPin, Plus, Warehouse } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { formatDate } from '../../lib/format'
+import { MoveDialog } from './MoveDialog'
 import { PlaceMap } from './PlaceMap'
 import { KINDS, SEASONS, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
@@ -24,6 +25,9 @@ export function TireHotelPage() {
   const view = params.get('view') === 'retrieved' ? 'retrieved' : params.get('view') === 'places' ? 'places' : 'list'
   const retrieved = view === 'retrieved'
   const query = params.get('q') ?? ''
+  // e.g. after the takeover from SwissGarage: the sets still to be given a place
+  const withoutPlace = params.get('place') === 'none' && !retrieved
+  const [assigning, setAssigning] = useState<TireSet | null>(null)
   const sets = useTireSets(!retrieved)
   const { data: locations } = useTireLocations()
   const { data: places } = useTirePlaces()
@@ -32,14 +36,18 @@ export function TireHotelPage() {
   const canEdit = useCanEdit()
   const navigate = useNavigate()
 
-  function change(key: 'view' | 'q', value: string) {
+  function change(key: 'view' | 'q' | 'place', value: string) {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
     else next.delete(key)
     setParams(next, { replace: true })
   }
 
-  const shown = useMemo(() => (sets.data ? searchTireSets(sets.data, query) : []), [sets.data, query])
+  const unplaced = sets.data && !retrieved ? sets.data.filter((s) => !s.placeId).length : 0
+  const shown = useMemo(
+    () => (sets.data ? searchTireSets(withoutPlace ? sets.data.filter((s) => !s.placeId) : sets.data, query) : []),
+    [sets.data, query, withoutPlace],
+  )
 
   return (
     <>
@@ -82,6 +90,14 @@ export function TireHotelPage() {
           </Button>
         </div>
       </div>
+      {view === 'list' && (unplaced > 0 || withoutPlace) && (
+        <p className={styles.chosen}>
+          <Button small icon={MapPin} variant={withoutPlace ? 'primary' : 'secondary'} aria-pressed={withoutPlace} onClick={() => change('place', withoutPlace ? '' : 'none')}>
+            Ohne Platz ({unplaced})
+          </Button>
+          <span className="muted">{withoutPlace ? 'Nur Sätze ohne Lagerplatz – «Zuweisen» wählt ihn.' : 'Sätze ohne Lagerplatz, z. B. aus SwissGarage übernommen.'}</span>
+        </p>
+      )}
 
       {view === 'places' ? (
         !locations || !places || !sets.data ? (
@@ -124,7 +140,7 @@ export function TireHotelPage() {
                 </thead>
                 <tbody>
                   {shown.map((set) => (
-                    <TireSetRow key={set.id} set={set} limits={limits} retrieved={retrieved} />
+                    <TireSetRow key={set.id} set={set} limits={limits} retrieved={retrieved} onAssign={canEdit ? () => setAssigning(set) : undefined} />
                   ))}
                 </tbody>
               </table>
@@ -132,18 +148,41 @@ export function TireHotelPage() {
           )}
         </>
       )}
+      {assigning && <MoveDialog set={assigning} onClose={() => setAssigning(null)} />}
     </>
   )
 }
 
-function TireSetRow({ set, limits, retrieved }: { set: TireSet; limits: ReturnType<typeof useTreadLimits>['data']; retrieved: boolean }) {
+function TireSetRow({
+  set,
+  limits,
+  retrieved,
+  onAssign,
+}: {
+  set: TireSet
+  limits: ReturnType<typeof useTreadLimits>['data']
+  retrieved: boolean
+  /** a set without place: choose it right here */
+  onAssign?: () => void
+}) {
   const lowest = [set.depths.frontLeft, set.depths.frontRight, set.depths.rearLeft, set.depths.rearRight]
     .filter((d): d is number => d !== null && d !== undefined)
     .reduce<number | null>((min, d) => (min === null || d < min ? d : min), null)
   const tyres = [set.brand, set.model, set.dimension].filter(Boolean).join(' ')
   return (
     <tr>
-      {!retrieved && <td className={styles.nowrap}>{set.place ?? <span className="muted">offen</span>}</td>}
+      {!retrieved && (
+        <td className={styles.nowrap}>
+          {set.place ??
+            (onAssign ? (
+              <Button small icon={MapPin} onClick={onAssign}>
+                Zuweisen
+              </Button>
+            ) : (
+              <span className="muted">offen</span>
+            ))}
+        </td>
+      )}
       <td>
         <Link to={`/tires/${set.id}`}>{set.customer.displayName}</Link>
       </td>

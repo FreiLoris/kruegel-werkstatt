@@ -34,14 +34,17 @@ class SwissGarageImportController {
 
     private final CustomerImportService customerImport;
     private final VehicleImportService vehicleImport;
+    private final TireHotelImportService tireHotelImport;
     private final ImportRunRepository runs;
     private final CustomerRepository customers;
     private final VehicleRepository vehicles;
 
     SwissGarageImportController(CustomerImportService customerImport, VehicleImportService vehicleImport,
-                                ImportRunRepository runs, CustomerRepository customers, VehicleRepository vehicles) {
+                                TireHotelImportService tireHotelImport, ImportRunRepository runs, CustomerRepository customers,
+                                VehicleRepository vehicles) {
         this.customerImport = customerImport;
         this.vehicleImport = vehicleImport;
+        this.tireHotelImport = tireHotelImport;
         this.runs = runs;
         this.customers = customers;
         this.vehicles = vehicles;
@@ -79,6 +82,16 @@ class SwissGarageImportController {
     @ResponseStatus(HttpStatus.CREATED)
     ImportRunDto importVehicles(@RequestParam("file") MultipartFile file) {
         return withInput(file, input -> vehicleImport.importVehicleList(input, fileName(file)));
+    }
+
+    @Operation(summary = "Take over the SwissGarage tyre hotel once (xlsx)",
+            description = "Import address and vehicle list first – the sets are matched by plate, else by customer name. "
+                    + "The sets get no place; a second run takes nothing twice.")
+    @ApiResponse(responseCode = "201", description = "Imported – the result is in the log entry")
+    @PostMapping(path = "/tire-hotel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    ImportRunDto importTireHotel(@RequestParam("file") MultipartFile file) {
+        return withInput(file, input -> tireHotelImport.importTireHotel(input, fileName(file)));
     }
 
     private interface Importer {

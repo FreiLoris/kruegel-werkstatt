@@ -1218,6 +1218,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/swissgarage-imports/tire-hotel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take over the SwissGarage tyre hotel once (xlsx)
+         * @description Import address and vehicle list first – the sets are matched by plate, else by customer name. The sets get no place; a second run takes nothing twice.
+         */
+        post: operations["importTireHotel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/swissgarage-imports/vehicles": {
         parameters: {
             query?: never;
@@ -2286,7 +2306,7 @@ export interface components {
              */
             importedBy: string | null;
             /** @enum {string} */
-            kind: "CUSTOMERS" | "VEHICLES";
+            kind: "CUSTOMERS" | "VEHICLES" | "TIRE_HOTEL";
             /** @description One German line per problem, e.g. "Zeile 17: kein Name" */
             problems: string[];
             /** Format: int32 */
@@ -9321,6 +9341,78 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SwissGarageStatusDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    importTireHotel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Imported – the result is in the log entry */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImportRunDto"];
                 };
             };
             /** @description Bad Request */
