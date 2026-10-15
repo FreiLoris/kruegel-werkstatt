@@ -59,10 +59,10 @@ CREATE TABLE tire_set_event (
     tire_set_id     uuid          NOT NULL REFERENCES tire_set (id) ON DELETE CASCADE,
     kind            text          NOT NULL CHECK (kind IN ('STORED', 'MEASURED', 'RETRIEVED')),
     happened_on     date          NOT NULL,
-    depth_fl        numeric(3, 1),
-    depth_fr        numeric(3, 1),
-    depth_rl        numeric(3, 1),
-    depth_rr        numeric(3, 1),
+    depth_fl        numeric(3, 1) CHECK (depth_fl BETWEEN 0 AND 20),
+    depth_fr        numeric(3, 1) CHECK (depth_fr BETWEEN 0 AND 20),
+    depth_rl        numeric(3, 1) CHECK (depth_rl BETWEEN 0 AND 20),
+    depth_rr        numeric(3, 1) CHECK (depth_rr BETWEEN 0 AND 20),
     note            text          CHECK (length(note) <= 500)
 );
 
