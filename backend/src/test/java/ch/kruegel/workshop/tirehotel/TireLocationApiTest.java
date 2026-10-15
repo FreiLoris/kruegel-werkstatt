@@ -70,6 +70,8 @@ class TireLocationApiTest {
         assertFieldError(send("POST", "/api/tire-locations", location("OG", "SHELVES", 1, 1, 1, null)), "code");
         assertFieldError(send("POST", "/api/tire-locations", location("O-G", "FLOOR", 1, 1, 1, null)), "code");
         assertFieldError(send("POST", "/api/tire-locations", location("XX", "FLOOR", 27, 1, 1, null)), "sizeA");
+        // a usable place view: at most 500 places
+        assertFieldError(send("POST", "/api/tire-locations", location("XX", "FLOOR", 26, 30, 2, null)), "sizeC");
     }
 
     @Test
@@ -88,6 +90,10 @@ class TireLocationApiTest {
         MvcTestResult moved = send("POST", "/api/tire-sets/" + set + "/move", "{ \"placeId\": \"%s\", \"note\": \"Platz frei machen\" }".formatted(second));
         assertThat(moved).bodyJson().extractingPath("$.place").isEqualTo("OG-A1-2");
         assertThat(store(muster, first)).hasStatus(HttpStatus.CREATED);
+        // editing does not move – that goes into the history by "Umlagern"
+        assertFieldError(send("PUT", "/api/tire-sets/" + set, """
+                { "customerId": "%s", "season": "WINTER", "kind": "WHEELS", "placeId": "%s", "version": 1 }""".formatted(huber.getId(), first)),
+                "placeId");
 
         send("POST", "/api/tire-sets/" + set + "/retrieve", "{}");
         assertThat(mvc.get().uri("/api/tire-sets/" + set + "/history").exchange()).bodyJson().extractingPath("$[*].place").asArray()

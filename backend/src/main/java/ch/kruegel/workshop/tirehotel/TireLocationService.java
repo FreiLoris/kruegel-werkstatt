@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 public class TireLocationService {
 
     static final String TOPIC = "tire-locations";
+    /** More would make the place view unusable (and slow) – a real location has a few dozen */
+    static final int MAX_PLACES = 500;
 
     private final TireLocationRepository locations;
     private final TirePlaceRepository places;
@@ -49,6 +52,7 @@ public class TireLocationService {
     }
 
     public TireLocationDto create(TireLocationRequest request) {
+        checkSize(request);
         String code = code(request);
         if (locations.existsByCode(code)) {
             throw codeTaken(code);
@@ -66,6 +70,7 @@ public class TireLocationService {
         }
         TireLocation location = find(id);
         location.checkVersion(request.version());
+        checkSize(request);
         String code = code(request);
         // check first, then change (Hibernate "auto flush", see LiftService#rename)
         if (locations.existsByCodeAndIdNot(code, id)) {
@@ -100,16 +105,25 @@ public class TireLocationService {
         events.publishEvent(new DataChanged(TOPIC));
     }
 
-    /** Every place within the sizes – created where missing (the existing ones were refreshed). */
+    /** Every place within the sizes – created where missing (the existing ones were refreshed), in one batch. */
     private void generatePlaces(TireLocation location, Map<String, TirePlace> existing) {
+        List<TirePlace> missing = new ArrayList<>();
         for (int a = 1; a <= location.getSizeA(); a++) {
             for (int b = 1; b <= location.getSizeB(); b++) {
                 for (int c = 1; c <= location.getSizeC(); c++) {
                     if (!existing.containsKey(key(a, b, c))) {
-                        places.save(new TirePlace(location, a, b, c));
+                        missing.add(new TirePlace(location, a, b, c));
                     }
                 }
             }
+        }
+        places.saveAll(missing);
+    }
+
+    /** User-facing message, hence German */
+    private static void checkSize(TireLocationRequest request) {
+        if (request.sizeA() * request.sizeB() * request.sizeC() > MAX_PLACES) {
+            throw new InvalidInputException("sizeC", "Höchstens " + MAX_PLACES + " Plätze pro Standort – lieber einen zweiten Standort anlegen");
         }
     }
 

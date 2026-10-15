@@ -116,6 +116,11 @@ public class TireHotelService {
         }
         TireSet set = find(id);
         set.checkVersion(request.version());
+        // the place changes by moving – it goes into the history
+        UUID current = set.getPlace() == null ? null : set.getPlace().getId();
+        if (request.placeId() != null && !request.placeId().equals(current)) {
+            throw new InvalidInputException("placeId", "Den Platz über «Umlagern» ändern");
+        }
         set.update(details(request, set));
         return saved(set);
     }
