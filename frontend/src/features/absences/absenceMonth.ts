@@ -1,4 +1,4 @@
-import { addDays, minutesBetween } from '../../lib/format'
+import { addDays, formatTime, minutesBetween } from '../../lib/format'
 import type { Absence } from './absenceApi'
 
 /**
@@ -8,6 +8,7 @@ import type { Absence } from './absenceApi'
  */
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/
+const NOON = '12:00'
 const MONTH_NAMES = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
 
 /** "2026-10" – a month as it stands in the address */
@@ -59,9 +60,10 @@ export function barsOf(absences: Absence[], from: string, days: number): Absence
   const total = days * 2
   const bars: AbsenceBar[] = []
   for (const absence of absences) {
-    // a time counts to the half day it lies in (FB-05): from 14:00 = afternoon, until 10:30 = morning
-    const startsLate = absence.startsAfternoon || (!!absence.startTime && absence.startTime >= '12:00')
-    const endsEarly = absence.endsNoon || (!!absence.endTime && absence.endTime <= '12:00')
+    // a time counts to the half day it lies in (FB-05): from 14:00 = afternoon, until 10:30 = morning.
+    // The API sends seconds ("12:00:00") – compared as text that would be later than "12:00".
+    const startsLate = absence.startsAfternoon || (!!absence.startTime && formatTime(absence.startTime) >= NOON)
+    const endsEarly = absence.endsNoon || (!!absence.endTime && formatTime(absence.endTime) <= NOON)
     const start = dayIndex(from, absence.startDate) * 2 + (startsLate ? 1 : 0)
     const end = dayIndex(from, absence.endDate) * 2 + (endsEarly ? 1 : 2)
     if (end <= 0 || start >= total) continue
