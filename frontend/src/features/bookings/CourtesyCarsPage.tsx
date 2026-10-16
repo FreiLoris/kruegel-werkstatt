@@ -153,7 +153,8 @@ export function CourtesyCarsPage() {
         </p>
       </section>
 
-      {panel && (
+      {/* A booking outside the loaded days (e.g. saved far in the future) or deleted elsewhere: no empty panel */}
+      {panel && (panel.kind === 'new' || shownBooking) && (
         <section ref={panelRef} className={styles.panel} aria-labelledby="booking-panel-heading">
           {panel.kind === 'new' && (
             <>

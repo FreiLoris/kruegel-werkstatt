@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
+import { isValidPeriod } from './courtesyCarChoice'
 
 export type Booking = components['schemas']['BookingDto']
 export type BookingRequest = components['schemas']['BookingRequest']
@@ -27,7 +28,7 @@ export function useAvailability(from: string | null, to: string | null, excludeB
           signal,
         }),
       ),
-    enabled: from !== null && to !== null && to > from,
+    enabled: isValidPeriod(from, to),
     placeholderData: keepPreviousData,
   })
 }
