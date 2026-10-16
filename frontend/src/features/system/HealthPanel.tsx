@@ -22,7 +22,8 @@ export function HealthPanel() {
   }
 
   const backendUp = !error
-  const dbUp = data?.components?.db?.status === 'UP'
+  // After a failed refetch `data` still holds the last answer – without the backend the database is unknown too
+  const dbUp = backendUp && data?.components?.db?.status === 'UP'
 
   return (
     <ul className={styles.list}>

@@ -3,6 +3,8 @@
  * We only type the fields we actually use.
  */
 
+import { ApiError, serverUnreachable } from '../../api/errors'
+
 export type HealthStatus = 'UP' | 'DOWN' | 'OUT_OF_SERVICE' | 'UNKNOWN'
 
 export interface HealthResponse {
@@ -12,8 +14,18 @@ export interface HealthResponse {
   }
 }
 
+/**
+ * Plain `fetch` instead of `api/client.ts`: the actuator endpoint is not part of the OpenAPI contract.
+ * A network failure therefore has to be translated here as well (otherwise "Failed to fetch" shows up).
+ */
 export async function fetchHealth(signal?: AbortSignal): Promise<HealthResponse> {
-  const response = await fetch('/api/health', { signal })
+  let response: Response
+  try {
+    response = await fetch('/api/health', { signal })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    throw new ApiError(serverUnreachable())
+  }
 
   // Actuator answers problems with HTTP 503 but still delivers JSON with details.
   // That is why we read the body in that case too.
