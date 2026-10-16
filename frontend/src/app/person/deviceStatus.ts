@@ -20,8 +20,8 @@ export type DeviceStatus =
   | { kind: 'unknown' }
 
 export function deviceStatus(choice: DeviceChoice | null, active: Employee[] | undefined, loadError: boolean): DeviceStatus {
-  if (loadError) return { kind: 'unknown' }
-  if (!active) return { kind: 'loading' }
+  // A failed refetch keeps the last list – only without any list is the status unknown
+  if (!active) return loadError ? { kind: 'unknown' } : { kind: 'loading' }
   if (active.length === 0) return { kind: 'setup' }
   if (choice?.kind === 'viewOnly') return { kind: 'viewOnly' }
   if (choice?.kind === 'person') {

@@ -65,6 +65,13 @@ function asProblemDetail(body: unknown, status: number): ProblemDetail {
     return body as ProblemDetail
   }
   // No Problem Details response, e.g. when the backend is not reachable at all (502 from nginx/Vite).
-  // User-facing text, hence German.
+  return serverUnreachable(status)
+}
+
+/**
+ * The server could not be reached or gave no usable answer. User-facing text, hence German.
+ * `status` 0: the request did not get through at all (network down, e.g. tablet out of Wi-Fi).
+ */
+export function serverUnreachable(status = 0): ProblemDetail {
   return { status, title: 'Server nicht erreichbar', detail: 'Keine gültige Antwort vom Server.' }
 }

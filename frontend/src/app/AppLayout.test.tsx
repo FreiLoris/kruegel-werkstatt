@@ -22,6 +22,9 @@ function renderAt(path: string) {
         children: [
           { index: true, element: <p>Dashboard</p> },
           { path: 'tasks', element: <p>Termine-Seite</p> },
+          { path: 'tasks/new', element: <p>Neuer-Auftrag-Seite</p> },
+          { path: 'tasks/:id', element: <p>Auftrag-Seite</p> },
+          { path: 'stock', element: <p>Lager-Seite</p> },
         ],
       },
     ],
@@ -93,5 +96,19 @@ describe('AppLayout', () => {
 
     expect(screen.getByRole('banner').textContent).toContain('Testgarage')
     expect(screen.getByText('Dashboard')).toBeTruthy()
+  })
+
+  it.each([
+    ['/tasks', 'Termine'],
+    ['/tasks/new', 'Neuer Auftrag'],
+    ['/tasks/123', 'Termine'],
+    ['/stock', 'Material'],
+  ])('on %s exactly one navigation entry is active: %s', (path, title) => {
+    device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
+    renderAt(path)
+
+    const nav = screen.getByRole('navigation', { name: 'Hauptnavigation' })
+    const active = [...nav.querySelectorAll('a')].filter((link) => link.className.includes('active'))
+    expect(active.map((link) => link.textContent)).toEqual([title])
   })
 })

@@ -80,17 +80,28 @@ export function AppLayout() {
 /** The pages of the app – in the header, or at the bottom on the TV */
 function MainLinks() {
   const { pathname } = useLocation()
-  return navigation.map((entry) => (
-    <NavLink
-      key={entry.path}
-      to={entry.path}
-      // "end": home link only active for exactly "/", not for every sub page
-      end={entry.path === '/'}
-      className={({ isActive }) =>
-        isActive || entry.pages?.some((page) => pathname.startsWith(page.path)) ? `${styles.link} ${styles.active}` : styles.link
-      }
-    >
-      {entry.title}
-    </NavLink>
-  ))
+  return navigation.map((entry) => {
+    // An entry with its own, longer path wins: on "/tasks/new" only "Neuer Auftrag" is active, not "Termine" too
+    const moreSpecific = navigation.some(
+      (other) => other !== entry && isOnPage(other.path, entry.path) && isOnPage(pathname, other.path),
+    )
+    return (
+      <NavLink
+        key={entry.path}
+        to={entry.path}
+        // "end": home link only active for exactly "/", not for every sub page
+        end={entry.path === '/' || moreSpecific}
+        className={({ isActive }) =>
+          isActive || entry.pages?.some((page) => isOnPage(pathname, page.path)) ? `${styles.link} ${styles.active}` : styles.link
+        }
+      >
+        {entry.title}
+      </NavLink>
+    )
+  })
+}
+
+/** Is `pathname` the page `path` or one of its sub pages? (Like NavLink: "/stock" matches "/stock/1", not "/stockx".) */
+function isOnPage(pathname: string, path: string): boolean {
+  return pathname === path || pathname.startsWith(`${path}/`)
 }

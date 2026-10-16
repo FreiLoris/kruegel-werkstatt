@@ -35,4 +35,10 @@ describe('deviceStatus', () => {
     expect(deviceStatus(null, undefined, true).kind).toBe('unknown')
     expect(deviceStatus(null, undefined, false).kind).toBe('loading')
   })
+
+  it('keeps the person when only a refetch fails', () => {
+    const status = deviceStatus({ kind: 'person', id: 'erich' }, [erich], true)
+    expect(status).toEqual({ kind: 'person', person: erich })
+    expect(canEdit(status)).toBe(true)
+  })
 })
