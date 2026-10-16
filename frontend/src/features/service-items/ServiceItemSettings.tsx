@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { MasterDataList } from '../../components/masterdata/MasterDataList'
 import { NameDialog } from '../../components/masterdata/NameDialog'
@@ -43,7 +44,7 @@ export function ServiceItemSettings() {
       { id: item.id, active },
       {
         onSuccess: () => toast.success(active ? `${item.name} wird wieder angeboten` : `${item.name} wird nicht mehr angeboten`),
-        onError: (error) => toast.error(`${item.name}: ${error.message}`),
+        onError: (error) => toast.error(`${item.name}: ${reasonOf(error)}`),
       },
     )
   }
