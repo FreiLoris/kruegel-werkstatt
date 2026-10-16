@@ -53,6 +53,19 @@ describe('barsOf', () => {
 
     expect(bars.map((b) => b.absence.id)).toEqual(['first', 'later'])
   })
+
+  it('takes times as the API sends them (with seconds) to the half day they lie in', () => {
+    const untilNoon = { ...absence('a', '2026-10-05', '2026-10-05'), endTime: '12:00:00' } as Absence
+    const fromTwo = { ...absence('b', '2026-10-06', '2026-10-06'), startTime: '14:00:00' } as Absence
+    const morningOnly = { ...absence('c', '2026-10-07', '2026-10-07'), startTime: '09:00:00', endTime: '10:30:00' } as Absence
+
+    const [morning, afternoon, short] = barsOf([untilNoon, fromTwo, morningOnly], '2026-10-01', 31)
+
+    // 5 Oct morning = half day 8, 6 Oct afternoon = half day 11, 7 Oct morning = half day 12
+    expect(morning).toMatchObject({ start: 8, end: 9 })
+    expect(afternoon).toMatchObject({ start: 11, end: 12 })
+    expect(short).toMatchObject({ start: 12, end: 13 })
+  })
 })
 
 describe('selection', () => {

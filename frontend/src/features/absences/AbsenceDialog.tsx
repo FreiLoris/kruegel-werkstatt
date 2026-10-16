@@ -121,7 +121,9 @@ export function AbsenceDialog({
           onClose()
         },
         onError: (error) => {
-          if (error instanceof ApiError && error.isConflict) {
+          // Only an existing entry can have been changed elsewhere; a 409 for a new one is a rule
+          // (e.g. overlap entered on another device just now) – keep the input, show the server's reason
+          if (absence && error instanceof ApiError && error.isConflict) {
             toast.error(`Dieser Eintrag wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {

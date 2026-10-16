@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../../api/errors'
 import { ConfirmContext } from '../../components/ui/confirmContext'
 import { ToastContext } from '../../components/ui/toastContext'
 import type { Employee } from '../employees/employeeApi'
@@ -18,13 +19,15 @@ const employees = [{ id: 'r', name: 'Reto', color: '#f6d860', active: true }] as
 
 function renderDialog(readOnly = false) {
   const toast = { success: vi.fn(), error: vi.fn(), info: vi.fn() }
+  const onClose = vi.fn()
   render(
     <ToastContext value={toast}>
       <ConfirmContext value={() => Promise.resolve(true)}>
-        <AbsenceDialog fresh={{ employeeId: 'r', startDate: '2026-10-12', endDate: '2026-10-12' }} employees={employees} readOnly={readOnly} onClose={vi.fn()} />
+        <AbsenceDialog fresh={{ employeeId: 'r', startDate: '2026-10-12', endDate: '2026-10-12' }} employees={employees} readOnly={readOnly} onClose={onClose} />
       </ConfirmContext>
     </ToastContext>,
   )
+  return { toast, onClose }
 }
 
 describe('AbsenceDialog', () => {
@@ -40,6 +43,18 @@ describe('AbsenceDialog', () => {
       id: undefined,
       request: { employeeId: 'r', category: 'EXTERNAL_WORK', company: 'Garage Muster AG', startDate: '2026-10-12', endDate: '2026-10-12' },
     })
+  })
+
+  it('a rule conflict on a new entry keeps the dialog open and shows the server reason', () => {
+    const { toast, onClose } = renderDialog()
+    save.mockImplementationOnce((_variables, { onError }) =>
+      onError(new ApiError({ status: 409, title: 'Nicht möglich', detail: 'Für Reto wurde gerade auf einem anderen Gerät etwas eingetragen.' })),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalledWith('Speichern fehlgeschlagen: Für Reto wurde gerade auf einem anderen Gerät etwas eingetragen.')
   })
 
   it('one day cannot be "from noon" and "until noon" at the same time', () => {
