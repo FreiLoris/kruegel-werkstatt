@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -120,7 +121,7 @@ public class BookingService {
         if (booking.getReturnedAt() != null && booking.getReturnedAt().isBefore(period.pickupAt())) {
             throw new InvalidInputException("pickupAt", "liegt nach der erfassten Rückgabe");
         }
-        checkFree(car, period, id);
+        blockedPart(period, booking.getReturnedAt()).ifPresent(blocked -> checkFree(car, blocked, id));
 
         booking.reschedule(car, period);
         booking.changeNotes(request.notes());
@@ -182,6 +183,20 @@ public class BookingService {
     }
 
     /** Says in words which booking is in the way – the user can then choose another car or time. */
+    /**
+     * The part of the period that really blocks the car – like the database constraint and
+     * {@link CourtesyCarBooking#blockedUntil()}: after an early return only up to the return.
+     * Empty (returned right at the pickup) → nothing to check.
+     */
+    private static Optional<BookingPeriod> blockedPart(BookingPeriod period, LocalDateTime returnedAt) {
+        if (returnedAt == null || !returnedAt.isBefore(period.returnAt())) {
+            return Optional.of(period);
+        }
+        return returnedAt.isAfter(period.pickupAt())
+                ? Optional.of(new BookingPeriod(period.pickupAt(), returnedAt))
+                : Optional.empty();
+    }
+
     private void checkFree(CourtesyCar car, BookingPeriod period, UUID excludeId) {
         List<CourtesyCarBooking> blocking = repository.blocking(car.getId(), period.pickupAt(), period.returnAt(), excludeId);
         if (!blocking.isEmpty()) {

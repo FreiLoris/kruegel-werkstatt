@@ -2,6 +2,7 @@ import { CarFront } from 'lucide-react'
 import { TextField } from '../../components/ui/Fields'
 import { formatLocalDateTime } from '../../lib/format'
 import { useAvailability } from './bookingApi'
+import { isValidPeriod } from './courtesyCarChoice'
 import styles from './CourtesyCarPicker.module.css'
 
 interface CourtesyCarPickerProps {
@@ -28,7 +29,7 @@ const split = (dateTime: string | null): [string, string] => (dateTime ? [dateTi
 export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesyCarId, onCarChange, excludeBookingId, name }: CourtesyCarPickerProps) {
   const [pickupDate, pickupTime] = split(pickupAt)
   const [returnDate, returnTime] = split(returnAt)
-  const periodValid = pickupAt !== null && returnAt !== null && returnAt > pickupAt
+  const periodValid = isValidPeriod(pickupAt, returnAt)
   const availability = useAvailability(periodValid ? pickupAt : null, periodValid ? returnAt : null, excludeBookingId)
   const chosen = availability.data?.find((car) => car.courtesyCarId === courtesyCarId)
 

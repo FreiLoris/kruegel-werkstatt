@@ -214,6 +214,21 @@ class BookingApiTest {
     }
 
     @Test
+    void anEarlyReturnedBookingCanStillBeEditedWhenTheFreedTimeIsTaken() {
+        String id = idOf(book(polo, "\"holder\": \"Herr Früh\"", "08:00", "17:00"));
+        send("POST", "/api/courtesy-car-bookings/" + id + "/return", "{ \"returnedAt\": \"%sT12:00\" }".formatted(DAY));
+        book(polo, "\"holder\": \"Frau Spät\"", "13:00", "15:00");
+
+        // only the notes change – the car is blocked until 12:00, the later booking is not in the way
+        MvcTestResult edited = send("PUT", "/api/courtesy-car-bookings/" + id, """
+                { "courtesyCarId": "%s", "pickupAt": "%sT08:00", "returnAt": "%sT17:00", "notes": "Tank voll", "version": 1 }"""
+                .formatted(polo.getId(), DAY, DAY));
+
+        assertThat(edited).hasStatusOk();
+        assertThat(edited).bodyJson().extractingPath("$.notes").isEqualTo("Tank voll");
+    }
+
+    @Test
     void returnBeforePickupIsAFieldErrorEmptyMeansNow() {
         String id = idOf(book(polo, "\"holder\": \"Herr Früh\"", "08:00", "17:00"));
 

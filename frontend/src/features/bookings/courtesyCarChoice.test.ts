@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_APPOINTMENT, type AppointmentForm } from '../tasks/wizard/appointmentForm'
-import { choiceError, NO_COURTESY_CAR, periodOf, suggestedPeriod } from './courtesyCarChoice'
+import { choiceError, isValidPeriod, NO_COURTESY_CAR, periodOf, suggestedPeriod } from './courtesyCarChoice'
 
 const FORM: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '11:00' }
 
@@ -31,5 +31,23 @@ describe('periodOf and choiceError', () => {
     expect(choiceError({ ...wanted, returnAt: '2026-10-15T07:00' }, FORM)).toBe('Die Rückgabe muss nach der Abholung liegen')
     expect(choiceError(wanted, FORM)).toBe('Einen freien Ersatzwagen wählen')
     expect(choiceError({ ...wanted, courtesyCarId: 'c1' }, FORM)).toBeNull()
+  })
+})
+
+describe('isValidPeriod', () => {
+  it('only complete date-times with the return after the pickup', () => {
+    expect(isValidPeriod('2026-10-15T08:00', '2026-10-15T17:00')).toBe(true)
+    expect(isValidPeriod('2026-10-15T17:00', '2026-10-15T08:00')).toBe(false)
+    expect(isValidPeriod(null, '2026-10-15T17:00')).toBe(false)
+  })
+
+  it('half-filled fields do not count – "T" would be after "2026…" as text', () => {
+    expect(isValidPeriod('2026-10-20T', 'T')).toBe(false)
+    expect(isValidPeriod('2026-10-20T08:00', '2026-10-20T')).toBe(false)
+  })
+
+  it('choiceError asks for the missing part instead of letting it through', () => {
+    const wanted = { ...NO_COURTESY_CAR, wanted: true, courtesyCarId: 'c1' }
+    expect(choiceError({ ...wanted, pickupAt: '2026-10-20T', returnAt: 'T' }, EMPTY_APPOINTMENT)).toBe('Abholung und Rückgabe angeben')
   })
 })
