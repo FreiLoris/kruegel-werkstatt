@@ -27,6 +27,7 @@ export function Modal({ open, onClose, title, children, footer, wide = false }: 
   const dialogRef = useRef<HTMLDialogElement>(null)
   // Unique ID – several dialogs can be open at once (e.g. confirmation above a form)
   const titleId = useId()
+  const pressedOnBackdrop = useRef(false)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -54,9 +55,14 @@ export function Modal({ open, onClose, title, children, footer, wide = false }: 
         event.preventDefault()
         onClose()
       }}
+      // Remember where the press started: selecting text in a field and releasing the mouse
+      // outside also "clicks" the dialog element – that must not close it and lose the input.
+      onPointerDown={(event) => {
+        pressedOnBackdrop.current = event.target === event.currentTarget
+      }}
       // Click on the dimmed backdrop (= the dialog element itself, not its content)
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (pressedOnBackdrop.current && event.target === event.currentTarget) onClose()
       }}
     >
       {open && (
