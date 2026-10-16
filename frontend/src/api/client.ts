@@ -1,5 +1,6 @@
 import createClient from 'openapi-fetch'
 import { personIdForRequests } from '../lib/devicePerson'
+import { ApiError, serverUnreachable } from './errors'
 import type { paths } from './schema'
 
 /**
@@ -23,5 +24,12 @@ api.use({
     const person = personIdForRequests()
     if (person) request.headers.set('X-Person', person)
     return request
+  },
+  // Network failure: fetch throws a TypeError ("Failed to fetch") that never reaches
+  // dataOrThrow – turn it into an ApiError so the user gets a German message.
+  // Cancelled requests (AbortError, e.g. TanStack Query aborting) stay as they are.
+  onError({ error }) {
+    if (error instanceof DOMException && error.name === 'AbortError') return
+    return new ApiError(serverUnreachable())
   },
 })
