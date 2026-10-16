@@ -14,10 +14,14 @@ public final class Texts {
         return value.strip();
     }
 
-    /** Throws if the (already cleaned) value is longer than {@code max}. */
+    /**
+     * Throws if the (already cleaned) value is longer than {@code max}.
+     * The value itself is not part of the message: it ends up in the log and may hold customer data.
+     */
     public static String checkMaxLength(String value, int max, String field) {
         if (value != null && value.length() > max) {
-            throw new IllegalArgumentException(field + " must be at most " + max + " characters: '" + value + "'");
+            throw new IllegalArgumentException(
+                    field + " must be at most " + max + " characters, but has " + value.length());
         }
         return value;
     }

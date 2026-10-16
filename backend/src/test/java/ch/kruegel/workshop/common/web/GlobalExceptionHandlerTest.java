@@ -84,6 +84,37 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void invalidInputExceptionReturns400AtTheField() {
+        MvcTestResult response = mvc.get().uri("/test/errors/invalid-input").exchange();
+
+        assertThat(response).hasStatus(HttpStatus.BAD_REQUEST)
+                .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response).bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");
+        assertThat(response).bodyJson().extractingPath("$.errors[0].message").isEqualTo("ist bereits vergeben");
+    }
+
+    @Test
+    void businessRuleReturns409WithTheMessageAsIs() {
+        MvcTestResult response = mvc.get().uri("/test/errors/business-rule").exchange();
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT)
+                .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response).bodyJson().extractingPath("$.title").isEqualTo("Nicht möglich");
+        assertThat(response).bodyJson().extractingPath("$.detail")
+                .isEqualTo("Die letzte Hebebühne kann nicht stillgelegt werden.");
+    }
+
+    @Test
+    void databaseConstraintReturns409WithoutTechnicalDetails() {
+        MvcTestResult response = mvc.get().uri("/test/errors/data-conflict").exchange();
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT)
+                .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response).bodyJson().extractingPath("$.title").isEqualTo("Nicht gespeichert");
+        assertThat(response).bodyText().doesNotContain("duplicate key");
+    }
+
+    @Test
     void unexpectedErrorReturns500WithoutTechnicalDetails() {
         MvcTestResult response = mvc.get().uri("/test/errors/crash").exchange();
 
