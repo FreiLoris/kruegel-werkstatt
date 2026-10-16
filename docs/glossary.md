@@ -32,6 +32,10 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Lager(liste), Artikel | `StockItem` / `stock-items` | kept by hand, no bookings (FB-08) |
 | Ersatzteile / Verbrauchsmaterial / Werkzeuge | `StockCategory` `SPARE_PART` / `CONSUMABLE` / `TOOL` | |
 | Lieferant | `Supplier` / `suppliers` | kept here, not in SwissGarage (FB-09) |
+| Versicherung | `Insurance` / `insurances` | master data for insurance cases |
+| Schadennummer | `claimNumber` | on the task, only with an insurance; may still be open |
+| Prüfstelle | `InspectionStation` / `inspection-stations` | where a car goes for its MFK (FB-10) |
+| Standard-Prüfstelle | `standard` (column `is_default`) | exactly one, always active |
 | Hauptlieferant, weiterer Lieferant | `StockItemSupplier` (position 0 = main) | with the supplier's article number |
 | Bestellweg | `OrderChannel` `WEBSHOP` / `PHONE` / `EMAIL` | |
 | Auf die Einkaufsliste (Artikel, Lieferant) | `Todo.stockItemId` / `supplierId` | shopping list only (13g) |
