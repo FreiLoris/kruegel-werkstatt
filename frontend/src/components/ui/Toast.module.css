@@ -26,7 +26,7 @@
   background: var(--color-surface-raised);
   box-shadow: var(--shadow);
   pointer-events: auto;
-  animation: einblenden 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
 .success {
@@ -79,7 +79,7 @@
   color: var(--color-text);
 }
 
-@keyframes einblenden {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(-0.5rem);

@@ -78,4 +78,13 @@ describe('Confirm', () => {
 
     expect(document.activeElement?.textContent).toBe('Abbrechen')
   })
+
+  it('a second question answers the open one with false – its caller does not wait forever', async () => {
+    renderDemo()
+    await userEvent.click(screen.getByRole('button', { name: 'Start' }))
+    // The modal blocks the page in a real browser; code can still ask again
+    await userEvent.click(screen.getByRole('button', { name: 'Start', hidden: true }))
+
+    expect(screen.getByRole('status', { hidden: true }).textContent).toBe('cancelled')
+  })
 })

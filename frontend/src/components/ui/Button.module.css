@@ -70,10 +70,10 @@
 }
 
 .spinner {
-  animation: drehen 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes drehen {
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
