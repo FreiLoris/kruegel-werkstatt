@@ -19,13 +19,16 @@ export function TireReceiptPage() {
   const navigate = useNavigate()
   const set = useTireSet(id)
   const company = useCompany()
-  const { data: limits } = useTreadLimits()
+  const limitList = useTreadLimits()
+  const limits = limitList.data
   const [withWarning, setWithWarning] = useState<boolean | null>(null)
 
   const advise = set.data && limits ? wheelsToAdvise(set.data.depths, set.data.season, limits) : []
   // ticked by itself when there is something to say
   const warning = withWarning ?? advise.length > 0
   const ready = set.data && company.data && limits
+  // any list that could not be loaded at all – otherwise "Lade …" would stay forever
+  const failed = [set, company, limitList].find((list) => list.error && !list.data)?.error
 
   return (
     <div className={styles.desk}>
@@ -43,8 +46,8 @@ export function TireReceiptPage() {
           Schein drucken
         </Button>
       </div>
-      {set.error ? (
-        <p className={styles.message}>Satz konnte nicht geladen werden: {set.error.message}</p>
+      {!ready && failed ? (
+        <p className={styles.message}>Satz konnte nicht geladen werden: {failed.message}</p>
       ) : !ready ? (
         <p className={styles.message}>Lade …</p>
       ) : (

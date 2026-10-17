@@ -29,8 +29,12 @@ export function TireHotelPage() {
   const withoutPlace = params.get('place') === 'none' && !retrieved
   const [assigning, setAssigning] = useState<TireSet | null>(null)
   const sets = useTireSets(!retrieved)
-  const { data: locations } = useTireLocations()
-  const { data: places } = useTirePlaces()
+  const locationList = useTireLocations()
+  const placeList = useTirePlaces()
+  const locations = locationList.data
+  const places = placeList.data
+  // a list that could not be loaded at all – otherwise the place view would say "Lade …" forever
+  const placesFailed = (!locations && locationList.error) || (!places && placeList.error) || (!sets.data && sets.error)
   const free = places && sets.data && !retrieved ? freeCount(places, occupancy(sets.data)) : undefined
   const { data: limits } = useTreadLimits()
   const canEdit = useCanEdit()
@@ -101,7 +105,7 @@ export function TireHotelPage() {
 
       {view === 'places' ? (
         !locations || !places || !sets.data ? (
-          <p className="muted">Lade …</p>
+          <p className="muted">{placesFailed ? `Konnte nicht geladen werden: ${placesFailed.message}` : 'Lade …'}</p>
         ) : locations.length === 0 ? (
           <p className={styles.empty}>
             Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.

@@ -14,7 +14,8 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
       {tires.mounted ? (
         <p>
           Montiert: <Link to={`/tires/${tires.mounted.id}`}>{setSummary(tires.mounted)}</Link>
-          <span className="muted"> – ausgelagert am {formatDate(tires.mounted.retrievedOn!)}</span>
+          {/* stored again next season → no retrieval date any more (it crashed the old task's page) */}
+          {tires.mounted.retrievedOn && <span className="muted"> – ausgelagert am {formatDate(tires.mounted.retrievedOn)}</span>}
         </p>
       ) : (
         fromHotel &&

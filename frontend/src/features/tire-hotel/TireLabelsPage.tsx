@@ -38,7 +38,8 @@ export function TireLabelsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const set = useTireSet(id)
-  const { data: formats } = useLabelFormats()
+  const formatList = useLabelFormats()
+  const formats = formatList.data
   const [formatId, setFormatId] = useState<string | null>(rememberedFormat)
   const [start, setStart] = useState(1)
 
@@ -80,8 +81,8 @@ export function TireLabelsPage() {
           Etiketten drucken
         </Button>
       </div>
-      {set.error ? (
-        <p className={styles.message}>Satz konnte nicht geladen werden: {set.error.message}</p>
+      {(!set.data && set.error) || (!formats && formatList.error) ? (
+        <p className={styles.message}>Konnte nicht geladen werden: {(set.error ?? formatList.error)?.message}</p>
       ) : !set.data || !formats ? (
         <p className={styles.message}>Lade …</p>
       ) : !format ? (

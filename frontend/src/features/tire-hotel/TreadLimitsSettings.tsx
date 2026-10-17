@@ -14,9 +14,9 @@ import { parseDepth } from './tireSetForm'
  */
 export function TreadLimitsSettings() {
   const { data: limits, error } = useTreadLimits()
-  if (error) return <p className="muted">Profilgrenzen konnten nicht geladen werden: {error.message}</p>
-  if (!limits) return <p className="muted">Lade Profilgrenzen …</p>
-  return <LimitsForm key={limits.version} limits={limits} />
+  if (!limits) return <p className="muted">{error ? `Profilgrenzen konnten nicht geladen werden: ${error.message}` : 'Lade Profilgrenzen …'}</p>
+  // not the version as key: a change from another device would remount the form and throw away the input
+  return <LimitsForm limits={limits} />
 }
 
 const text = (mm: number) => mm.toFixed(1).replace('.', ',')
@@ -26,6 +26,8 @@ function LimitsForm({ limits }: { limits: TreadLimits }) {
   const canEdit = useCanEdit()
   const toast = useToast()
   const save = useSaveTreadLimits()
+  // the version as it was when the form opened (conventions) – updated by this device's own save
+  const [openedVersion, setOpenedVersion] = useState(limits.version)
   const [values, setValues] = useState({ summer: text(limits.summerMm), winter: text(limits.winterMm), minimum: text(limits.minimumMm) })
 
   const parsed = { summer: parseDepth(values.summer), winter: parseDepth(values.winter), minimum: parseDepth(values.minimum) }
@@ -38,9 +40,12 @@ function LimitsForm({ limits }: { limits: TreadLimits }) {
     event.preventDefault()
     if (invalid(parsed.summer) || invalid(parsed.winter) || invalid(parsed.minimum)) return
     save.mutate(
-      { summerMm: parsed.summer!, winterMm: parsed.winter!, minimumMm: parsed.minimum!, version: limits.version },
+      { summerMm: parsed.summer!, winterMm: parsed.winter!, minimumMm: parsed.minimum!, version: openedVersion },
       {
-        onSuccess: () => toast.success('Profilgrenzen gespeichert'),
+        onSuccess: (saved) => {
+          setOpenedVersion(saved.version)
+          toast.success('Profilgrenzen gespeichert')
+        },
         onError: (error) => {
           if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) toast.error(`Nicht gespeichert: ${reasonOf(error)}`)
         },
