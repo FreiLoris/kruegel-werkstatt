@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import org.hibernate.annotations.OptimisticLock;
 
 import java.time.LocalDate;
 
@@ -43,6 +44,8 @@ public class Employee extends BaseEntity implements Sortable {
 
     private boolean active;
 
+    // the order is no edit of the entry: reordering must not make an open edit dialog conflict
+    @OptimisticLock(excluded = true)
     private int sortOrder;
 
     protected Employee() {

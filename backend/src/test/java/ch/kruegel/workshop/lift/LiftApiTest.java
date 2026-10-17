@@ -132,6 +132,17 @@ class LiftApiTest {
     }
 
     @Test
+    void reorderingIsNoEditARenameOpenedBeforeStillSaves() {
+        String one = idOf(create("Lift 1"));
+        String two = idOf(create("Lift 2"));
+
+        send("PUT", "/api/lifts/order", "{ \"ids\": [\"%s\", \"%s\"] }".formatted(two, one));
+
+        // the rename dialog was opened with version 0 – the new order alone is no conflict
+        assertThat(send("PUT", "/api/lifts/" + one, "{ \"name\": \"Lift A\", \"version\": 0 }")).hasStatus(HttpStatus.OK);
+    }
+
+    @Test
     void changesAreAnnouncedAsLiveUpdate() {
         create("Lift 1");
 
