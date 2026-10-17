@@ -26,8 +26,10 @@ export function TodayByLift() {
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
 
-  if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
-  if (!tasks.data || !lifts) return <p className="muted">Lade heutige Termine …</p>
+  // the data wins: after a backend restart the TV keeps today's tasks instead of an error
+  if (!tasks.data || !lifts) {
+    return <p className="muted">{!tasks.data && tasks.error ? `Termine konnten nicht geladen werden: ${tasks.error.message}` : 'Lade heutige Termine …'}</p>
+  }
 
   const mechanicOf = (id: string | null) => employees?.find((e) => e.id === id)
 

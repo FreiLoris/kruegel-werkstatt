@@ -31,8 +31,8 @@ export function DashboardWeek({ monday }: { monday: string }) {
   const { data: employees } = useAllEmployees()
   const today = useToday()
 
-  if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
-  if (!tasks.data) return <p className="muted">Lade Woche …</p>
+  // the data wins: after a backend restart the TV keeps the week instead of an error until the next refetch
+  if (!tasks.data) return <p className="muted">{tasks.error ? `Termine konnten nicht geladen werden: ${tasks.error.message}` : 'Lade Woche …'}</p>
 
   const days = weekDays(monday, tasks.data, mfkSlots?.map((s) => s.date))
   const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
@@ -59,9 +59,11 @@ export function DashboardWeek({ monday }: { monday: string }) {
             </header>
             {away.length > 0 && (
               <div className={styles.absences} aria-label="Abwesend und anwesend">
-                {away.map((a) => (
-                  <AbsenceChip key={a.absence.id} day={a} name={employeeOf(a.absence.employeeId)?.name ?? ''} />
-                ))}
+                {/* without the person's name (list not loaded yet) a chip would say "Ferien" for nobody */}
+                {away.map((a) => {
+                  const name = employeeOf(a.absence.employeeId)?.name
+                  return name && <AbsenceChip key={a.absence.id} day={a} name={name} />
+                })}
               </div>
             )}
             <ul className={styles.tasks}>
