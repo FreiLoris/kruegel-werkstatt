@@ -84,13 +84,19 @@ public class TireLocationService {
                     throw new InvalidInputException("sizeA", "%s ist belegt (%s) – zuerst umlagern".formatted(s.getPlace().getAddress(),
                             s.getCustomer().getDetails().displayName()));
                 });
+        boolean newCode = !code.equals(location.getCode());
         location.update(code, request.name(), request.sizeA(), request.sizeB(), request.sizeC());
         Map<String, TirePlace> existing = places.findByLocationId(id).stream()
                 .collect(Collectors.toMap(p -> key(p.getA(), p.getB(), p.getC()), p -> p));
         // the existing ones: address from the (maybe new) code, in use while within the sizes
         existing.values().forEach(TirePlace::refresh);
         generatePlaces(location, existing);
-        return saved(location);
+        TireLocationDto saved = saved(location);
+        if (newCode) {
+            // every address of the location changed – the tyre hotel list shows them
+            events.publishEvent(new DataChanged(TireHotelService.TOPIC));
+        }
+        return saved;
     }
 
     /** Only while no set lies at the location – the history keeps the addresses as text. */

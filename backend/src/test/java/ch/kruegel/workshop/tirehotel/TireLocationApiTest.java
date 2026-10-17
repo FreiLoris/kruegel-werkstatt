@@ -2,6 +2,7 @@ package ch.kruegel.workshop.tirehotel;
 
 import ch.kruegel.workshop.TestDatabase;
 import ch.kruegel.workshop.TestcontainersConfiguration;
+import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.person.CurrentPerson;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerRepository;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -29,7 +32,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
+@RecordApplicationEvents
 class TireLocationApiTest {
+
+    @Autowired
+    private ApplicationEvents events;
 
     @Autowired
     private MockMvcTester mvc;
@@ -101,6 +108,17 @@ class TireLocationApiTest {
         // retrieved: the place is free again
         assertThat(store(huber, second)).hasStatus(HttpStatus.CREATED);
         assertThat(mvc.get().uri("/api/tire-sets/" + set).exchange()).bodyJson().extractingPath("$.place").isNull();
+    }
+
+    @Test
+    void aNewCodeAlsoTellsTheTyreHotelList() {
+        String og = idOf(send("POST", "/api/tire-locations", location("OG", "FLOOR", 1, 1, 1, null)));
+        events.clear();
+
+        send("PUT", "/api/tire-locations/" + og, location("W1", "FLOOR", 1, 1, 1, 0L));
+
+        // the sets show their address – it changed with the code
+        assertThat(events.stream(DataChanged.class)).extracting(DataChanged::topic).contains("tire-locations", "tire-sets");
     }
 
     @Test
