@@ -1,4 +1,4 @@
-import type { Season, TreadDepths, TreadLimits } from './tireHotelApi'
+import type { Season, TireSetEvent, TreadDepths, TreadLimits } from './tireHotelApi'
 
 /**
  * Tread depths judged against the limits of the settings (FB-07): fine, worth a word with the
@@ -56,3 +56,28 @@ export const STATUS_TEXT: Record<TreadStatus, string> = {
   illegal: 'unter gesetzlichem Minimum',
   unknown: 'nicht gemessen',
 }
+
+/**
+ * Wheels whose depth was not measured with the latest measurement – it comes from an earlier one
+ * (a partial measurement keeps the others, decision E7). Grouped by the day it was measured, oldest first.
+ * Only storing and measuring count: a move or retrieval just repeats the depths of that moment.
+ */
+export function olderDepths(history: TireSetEvent[]): { wheels: string[]; on: string }[] {
+  const measuredOn = new Map<Wheel, string>()
+  const measurements = history
+    .filter((e) => e.kind === 'STORED' || e.kind === 'MEASURED')
+    .sort((a, b) => a.happenedOn.localeCompare(b.happenedOn))
+  for (const event of measurements) {
+    for (const w of WHEELS) {
+      if (event.depths[w.key] != null) measuredOn.set(w.key, event.happenedOn)
+    }
+  }
+  const latest = [...measuredOn.values()].sort().at(-1)
+  const older = new Map<string, string[]>()
+  for (const w of WHEELS) {
+    const on = measuredOn.get(w.key)
+    if (on && on !== latest) older.set(on, [...(older.get(on) ?? []), w.short])
+  }
+  return [...older.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([on, wheels]) => ({ wheels, on }))
+}
+

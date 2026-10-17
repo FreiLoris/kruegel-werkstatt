@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -168,7 +169,9 @@ public class TireHotelService {
                 .orElseThrow(() -> new IllegalStateException("Tyre hotel settings missing – migration V32 creates them"));
     }
 
-    /** A day of a measurement or retrieval: not in the future, not before the set was stored. */
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    /** A day of a measurement, move or retrieval: not in the future, not before the set was stored or its latest step. */
     private LocalDate day(LocalDate wanted, TireSet set, String field) {
         LocalDate today = LocalDate.now(clock);
         LocalDate day = wanted == null ? today : wanted;
@@ -177,6 +180,11 @@ public class TireHotelService {
         }
         if (day.isBefore(set.getStoredOn())) {
             throw new InvalidInputException(field, "liegt vor der Einlagerung");
+        }
+        // decision of the workshop: before the latest step the history would contradict the current state
+        LocalDate last = set.lastEventDay();
+        if (day.isBefore(last)) {
+            throw new InvalidInputException(field, "liegt vor dem letzten Eintrag (" + DAY.format(last) + ")");
         }
         return day;
     }

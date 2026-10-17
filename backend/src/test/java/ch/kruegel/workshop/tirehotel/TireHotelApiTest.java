@@ -85,6 +85,32 @@ class TireHotelApiTest {
     }
 
     @Test
+    void aPartialMeasurementKeepsTheOtherWheelsTheHistoryKeepsWhatWasMeasured() {
+        String id = idOf(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"2026-04-01\", "
+                + "\"depths\": { \"frontLeft\": 5, \"frontRight\": 5, \"rearLeft\": 5, \"rearRight\": 5 }"));
+
+        MvcTestResult measured = send("POST", "/api/tire-sets/" + id + "/measurements",
+                "{ \"depths\": { \"frontLeft\": 3.5 }, \"on\": \"2026-10-01\" }");
+
+        assertThat(measured).bodyJson().extractingPath("$.depths.frontLeft").isEqualTo(3.5);
+        assertThat(measured).bodyJson().extractingPath("$.depths.rearRight").isEqualTo(5.0);
+        assertThat(mvc.get().uri("/api/tire-sets/" + id + "/history").exchange()).bodyJson()
+                .extractingPath("$[1].depths.rearRight").isNull();
+    }
+
+    @Test
+    void nothingBeforeTheLatestStepOfTheHistory() {
+        String id = idOf(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"2026-04-01\""));
+        send("POST", "/api/tire-sets/" + id + "/measurements", "{ \"depths\": { \"frontLeft\": 4 }, \"on\": \"2026-10-01\" }");
+
+        MvcTestResult earlier = send("POST", "/api/tire-sets/" + id + "/retrieve", "{ \"on\": \"2026-09-15\" }");
+
+        assertFieldError(earlier, "on");
+        assertThat(earlier).bodyJson().extractingPath("$.errors[0].message").isEqualTo("liegt vor dem letzten Eintrag (01.10.2026)");
+        assertThat(send("POST", "/api/tire-sets/" + id + "/retrieve", "{ \"on\": \"2026-10-01\" }")).hasStatusOk();
+    }
+
+    @Test
     void measuredAgainAndRetrievedTheHistoryShowsTheWear() {
         String id = idOf(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"2026-04-01\", "
                 + "\"depths\": { \"frontLeft\": 5, \"frontRight\": 5, \"rearLeft\": 5, \"rearRight\": 5 }"));
