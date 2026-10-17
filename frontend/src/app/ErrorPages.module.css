@@ -1,0 +1,19 @@
+/* the crash page without the app frame (the layout itself failed, or a print view) */
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.details {
+  margin-top: var(--space-5);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
