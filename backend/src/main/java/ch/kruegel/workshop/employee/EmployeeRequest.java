@@ -23,7 +23,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
  * @param version only when editing: the version the device loaded (optimistic locking)
  */
 public record EmployeeRequest(
-        @NotBlank @Size(max = 40) String name,
+        @NotBlank @Size(max = EmployeeDetails.NAME_MAX) String name,
         @NotNull Role role,
         @NotNull @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "muss eine Farbe im Format #rrggbb sein") String color,
         @Past LocalDate birthday,

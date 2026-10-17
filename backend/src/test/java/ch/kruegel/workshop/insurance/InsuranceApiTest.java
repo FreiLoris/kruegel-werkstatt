@@ -82,6 +82,15 @@ class InsuranceApiTest {
     }
 
     @Test
+    void aNameOfOnlyUnicodeSpacesIsAFieldErrorNotA500() {
+        // U+2003 (em space): @NotBlank (Hibernate Validator 9: isBlank) and strip() in the service agree on "blank"
+        MvcTestResult response = send("POST", "/api/insurances", "{ \"name\": \"\u2003\u2003\" }");
+
+        assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(response).bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");
+    }
+
+    @Test
     void noLongerUsedOnesStayInTheListAndCanBeUsedAgain() {
         String muster = idOf(send("POST", "/api/insurances", "{ \"name\": \"Muster Versicherung\" }"));
         send("POST", "/api/insurances", "{ \"name\": \"Beispiel Assekuranz\" }");
