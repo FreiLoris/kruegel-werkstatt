@@ -20,7 +20,7 @@ import { useToast } from '../../components/ui/toastContext'
 import type { Employee } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
 import { useReassignTodo, type Todo } from './todoApi'
-import { movedTodo, NOBODY_COLUMN, todoColumns, type TodoColumn } from './todoGroups'
+import { assigneeAfterDrop, movedTodo, NOBODY_COLUMN, todoColumns, type TodoColumn } from './todoGroups'
 import { TodoItem } from './TodoItem'
 import styles from './TodoBoard.module.css'
 
@@ -62,14 +62,17 @@ export function TodoBoard({ todos: loaded, people, canEdit }: { todos: Todo[]; p
   function onDragEnd({ active, over }: DragEndEvent) {
     setDraggingId(null)
     if (!over) return
-    const { id, columnId } = parseDragId(String(active.id))
+    const { id } = parseDragId(String(active.id))
     const toColumn = String(over.id)
-    if (toColumn === columnId) return
-    const todo = loaded.find((t) => t.id === id)!
+    // done or deleted on another device while dragging
+    const todo = loaded.find((t) => t.id === id)
+    if (!todo) return
+    const assigneeId = assigneeAfterDrop(todo, toColumn)
+    if (assigneeId === undefined) return
     const arranged = movedTodo(loaded, id, toColumn)
     setDropped({ todos: arranged, basedOn: loaded })
     reassign.mutate(
-      { id, assigneeId: toColumn === NOBODY_COLUMN ? null : toColumn, arranged },
+      { id, assigneeId, arranged },
       {
         onError: (error) => {
           setDropped(null)

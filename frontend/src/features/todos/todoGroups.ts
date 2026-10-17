@@ -26,6 +26,16 @@ export function todoColumns(todos: Todo[], people: Employee[]): TodoColumn[] {
   ]
 }
 
+/**
+ * The person a to-do gets when dropped on `toColumn` – undefined when nothing changes. Compared with the
+ * real assignment, not the column: a to-do of someone who left lies in "nicht zugewiesen" but is still
+ * theirs, dropping it there must unassign it.
+ */
+export function assigneeAfterDrop(todo: Todo, toColumn: string): string | null | undefined {
+  const assigneeId = toColumn === NOBODY_COLUMN ? null : toColumn
+  return (todo.assigneeId ?? null) === assigneeId ? undefined : assigneeId
+}
+
 /** The to-dos after dragging one to another column – shown right away while the server saves */
 export function movedTodo(todos: Todo[], todoId: string, toColumn: string): Todo[] {
   return todos.map((t) => (t.id === todoId ? { ...t, assigneeId: toColumn === NOBODY_COLUMN ? null : toColumn } : t))

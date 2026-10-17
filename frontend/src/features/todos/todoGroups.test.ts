@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Employee } from '../employees/employeeApi'
 import type { Todo } from './todoApi'
-import { movedTodo, NOBODY_COLUMN, todoColumns } from './todoGroups'
+import { assigneeAfterDrop, movedTodo, NOBODY_COLUMN, todoColumns } from './todoGroups'
 
 // fictitious
 const person = (id: string) => ({ id, name: id }) as Employee
@@ -28,5 +28,22 @@ describe('movedTodo', () => {
   it('gives the to-do to the person of the column, the first column = nobody', () => {
     expect(movedTodo([todo('a', 'reto')], 'a', 'erich')[0].assigneeId).toBe('erich')
     expect(movedTodo([todo('a', 'reto')], 'a', NOBODY_COLUMN)[0].assigneeId).toBeNull()
+  })
+})
+
+describe('assigneeAfterDrop', () => {
+  it('assigns or unassigns by the real assignment', () => {
+    expect(assigneeAfterDrop(todo('a', 'reto'), 'mora')).toBe('mora')
+    expect(assigneeAfterDrop(todo('a', 'reto'), NOBODY_COLUMN)).toBeNull()
+    expect(assigneeAfterDrop(todo('a', null), 'reto')).toBe('reto')
+  })
+
+  it('nothing changes when it already belongs there', () => {
+    expect(assigneeAfterDrop(todo('a', 'reto'), 'reto')).toBeUndefined()
+    expect(assigneeAfterDrop(todo('a', null), NOBODY_COLUMN)).toBeUndefined()
+  })
+
+  it('a to-do of someone who left lies in "nicht zugewiesen" – dropping it there unassigns it', () => {
+    expect(assigneeAfterDrop(todo('a', 'left'), NOBODY_COLUMN)).toBeNull()
   })
 })
