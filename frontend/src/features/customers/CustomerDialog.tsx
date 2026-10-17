@@ -9,6 +9,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useCreateCustomer, useSetCustomerActive, useUpdateCustomer, type CustomerRequest } from './customerApi'
+import { phoneError, prefillFromSearch } from './customerForm'
 import type { Customer } from './customerSearchApi'
 
 type Field = Exclude<keyof CustomerRequest, 'version'>
@@ -79,7 +80,7 @@ export function CustomerDialog({
   const confirm = useConfirm()
   // the version as it was when the dialog opened – a live update must not hide a change from another device
   const [openedVersion] = useState(customer?.version)
-  const [values, setValues] = useState<FormValues>(() => (customer ? valuesOf(customer) : { ...EMPTY, lastName: initialName.trim() }))
+  const [values, setValues] = useState<FormValues>(() => (customer ? valuesOf(customer) : { ...EMPTY, ...prefillFromSearch(initialName) }))
 
   const fieldError = (field: Field) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
 
@@ -90,6 +91,7 @@ export function CustomerDialog({
 
   function submit(event: FormEvent) {
     event.preventDefault()
+    if (phoneError(values.mobile) || phoneError(values.phone)) return
     const callbacks = {
       onSuccess: (saved: Customer) => {
         toast.success(`${saved.displayName} ${customer ? 'gespeichert' : 'erfasst'}`)
@@ -167,7 +169,8 @@ export function CustomerDialog({
         </>
       }
     >
-      <form id={formId} className={styles.form} onSubmit={submit}>
+      {/* our own field messages instead of the browser's bubbles (e-mail is checked by the server) */}
+      <form id={formId} className={styles.form} onSubmit={submit} noValidate>
         {!customer && (
           <p className={styles.note}>
             Für Laufkundschaft. Stammkunden kommen aus SwissGarage – ist der Kunde dort schon erfasst, erscheint er nach
@@ -202,8 +205,8 @@ export function CustomerDialog({
           {text('city', 'Ort')}
         </div>
         <div className={styles.row}>
-          {text('mobile', 'Handy', { type: 'tel', placeholder: 'z. B. 079 123 45 67' })}
-          {text('phone', 'Telefon', { type: 'tel' })}
+          {text('mobile', 'Handy', { type: 'tel', placeholder: 'z. B. 079 123 45 67', error: phoneError(values.mobile) ?? fieldError('mobile') })}
+          {text('phone', 'Telefon', { type: 'tel', error: phoneError(values.phone) ?? fieldError('phone') })}
           {text('email', 'E-Mail', { type: 'email' })}
         </div>
       </form>

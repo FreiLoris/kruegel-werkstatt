@@ -1,6 +1,6 @@
 import { Checkbox, TextField } from '../../components/ui/Fields'
 import type { Season, TreadLimits } from './tireHotelApi'
-import { depthsOf, withDepth, withSameDepth, type TireSetErrors, type TireSetForm } from './tireSetForm'
+import { depthsOf, depthWarning, parseDepth, withDepth, withSameDepth, type TireSetErrors, type TireSetForm } from './tireSetForm'
 import { treadStatus, WHEELS } from './tread'
 import styles from './TreadDepths.module.css'
 import { AdviseBanner, TreadChip } from './TreadDepthsView'
@@ -23,7 +23,10 @@ export function TreadDepthsInput({
 }) {
   const season: Season = form.season || 'WINTER'
   const depths = depthsOf(form)
-  const status = (wheel: (typeof WHEELS)[number]['key']) => (limits ? treadStatus(depths[wheel], season, limits) : undefined)
+  // no status next to an invalid value – the error says what is wrong
+  const status = (wheel: (typeof WHEELS)[number]['key']) =>
+    limits && !errors[wheel] && depths[wheel] !== undefined ? treadStatus(depths[wheel], season, limits) : undefined
+  const warning = (wheel: (typeof WHEELS)[number]['key']) => depthWarning(parseDepth(form.depths[wheel]))
 
   return (
     <>
@@ -38,6 +41,7 @@ export function TreadDepthsInput({
             value={form.depths.frontLeft}
             onChange={(e) => onChange(withDepth(form, 'frontLeft', e.target.value))}
             error={errors.frontLeft}
+            hint={warning('frontLeft')}
           />
           {status('frontLeft') && <TreadChip status={status('frontLeft')!} />}
         </div>
@@ -56,6 +60,7 @@ export function TreadDepthsInput({
                 value={form.depths[wheel.key]}
                 onChange={(e) => onChange(withDepth(form, wheel.key, e.target.value))}
                 error={errors[wheel.key]}
+                hint={warning(wheel.key)}
               />
               {status(wheel.key) && <TreadChip status={status(wheel.key)!} />}
             </div>

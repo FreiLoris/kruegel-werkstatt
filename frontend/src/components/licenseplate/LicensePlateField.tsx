@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CANTONS, COUNTRIES, composePlate, parsePlate, type ParsedPlate } from '../../lib/licensePlate'
+import { CANTONS, COUNTRIES, composePlate, parsePlate, swissNumberInput, type ParsedPlate } from '../../lib/licensePlate'
 import { Select, TextField } from '../ui/Fields'
 import { LicensePlate } from './LicensePlate'
 import styles from './LicensePlateField.module.css'
@@ -27,6 +27,7 @@ interface LicensePlateFieldProps {
  * a plate and is reported as '' – the component is mounted fresh for every dialog (`key`).
  */
 export function LicensePlateField({ value, onChange, error }: LicensePlateFieldProps) {
+  const [cantonTyped, setCantonTyped] = useState('')
   const [plate, setPlate] = useState<ParsedPlate>(() =>
     value ? parsePlate(value) : { kind: 'swiss', canton: DEFAULT_CANTON, number: '' },
   )
@@ -75,12 +76,22 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
               inputMode="numeric"
               autoComplete="off"
               placeholder="z. B. 123456"
-              maxLength={6}
-              value={plate.number}
+              // room for a canton typed in front: "BE 123456"
+              maxLength={9}
+              value={cantonTyped || plate.number}
               // the server's message at the field that holds the number: red frame and aria-invalid like every field
               error={error}
-              // Only digits – Swiss plates have no letters after the canton
-              onChange={(e) => update({ ...plate, number: e.target.value.replace(/\D/g, '') })}
+              // Only digits – a canton typed in front ("BE 12345") is taken over, not dropped (UX G-08).
+              // While only its letters are there, they stay visible until a digit follows.
+              onChange={(e) => {
+                const text = e.target.value
+                if (/^[A-Za-z]{1,2}\s*$/.test(text)) {
+                  setCantonTyped(text.toUpperCase())
+                  return
+                }
+                setCantonTyped('')
+                update({ ...plate, ...swissNumberInput(text, plate.canton) })
+              }}
             />
           </>
         )}

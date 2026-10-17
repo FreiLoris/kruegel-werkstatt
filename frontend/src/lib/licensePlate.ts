@@ -109,3 +109,15 @@ export function composePlate(plate: ParsedPlate): string {
 export function groupDigits(number: string): string {
   return number.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 }
+
+/**
+ * What was typed into the number field of a Swiss plate: digits only – but a canton typed in front
+ * ("BE 12345") is taken over instead of being dropped (UX G-08: it silently became "ZH 12 345").
+ */
+export function swissNumberInput(text: string, canton: string): { canton: string; number: string } {
+  const typed = /^\s*([A-Za-z]{2})\s*(.*)$/.exec(text)
+  const code = typed?.[1].toUpperCase()
+  if (typed && code && CANTONS.some((c) => c.code === code)) return { canton: code, number: typed[2].replace(/\D/g, '') }
+  return { canton, number: text.replace(/\D/g, '') }
+}
+
