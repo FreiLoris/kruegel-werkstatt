@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { TodoRequest } from '../todos/todoApi'
 import { api } from '../../api/client'
-import { dataOrThrow } from '../../api/errors'
+import { ApiError, dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
 
 export type Note = components['schemas']['NoteDto']
@@ -111,4 +111,12 @@ export function useAddNoteTodo() {
       void queryClient.invalidateQueries({ queryKey: ['todos'] })
     },
   })
+}
+
+/**
+ * Close the dialog? Only "not found" means deleted elsewhere – a failed refetch (Wi-Fi gone, server
+ * restarting) keeps the dialog and the unsaved text. Without any data there is nothing to show.
+ */
+export function isGone(error: Error | null, hasData: boolean): boolean {
+  return error !== null && (!hasData || (error instanceof ApiError && error.problem.status === 404))
 }
