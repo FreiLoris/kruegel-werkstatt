@@ -58,14 +58,16 @@ describe('defaults', () => {
     expect(appointmentErrors(withReadyBy({ ...THURSDAY, time: '17:15', endTime: '18:00' }, true))).toEqual({})
   })
 
-  it('MFK on the day of the appointment', () => {
-    expect(withMfk(THURSDAY, true).mfkDate).toBe('2026-10-15')
+  it('MFK starts without a date – a date alone would be lost', () => {
+    expect(withMfk(THURSDAY, true).mfkDate).toBe('')
+    expect(appointmentErrors({ ...withMfk(THURSDAY, true), mfkDate: '2026-10-16' }).mfkTime).toBe('Uhrzeit zum Datum angeben – oder beide leer lassen')
+    expect(appointmentErrors(withMfk(THURSDAY, true)).mfkTime).toBeUndefined()
   })
 })
 
 describe('withDate', () => {
   it('derived dates move along with the appointment', () => {
-    let form = withMfk(withReadyBy(withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS), true), true)
+    let form = { ...withMfk(withReadyBy(withArrivesEarlier(THURSDAY, true, NO_HOLIDAYS), true), true), mfkDate: '2026-10-15', mfkTime: '10:00' }
 
     form = withDate(form, '2026-10-20', '09:00', NO_HOLIDAYS)
 
