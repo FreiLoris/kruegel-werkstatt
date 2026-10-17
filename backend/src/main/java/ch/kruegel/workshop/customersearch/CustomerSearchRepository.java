@@ -44,12 +44,17 @@ class CustomerSearchRepository {
                 .list();
     }
 
-    /** Active vehicles WITHOUT holder that match all words – they cannot be found through a customer. */
+    /**
+     * Active vehicles WITHOUT (active) holder that match all words – they cannot be found through a
+     * customer. A deactivated holder counts as unknown (e.g. blocked in SwissGarage, the vehicle is still
+     * active), otherwise such a vehicle could not be found at all.
+     */
     List<UUID> vehiclesWithoutHolder(List<String> words, int limit) {
         return jdbc.sql("""
                         SELECT v.id
                         FROM vehicle v JOIN vehicle_search s ON s.id = v.id
-                        WHERE v.customer_id IS NULL AND %s
+                        LEFT JOIN customer c ON c.id = v.customer_id
+                        WHERE (c.id IS NULL OR NOT c.active) AND %s
                         ORDER BY v.license_plate, v.id
                         LIMIT :limit""".formatted(ALL_WORDS_MATCH))
                 .param("words", words.toArray(String[]::new))

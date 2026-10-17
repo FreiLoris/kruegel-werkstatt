@@ -80,6 +80,17 @@ class SupplierApiTest {
     }
 
     @Test
+    void aLinkTooLongWithHttpsIsAFieldErrorABlankLinkIsNone() {
+        // allowed as typed, but "https://" in front makes it longer than the column
+        String longLink = "shop.example.ch/" + "a".repeat(Supplier.URL_MAX - 16);
+
+        assertThat(send("POST", "/api/suppliers", "{ \"name\": \"A\", \"webshopUrl\": \"%s\" }".formatted(longLink)))
+                .hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("webshopUrl");
+        assertThat(send("POST", "/api/suppliers", "{ \"name\": \"B\", \"webshopUrl\": \"   \" }"))
+                .hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.webshopUrl").isNull();
+    }
+
+    @Test
     void anArticleHasAMainSupplierAndFurtherOnesWithTheirNumbers() {
         String main = idOf(create("Muster Teile AG"));
         String other = idOf(create("Beispiel Handel GmbH"));

@@ -58,8 +58,10 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
           onClose()
         },
         onError: (error) => {
-          if (error instanceof ApiError && error.isConflict) {
-            toast.error(`${supplier?.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+          // Only an existing supplier can have been changed elsewhere; a 409 while creating (same name
+          // created on another device at the same time) keeps the input and shows the server's reason
+          if (supplier && error instanceof ApiError && error.isConflict) {
+            toast.error(`${supplier.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
             toast.error(`Speichern fehlgeschlagen: ${error.message}`)
