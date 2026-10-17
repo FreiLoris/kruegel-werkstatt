@@ -61,8 +61,9 @@ export function TaskSheetPage() {
   return (
     <div className={styles.desk}>
       <div className={styles.toolbar}>
-        <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate('/')}>
-          Zur App
+        {/* back where the sheet was opened from – the task (UX M-11) */}
+        <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate(id ? `/tasks/${id}` : '/tasks')}>
+          Zum Auftrag
         </Button>
         <Button variant="primary" icon={Printer} disabled={!ready} onClick={() => window.print()}>
           Drucken

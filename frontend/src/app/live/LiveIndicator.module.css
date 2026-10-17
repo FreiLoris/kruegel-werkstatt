@@ -29,3 +29,18 @@
 .disconnected .dot {
   background: var(--color-danger);
 }
+
+.lost {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.lost svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}

@@ -15,6 +15,7 @@ import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
 import { lastUsedPlace, nextFreePlace, occupancy } from './tirePlaces'
 import { TreadDepthsInput } from './TreadDepthsInput'
+import { scrollToFirstError } from '../../lib/scrollToFirstError'
 
 /**
  * The tyre change of a task booked in the tyre hotel (13q) – once the wheels are changed, from the
@@ -62,7 +63,7 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
   function save() {
     setShowRequired(true)
     if (hasErrors(errors) || isEmpty(form)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrollToFirstError()
       return
     }
     book.mutate(

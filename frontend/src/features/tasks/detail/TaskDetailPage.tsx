@@ -5,6 +5,7 @@ import { ApiError } from '../../../api/errors'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { LoadFailed } from '../../../components/ui/LoadFailed'
 import { useConfirm } from '../../../components/ui/confirmContext'
 import { Facts } from '../../../components/ui/Facts'
 import { Modal } from '../../../components/ui/Modal'
@@ -43,9 +44,12 @@ export function TaskDetailPage() {
   // the data wins over a failed background refetch (Wi-Fi gap) – open dialogs keep their input;
   // only "not found" (deleted on another device) replaces the page
   const deleted = task.error instanceof ApiError && task.error.problem.status === 404
-  if (!task.data || deleted) {
-    return <p className="muted">{task.error ? `Auftrag konnte nicht geladen werden: ${task.error.message}` : 'Lade Auftrag …'}</p>
+  if (task.error && (!task.data || deleted)) {
+    return (
+      <LoadFailed what="Auftrag" error={task.error} notFound={'Diesen Auftrag gibt es nicht (mehr) – vielleicht wurde er auf einem anderen Gerät gelöscht, oder der Link ist unvollständig.'} back={{ to: '/tasks', label: 'Zu den Terminen' }} onRetry={() => void task.refetch()} />
+    )
   }
+  if (!task.data) return <p className="muted">Lade Auftrag …</p>
   return <TaskDetail task={task.data} />
 }
 

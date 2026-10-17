@@ -60,13 +60,14 @@ public class LiveUpdateService {
     }
 
     /**
-     * Regular heartbeat (SSE comment, ignored by the browser). Keeps the connection open
-     * through proxies and detects browsers that disappeared without closing.
+     * Regular heartbeat. Keeps the connection open through proxies and detects browsers that
+     * disappeared without closing. A named event, not a comment: the browser sees it and can tell
+     * a hanging server from a quiet one (UX M-14).
      */
     @Scheduled(fixedRate = 25_000)
     void heartbeat() {
         for (SseEmitter connection : connections) {
-            send(connection, SseEmitter.event().comment("ping"));
+            send(connection, SseEmitter.event().name("ping").data(""));
         }
     }
 

@@ -16,6 +16,7 @@ import { TireSetFields } from './TireSetFields'
 import { emptyForm, tireSetErrors, toTireSetRequest, type TireSetForm } from './tireSetForm'
 import { lastUsedPlace, nextFreePlace, occupancy } from './tirePlaces'
 import { TreadDepthsInput } from './TreadDepthsInput'
+import { scrollToFirstError } from '../../lib/scrollToFirstError'
 
 const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
 
@@ -61,7 +62,7 @@ export function TireStorePage() {
   function store() {
     setShowRequired(true)
     if (!complete) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrollToFirstError()
       return
     }
     save.mutate(

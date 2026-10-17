@@ -205,6 +205,8 @@ export function DayGrid({
     schedule.mutate(
       { id: task.id, schedule: newPlace, arranged },
       {
+        // a drop can look done before the server said so – a word that it is stored (UX M-07)
+        onSuccess: () => toast.success(`${task.customer.displayName}: ${newPlace.time.slice(0, 5)} gespeichert`),
         onError: (error) => {
           setPending(null)
           toast.error(`${task.customer.displayName} konnte nicht verschoben werden: ${reasonOf(error)}`)

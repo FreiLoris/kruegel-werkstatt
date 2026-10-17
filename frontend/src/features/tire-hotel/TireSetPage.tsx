@@ -5,6 +5,7 @@ import { ApiError, reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
+import { LoadFailed } from '../../components/ui/LoadFailed'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { Facts } from '../../components/ui/Facts'
 import { useToast } from '../../components/ui/toastContext'
@@ -54,7 +55,10 @@ export function TireSetPage() {
   // the data wins over a failed background refetch – open measure/move dialogs keep their input;
   // only "not found" (deleted on another device) replaces the page
   const deleted = set.error instanceof ApiError && set.error.problem.status === 404
-  if (!set.data || deleted) return <p className="muted">{set.error ? `Satz konnte nicht geladen werden: ${set.error.message}` : 'Lade …'}</p>
+  if (set.error && (!set.data || deleted)) {
+    return <LoadFailed what="Satz" error={set.error} notFound={'Diesen Satz gibt es nicht (mehr) – vielleicht wurde er auf einem anderen Gerät gelöscht, oder der Link ist unvollständig.'} back={{ to: '/tires', label: 'Zum Pneuhotel' }} onRetry={() => void set.refetch()} />
+  }
+  if (!set.data) return <p className="muted">Lade …</p>
   return <TireSetDetail set={set.data} />
 }
 

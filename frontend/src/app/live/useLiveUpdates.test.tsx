@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useLiveUpdates } from './useLiveUpdates'
+import { SILENCE_MS, useLiveUpdates } from './useLiveUpdates'
 
 /** Imitation of EventSource (jsdom has none) – tests fire the events themselves. */
 class FakeEventSource extends EventTarget {
@@ -29,6 +29,10 @@ class FakeEventSource extends EventTarget {
   fatalError() {
     this.readyState = FakeEventSource.CLOSED
     this.dispatchEvent(new Event('error'))
+  }
+
+  ping() {
+    this.dispatchEvent(new Event('ping'))
   }
 
   close() {
@@ -89,5 +93,23 @@ describe('useLiveUpdates', () => {
     act(() => vi.advanceTimersByTime(60_000))
 
     expect(FakeEventSource.instances).toHaveLength(1)
+  })
+
+  it('a server that goes silent counts as lost and is connected again (UX M-14)', () => {
+    const { result } = renderHook(() => useLiveUpdates(), { wrapper })
+    act(() => FakeEventSource.instances[0].connected())
+
+    // pings keep it alive
+    act(() => vi.advanceTimersByTime(SILENCE_MS - 5_000))
+    act(() => FakeEventSource.instances[0].ping())
+    act(() => vi.advanceTimersByTime(SILENCE_MS - 5_000))
+    expect(result.current).toBe('connected')
+    expect(FakeEventSource.instances).toHaveLength(1)
+
+    // then nothing more
+    act(() => vi.advanceTimersByTime(20_000))
+    expect(result.current).toBe('disconnected')
+    expect(FakeEventSource.instances).toHaveLength(2)
+    expect(FakeEventSource.instances[0].readyState).toBe(FakeEventSource.CLOSED)
   })
 })
