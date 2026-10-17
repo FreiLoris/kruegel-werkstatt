@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -58,8 +59,11 @@ public abstract class BaseEntity {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    // set by auditing on every update – only a real change of the entry counts for the version
+    // (otherwise e.g. a new order alone would make an open edit dialog conflict)
     @LastModifiedDate
     @Column(nullable = false)
+    @OptimisticLock(excluded = true)
     private Instant updatedAt;
 
     @CreatedBy
@@ -67,6 +71,7 @@ public abstract class BaseEntity {
     private UUID createdBy;
 
     @LastModifiedBy
+    @OptimisticLock(excluded = true)
     private UUID updatedBy;
 
     public UUID getId() {

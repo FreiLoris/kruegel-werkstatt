@@ -4,6 +4,7 @@ import ch.kruegel.workshop.common.persistence.BaseEntity;
 import ch.kruegel.workshop.common.persistence.Sortable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import org.hibernate.annotations.OptimisticLock;
 
 /**
  * A lift (vehicle hoist). Appointments are assigned to a lift; in the day view and on
@@ -22,6 +23,8 @@ public class Lift extends BaseEntity implements Sortable {
 
     private boolean active;
 
+    // the order is no edit of the entry: reordering must not make an open edit dialog conflict
+    @OptimisticLock(excluded = true)
     private int sortOrder;
 
     protected Lift() {
