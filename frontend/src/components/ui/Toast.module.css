@@ -66,8 +66,8 @@
 .close {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--touch-min);
+  height: var(--touch-min);
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
