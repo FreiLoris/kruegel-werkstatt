@@ -55,6 +55,17 @@ describe('presenceOn', () => {
     expect(away.map((a) => a.reason)).toEqual(['Krank (Vormittag)', 'Kurs (Nachmittag)'])
   })
 
+  it('two absences for some hours (doctor until 08:30, course from 16:00) = in between, with the times', () => {
+    const hours = [
+      entry('e', 'SICK', { id: 'doctor', endTime: '08:30:00' } as Partial<Absence>),
+      entry('e', 'TRAINING', { id: 'course', startTime: '16:00:00' } as Partial<Absence>),
+    ]
+
+    const { present } = presenceOn(team, hours, DAY, true)
+
+    expect(present.find((p) => p.employee === erich)).toMatchObject({ part: 'full', label: 'ausser bis 08:30, ab 16:00' })
+  })
+
   it('on a weekend or holiday nobody with regular hours is expected – flexible ones entered still count', () => {
     expect(presenceOn(team, [entry('e', 'VACATION')], DAY, false)).toEqual({ present: [], away: [] })
     expect(names(presenceOn(team, [entry('o', 'PRESENT')], DAY, false).present)).toEqual(['Büro'])

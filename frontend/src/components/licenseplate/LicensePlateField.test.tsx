@@ -41,6 +41,8 @@ describe('LicensePlateField', () => {
     render(<LicensePlateField value="ZH 1" onChange={vi.fn()} error="gehört bereits zu einem anderen Ersatzwagen" />)
 
     expect(screen.getByRole('alert').textContent).toBe('gehört bereits zu einem anderen Ersatzwagen')
+    // marked like every field with an error: red frame, read out by screen readers
+    expect(screen.getByLabelText(/Nummer/).getAttribute('aria-invalid')).toBe('true')
   })
 })
 

@@ -302,6 +302,10 @@ class TaskApiTest {
 
         assertThat(mvc.get().uri("/api/tasks/without-appointment").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(id);
         assertThat(mvc.get().uri("/api/tasks?from=2026-10-01&to=2026-10-31").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        // done without an appointment (e.g. at the counter): no longer waiting for one
+        String done = idOf(send("POST", "/api/tasks", noDate.formatted("")));
+        send("PUT", "/api/tasks/" + done + "/status", "{ \"status\": \"DONE\" }");
+        assertThat(mvc.get().uri("/api/tasks/without-appointment").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(id);
 
         // planned by editing it …
         assertThat(send("PUT", "/api/tasks/" + id, body("\"version\": 0, " + liftJson(lift1))))

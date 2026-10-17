@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { CANTONS, COUNTRIES, composePlate, parsePlate, type ParsedPlate } from '../../lib/licensePlate'
 import { Select, TextField } from '../ui/Fields'
 import { LicensePlate } from './LicensePlate'
@@ -27,7 +27,6 @@ interface LicensePlateFieldProps {
  * a plate and is reported as '' – the component is mounted fresh for every dialog (`key`).
  */
 export function LicensePlateField({ value, onChange, error }: LicensePlateFieldProps) {
-  const id = useId()
   const [plate, setPlate] = useState<ParsedPlate>(() =>
     value ? parsePlate(value) : { kind: 'swiss', canton: DEFAULT_CANTON, number: '' },
   )
@@ -47,7 +46,7 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
   }
 
   return (
-    <fieldset className={styles.field} aria-describedby={error ? `${id}-error` : undefined}>
+    <fieldset className={styles.field}>
       <legend className={styles.legend}>Kennzeichen</legend>
       <div className={styles.parts}>
         <Select label="Land" value={country} onChange={(e) => changeCountry(e.target.value)}>
@@ -78,6 +77,8 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
               placeholder="z. B. 123456"
               maxLength={6}
               value={plate.number}
+              // the server's message at the field that holds the number: red frame and aria-invalid like every field
+              error={error}
               // Only digits – Swiss plates have no letters after the canton
               onChange={(e) => update({ ...plate, number: e.target.value.replace(/\D/g, '') })}
             />
@@ -91,6 +92,7 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
             placeholder="z. B. M AB 1234"
             maxLength={15}
             value={plate.number}
+            error={error}
             onChange={(e) => update({ ...plate, number: e.target.value.toUpperCase() })}
           />
         )}
@@ -101,6 +103,7 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
             autoComplete="off"
             maxLength={20}
             value={plate.text}
+            error={error}
             onChange={(e) => update({ kind: 'other', text: e.target.value.toUpperCase() })}
           />
         )}
@@ -109,11 +112,6 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
       <div className={styles.preview}>
         {composed ? <LicensePlate text={composed} size="lg" /> : <span className="muted">Vorschau erscheint mit der Nummer</span>}
       </div>
-      {error && (
-        <p id={`${id}-error`} className={styles.error} role="alert">
-          {error}
-        </p>
-      )}
     </fieldset>
   )
 }
