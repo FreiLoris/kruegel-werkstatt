@@ -1,14 +1,18 @@
 package ch.kruegel.workshop.common.web;
 
 import ch.kruegel.workshop.common.person.PersonDirectory;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+
+import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,6 +116,18 @@ class GlobalExceptionHandlerTest {
                 .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(response).bodyJson().extractingPath("$.title").isEqualTo("Nicht gespeichert");
         assertThat(response).bodyText().doesNotContain("duplicate key");
+    }
+
+    @Test
+    void theLogNamesTheConstraintButNotTheRow() {
+        // fictitious row – PostgreSQL puts the whole row into its message
+        SQLException sql = new SQLException("new row violates check constraint. Failing row contains (Huber, 079 000 00 00)", "23514");
+        DataIntegrityViolationException ex = new DataIntegrityViolationException("could not execute statement",
+                new ConstraintViolationException("could not execute statement", sql, "customer_name_check"));
+
+        assertThat(GlobalExceptionHandler.constraintOf(ex))
+                .isEqualTo("customer_name_check (SQLState 23514)")
+                .doesNotContain("Huber");
     }
 
     @Test
