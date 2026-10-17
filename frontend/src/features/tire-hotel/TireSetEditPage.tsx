@@ -17,8 +17,8 @@ import { formFromSet, tireSetErrors, toTireSetRequest, type TireSetForm } from '
 export function TireSetEditPage() {
   const { id } = useParams()
   const set = useTireSet(id)
-  if (set.error) return <p className="muted">Satz konnte nicht geladen werden: {set.error.message}</p>
-  if (!set.data) return <p className="muted">Lade …</p>
+  // the data wins: a failed background refetch (Wi-Fi gap) must not unmount the form and lose the input
+  if (!set.data) return <p className="muted">{set.error ? `Satz konnte nicht geladen werden: ${set.error.message}` : 'Lade …'}</p>
   return <TireSetEdit key={set.data.id} set={set.data} />
 }
 
@@ -27,6 +27,8 @@ function TireSetEdit({ set }: { set: TireSet }) {
   const navigate = useNavigate()
   const toast = useToast()
   const save = useSaveTireSet()
+  // the version as it was when the form opened (conventions) – a live update must not hide a change from another device
+  const [openedVersion] = useState(set.version)
   const [form, setForm] = useState<TireSetForm>(() => formFromSet(set))
   const [vehicle, setVehicle] = useState<VehicleChoice>(set.vehicle ? { kind: 'vehicle', vehicle: set.vehicle } : { kind: 'open' })
   const errors = tireSetErrors(form, today)
@@ -34,7 +36,7 @@ function TireSetEdit({ set }: { set: TireSet }) {
   function submit() {
     if (Object.keys(errors).length > 0) return
     save.mutate(
-      { id: set.id, request: toTireSetRequest({ customer: set.customer, vehicle }, form, set.version) },
+      { id: set.id, request: toTireSetRequest({ customer: set.customer, vehicle }, form, openedVersion) },
       {
         onSuccess: () => {
           toast.success('Gespeichert')

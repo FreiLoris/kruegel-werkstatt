@@ -26,10 +26,11 @@ export function TaskTireBookingPage() {
   const { id } = useParams()
   const task = useTask(id)
   const tires = useTaskTires(id)
-  const error = task.error ?? tires.error
-
-  if (error) return <p className="muted">Konnte nicht geladen werden: {error.message}</p>
-  if (!task.data || !tires.data) return <p className="muted">Lade …</p>
+  // the data wins: a failed background refetch (any tyre hotel change reloads it) keeps the depths typed here
+  if (!task.data || !tires.data) {
+    const error = (!task.data && task.error) || (!tires.data && tires.error)
+    return <p className="muted">{error ? `Konnte nicht geladen werden: ${error.message}` : 'Lade …'}</p>
+  }
   return <Booking task={task.data} tires={tires.data} />
 }
 

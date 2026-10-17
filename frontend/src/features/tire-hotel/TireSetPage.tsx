@@ -1,7 +1,7 @@
 import { ArrowLeft, FileText, LogOut, MapPin, Pencil, Ruler, Tag } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { reasonOf } from '../../api/errors'
+import { ApiError, reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
@@ -51,8 +51,10 @@ function placeOf(event: TireSetEvent): string | null {
 export function TireSetPage() {
   const { id } = useParams()
   const set = useTireSet(id)
-  if (set.error) return <p className="muted">Satz konnte nicht geladen werden: {set.error.message}</p>
-  if (!set.data) return <p className="muted">Lade …</p>
+  // the data wins over a failed background refetch – open measure/move dialogs keep their input;
+  // only "not found" (deleted on another device) replaces the page
+  const deleted = set.error instanceof ApiError && set.error.problem.status === 404
+  if (!set.data || deleted) return <p className="muted">{set.error ? `Satz konnte nicht geladen werden: ${set.error.message}` : 'Lade …'}</p>
   return <TireSetDetail set={set.data} />
 }
 
