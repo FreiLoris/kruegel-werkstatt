@@ -56,3 +56,7 @@
   height: 1.25rem;
   flex-shrink: 0;
 }
+
+.choices {
+  text-align: center;
+}

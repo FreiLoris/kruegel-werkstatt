@@ -91,3 +91,22 @@
   opacity: 0;
   cursor: inherit;
 }
+
+/* same as the conflict box in "Auftrag bearbeiten" */
+.conflict {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-surface-raised);
+}
+
+.conflict p {
+  margin: 0;
+}
+
+.conflictActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

@@ -12,6 +12,7 @@ import { navigation } from './navigation'
 import { PersonMenu } from './person/PersonMenu'
 import { PersonPicker } from './person/PersonPicker'
 import { useDevicePerson } from './person/useDevicePerson'
+import { UnsavedChangesGuard } from './UnsavedChangesGuard'
 
 /**
  * Frame of every page: header with navigation, below it the page content.
@@ -67,12 +68,13 @@ export function AppLayout() {
         <nav className={styles.nav} aria-label="Hauptnavigation">
           <MainLinks />
         </nav>
-        <PersonMenu status={device} />
+        <PersonMenu status={device} active={active} />
         <LiveIndicator status={liveStatus} />
       </header>
       <main className={styles.content}>
         {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>
+      <UnsavedChangesGuard />
     </>
   )
 }

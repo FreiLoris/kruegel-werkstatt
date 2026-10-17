@@ -1,7 +1,8 @@
-import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { ArrowLeft, ArrowRight, Save, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
+import { useUnsavedChanges } from '../../../app/useUnsavedChanges'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
@@ -18,6 +19,7 @@ import { CustomerStep } from './CustomerStep'
 import { ReviewStep } from './ReviewStep'
 import { SavedStep } from './SavedStep'
 import styles from './TaskWizardPage.module.css'
+import { clearDraft, loadDraft, storeDraft, type WizardDraft } from './wizardDraft'
 import type { CustomerStepValue } from './wizardState'
 
 const STEPS = ['Kunde & Fahrzeug', 'Termin & Arbeiten', 'Prüfen & speichern']
@@ -31,17 +33,21 @@ const REVIEW_BEFORE_SAVE_MS = 400
 
 /**
  * New task in three steps, then a clear confirmation. All input lives here, so going back and
- * forth loses nothing; "Weiteren Auftrag erfassen" starts empty again.
+ * forth loses nothing; "Weiteren Auftrag erfassen" starts empty again. Leaving with input asks first,
+ * and after a reload the started task is offered again (UX G-01).
  */
 export function TaskWizardPage() {
   const [step, setStep] = useState<Step>(1)
   const [customerStep, setCustomerStep] = useState<CustomerStepValue>(EMPTY_CUSTOMER_STEP)
   const [params] = useSearchParams()
   // dragged open in the day view → date, time, end and lift are already there
-  const [appointment, setAppointment] = useState<AppointmentForm>(() => {
+  const [startAppointment] = useState<AppointmentForm>(() => {
     const slot = slotFromUrl(params)
     return slot ? withSlot(EMPTY_APPOINTMENT, slot, new Set()) : EMPTY_APPOINTMENT
   })
+  const [appointment, setAppointment] = useState<AppointmentForm>(startAppointment)
+  // a task started before a reload – offered, not filled in by itself: it may be someone else's
+  const [draft, setDraft] = useState<WizardDraft | null>(loadDraft)
   const [showRequired, setShowRequired] = useState(false)
   const [courtesyCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
   const [saved, setSaved] = useState<{ task: AnyTask; booking: Booking | null } | null>(null)
@@ -52,6 +58,26 @@ export function TaskWizardPage() {
   const saving = create.isPending || createWithCar.isPending
   const toast = useToast()
   const once = useSingleFlight()
+  const dirty =
+    saved === null && (customerStep.customer !== null || courtesyCar.wanted || JSON.stringify(appointment) !== JSON.stringify(startAppointment))
+  useUnsavedChanges(dirty)
+
+  // while the old draft is still offered it stays stored – the empty form must not overwrite it
+  useEffect(() => {
+    if (draft) return
+    if (dirty) storeDraft({ step, customerStep, appointment, courtesyCar })
+    else clearDraft()
+  }, [draft, dirty, step, customerStep, appointment, courtesyCar])
+
+  function continueDraft(from: WizardDraft) {
+    setCustomerStep(from.customerStep)
+    setAppointment(from.appointment)
+    setCourtesyCar(from.courtesyCar)
+    // the review needs the checks of step 2 first
+    setStep(from.step === 3 ? 2 : from.step)
+    setDraft(null)
+  }
+
   // "Auftrag speichern" sits where "Weiter" was: the second click of a double click must not save
   // without the review being seen (UX G-03)
   const reviewShownAt = useRef(0)
@@ -148,6 +174,20 @@ export function TaskWizardPage() {
   return (
     <>
       <h1>Neuer Auftrag</h1>
+      {draft && (
+        <div className={styles.draft} role="status">
+          <p>
+            Ein angefangener Auftrag ist noch da
+            {draft.customerStep.customer ? ` (${draft.customerStep.customer.displayName})` : ''}. Weitermachen?
+          </p>
+          <Button variant="primary" onClick={() => continueDraft(draft)}>
+            Weitermachen
+          </Button>
+          <Button icon={Trash2} onClick={() => setDraft(null)}>
+            Verwerfen
+          </Button>
+        </div>
+      )}
       <ol className={styles.steps} aria-label="Schritte">
         {STEPS.map((title, index) => (
           <li

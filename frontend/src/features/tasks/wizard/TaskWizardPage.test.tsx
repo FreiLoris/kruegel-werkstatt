@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ToastContext } from '../../../components/ui/toastContext'
@@ -42,6 +42,8 @@ function renderWizard() {
 beforeEach(() => {
   // jsdom has no scrolling
   window.scrollTo = vi.fn()
+  // the half-typed task is kept per tab – every test starts without one
+  sessionStorage.clear()
 })
 
 describe('TaskWizardPage – on to step 2 by itself', () => {
@@ -81,5 +83,33 @@ describe('TaskWizardPage – on to step 2 by itself', () => {
     // the choice is still there, so "Weiter" works
     fireEvent.click(screen.getByRole('button', { name: 'Weiter' }))
     expect(screen.getByText('Schritt 2')).toBeTruthy()
+  })
+})
+
+describe('TaskWizardPage – a started task survives a reload (UX G-01)', () => {
+  it('offers the started task again – "Weitermachen" brings it back', () => {
+    renderWizard()
+    fireEvent.click(screen.getByRole('button', { name: 'Fahrzeug' }))
+    cleanup()
+
+    renderWizard()
+
+    expect(screen.getByRole('status').textContent).toContain('Beispiel Anna')
+    fireEvent.click(screen.getByRole('button', { name: 'Weitermachen' }))
+    expect(screen.getByText('Schritt 2')).toBeTruthy()
+    expect(screen.getByText('Beispiel Anna')).toBeTruthy()
+  })
+
+  it('"Verwerfen" starts empty and forgets it', () => {
+    renderWizard()
+    fireEvent.click(screen.getByRole('button', { name: 'Fahrzeug' }))
+    cleanup()
+    renderWizard()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Verwerfen' }))
+    cleanup()
+    renderWizard()
+
+    expect(screen.queryByRole('button', { name: 'Weitermachen' })).toBeNull()
   })
 })
