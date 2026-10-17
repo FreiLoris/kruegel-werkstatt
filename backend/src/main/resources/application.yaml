@@ -81,3 +81,10 @@ management:
     health:
       # Internal tool: always show details (e.g. database status).
       show-details: always
+
+# Hibernate logs every constraint violation with PostgreSQL's detail "Failing row contains (…)" –
+# the whole row, e.g. a customer's name and phone number. GlobalExceptionHandler logs the constraint
+# name instead; real SQL errors still reach the log as exceptions.
+logging:
+  level:
+    org.hibernate.orm.jdbc.error: error

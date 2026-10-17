@@ -2,6 +2,7 @@ package ch.kruegel.workshop.common.web;
 
 import ch.kruegel.workshop.common.person.NoPersonSelectedException;
 import ch.kruegel.workshop.common.persistence.StaleVersionException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Translates exceptions into uniform error responses following RFC 9457 ("Problem Details").
@@ -109,7 +112,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     ProblemDetail dataConflict(DataIntegrityViolationException ex) {
-        log.warn("Database constraint violated: {}", ex.getMostSpecificCause().getMessage());
+        // Only the constraint, not the database message: PostgreSQL adds "Failing row contains (…)" –
+        // the whole row, e.g. a customer's name and phone number
+        log.warn("Database constraint violated: {}", constraintOf(ex));
         return problem(HttpStatus.CONFLICT, "Nicht gespeichert",
                 "Die Änderung passt nicht zu den vorhandenen Daten. Bitte neu laden und erneut versuchen.");
     }
@@ -124,6 +129,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Unexpected error", ex);
         return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Unerwarteter Fehler",
                 "Ein unerwarteter Fehler ist aufgetreten.");
+    }
+
+    /** "customer_name_check (SQLState 23514)" – what was violated, without any data */
+    static String constraintOf(Throwable ex) {
+        String constraint = null;
+        String sqlState = null;
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof ConstraintViolationException violation && violation.getConstraintName() != null) {
+                constraint = violation.getConstraintName();
+            }
+            if (t instanceof SQLException sql && sql.getSQLState() != null) {
+                sqlState = sql.getSQLState();
+            }
+        }
+        return Objects.toString(constraint, "unknown constraint") + " (SQLState " + Objects.toString(sqlState, "unknown") + ")";
     }
 
     private static ProblemDetail invalidInput(List<FieldError> errors) {
