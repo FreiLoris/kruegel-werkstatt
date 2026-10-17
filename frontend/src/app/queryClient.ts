@@ -8,6 +8,16 @@ import { resetChoice } from '../lib/devicePerson'
  * TanStack Query takes care of loading, caching and reloading server data.
  * Components only ask `useQuery(...)` – no hand-made useEffect/useState juggling.
  */
+/**
+ * A failed attempt is retried once (e.g. short Wi-Fi drop-out) – but not when the server clearly
+ * answered "no" (4xx: not found, not allowed …): asking again gives the same answer. Status 0 is
+ * no answer at all (network down, see api/client.ts) – that one is worth a second try.
+ */
+export function shouldRetry(failureCount: number, error: Error): boolean {
+  const refused = error instanceof ApiError && error.problem.status > 0 && error.problem.status < 500
+  return failureCount < 1 && !refused
+}
+
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => {
@@ -22,9 +32,7 @@ export const queryClient = new QueryClient({
       // Data counts as fresh for 30 s. Changes from other devices additionally arrive
       // immediately via live update.
       staleTime: 30_000,
-      // A failed attempt is retried once (e.g. short Wi-Fi drop-out) – but not when the server
-      // clearly answered "no" (4xx: not found, not allowed …): asking again gives the same answer.
-      retry: (failureCount, error) => failureCount < 1 && !(error instanceof ApiError && error.problem.status < 500),
+      retry: shouldRetry,
     },
   },
 })

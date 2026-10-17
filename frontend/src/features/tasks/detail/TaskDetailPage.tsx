@@ -1,6 +1,7 @@
 import { ArrowLeft, CalendarX, CircleDot, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { ApiError } from '../../../api/errors'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
@@ -38,8 +39,12 @@ export function TaskDetailPage() {
   const { id } = useParams()
   const task = useTask(id)
 
-  if (task.error) return <p className="muted">Auftrag konnte nicht geladen werden: {task.error.message}</p>
-  if (!task.data) return <p className="muted">Lade Auftrag …</p>
+  // the data wins over a failed background refetch (Wi-Fi gap) – open dialogs keep their input;
+  // only "not found" (deleted on another device) replaces the page
+  const deleted = task.error instanceof ApiError && task.error.problem.status === 404
+  if (!task.data || deleted) {
+    return <p className="muted">{task.error ? `Auftrag konnte nicht geladen werden: ${task.error.message}` : 'Lade Auftrag …'}</p>
+  }
   return <TaskDetail task={task.data} />
 }
 
@@ -83,9 +88,14 @@ function TaskDetail({ task }: { task: AnyTask }) {
       }))
     changeStatus.mutate(
       { id: task.id, status },
-      { onError: (error) => toast.error(`Status konnte nicht geändert werden: ${error.message}`) },
+      {
+        // only once the status is saved – a failed change must not lead on (and its toast would be lost)
+        onSuccess: () => {
+          if (book) navigate(`/tasks/${task.id}/tires`)
+        },
+        onError: (error) => toast.error(`Status konnte nicht geändert werden: ${error.message}`),
+      },
     )
-    if (book) navigate(`/tasks/${task.id}/tires`)
   }
 
   async function deleteTask() {

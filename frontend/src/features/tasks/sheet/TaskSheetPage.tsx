@@ -25,21 +25,30 @@ export function TaskSheetPage() {
   const navigate = useNavigate()
   const task = useTask(id)
   const company = useCompany()
-  const { data: employees } = useAllEmployees()
-  const { data: lifts } = useAllLifts()
-  const { data: serviceItems } = useAllServiceItems()
+  const employeeList = useAllEmployees()
+  const liftList = useAllLifts()
+  const serviceItemList = useAllServiceItems()
   const bookings = useTaskBookings(id ?? '')
-  const { data: cars } = useAllCourtesyCars()
-  const { data: insurances } = useInsurances()
-  const { data: stations } = useInspectionStations()
+  const carList = useAllCourtesyCars()
+  const insuranceList = useInsurances()
+  const stationList = useInspectionStations()
   const tireChange = !!task.data?.tireChange
   const tires = useTaskTires(id, tireChange)
+  const employees = employeeList.data
+  const lifts = liftList.data
+  const serviceItems = serviceItemList.data
+  const cars = carList.data
+  const insurances = insuranceList.data
+  const stations = stationList.data
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
-  const error = task.error ?? company.error ?? tires.error
   // all lists loaded – otherwise a quick print would say "Mechaniker: noch offen" although one is assigned
   const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars && insurances && stations && (!tireChange || tires.data)
+  // any list that could not be loaded at all – otherwise the page would wait forever; a failed
+  // background refetch keeps the sheet that is shown
+  const lists = [task, company, employeeList, liftList, serviceItemList, bookings, carList, insuranceList, stationList, ...(tireChange ? [tires] : [])]
+  const error = lists.find((list) => list.error && !list.data)?.error
   // the car still out (or not yet picked up) – a returned one is history, not for the mechanic
   const booking = bookings.data?.find((b) => !b.returnedAt)
   const car = booking && cars?.find((c) => c.id === booking.courtesyCarId)
@@ -59,7 +68,7 @@ export function TaskSheetPage() {
           Drucken
         </Button>
       </div>
-      {error ? (
+      {!ready && error ? (
         <p className={styles.message}>Auftrag konnte nicht geladen werden: {error.message}</p>
       ) : !ready ? (
         <p className={styles.message}>Lade Auftragszettel …</p>
