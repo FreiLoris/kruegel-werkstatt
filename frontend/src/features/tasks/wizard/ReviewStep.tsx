@@ -93,7 +93,7 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
             ['Kommt früher', planned && f.arrivesEarlier ? formatLocalDateTime(`${f.arrivesEarlierDate}T${f.arrivesEarlierTime}`) : null],
             ['Fertig bis', planned && f.readyBy ? formatLocalDateTime(`${f.readyByDate}T${f.readyByTime}`) : null],
             ['Wartekunde', planned && f.waitingCustomer ? 'Ja' : null],
-            ['Mechaniker', employees?.find((e) => e.id === f.mechanicId)?.name ?? 'noch offen'],
+            ['Mechaniker', f.mechanicId ? (employees?.find((e) => e.id === f.mechanicId)?.name ?? '(nicht mehr aktiv)') : 'noch offen'],
             ['Lift', planned ? (lifts?.find((l) => l.id === f.liftId)?.name ?? 'noch offen') : null],
           ]}
         />

@@ -3,6 +3,7 @@ import type { Customer, Vehicle } from '../../customers/customerSearchApi'
 import type { AnyTask, Task } from '../taskApi'
 import {
   appointmentErrors,
+  appointmentMinutes,
   customerStepFromTask,
   EMPTY_APPOINTMENT,
   formFromTask,
@@ -90,6 +91,14 @@ describe('withDate', () => {
 
     expect(withDate(twoHours, '2026-10-20', '13:30', NO_HOLIDAYS)).toMatchObject({ endDate: '2026-10-20', endTime: '15:30' })
     expect(withDate(twoHours, '2026-10-20', '23:00', NO_HOLIDAYS)).toMatchObject({ endDate: '2026-10-21', endTime: '01:00' })
+  })
+
+  it('clearing the time while typing keeps a multi-day end – it does not shrink to one hour', () => {
+    const untilThursday = { ...THURSDAY, date: '2026-10-13', endDate: '2026-10-15', endTime: '17:00' }
+
+    const cleared = withDate(untilThursday, '2026-10-13', '', NO_HOLIDAYS)
+    expect(cleared).toMatchObject({ time: '', endDate: '2026-10-15', endTime: '17:00' })
+    expect(withDate(cleared, '2026-10-13', '09:00', NO_HOLIDAYS)).toMatchObject({ time: '09:00', endDate: '2026-10-15', endTime: '17:00' })
   })
 
   it('the first date gives the default hour, an invalid end is replaced by it', () => {
@@ -396,5 +405,16 @@ describe('an order without appointment', () => {
     const saved = { date: null, time: null, endAt: null, arrivesEarlier: null, readyBy: null, mfkAppointment: null, serviceItemIds: [], parts: null } as unknown as AnyTask
 
     expect(formFromTask(saved)).toMatchObject({ noAppointment: true, date: '', time: '08:00', endDate: '', endTime: '09:00' })
+  })
+})
+
+describe('appointmentMinutes', () => {
+  it('the duration as entered', () => {
+    expect(appointmentMinutes(THURSDAY)).toBe(60)
+  })
+
+  it('a cleared time with an end does not throw – the page would break and lose the wizard', () => {
+    expect(appointmentMinutes({ ...THURSDAY, time: '' })).toBeNull()
+    expect(appointmentMinutes({ ...THURSDAY, endTime: '' })).toBeNull()
   })
 })

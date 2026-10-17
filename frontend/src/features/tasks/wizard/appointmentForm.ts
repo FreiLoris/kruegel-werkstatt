@@ -162,6 +162,15 @@ export function durationMinutes(form: AppointmentForm): number {
   return minutes > 0 ? minutes : DEFAULT_DURATION_MINUTES
 }
 
+/**
+ * Minutes from start to end as entered, null while one part is missing – never throws (it is shown
+ * while typing: a cleared time must not break the page and lose the whole wizard).
+ */
+export function appointmentMinutes(form: AppointmentForm): number | null {
+  if (!form.date || !form.time || !form.endDate || !form.endTime) return null
+  return minutesBetween(`${form.date}T${form.time}`, `${form.endDate}T${form.endTime}`)
+}
+
 /** The end for a start, keeping the duration – without a date only the time can be shown. */
 function endAfter(date: string, time: string, minutes: number): Pick<AppointmentForm, 'endDate' | 'endTime'> {
   if (!time) return { endDate: date, endTime: '' }
@@ -175,6 +184,11 @@ function endAfter(date: string, time: string, minutes: number): Pick<Appointment
  * ("kommt früher", ready by, MFK on the same day) move along; dates typed by hand stay.
  */
 export function withDate(form: AppointmentForm, date: string, time: string, holidays: ReadonlySet<string>): AppointmentForm {
+  // A field cleared while typing (backspace) is not a new appointment yet: end and derived dates stay,
+  // otherwise a multi-day appointment would shrink to the default duration when the value is typed again
+  if ((!date || !time) && form.date && form.time) return { ...form, date, time }
+  // the start was incomplete until now: an end that is there stays where it is (its duration is unknown)
+  if ((!form.date || !form.time) && form.endDate && form.endTime) return { ...form, date, time }
   const old = form.date
   // "kommt früher" still at its preset (or not set yet) → it gets the preset of the new appointment
   const oldEarlier = old ? defaultArrivesEarlier(old, form.time, holidays) : null
