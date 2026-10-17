@@ -61,9 +61,16 @@ public class LabelFormatService {
         events.publishEvent(new DataChanged(TOPIC));
     }
 
+    /** One label per wheel */
+    static final int LABELS_PER_SET = 4;
+
     /** User-facing message, hence German */
     private static LabelFormat.Layout checked(LabelFormatRequest request) {
         LabelFormat.Layout layout = request.layout();
+        // a set gets four labels (VL, VR, HL, HR) – with fewer per sheet the rear ones would silently be missing
+        if (layout.columns() * layout.rows() < LABELS_PER_SET) {
+            throw new InvalidInputException("rows", "Mindestens " + LABELS_PER_SET + " Etiketten pro Bogen (Spalten × Zeilen)");
+        }
         if (!layout.fitsA4()) {
             throw new InvalidInputException("widthMm", "Die Etiketten gehen über den A4-Bogen hinaus – Masse prüfen");
         }
