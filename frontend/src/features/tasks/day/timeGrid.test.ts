@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { MfkSlot } from '../mfk/mfkSlots'
 import type { Task } from '../taskApi'
-import { blockingIn, movedTo, placeInColumn, placeWithMfk, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
+import { blockingIn, draggedTo, isCompleteSlot, movedTo, placeInColumn, placeWithMfk, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
 
 const DAY = '2026-10-15'
 const task = (id: string, time: string, endAt: string, date = DAY) =>
@@ -101,5 +101,26 @@ describe('blockingIn', () => {
     expect(blockingIn(placed, 600, 660)).toBeUndefined()
     expect(blockingIn(placed, 570, 660)?.task.id).toBe('a')
     expect(blockingIn(placed, 570, 660, 'a')).toBeUndefined()
+  })
+})
+
+describe('draggedTo', () => {
+  it('a click without moving is no drag – it opens the hour, also low in a quarter hour', () => {
+    // 8:10 rounds up to 8:15 – as a click that would have been a 15-minute appointment
+    expect(selection('2026-10-15', 480, draggedTo(480, 490, false))).toMatchObject({ time: '08:00', endAt: '2026-10-15T09:00' })
+  })
+
+  it('a real drag ends on the quarter hour under the pointer', () => {
+    expect(draggedTo(480, 530, true)).toBe(525)
+  })
+})
+
+describe('isCompleteSlot', () => {
+  it('only complete start and end – a form may pass empty fields', () => {
+    expect(isCompleteSlot('09:00', '2026-10-15T10:00')).toBe(true)
+    expect(isCompleteSlot('09:00:00', '2026-10-15T10:00:00')).toBe(true)
+    expect(isCompleteSlot('', '2026-10-15T10:00')).toBe(false)
+    expect(isCompleteSlot('09:00', '2026-10-15T')).toBe(false)
+    expect(isCompleteSlot('09:00', 'T10:00')).toBe(false)
   })
 })
