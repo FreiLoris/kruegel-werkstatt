@@ -2,7 +2,7 @@ import { Pencil } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Button } from '../../../components/ui/Button'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
-import { formatDate, formatDuration, minutesBetween } from '../../../lib/format'
+import { formatDate, formatDuration } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
 import { useInsurances } from '../../insurances/insuranceApi'
@@ -11,6 +11,7 @@ import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { PARTS_STATUS, TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
 import {
   appointmentErrors,
+  appointmentMinutes,
   MFK_DURATIONS,
   mfkBeforeEnd,
   withArrivesEarlier,
@@ -67,7 +68,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
     set('serviceItemIds', on ? [...form.serviceItemIds, id] : form.serviceItemIds.filter((item) => item !== id))
   }
 
-  const duration = errors.endTime || !form.date ? null : minutesBetween(`${form.date}T${form.time}`, `${form.endDate}T${form.endTime}`)
+  const duration = errors.endTime ? null : appointmentMinutes(form)
 
   const mechanics = (employees ?? []).filter((e) => e.selectableAsMechanic)
   const activeLifts = (lifts ?? []).filter((l) => l.active)
@@ -217,6 +218,10 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   {m.name}
                 </option>
               ))}
+              {/* the chosen one stays visible, even if no longer choosable – it is what gets sent */}
+              {form.mechanicId && employees && !mechanics.some((m) => m.id === form.mechanicId) && (
+                <option value={form.mechanicId}>{employees.find((e) => e.id === form.mechanicId)?.name ?? ''} (nicht mehr aktiv)</option>
+              )}
             </Select>
             {/* a lift is taken for a time – without an appointment there is none to take */}
             <Select
@@ -231,6 +236,9 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   {l.name}
                 </option>
               ))}
+              {form.liftId && lifts && !activeLifts.some((l) => l.id === form.liftId) && (
+                <option value={form.liftId}>{lifts.find((l) => l.id === form.liftId)?.name ?? ''} (ausser Betrieb)</option>
+              )}
             </Select>
           </div>
         </Section>
@@ -443,7 +451,8 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
         <CapacityOverview
           picked={{ liftId: form.liftId || null, date: form.date, time: form.time, endAt: `${form.endDate}T${form.endTime}` }}
           holidays={holidays}
-          onPickDay={(date) => onChange(withDate(form, date, form.time, holidayDates))}
+          // picking a day IS planning – like dragging a slot, "Noch kein Termin" is off again
+          onPickDay={(date) => onChange({ ...withDate(form, date, form.time, holidayDates), noAppointment: false })}
           onPickSlot={(slot) => onChange(withSlot(form, slot, holidayDates))}
           taskId={taskId}
         />
