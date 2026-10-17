@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -27,3 +27,26 @@ export function useUpdateCustomer() {
     onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: [TOPIC] }), queryClient.invalidateQueries({ queryKey: ['tasks'] })]),
   })
 }
+
+/** Local customers no longer used – to use them again (settings). */
+export function useInactiveCustomers() {
+  return useQuery({
+    queryKey: [TOPIC, 'inactive'],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/customers/inactive', { signal })),
+  })
+}
+
+/** "Nicht mehr verwenden" / "Wieder verwenden" – only local customers (SwissGarage ones follow the import). */
+export function useSetCustomerActive() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) =>
+      dataOrThrow(
+        active
+          ? await api.POST('/api/customers/{id}/activate', { params: { path: { id } } })
+          : await api.POST('/api/customers/{id}/deactivate', { params: { path: { id } } }),
+      ),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+

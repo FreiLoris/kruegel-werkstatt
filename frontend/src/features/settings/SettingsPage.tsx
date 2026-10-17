@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { CompanySettings } from '../company/CompanySettings'
 import { CourtesyCarSettings } from '../courtesy-cars/CourtesyCarSettings'
+import { InactiveCustomers } from '../customers/CustomerSettings'
 import { InspectionStationSettings } from '../inspection-stations/InspectionStationSettings'
 import { InsuranceSettings } from '../insurances/InsuranceSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
@@ -52,6 +53,7 @@ export function SettingsPage() {
         <h2>Kunden und Fahrzeuge</h2>
         <p className="muted">Werden in SwissGarage gepflegt und von dort importiert.</p>
         <Link to="/settings/swissgarage">Zum SwissGarage-Import</Link>
+        <InactiveCustomers />
       </section>
     </>
   )

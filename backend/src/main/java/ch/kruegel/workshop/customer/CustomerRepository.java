@@ -16,6 +16,8 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     /** For the import: all customers of one source at once (one query instead of one per row). */
     List<Customer> findBySource(RecordSource source);
 
+    List<Customer> findBySourceAndActiveFalse(RecordSource source);
+
     /** For the import page: how many active customers come from this source. */
     long countBySourceAndActiveTrue(RecordSource source);
 }

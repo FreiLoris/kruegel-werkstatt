@@ -1,11 +1,13 @@
+import { PowerOff } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
-import { ApiError } from '../../api/errors'
+import { ApiError, reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
+import { useConfirm } from '../../components/ui/confirmContext'
 import styles from '../../components/ui/FormDialog.module.css'
 import { Select, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
-import { useCreateCustomer, useUpdateCustomer, type CustomerRequest } from './customerApi'
+import { useCreateCustomer, useSetCustomerActive, useUpdateCustomer, type CustomerRequest } from './customerApi'
 import type { Customer } from './customerSearchApi'
 
 type Field = Exclude<keyof CustomerRequest, 'version'>
@@ -71,6 +73,8 @@ export function CustomerDialog({
   const create = useCreateCustomer()
   const update = useUpdateCustomer()
   const save = customer ? update : create
+  const setActive = useSetCustomerActive()
+  const confirm = useConfirm()
   // the version as it was when the dialog opened – a live update must not hide a change from another device
   const [openedVersion] = useState(customer?.version)
   const [values, setValues] = useState<FormValues>(() => (customer ? valuesOf(customer) : { ...EMPTY, lastName: initialName.trim() }))
@@ -105,6 +109,27 @@ export function CustomerDialog({
     }
   }
 
+  /** E12: a walk-in customer no longer needed disappears from the search – back under Einstellungen */
+  async function stopUsing() {
+    if (!customer) return
+    const ok = await confirm({
+      title: `${customer.displayName} nicht mehr verwenden?`,
+      text: `${customer.displayName} erscheint nicht mehr in der Kundensuche. Bisherige Aufträge behalten den Kunden. Unter Einstellungen › Kunden und Fahrzeuge lässt sich das rückgängig machen.`,
+      confirmLabel: 'Nicht mehr verwenden',
+    })
+    if (!ok) return
+    setActive.mutate(
+      { id: customer.id, active: false },
+      {
+        onSuccess: () => {
+          toast.success(`${customer.displayName} wird nicht mehr verwendet`)
+          onClose()
+        },
+        onError: (error) => toast.error(`${customer.displayName}: ${reasonOf(error)}`),
+      },
+    )
+  }
+
   const text = (field: Field, label: string, props: Partial<Parameters<typeof TextField>[0]> = {}) => (
     <TextField
       label={label}
@@ -125,6 +150,11 @@ export function CustomerDialog({
       wide
       footer={
         <>
+          {customer?.source === 'LOCAL' && customer.active && (
+            <Button variant="ghost" icon={PowerOff} onClick={() => void stopUsing()} loading={setActive.isPending} className={styles.left}>
+              Nicht mehr verwenden
+            </Button>
+          )}
           <Button onClick={onClose}>Abbrechen</Button>
           <Button variant="primary" type="submit" form={formId} loading={save.isPending}>
             {customer ? 'Speichern' : 'Kunde erfassen'}

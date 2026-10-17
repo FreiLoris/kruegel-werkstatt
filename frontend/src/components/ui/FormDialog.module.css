@@ -19,3 +19,8 @@
   background: var(--color-surface-raised);
   font-size: var(--font-size-sm);
 }
+
+/* footer: an action on the left, apart from Abbrechen/Speichern */
+.left {
+  margin-right: auto;
+}
