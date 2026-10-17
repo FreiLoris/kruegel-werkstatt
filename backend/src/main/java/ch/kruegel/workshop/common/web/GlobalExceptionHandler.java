@@ -121,18 +121,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    ResponseEntity<ProblemDetail> dataConflict(DataIntegrityViolationException ex) {
+    ProblemDetail dataConflict(DataIntegrityViolationException ex) {
         if (RACE_STATES.contains(sqlStateOf(ex))) {
             log.warn("Database constraint violated: {}", constraintOf(ex));
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(problem(HttpStatus.CONFLICT, "Nicht gespeichert",
-                    "Die Änderung passt nicht zu den vorhandenen Daten. Bitte neu laden und erneut versuchen."));
+            return problem(HttpStatus.CONFLICT, "Nicht gespeichert",
+                    "Die Änderung passt nicht zu den vorhandenen Daten. Bitte neu laden und erneut versuchen.");
         }
         // the stack trace shows where – the messages with the row data stay out
         RuntimeException withoutData = new RuntimeException("Database constraint violated: " + constraintOf(ex));
         withoutData.setStackTrace(ex.getStackTrace());
         log.error("Unexpected database error", withoutData);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unerwarteter Fehler", "Ein unerwarteter Fehler ist aufgetreten."));
+        // the status of a returned ProblemDetail wins over @ResponseStatus (kept for the API description)
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Unerwarteter Fehler", "Ein unerwarteter Fehler ist aufgetreten.");
     }
 
     /** Spring's own errors (broken JSON, wrong method, wrong ID format, …) in German like ours. */
