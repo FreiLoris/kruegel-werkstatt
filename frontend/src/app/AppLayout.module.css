@@ -100,7 +100,7 @@
 /* Workshop TV: the page fills the screen, the navigation sits at the bottom (no strip below it) */
 .kiosk {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto 1fr auto;
   height: 100dvh;
   /* nothing to select or long-press on the TV */
   user-select: none;

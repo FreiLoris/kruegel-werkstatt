@@ -6,6 +6,7 @@ import { useActiveEmployees } from '../features/employees/employeeApi'
 import styles from './AppLayout.module.css'
 import { KioskClock } from './kiosk/KioskClock'
 import { useBackToDashboard } from './kiosk/useBackToDashboard'
+import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation } from './navigation'
@@ -43,6 +44,10 @@ export function AppLayout() {
     return (
       // data-kiosk: larger text and stronger contrast (tokens.css)
       <div className={styles.kiosk} data-kiosk>
+        {/* always there – the grid rows count on three children */}
+        <div>
+          <ConnectionLost status={liveStatus} />
+        </div>
         <main className={styles.kioskContent}>
           <Outlet />
         </main>
@@ -71,6 +76,7 @@ export function AppLayout() {
         <PersonMenu status={device} active={active} />
         <LiveIndicator status={liveStatus} />
       </header>
+      <ConnectionLost status={liveStatus} />
       <main className={styles.content}>
         {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>

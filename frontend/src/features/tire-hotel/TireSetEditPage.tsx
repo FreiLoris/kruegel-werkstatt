@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
+import { LoadFailed } from '../../components/ui/LoadFailed'
 import { StickyFooter, StickyFooterSpacer } from '../../components/ui/StickyFooter'
 import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
@@ -18,7 +19,10 @@ export function TireSetEditPage() {
   const { id } = useParams()
   const set = useTireSet(id)
   // the data wins: a failed background refetch (Wi-Fi gap) must not unmount the form and lose the input
-  if (!set.data) return <p className="muted">{set.error ? `Satz konnte nicht geladen werden: ${set.error.message}` : 'Lade …'}</p>
+  if (!set.data) {
+    if (!set.error) return <p className="muted">Lade …</p>
+    return <LoadFailed what="Satz" error={set.error} notFound={'Diesen Satz gibt es nicht (mehr) – vielleicht wurde er auf einem anderen Gerät gelöscht, oder der Link ist unvollständig.'} back={{ to: '/tires', label: 'Zum Pneuhotel' }} onRetry={() => void set.refetch()} />
+  }
   return <TireSetEdit key={set.data.id} set={set.data} />
 }
 

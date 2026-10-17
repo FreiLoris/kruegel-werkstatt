@@ -5,6 +5,7 @@ import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
 import { useUnsavedChanges } from '../../../app/useUnsavedChanges'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { LoadFailed } from '../../../components/ui/LoadFailed'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
 import { useToast } from '../../../components/ui/toastContext'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
@@ -15,6 +16,7 @@ import { AppointmentStep } from '../wizard/AppointmentStep'
 import { CustomerStep } from '../wizard/CustomerStep'
 import type { CustomerStepValue } from '../wizard/wizardState'
 import styles from './TaskEditPage.module.css'
+import { scrollToFirstError } from '../../../lib/scrollToFirstError'
 
 /** Edit a task: the same form as the wizard, with the buttons in a footer that is always visible. */
 export function TaskEditPage() {
@@ -26,7 +28,10 @@ export function TaskEditPage() {
 
   // the data wins: a failed background refetch (Wi-Fi gap) must not unmount the form and lose the input
   if (!task.data) {
-    return <p className="muted">{task.error ? `Auftrag konnte nicht geladen werden: ${task.error.message}` : 'Lade Auftrag …'}</p>
+    if (!task.error) return <p className="muted">Lade Auftrag …</p>
+    return (
+      <LoadFailed what="Auftrag" error={task.error} notFound={'Diesen Auftrag gibt es nicht (mehr) – vielleicht wurde er auf einem anderen Gerät gelöscht, oder der Link ist unvollständig.'} back={{ to: '/tasks', label: 'Zu den Terminen' }} onRetry={() => void task.refetch()} />
+    )
   }
   return (
     <TaskEditForm
@@ -69,14 +74,14 @@ function TaskEditForm({ task: current, onReload, latest }: { task: AnyTask; onRe
       return
     }
     if (Object.keys(appointmentErrors(appointment)).length > 0) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrollToFirstError()
       return
     }
     update.mutate(
       { id: task.id, request: toTaskRequest(customerStep, appointment, task.version) },
       {
-        onSuccess: () => {
-          toast.success('Auftrag gespeichert')
+        onSuccess: (saved) => {
+          toast.success(`Auftrag ${saved.taskNumber ?? saved.customer.displayName} gespeichert`)
           leave()
           back()
         },

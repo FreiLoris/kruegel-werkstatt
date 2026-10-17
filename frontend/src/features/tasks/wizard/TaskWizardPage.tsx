@@ -21,6 +21,7 @@ import { SavedStep } from './SavedStep'
 import styles from './TaskWizardPage.module.css'
 import { clearDraft, loadDraft, storeDraft, type WizardDraft } from './wizardDraft'
 import type { CustomerStepValue } from './wizardState'
+import { scrollToFirstError } from '../../../lib/scrollToFirstError'
 
 const STEPS = ['Kunde & Fahrzeug', 'Termin & Arbeiten', 'Prüfen & speichern']
 
@@ -114,7 +115,7 @@ export function TaskWizardPage() {
       reviewShownAt.current = Date.now()
       setStep(3)
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrollToFirstError()
     }
   }
 

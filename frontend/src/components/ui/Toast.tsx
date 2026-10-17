@@ -9,8 +9,8 @@ interface ToastEntry {
   kind: ToastKind
 }
 
-/** Display time – errors a bit longer so they can be read */
-const DURATION_MS: Record<ToastKind, number> = { success: 3000, info: 4000, error: 7000 }
+/** Display time – errors a bit longer so they can be read; 3 s was gone before a glance up (UX M-07) */
+const DURATION_MS: Record<ToastKind, number> = { success: 5000, info: 5000, error: 8000 }
 
 const ICONS = { success: CircleCheck, error: CircleAlert, info: Info }
 
