@@ -6,6 +6,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { Select, TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { useSingleFlight } from '../../lib/useSingleFlight'
 import styles from './SupplierDialog.module.css'
 import { ORDER_CHANNEL_LABEL, useDeleteSupplier, useSaveSupplier, type OrderChannel, type Supplier, type SupplierRequest } from './supplierApi'
 
@@ -38,6 +39,7 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
   const toast = useToast()
   const confirm = useConfirm()
   const save = useSaveSupplier()
+  const once = useSingleFlight()
   const remove = useDeleteSupplier()
   const [values, setValues] = useState(() => initialValues(supplier))
 
@@ -50,24 +52,27 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    save.mutate(
-      { id: supplier?.id, request: toRequest(values, supplier?.version) },
-      {
-        onSuccess: (saved) => {
-          toast.success(`${saved.name} gespeichert`)
-          onClose()
-        },
-        onError: (error) => {
-          // Only an existing supplier can have been changed elsewhere; a 409 while creating (same name
-          // created on another device at the same time) keeps the input and shows the server's reason
-          if (supplier && error instanceof ApiError && error.isVersionConflict) {
-            toast.error(`${supplier.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+    once((done) =>
+      save.mutate(
+        { id: supplier?.id, request: toRequest(values, supplier?.version) },
+        {
+          onSettled: done,
+          onSuccess: (saved) => {
+            toast.success(`${saved.name} gespeichert`)
             onClose()
-          } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
-            toast.error(`Speichern fehlgeschlagen: ${error.message}`)
-          }
+          },
+          onError: (error) => {
+            // Only an existing supplier can have been changed elsewhere; a 409 while creating (same name
+            // created on another device at the same time) keeps the input and shows the server's reason
+            if (supplier && error instanceof ApiError && error.isVersionConflict) {
+              toast.error(`${supplier.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+              onClose()
+            } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
+              toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+            }
+          },
         },
-      },
+      ),
     )
   }
 

@@ -1,11 +1,12 @@
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
 import { useToast } from '../../../components/ui/toastContext'
+import { useSingleFlight } from '../../../lib/useSingleFlight'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTaskWithBooking, type Booking } from '../../bookings/bookingApi'
 import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
@@ -24,6 +25,9 @@ const STEPS = ['Kunde & Fahrzeug', 'Termin & Arbeiten', 'Prüfen & speichern']
 type Step = 1 | 2 | 3
 
 const EMPTY_CUSTOMER_STEP: CustomerStepValue = { customer: null, vehicle: null }
+
+/** A click this soon after the review appeared belongs to the double click on "Weiter" */
+const REVIEW_BEFORE_SAVE_MS = 400
 
 /**
  * New task in three steps, then a clear confirmation. All input lives here, so going back and
@@ -47,6 +51,10 @@ export function TaskWizardPage() {
   const createWithCar = useCreateTaskWithBooking()
   const saving = create.isPending || createWithCar.isPending
   const toast = useToast()
+  const once = useSingleFlight()
+  // "Auftrag speichern" sits where "Weiter" was: the second click of a double click must not save
+  // without the review being seen (UX G-03)
+  const reviewShownAt = useRef(0)
 
   /** "Noch kein Termin" ticked: a courtesy car chosen before is dropped – it would be booked for a day nobody knows. */
   function changeAppointment(next: AppointmentForm) {
@@ -77,6 +85,7 @@ export function TaskWizardPage() {
     setShowRequired(true)
     if (appointmentComplete) {
       setServerErrors([])
+      reviewShownAt.current = Date.now()
       setStep(3)
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -84,6 +93,7 @@ export function TaskWizardPage() {
   }
 
   function save() {
+    if (Date.now() - reviewShownAt.current < REVIEW_BEFORE_SAVE_MS) return
     const request = toTaskRequest(customerStep, appointment)
     const period = periodOf(courtesyCar, appointment)
     const onSuccess = (task: AnyTask, booking: Booking | null) => {
@@ -102,14 +112,16 @@ export function TaskWizardPage() {
         toast.error(`Speichern fehlgeschlagen: ${error.message}`)
       }
     }
-    if (courtesyCar.wanted && period) {
-      createWithCar.mutate(
-        { task: request, courtesyCar: { courtesyCarId: courtesyCar.courtesyCarId, ...period, notes: courtesyCar.notes.trim() || undefined } },
-        { onSuccess: (result) => onSuccess(result.task, result.booking), onError },
-      )
-    } else {
-      create.mutate(request, { onSuccess: (task) => onSuccess(task, null), onError })
-    }
+    once((done) => {
+      if (courtesyCar.wanted && period) {
+        createWithCar.mutate(
+          { task: request, courtesyCar: { courtesyCarId: courtesyCar.courtesyCarId, ...period, notes: courtesyCar.notes.trim() || undefined } },
+          { onSuccess: (result) => onSuccess(result.task, result.booking), onError, onSettled: done },
+        )
+      } else {
+        create.mutate(request, { onSuccess: (task) => onSuccess(task, null), onError, onSettled: done })
+      }
+    })
   }
 
   function startOver() {
