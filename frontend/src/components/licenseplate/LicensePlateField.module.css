@@ -26,9 +26,3 @@
   min-height: 3.25rem;
   margin-top: var(--space-3);
 }
-
-.error {
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-danger);
-}

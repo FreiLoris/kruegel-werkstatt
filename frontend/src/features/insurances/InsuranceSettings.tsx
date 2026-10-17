@@ -58,7 +58,8 @@ export function InsuranceSettings() {
       </div>
 
       {active.length === 0 ? (
-        <p className={styles.empty}>Noch keine Versicherungen erfasst.</p>
+        // only inactive ones: "none entered" would not be true
+        <p className={styles.empty}>{all.length === 0 ? 'Noch keine Versicherungen erfasst.' : 'Keine Versicherung in Gebrauch.'}</p>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>

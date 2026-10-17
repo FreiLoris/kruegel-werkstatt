@@ -81,6 +81,18 @@ export function presenceOn(employees: Employee[], absences: Absence[], date: str
         const other = OTHER_HALF[only.part]
         if (other) present.push({ employee, part: other, label: partLabel(other) })
       }
+    } else {
+      // several entries (e.g. doctor until 08:30 and a course from 16:00): away the whole day only
+      // when they cover it – otherwise in, with the times away next to the name
+      const untimed = awayEntries.filter((entry) => !entry.time)
+      const wholeDay =
+        untimed.some((entry) => entry.part === 'full') ||
+        (untimed.some((entry) => entry.part === 'morning') && untimed.some((entry) => entry.part === 'afternoon'))
+      if (!wholeDay) {
+        const half = untimed.length === 1 ? OTHER_HALF[untimed[0].part] : null
+        const label = `ausser ${awayEntries.map((entry) => entry.time ?? partLabel(entry.part)).join(', ')}`
+        present.push({ employee, part: half ?? 'full', label })
+      }
     }
   }
   return { present, away }
