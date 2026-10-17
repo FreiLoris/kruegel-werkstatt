@@ -89,7 +89,7 @@ export function CourtesyCarDialog({ car, onClose }: { car?: CourtesyCar; onClose
     if (!car) return
     const ok = await confirm({
       title: `${car.name} ausser Betrieb nehmen?`,
-      text: `${car.name} ist danach nicht mehr buchbar. Bisherige Buchungen bleiben erhalten. Unter «Ausser Betrieb» lässt sich das rückgängig machen.`,
+      text: `${car.name} ist danach nicht mehr buchbar. Solange er unterwegs oder noch gebucht ist, geht das nicht. Unter «Ausser Betrieb» lässt sich das rückgängig machen.`,
       confirmLabel: 'Ausser Betrieb nehmen',
     })
     if (!ok) return

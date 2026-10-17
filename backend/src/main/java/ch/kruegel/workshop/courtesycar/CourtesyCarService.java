@@ -61,9 +61,16 @@ public class CourtesyCarService {
         return saved(car);
     }
 
-    /** Sold or returned: no longer bookable, but kept for old bookings. */
+    /**
+     * Sold or returned: no longer bookable, but kept for old bookings. Not while it is still out or
+     * promised – the booking would disappear from every view (the bookings refuse it, see
+     * {@link CourtesyCarDeactivating}).
+     */
     public CourtesyCarDto deactivate(UUID id) {
         CourtesyCar car = find(id);
+        if (car.isActive()) {
+            events.publishEvent(new CourtesyCarDeactivating(id, car.getName()));
+        }
         car.deactivate();
         return saved(car);
     }

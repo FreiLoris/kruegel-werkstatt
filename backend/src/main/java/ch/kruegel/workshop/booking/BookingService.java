@@ -5,10 +5,12 @@ import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.courtesycar.CourtesyCar;
+import ch.kruegel.workshop.courtesycar.CourtesyCarDeactivating;
 import ch.kruegel.workshop.courtesycar.CourtesyCarRepository;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,6 +43,8 @@ public class BookingService {
     private static final String OVERLAP_CONSTRAINT = "courtesy_car_booking_no_overlap";
     // user-facing, hence German format
     private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    /** "Any booking from now on" without an open end in SQL */
+    private static final int FAR_FUTURE_YEARS = 100;
 
     private final CourtesyCarBookingRepository repository;
     private final CourtesyCarRepository cars;
@@ -137,6 +142,27 @@ public class BookingService {
         }
         booking.recordReturn(returnedAt);
         return saved(booking);
+    }
+
+    /**
+     * A courtesy car is about to go out of service (same transaction): not while it is out – also
+     * overdue – or promised for later. Its booking would disappear from every view.
+     */
+    @EventListener
+    void onCourtesyCarDeactivating(CourtesyCarDeactivating event) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        repository.findByCourtesyCarIdAndReturnedAtIsNullAndPeriodReturnAtLessThanEqualOrderByPeriodReturnAt(event.courtesyCarId(), now)
+                .stream().findFirst()
+                .ifPresent(overdue -> {
+                    throw new BusinessRuleException("%s ist noch nicht zurück (%s) – zuerst die Rückgabe erfassen."
+                            .formatted(event.name(), BookingDto.of(overdue).holderName()));
+                });
+        repository.blocking(event.courtesyCarId(), now, now.plusYears(FAR_FUTURE_YEARS), null).stream()
+                .max(Comparator.comparing(CourtesyCarBooking::blockedUntil))
+                .ifPresent(last -> {
+                    throw new BusinessRuleException("%s ist noch bis %s an %s vergeben – zuerst umbuchen oder stornieren."
+                            .formatted(event.name(), WHEN.format(last.blockedUntil()), BookingDto.of(last).holderName()));
+                });
     }
 
     /** Return recorded by mistake – only possible while nobody booked the freed time. */
