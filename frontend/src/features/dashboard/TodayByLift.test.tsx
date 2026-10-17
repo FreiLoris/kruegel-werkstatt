@@ -23,11 +23,12 @@ const task = (id: string, liftId: string, date: string, time: string, name: stri
 
 let today: ReturnType<typeof task>[] = []
 let mfk: unknown[] = []
+let todayError: Error | null = null
 const ahead = [task('n', '1', '2099-03-02', '08:00:00', 'Huber Peter')]
 
 vi.mock('../tasks/taskApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../tasks/taskApi')>()),
-  useTasksOfDay: () => ({ data: today, error: null }),
+  useTasksOfDay: () => ({ data: today, error: todayError }),
   useTasksBetween: () => ({ data: ahead, error: null }),
   useMfkSlots: () => ({ data: mfk }),
 }))
@@ -73,5 +74,16 @@ describe('TodayByLift', () => {
 
     expect(screen.getByText('Keine Termine heute')).toBeTruthy()
     expect(screen.getByText(/Nächster: Mo 02\.03\. 08:00 · Huber Peter/)).toBeTruthy()
+  })
+
+  it('keeps the tasks on the TV when only a refetch fails (e.g. backend restarting)', () => {
+    today = [task('a', '1', todayIso(), '08:00:00', 'Muster Anna')]
+    todayError = new Error('Keine gültige Antwort vom Server.')
+
+    renderToday()
+
+    expect(screen.getByText('Muster Anna')).toBeTruthy()
+    expect(screen.queryByText(/konnten nicht geladen werden/)).toBeNull()
+    todayError = null
   })
 })

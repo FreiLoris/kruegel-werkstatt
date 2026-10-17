@@ -26,9 +26,11 @@ export function BoardOverview() {
   const { data: employees } = useAllEmployees()
   const today = useToday()
 
-  const error = notes.error ?? todos.error
-  if (error) return <p className="muted">Pinnwand konnte nicht geladen werden: {error.message}</p>
-  if (!notes.data || !todos.data || !employees) return <p className="muted">Lade Pinnwand …</p>
+  // the data wins: after a backend restart the TV keeps the board instead of an error
+  if (!notes.data || !todos.data || !employees) {
+    const error = (!notes.data && notes.error) || (!todos.data && todos.error)
+    return <p className="muted">{error ? `Pinnwand konnte nicht geladen werden: ${error.message}` : 'Lade Pinnwand …'}</p>
+  }
 
   // "Neu" only when something is waiting there; every person always (an empty column says "nichts offen")
   const columns = pinboardColumns(notes.data, todos.data, employees).filter((c) => c.employee || c.notes.length + c.todos.length > 0)
