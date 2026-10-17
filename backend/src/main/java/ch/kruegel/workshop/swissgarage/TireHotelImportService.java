@@ -27,7 +27,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -92,11 +91,11 @@ public class TireHotelImportService {
                     "Das ist kein SwissGarage-Pneuhotel: Spalte «Kennzeichen», «Kunde» oder «Art» fehlt.");
         }
 
-        Map<String, Vehicle> byPlate = new HashMap<>();
-        vehicles.findAll().stream()
+        // a plate is not unique (it moves with the holder to the next car) – only a single vehicle counts
+        Map<String, List<Vehicle>> byPlate = vehicles.findAll().stream()
                 .filter(Vehicle::isActive)
                 .filter(v -> v.getDetails().licensePlate() != null)
-                .forEach(v -> byPlate.putIfAbsent(LicensePlates.normalize(v.getDetails().licensePlate()), v));
+                .collect(Collectors.groupingBy(v -> LicensePlates.normalize(v.getDetails().licensePlate())));
         Map<String, List<Customer>> byName = customers.findAll().stream()
                 .filter(Customer::isActive)
                 .collect(Collectors.groupingBy(c -> nameKey(c.getDetails().displayName())));
@@ -136,7 +135,8 @@ public class TireHotelImportService {
             }
 
             String plate = LicensePlates.normalize(row.get("Kennzeichen"));
-            Vehicle vehicle = plate == null ? null : byPlate.get(plate);
+            int withPlate = plate == null ? 0 : byPlate.getOrDefault(plate, List.of()).size();
+            Vehicle vehicle = withPlate == 1 ? byPlate.get(plate).getFirst() : null;
             Customer customer = vehicle == null ? null : vehicle.getCustomer();
             if (customer == null) {
                 List<Customer> named = byName.getOrDefault(nameKey(row.get("Kunde")), List.of());
@@ -145,7 +145,8 @@ public class TireHotelImportService {
                 } else {
                     skipped++;
                     problem.accept((named.isEmpty() ? "Kunde nicht gefunden" : "Kunde nicht eindeutig (" + named.size() + " Treffer)")
-                            + (plate == null ? "" : ", Kennzeichen " + plate + (vehicle == null ? " unbekannt" : " ohne Halter"))
+                            + (plate == null ? "" : ", Kennzeichen " + plate + (vehicle != null ? " ohne Halter"
+                                    : withPlate > 1 ? " bei " + withPlate + " Fahrzeugen" : " unbekannt"))
                             + " – nicht übernommen, bitte von Hand einlagern");
                     continue;
                 }
@@ -190,6 +191,9 @@ public class TireHotelImportService {
                     depth(row.get("HL"), "HL", problem), depth(row.get("HR"), "HR", problem));
             toSave.add(new TireSet(details, depths, storedOn, null, "Aus dem SwissGarage-Pneuhotel übernommen"));
             created++;
+            if (withPlate > 1) {
+                problem.accept("Kennzeichen " + plate + " gehört zu " + withPlate + " Fahrzeugen – ohne Fahrzeug übernommen, bitte zuordnen");
+            }
         }
 
         if (rowsRead == 0) {

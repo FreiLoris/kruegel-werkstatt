@@ -68,6 +68,10 @@ public class VehicleImportService {
             throw new InvalidInputException("file",
                     "Das ist keine SwissGarage-Fahrzeugliste: Spalte «" + NUMBER + "» oder «Marke» fehlt.");
         }
+        // without it every vehicle would silently lose its holder
+        if (!sheet.hasColumn(HOLDER)) {
+            throw new InvalidInputException("file", "Spalte «" + HOLDER + "» fehlt – ohne sie verlören alle Fahrzeuge ihren Halter.");
+        }
 
         Map<String, Customer> holders = new HashMap<>();
         customers.findBySource(RecordSource.SWISSGARAGE).forEach(c -> holders.put(c.getSwissgarageNumber(), c));
