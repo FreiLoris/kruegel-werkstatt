@@ -1,6 +1,7 @@
 import { ImageUp, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
+import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import formStyles from '../../components/ui/FormDialog.module.css'
@@ -56,6 +57,10 @@ function CompanyForm({ company }: { company: Company }) {
   // a change from another device must give a conflict instead of being overwritten (and a live
   // update must not reset what is being typed).
   const [baseVersion, setBaseVersion] = useState(company.version)
+  // what is stored as far as this form knows – leaving with other values asks first (UX G-02)
+  const [savedValues, setSavedValues] = useState(values)
+  const [conflict, setConflict] = useState(false)
+  useUnsavedChanges(JSON.stringify(values) !== JSON.stringify(savedValues))
 
   const fieldError = (field: Field) => (update.error instanceof ApiError ? update.error.messageForField(field) : undefined)
 
@@ -81,11 +86,13 @@ function CompanyForm({ company }: { company: Company }) {
       {
         onSuccess: (saved) => {
           setBaseVersion(saved.version)
+          setSavedValues(values)
+          setConflict(false)
           toast.success('Firmendaten gespeichert')
         },
         onError: (e) => {
           if (e instanceof ApiError && e.isVersionConflict) {
-            toast.error('Die Firmendaten wurden inzwischen auf einem anderen Gerät geändert. Bitte Seite neu laden.')
+            setConflict(true)
           } else if (!(e instanceof ApiError && (e.problem.errors?.length ?? 0) > 0)) {
             toast.error(`Speichern fehlgeschlagen: ${e.message}`)
           }
@@ -108,6 +115,35 @@ function CompanyForm({ company }: { company: Company }) {
 
   return (
     <form className={formStyles.form} onSubmit={submit}>
+      {conflict && (
+        <div className={styles.conflict} role="alert">
+          <p>
+            Die Firmendaten wurden inzwischen auf einem anderen Gerät geändert. Deine Eingaben bleiben stehen: Du kannst sie
+            übernehmen und speichern – sie ersetzen dann die Änderung vom anderen Gerät. Oder den aktuellen Stand laden.
+          </p>
+          <div className={styles.conflictActions}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setBaseVersion(company.version)
+                setConflict(false)
+              }}
+            >
+              Meine Eingaben übernehmen
+            </Button>
+            <Button
+              onClick={() => {
+                setValues(initialValues(company))
+                setSavedValues(initialValues(company))
+                setBaseVersion(company.version)
+                setConflict(false)
+              }}
+            >
+              Aktuellen Stand laden
+            </Button>
+          </div>
+        </div>
+      )}
       {text('name', 'Firmenname', { required: true, maxLength: 60 })}
       {text('street', 'Strasse', { maxLength: 100 })}
       <div className={formStyles.row}>

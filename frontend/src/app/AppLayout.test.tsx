@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ConfirmProvider } from '../components/ui/Confirm'
 import { AppLayout } from './AppLayout'
 import { IDLE_MS } from './kiosk/useBackToDashboard'
 import type { DeviceStatus } from './person/deviceStatus'
@@ -30,7 +31,11 @@ function renderAt(path: string) {
     ],
     { initialEntries: [path] },
   )
-  render(<RouterProvider router={router} />)
+  render(
+    <ConfirmProvider>
+      <RouterProvider router={router} />
+    </ConfirmProvider>,
+  )
 }
 
 afterEach(() => {

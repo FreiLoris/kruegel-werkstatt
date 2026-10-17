@@ -2,6 +2,7 @@ import { Archive, ArchiveRestore, Check, ClipboardList, Save, Search, Trash2, X 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
+import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { TextArea, TextField } from '../../components/ui/Fields'
@@ -70,6 +71,22 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
   const person = (id: string) => everyone?.find((e) => e.id === id)
   const people = (active ?? []).filter((e) => e.selectableForTodos || draft.assigneeIds.includes(e.id))
   const archived = note.archivedAt !== null
+  useUnsavedChanges(savedState === 'dirty')
+
+  /** "Schliessen", Esc or X: unsaved text, people or task are not thrown away without a word (UX G-02) */
+  async function close() {
+    if (savedState === 'dirty') {
+      const discard = await confirm({
+        title: 'Änderungen verwerfen?',
+        text: 'Die Änderungen an dieser Notiz sind noch nicht gespeichert.',
+        confirmLabel: 'Verwerfen',
+        cancelLabel: 'Weiter bearbeiten',
+        dangerous: true,
+      })
+      if (!discard) return
+    }
+    onClose()
+  }
 
   function change(next: Partial<typeof draft>) {
     const changed = { ...draft, ...next }
@@ -152,7 +169,7 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
   return (
     <Modal
       open
-      onClose={onClose}
+      onClose={() => void close()}
       title={archived ? 'Notiz (archiviert)' : 'Notiz'}
       wide
       footer={
@@ -179,7 +196,7 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
               <Check aria-hidden /> Gespeichert
             </span>
           )}
-          <Button onClick={onClose}>Schliessen</Button>
+          <Button onClick={() => void close()}>Schliessen</Button>
           {canEdit && (
             <Button variant="primary" icon={Save} onClick={submit} loading={save.isPending} disabled={savedState !== 'dirty' || !draft.text.trim()}>
               Speichern

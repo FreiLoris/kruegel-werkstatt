@@ -17,24 +17,37 @@ export function PersonPicker({ active, noLongerActive }: { active: Employee[]; n
           ? 'Die bisher gewählte Person ist nicht mehr aktiv. Bitte neu wählen.'
           : 'Einmal auswählen – das Gerät merkt es sich. Änderungen erscheinen dann mit diesem Namen.'}
       </p>
+      <PersonChoices active={active} />
+    </section>
+  )
+}
 
+/** The people and "Nur ansehen" – also in the dialog "Person wechseln" over the page. */
+export function PersonChoices({ active, onChosen }: { active: Employee[]; onChosen?: () => void }) {
+  function pick(choice: Parameters<typeof choose>[0]) {
+    choose(choice)
+    onChosen?.()
+  }
+
+  return (
+    <div className={styles.choices}>
       <ul className={styles.people}>
         {active.map((e) => (
           <li key={e.id}>
-            <button type="button" className={styles.person} onClick={() => choose({ kind: 'person', id: e.id })}>
+            <button type="button" className={styles.person} onClick={() => pick({ kind: 'person', id: e.id })}>
               <NameBadge name={e.name} color={e.color} />
             </button>
           </li>
         ))}
       </ul>
 
-      <button type="button" className={styles.viewOnly} onClick={() => choose({ kind: 'viewOnly' })}>
+      <button type="button" className={styles.viewOnly} onClick={() => pick({ kind: 'viewOnly' })}>
         <Eye aria-hidden />
         <span>
           <strong>Nur ansehen</strong>
           <span className="muted"> – z. B. Werkstatt-TV, kann nichts ändern</span>
         </span>
       </button>
-    </section>
+    </div>
   )
 }

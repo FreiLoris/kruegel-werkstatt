@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { ApiError, reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
+import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
@@ -35,6 +36,7 @@ function LimitsForm({ limits }: { limits: TreadLimits }) {
   const fieldError = (field: string, value: number | null) =>
     invalid(value) ? 'in mm, z. B. 4,0' : save.error instanceof ApiError ? save.error.messageForField(field) : undefined
   const changed = values.summer !== text(limits.summerMm) || values.winter !== text(limits.winterMm) || values.minimum !== text(limits.minimumMm)
+  useUnsavedChanges(changed)
 
   function submit(event: FormEvent) {
     event.preventDefault()

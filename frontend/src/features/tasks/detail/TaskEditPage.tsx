@@ -2,6 +2,7 @@ import { Check, RotateCcw, Save, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
+import { useUnsavedChanges } from '../../../app/useUnsavedChanges'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
@@ -53,6 +54,9 @@ function TaskEditForm({ task: current, onReload, latest }: { task: AnyTask; onRe
   const [showRequired, setShowRequired] = useState(false)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const [conflict, setConflict] = useState(false)
+  // what the form showed when it opened – leaving with anything else asks first (UX G-02)
+  const [opened] = useState(() => JSON.stringify([customerStep, appointment]))
+  const leave = useUnsavedChanges(JSON.stringify([customerStep, appointment]) !== opened)
 
   const back = () => navigate(`/tasks/${task.id}`)
   const customerComplete = customerStep.customer !== null && customerStep.vehicle !== null
@@ -73,6 +77,7 @@ function TaskEditForm({ task: current, onReload, latest }: { task: AnyTask; onRe
       {
         onSuccess: () => {
           toast.success('Auftrag gespeichert')
+          leave()
           back()
         },
         onError: (error) => {
