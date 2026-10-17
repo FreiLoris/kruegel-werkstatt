@@ -24,7 +24,8 @@ function limitFor(season: Season, limits: Pick<TreadLimits, 'summerMm' | 'winter
 }
 
 export function treadStatus(depth: number | null | undefined, season: Season, limits: Pick<TreadLimits, 'summerMm' | 'winterMm' | 'minimumMm'>): TreadStatus {
-  if (depth === null || depth === undefined) return 'unknown'
+  // NaN = not a depth (e.g. "abc") – no "gut" next to the error (UX M-19)
+  if (depth === null || depth === undefined || Number.isNaN(depth)) return 'unknown'
   if (depth < limits.minimumMm) return 'illegal'
   if (depth < limitFor(season, limits)) return 'advise'
   return 'ok'

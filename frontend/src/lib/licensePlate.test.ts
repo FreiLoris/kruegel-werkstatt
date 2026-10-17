@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { composePlate, groupDigits, parsePlate } from './licensePlate'
+import { composePlate, groupDigits, parsePlate, swissNumberInput } from './licensePlate'
 
 describe('parsePlate', () => {
   it('recognises Swiss plates', () => {
@@ -42,5 +42,17 @@ describe('groupDigits', () => {
     expect(groupDigits('197052')).toBe('197 052')
     expect(groupDigits('12345')).toBe('12 345')
     expect(groupDigits('123')).toBe('123')
+  })
+})
+
+describe('swissNumberInput', () => {
+  it('takes a canton typed in front over instead of dropping it', () => {
+    expect(swissNumberInput('BE 12345', 'ZH')).toEqual({ canton: 'BE', number: '12345' })
+    expect(swissNumberInput('be12345', 'ZH')).toEqual({ canton: 'BE', number: '12345' })
+  })
+
+  it('otherwise only digits, the canton stays', () => {
+    expect(swissNumberInput('123 456', 'ZH')).toEqual({ canton: 'ZH', number: '123456' })
+    expect(swissNumberInput('XY 1', 'ZH')).toEqual({ canton: 'ZH', number: '1' })
   })
 })

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Customer, Vehicle } from '../customers/customerSearchApi'
 import type { TireSet } from './tireHotelApi'
-import { emptyForm, formFromSet, parseDepth, tireSetErrors, toTireSetRequest, withDepth, withKind, withSameDepth, type TireSetForm } from './tireSetForm'
+import { depthWarning, emptyForm, formFromSet, parseDepth, tireSetErrors, toTireSetRequest, withDepth, withKind, withSameDepth, type TireSetForm } from './tireSetForm'
 
 const customer = { id: 'c1' } as Customer
 const vehicle = { id: 'v1' } as Vehicle
@@ -25,7 +25,8 @@ describe('depths', () => {
     expect(parseDepth('6,5')).toBe(6.5)
     expect(parseDepth(' 4 ')).toBe(4)
     expect(parseDepth('')).toBeNull()
-    expect(parseDepth('4,25')).toBeNaN()
+    // a tenth is what the gauge shows – more is rounded, not refused
+    expect(parseDepth('4,25')).toBe(4.3)
     expect(parseDepth('abc')).toBeNaN()
   })
 
@@ -81,5 +82,14 @@ describe('toTireSetRequest', () => {
     } as TireSet
     expect(formFromSet(set)).toMatchObject({ season: 'WINTER', rims: '', hubCaps: true, year: '2021', sameDepth: true })
     expect(formFromSet(set).depths.frontLeft).toBe('5,5')
+  })
+})
+
+describe('depthWarning', () => {
+  it('a soft hint for unusual depths – saving stays possible', () => {
+    expect(depthWarning(0)).toBe('0 mm – wirklich? Sonst Feld leer lassen')
+    expect(depthWarning(12)).toBe('Ungewöhnlich viel – Tippfehler?')
+    expect(depthWarning(6.5)).toBeUndefined()
+    expect(depthWarning(null)).toBeUndefined()
   })
 })

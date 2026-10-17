@@ -37,6 +37,16 @@ describe('LicensePlateField', () => {
     expect(onChange).toHaveBeenLastCalledWith('D M AB 1234')
   })
 
+  it('a canton typed into the number field is taken over – also letter by letter', async () => {
+    const onChange = vi.fn()
+    render(<LicensePlateField value="" onChange={onChange} />)
+
+    await userEvent.type(screen.getByLabelText(/Nummer/), 'BE 12345')
+
+    expect(onChange).toHaveBeenLastCalledWith('BE 12345')
+    expect(screen.getByLabelText<HTMLSelectElement>('Kanton').value).toBe('BE')
+  })
+
   it('shows the server error', () => {
     render(<LicensePlateField value="ZH 1" onChange={vi.fn()} error="gehört bereits zu einem anderen Ersatzwagen" />)
 

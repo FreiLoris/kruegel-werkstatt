@@ -50,7 +50,16 @@ export function emptyForm(today: string): TireSetForm {
 export function parseDepth(text: string): number | null {
   const trimmed = text.trim().replace(',', '.')
   if (!trimmed) return null
-  return /^\d{1,2}(\.\d)?$/.test(trimmed) ? Number(trimmed) : NaN
+  // a tenth is what the gauge shows – "4,25" is rounded instead of refused (UX M-19)
+  return /^\d{1,2}(\.\d+)?$/.test(trimmed) ? Math.round(Number(trimmed) * 10) / 10 : NaN
+}
+
+/** Valid but unusual – a soft hint below the field, saving stays possible (UX M-19) */
+export function depthWarning(depth: number | null): string | undefined {
+  if (depth === null || Number.isNaN(depth)) return undefined
+  if (depth === 0) return '0 mm – wirklich? Sonst Feld leer lassen'
+  if (depth > 10) return 'Ungewöhnlich viel – Tippfehler?'
+  return undefined
 }
 
 /** The depth of one wheel typed – with "alle vier gleich" it is the depth of all of them. */

@@ -7,6 +7,7 @@ import { Select, TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
+import { wholeNumberError } from '../../lib/wholeNumber'
 import type { Supplier } from '../suppliers/supplierApi'
 import { CATEGORY_LABEL, useDeleteStockItem, useSaveStockItem, type StockCategory, type StockItem, type StockItemRequest } from './stockApi'
 import { placeTree } from './placeTree'
@@ -104,6 +105,7 @@ export function StockItemDialog({
 
   function submit(event: FormEvent) {
     event.preventDefault()
+    if (wholeNumberError(values.quantity)) return
     once((done) =>
       save.mutate(
         { id: item?.id, request: toRequest(values, item?.version) },
@@ -185,14 +187,12 @@ export function StockItemDialog({
           </Select>
           <TextField
             label="Menge"
-            type="number"
+            // text, not number: a number field turned "2,5" into 25 without a word (UX G-09)
             inputMode="numeric"
-            min={0}
-            step={1}
             hint="Leer = nicht gezählt"
             value={values.quantity}
             onChange={(e) => set('quantity', e.target.value)}
-            error={fieldError('quantity')}
+            error={wholeNumberError(values.quantity) ?? fieldError('quantity')}
           />
         </div>
         <Select
