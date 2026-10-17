@@ -169,6 +169,23 @@ export function resizedTo(task: Task, date: string, end: number): Schedule {
 }
 
 /** A dragged-open area in the empty grid → start and end of a new task; a mere click = the default hour. */
+/**
+ * Where a time dragged open ends: where the pointer is – or nothing dragged (`to` = `from`, one hour)
+ * as long as it has not really moved. A click in the lower half of a quarter hour would otherwise
+ * round up and open 15 minutes instead of the hour.
+ */
+export function draggedTo(from: number, pointerMinutes: number, moved: boolean): number {
+  return moved ? snap(pointerMinutes) : from
+}
+
+const TIME = /^\d{2}:\d{2}/
+const DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/
+
+/** Start time and end both filled in ("09:00", "2026-10-15T10:00") – a form may pass "" or "2026-10-15T" */
+export function isCompleteSlot(time: string, endAt: string): boolean {
+  return TIME.test(time) && DATE_TIME.test(endAt)
+}
+
 export function selection(date: string, from: number, to: number): { date: string; time: string; endAt: string } {
   const start = Math.min(from, to)
   const end = Math.abs(to - from) < SNAP_MINUTES ? start + 60 : Math.max(from, to)

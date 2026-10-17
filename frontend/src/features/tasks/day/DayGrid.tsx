@@ -31,6 +31,8 @@ import styles from './DayGrid.module.css'
 import { TaskCard } from './TaskCard'
 import {
   blockingIn,
+  draggedTo,
+  isCompleteSlot,
   minutesOf,
   movedTo,
   placeInColumn,
@@ -220,7 +222,9 @@ export function DayGrid({
   }
 
   function onDragMove({ active, over, delta }: DragMoveEvent) {
-    const task = byId.get(String(active.id))!
+    // deleted or moved to another day on another device while dragging
+    const task = byId.get(String(active.id))
+    if (!task) return
     const span = spanOn(task, date)
     const start = Math.min(Math.max(snap(span.start + delta.y / scale), 0), DAY_MINUTES - SNAP_MINUTES)
     const columnId = over ? String(over.id) : (dragging?.columnId ?? '')
@@ -231,7 +235,8 @@ export function DayGrid({
     const target = dragging
     setDragging(null)
     if (!target) return
-    const task = byId.get(String(active.id))!
+    const task = byId.get(String(active.id))
+    if (!task) return
     const column = columns.find((c) => c.id === target.columnId)
     if (!column) return
     const span = spanOn(task, date)
@@ -269,8 +274,10 @@ export function DayGrid({
 
   /** Shift+arrow on a focused block: end a quarter hour later/earlier */
   function resizeByKey(e: KeyboardEvent, task: Task): boolean {
-    if (!e.shiftKey || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return false
+    if (!planning || !e.shiftKey || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return false
     e.preventDefault()
+    // one quarter hour per key press – a held key would send a request per repeat that may overtake each other
+    if (e.repeat) return true
     const span = spanOn(task, date)
     if (span.endsAfter) return true
     const end = span.end + (e.key === 'ArrowDown' ? SNAP_MINUTES : -SNAP_MINUTES)
@@ -306,7 +313,7 @@ export function DayGrid({
       if (Math.abs(e.clientY - creating.startY) > MOVE_TOLERANCE_PX) cancelCreate()
       return
     }
-    const to = snap(minutesAt(e.clientY, e.currentTarget))
+    const to = draggedTo(creating.from, minutesAt(e.clientY, e.currentTarget), Math.abs(e.clientY - creating.startY) > MOVE_TOLERANCE_PX)
     if (to !== creating.to) setCreating({ ...creating, to })
   }
 
@@ -314,7 +321,8 @@ export function DayGrid({
     window.clearTimeout(holdTimer.current)
     if (!creating || e.pointerId !== creating.pointerId) return
     // where the pointer is let go counts – the last move may have been earlier; a tap = from only
-    const to = creating.held ? snap(minutesAt(e.clientY, e.currentTarget)) : creating.from
+    const moved = Math.abs(e.clientY - creating.startY) > MOVE_TOLERANCE_PX
+    const to = creating.held ? draggedTo(creating.from, minutesAt(e.clientY, e.currentTarget), moved) : creating.from
     setCreating(null)
     onPick({ liftId: column.liftId, ...selection(date, creating.from, to) })
   }
@@ -457,15 +465,17 @@ export function DayGrid({
   function ghostIn(column: DayColumn, placed: Placed[]): { start: number; end: number; collides: boolean } | null {
     const check = (start: number, end: number, exceptId?: string) =>
       ({ start, end, collides: column.liftId !== null && blockingIn(placed, start, end, exceptId) !== undefined })
-    if (dragging && dragging.columnId === column.id) {
-      const span = spanOn(byId.get(dragging.id)!, date)
+    const draggedTask = dragging ? byId.get(dragging.id) : undefined
+    if (dragging && draggedTask && dragging.columnId === column.id) {
+      const span = spanOn(draggedTask, date)
       return check(dragging.start, Math.min(dragging.start + span.end - span.start, DAY_MINUTES), dragging.id)
     }
     if (creating && creating.held && creating.columnId === column.id) {
       const { time, endAt } = selection(date, creating.from, creating.to)
       return check(minutesOf(time), endAt.slice(0, 10) > date ? DAY_MINUTES : minutesOf(endAt.slice(11)))
     }
-    if (picked && picked.date === date && picked.liftId === column.liftId) {
+    // the wizard passes its fields as they are – while one is empty there is nothing to outline
+    if (picked && picked.date === date && picked.liftId === column.liftId && isCompleteSlot(picked.time, picked.endAt)) {
       return check(minutesOf(picked.time), picked.endAt.slice(0, 10) > date ? DAY_MINUTES : minutesOf(picked.endAt.slice(11)))
     }
     return null
