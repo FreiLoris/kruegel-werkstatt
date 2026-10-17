@@ -2,6 +2,7 @@ package ch.kruegel.workshop.employee;
 
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.persistence.SortOrder;
+import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import org.springframework.context.ApplicationEventPublisher;
@@ -67,9 +68,15 @@ public class EmployeeService {
         return saved(employee);
     }
 
-    /** Person left the business. Kept, but no longer appears in any selection. */
+    /**
+     * Person left the business. Kept, but no longer appears in any selection. Not the last active one:
+     * without anyone the app would be back in the initial setup – every device, also the TV, could edit.
+     */
     public EmployeeDto deactivate(UUID id) {
         Employee employee = find(id);
+        if (employee.isActive() && repository.countByActiveTrue() <= 1) {
+            throw new BusinessRuleException("Mindestens eine Person muss aktiv bleiben.");
+        }
         employee.deactivate();
         return saved(employee);
     }

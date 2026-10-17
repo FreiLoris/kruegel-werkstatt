@@ -178,6 +178,24 @@ class EmployeeApiTest {
     }
 
     @Test
+    void theLastActivePersonStays() {
+        // without anyone the app would be back in the initial setup – every device could edit
+        MvcTestResult response = send("POST", "/api/employees/" + chef + "/deactivate", null);
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT);
+        assertThat(response).bodyJson().extractingPath("$.detail").isEqualTo("Mindestens eine Person muss aktiv bleiben.");
+    }
+
+    @Test
+    void anOwnPinboardColumnMakesThePersonSelectableForNotes() {
+        MvcTestResult response = send("POST", "/api/employees", """
+                { "name": "Lehrling", "role": "APPRENTICE", "color": "#cccccc", "vacationDaysPerYear": 25,
+                  "selectableAsMechanic": false, "selectableForTodos": false, "hasPinboardColumn": true }""");
+
+        assertThat(response).bodyJson().extractingPath("$.selectableForTodos").isEqualTo(true);
+    }
+
+    @Test
     void activateFailsIfNameTakenMeanwhile() {
         String oldReto = idOf(create("Reto"));
         send("POST", "/api/employees/" + oldReto + "/deactivate", null);

@@ -124,7 +124,9 @@ export function EmployeeForm({ id, values, onChange, onSubmit, error, takenColor
         />
         <Checkbox
           label="To-dos und Notizen – als zuständige Person wählbar"
-          checked={values.selectableForTodos}
+          // an own pinboard column means notes land there – the person must be selectable
+          checked={values.selectableForTodos || values.hasPinboardColumn}
+          disabled={values.hasPinboardColumn}
           onChange={(e) => set('selectableForTodos', e.target.checked)}
         />
         <Checkbox label="Pinnwand – mit eigener Spalte" checked={values.hasPinboardColumn} onChange={(e) => set('hasPinboardColumn', e.target.checked)} />

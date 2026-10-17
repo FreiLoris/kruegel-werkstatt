@@ -29,6 +29,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
     /** Are there any active persons? (No = initial setup) */
     boolean existsByActiveTrue();
 
+    long countByActiveTrue();
+
     /** For new entries: put them at the end of the list. */
     @Query("select coalesce(max(e.sortOrder), -1) + 1 from Employee e")
     int nextSortOrder();

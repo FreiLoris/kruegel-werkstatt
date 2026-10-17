@@ -55,7 +55,7 @@ export function toRequest(values: FormValues, version?: number): EmployeeRequest
     birthday: values.birthday || undefined,
     vacationDaysPerYear: Number(values.vacationDaysPerYear),
     selectableAsMechanic: values.selectableAsMechanic,
-    selectableForTodos: values.selectableForTodos,
+    selectableForTodos: values.selectableForTodos || values.hasPinboardColumn,
     hasPinboardColumn: values.hasPinboardColumn,
     flexibleHours: values.flexibleHours,
     version,
