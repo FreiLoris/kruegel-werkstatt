@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { MasterDataList } from '../../components/masterdata/MasterDataList'
 import { NameDialog } from '../../components/masterdata/NameDialog'
@@ -45,7 +46,7 @@ export function LiftSettings() {
       {
         onSuccess: () => toast.success(`${lift.name} stillgelegt`),
         // e.g. "Mindestens ein Lift muss in Betrieb bleiben."
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toast.error(reasonOf(error)),
       },
     )
   }
@@ -73,7 +74,7 @@ export function LiftSettings() {
             { id: lift.id, active: true },
             {
               onSuccess: () => toast.success(`${lift.name} ist wieder in Betrieb`),
-              onError: (error) => toast.error(`${lift.name} konnte nicht aktiviert werden: ${error.message}`),
+              onError: (error) => toast.error(`${lift.name} konnte nicht aktiviert werden: ${reasonOf(error)}`),
             },
           )
         }
