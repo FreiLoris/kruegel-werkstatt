@@ -280,9 +280,10 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   label="um"
                   type="time"
                   step={900}
-                  hint="leer lassen, wenn noch nicht bekannt"
+                  hint="Datum und Uhrzeit leer lassen, wenn noch nicht bekannt"
                   value={form.mfkTime}
                   onChange={(e) => set('mfkTime', e.target.value)}
+                  error={errors.mfkTime}
                 />
               </div>
               <Select

@@ -205,7 +205,7 @@ export function withDate(form: AppointmentForm, date: string, time: string, holi
     arrivesEarlierTime: earlier ? earlier.time : form.arrivesEarlierTime,
     readyByDate:
       form.readyBy && (!form.readyByDate || form.readyByDate === derivedReady) ? defaultReadyByDate(date, time) : form.readyByDate,
-    mfkDate: form.mfk && (!form.mfkDate || form.mfkDate === old) ? date : form.mfkDate,
+    mfkDate: form.mfk && form.mfkDate && form.mfkDate === old ? date : form.mfkDate,
   }
 }
 
@@ -246,7 +246,8 @@ export function slotFromUrl(params: URLSearchParams): Schedule | null {
 export function withMfk(form: AppointmentForm, on: boolean, standard?: { id: string; minutes: number }): AppointmentForm {
   if (!on) return { ...form, mfk: false }
   const preset = !form.mfkStationId && standard ? { mfkStationId: standard.id, mfkMinutes: String(standard.minutes) } : {}
-  return { ...form, mfk: true, mfkDate: form.mfkDate || form.date, ...preset }
+  // no preset date: a date without a time cannot be saved – it would silently become "MFK without appointment"
+  return { ...form, mfk: true, ...preset }
 }
 
 /** Another inspection station: its trip is preset as the duration – it depends on where it is. */
@@ -304,6 +305,8 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
     }
   }
   if (form.mfk && form.mfkTime && !form.mfkDate) errors.mfkDate = 'Datum zur Uhrzeit angeben'
+  // the server stores date and time together – a date alone would be lost without a word
+  if (form.mfk && form.mfkDate && !form.mfkTime) errors.mfkTime = 'Uhrzeit zum Datum angeben – oder beide leer lassen'
   // "Service" ticked but nothing chosen would be saved as "no service" without anyone noticing
   if (form.service && form.serviceItemIds.length === 0) errors.serviceItemIds = 'Mindestens eine Leistung wählen – oder «Service» abwählen'
   if (form.parts && !form.partsDescription.trim()) errors.partsDescription = 'Was muss bestellt werden?'
