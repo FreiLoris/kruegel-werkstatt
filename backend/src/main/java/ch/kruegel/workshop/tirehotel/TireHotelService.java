@@ -128,7 +128,12 @@ public class TireHotelService {
     public TireSetDto measure(UUID id, MeasurementRequest request) {
         TireSet set = find(id);
         LocalDate day = day(request.on(), set, "on");
-        set.measure(request.depths().toDepths(), day, request.note());
+        TreadDepths depths = request.depths().toDepths();
+        // nothing measured would replace the last depths with "unknown" – the list and labels would lose them
+        if (depths.lowest() == null) {
+            throw new InvalidInputException("depths", "Mindestens eine Profiltiefe angeben");
+        }
+        set.measure(depths, day, request.note());
         return saved(set);
     }
 

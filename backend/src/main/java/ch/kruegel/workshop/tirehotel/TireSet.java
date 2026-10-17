@@ -71,7 +71,8 @@ public class TireSet extends BaseEntity {
     private TirePlace place;
 
     @OneToMany(mappedBy = "tireSet", cascade = CascadeType.ALL)
-    @OrderBy("happenedOn, createdAt")
+    // id last: two events of one save (measured and retrieved) can have the same time – UUIDv7 keeps their order
+    @OrderBy("happenedOn, createdAt, id")
     private List<TireSetEvent> events = new ArrayList<>();
 
     protected TireSet() {

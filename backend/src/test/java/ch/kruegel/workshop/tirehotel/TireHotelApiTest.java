@@ -113,6 +113,8 @@ class TireHotelApiTest {
 
         String id = idOf(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"2026-04-01\""));
         assertFieldError(send("POST", "/api/tire-sets/" + id + "/measurements", "{ \"depths\": {}, \"on\": \"2026-03-01\" }"), "on");
+        // nothing measured would wipe the last depths
+        assertFieldError(send("POST", "/api/tire-sets/" + id + "/measurements", "{ \"depths\": {} }"), "depths");
     }
 
     @Test
