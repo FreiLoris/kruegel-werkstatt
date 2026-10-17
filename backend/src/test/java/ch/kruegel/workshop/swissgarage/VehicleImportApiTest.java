@@ -197,6 +197,19 @@ class VehicleImportApiTest {
     }
 
     @Test
+    void withoutTheHolderColumnNothingIsImported() {
+        upload(TestExcel.with(HEADERS).row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001).bytes(), "a.xlsx");
+
+        // a renamed column would otherwise take the holder from every vehicle
+        MvcTestResult response = upload(TestExcel.with("Int.Nr.", "Kennz", "Marke", "Typ").row(5001, "ZH 1", "VW", "Golf").bytes(), "b.xlsx");
+
+        assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(response).bodyJson().extractingPath("$.errors[0].field").isEqualTo("file");
+        assertThat(mvc.get().uri("/api/swissgarage-imports/status").exchange())
+                .bodyJson().extractingPath("$.vehiclesWithoutHolder").isEqualTo(0);
+    }
+
+    @Test
     void addressListInsteadOfVehicleListIsFieldError() {
         assertThat(upload(TestExcel.with("Adressart", "Name", "Adressnummer").row("Garage-Kunde", "Huber", 1001).bytes(), "Adrliste.xlsx"))
                 .hasStatus(HttpStatus.BAD_REQUEST)

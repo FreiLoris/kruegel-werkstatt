@@ -115,6 +115,22 @@ class TireHotelImportApiTest {
     }
 
     @Test
+    void aPlateOfTwoVehiclesIsNotGuessed() {
+        // the plate moved with the holder to the next car – the old one is still active
+        Customer huber = customers.findAll().stream().filter(c -> "Huber".equals(c.getDetails().lastName())).findFirst().orElseThrow();
+        vehicles.save(Vehicle.fromSwissGarage("5002", huber, new VehicleDetails("ZH 123456", "Audi", "A3", null, null, null, null, null, null, null)));
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(46000, null, "ZH 123456", "Audi A3", "Huber Test", 4, "Winter-", null, null, 6, 6, "J", 6, 6, "J")
+                .bytes());
+
+        assertThat(response).bodyJson().extractingPath("$.created").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.problems").asArray()
+                .anySatisfy(p -> assertThat(p.toString()).contains("Kennzeichen ZH 123456 gehört zu 2 Fahrzeugen"));
+        assertThat(mvc.get().uri("/api/tire-sets").exchange()).bodyJson().extractingPath("$[0].vehicle").isNull();
+    }
+
+    @Test
     void refusesAnotherFile() {
         MvcTestResult response = upload(TestExcel.with("Int.Nr.", "Marke").row(1, "VW").bytes());
 
