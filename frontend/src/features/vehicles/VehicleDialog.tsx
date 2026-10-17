@@ -6,6 +6,7 @@ import styles from '../../components/ui/FormDialog.module.css'
 import { TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useCreateVehicle, useUpdateVehicle, type Vehicle, type VehicleRequest } from './vehicleApi'
 
 /**
@@ -98,6 +99,7 @@ export function VehicleDialog({
   const create = useCreateVehicle()
   const update = useUpdateVehicle()
   const save = vehicle ? update : create
+  const once = useSingleFlight()
   // the version as it was when the dialog opened – a live update must not hide a change from another device
   const [openedVersion] = useState(vehicle?.version)
   const [values, setValues] = useState(() => (vehicle ? valuesOf(vehicle) : EMPTY))
@@ -125,11 +127,14 @@ export function VehicleDialog({
         }
       },
     }
-    if (vehicle) {
-      update.mutate({ id: vehicle.id, request: toRequest(vehicle.customerId, values, openedVersion) }, callbacks)
-    } else {
-      create.mutate(toRequest(customerId, values), callbacks)
-    }
+    // a double click must not create the vehicle twice (UX G-03)
+    once((done) => {
+      if (vehicle) {
+        update.mutate({ id: vehicle.id, request: toRequest(vehicle.customerId, values, openedVersion) }, { ...callbacks, onSettled: done })
+      } else {
+        create.mutate(toRequest(customerId, values), { ...callbacks, onSettled: done })
+      }
+    })
   }
 
   const text = (field: keyof FormValues, label: string, extra: Partial<Parameters<typeof TextField>[0]> = {}) => (

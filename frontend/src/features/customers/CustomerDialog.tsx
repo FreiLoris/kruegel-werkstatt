@@ -7,6 +7,7 @@ import styles from '../../components/ui/FormDialog.module.css'
 import { Select, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useCreateCustomer, useSetCustomerActive, useUpdateCustomer, type CustomerRequest } from './customerApi'
 import type { Customer } from './customerSearchApi'
 
@@ -73,6 +74,7 @@ export function CustomerDialog({
   const create = useCreateCustomer()
   const update = useUpdateCustomer()
   const save = customer ? update : create
+  const once = useSingleFlight()
   const setActive = useSetCustomerActive()
   const confirm = useConfirm()
   // the version as it was when the dialog opened – a live update must not hide a change from another device
@@ -102,11 +104,14 @@ export function CustomerDialog({
         }
       },
     }
-    if (customer) {
-      update.mutate({ id: customer.id, request: { ...toRequest(values), version: openedVersion } }, callbacks)
-    } else {
-      create.mutate(toRequest(values), callbacks)
-    }
+    // a double click must not create the customer twice (UX G-03)
+    once((done) => {
+      if (customer) {
+        update.mutate({ id: customer.id, request: { ...toRequest(values), version: openedVersion } }, { ...callbacks, onSettled: done })
+      } else {
+        create.mutate(toRequest(values), { ...callbacks, onSettled: done })
+      }
+    })
   }
 
   /** E12: a walk-in customer no longer needed disappears from the search – back under Einstellungen */

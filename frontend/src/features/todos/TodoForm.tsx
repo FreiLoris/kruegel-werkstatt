@@ -4,6 +4,7 @@ import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { Checkbox, Select, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
+import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
 import { useAddNoteTodo } from '../notes/noteApi'
 import { PurchaseFields } from './PurchaseFields'
@@ -48,6 +49,7 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
   const [draft, setDraft] = useState(initial)
   // the version from when the form was opened (conventions: never the live one)
   const [openedVersion] = useState(todo?.version)
+  const once = useSingleFlight()
 
   const current = todo?.assigneeId ? everyone?.find((e) => e.id === todo.assigneeId) : undefined
   const people = (active ?? []).filter((e) => e.selectableForTodos)
@@ -73,8 +75,10 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
       },
       onError: (error: Error) => toast.error(`To-do nicht gespeichert: ${reasonOf(error)}`),
     }
-    if (!todo && noteId) addToNote.mutate({ noteId, request }, callbacks)
-    else saveTodo.mutate({ id: todo?.id, request }, callbacks)
+    once((done) => {
+      if (!todo && noteId) addToNote.mutate({ noteId, request }, { ...callbacks, onSettled: done })
+      else saveTodo.mutate({ id: todo?.id, request }, { ...callbacks, onSettled: done })
+    })
   }
 
   return (

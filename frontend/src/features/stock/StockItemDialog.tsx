@@ -6,6 +6,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { Select, TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { useSingleFlight } from '../../lib/useSingleFlight'
 import type { Supplier } from '../suppliers/supplierApi'
 import { CATEGORY_LABEL, useDeleteStockItem, useSaveStockItem, type StockCategory, type StockItem, type StockItemRequest } from './stockApi'
 import { placeTree } from './placeTree'
@@ -81,6 +82,7 @@ export function StockItemDialog({
   const toast = useToast()
   const confirm = useConfirm()
   const save = useSaveStockItem()
+  const once = useSingleFlight()
   const remove = useDeleteStockItem()
   const [values, setValues] = useState(() => initialValues(item, defaults))
 
@@ -102,24 +104,27 @@ export function StockItemDialog({
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    save.mutate(
-      { id: item?.id, request: toRequest(values, item?.version) },
-      {
-        onSuccess: (saved) => {
-          toast.success(`${saved.name} gespeichert`)
-          onClose()
-        },
-        onError: (error) => {
-          // Only an existing article can have been changed elsewhere; a 409 while creating (e.g. the chosen
-          // supplier deleted on another device just now) keeps the input and shows the server's reason
-          if (item && error instanceof ApiError && error.isVersionConflict) {
-            toast.error(`${item.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+    once((done) =>
+      save.mutate(
+        { id: item?.id, request: toRequest(values, item?.version) },
+        {
+          onSettled: done,
+          onSuccess: (saved) => {
+            toast.success(`${saved.name} gespeichert`)
             onClose()
-          } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
-            toast.error(`Speichern fehlgeschlagen: ${error.message}`)
-          }
+          },
+          onError: (error) => {
+            // Only an existing article can have been changed elsewhere; a 409 while creating (e.g. the chosen
+            // supplier deleted on another device just now) keeps the input and shows the server's reason
+            if (item && error instanceof ApiError && error.isVersionConflict) {
+              toast.error(`${item.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+              onClose()
+            } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
+              toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+            }
+          },
         },
-      },
+      ),
     )
   }
 
