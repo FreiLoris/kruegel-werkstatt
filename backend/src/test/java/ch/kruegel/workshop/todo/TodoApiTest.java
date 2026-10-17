@@ -92,7 +92,7 @@ class TodoApiTest {
     @Test
     void textIsRequiredAndThePersonMustBeSelectableForTodos() {
         Employee notForTodos = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
-                true, false, true), 2));
+                true, false, false), 2));
         Employee left = employees.save(EmployeeTestData.employee("Weg", 3));
         left.deactivate();
         employees.save(left);
@@ -154,7 +154,7 @@ class TodoApiTest {
         assertThat(send("PUT", "/api/todos/" + id + "/assignee", "{ \"assigneeId\": null }"))
                 .bodyJson().extractingPath("$.assigneeId").isNull();
         Employee notForTodos = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
-                true, false, true), 5));
+                true, false, false), 5));
         assertFieldError(send("PUT", "/api/todos/" + id + "/assignee", "{ \"assigneeId\": \"%s\" }".formatted(notForTodos.getId())),
                 "assigneeId");
     }

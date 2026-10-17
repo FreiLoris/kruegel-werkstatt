@@ -48,6 +48,8 @@ public record EmployeeDetails(
         Objects.requireNonNull(color, "color");
 
         name = name.strip();
+        // an own pinboard column means notes are assigned there – so the person must be selectable for them
+        selectableForTodos = selectableForTodos || hasPinboardColumn;
         color = color.strip().toLowerCase(Locale.ROOT);
 
         if (name.isEmpty() || name.length() > 40) {

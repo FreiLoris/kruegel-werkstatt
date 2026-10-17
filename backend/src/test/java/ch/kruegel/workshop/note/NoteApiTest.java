@@ -99,7 +99,7 @@ class NoteApiTest {
     @Test
     void textIsRequiredAndPeopleMustBeSelectable() {
         Employee notForNotes = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
-                true, false, true), 3));
+                true, false, false), 3));
 
         assertFieldError(create("{ \"text\": \" \" }"), "text");
         assertFieldError(create("{ \"text\": \"x\", \"assigneeIds\": [\"%s\"] }".formatted(notForNotes.getId())), "assigneeIds");
@@ -208,7 +208,7 @@ class NoteApiTest {
 
         // no version needed, but only selectable people and not when archived
         Employee notForNotes = employees.save(new Employee(new EmployeeDetails("Lehrling", Role.MECHANIC, "#cccccc", null, 25,
-                true, false, true), 4));
+                true, false, false), 4));
         assertFieldError(send("PUT", "/api/notes/" + note + "/move", "{ \"toEmployeeId\": \"%s\" }".formatted(notForNotes.getId())),
                 "toEmployeeId");
         send("PUT", "/api/notes/" + note + "/archived", "{ \"archived\": true }");
