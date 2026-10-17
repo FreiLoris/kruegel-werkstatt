@@ -8,7 +8,7 @@ import { useToday } from '../../lib/clock'
 import { useMeasureTireSet, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { depthsOf, formFromSet, tireSetErrors, type TireSetForm } from './tireSetForm'
-import { WHEELS } from './tread'
+import { formatDepth, WHEELS } from './tread'
 import { TreadDepthsInput } from './TreadDepthsInput'
 
 /**
@@ -68,6 +68,11 @@ export function MeasureDialog({ set, onClose }: { set: TireSet; onClose: () => v
     >
       <form id={formId} className={styles.section} onSubmit={submit}>
         <TreadDepthsInput form={form} onChange={setForm} errors={errors} limits={limits} />
+        {/* a partial measurement keeps the other wheels (E7) – say so before saving */}
+        <p className={styles.hint}>
+          Nur gemessene Räder eintragen – leere behalten ihren letzten Wert (
+          {WHEELS.map((w) => `${w.short} ${formatDepth(set.depths[w.key])}`).join(', ')}).
+        </p>
         {tried && nothing && <p className={styles.hint}>Mindestens eine Profiltiefe eingeben.</p>}
         <div className={styles.row}>
           <TextField label="Gemessen am" type="date" max={today} required value={on} onChange={(e) => setOn(e.target.value)} />

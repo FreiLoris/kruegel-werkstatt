@@ -7,6 +7,7 @@ import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { useConfirm } from '../../../components/ui/confirmContext'
 import { Facts } from '../../../components/ui/Facts'
+import { Modal } from '../../../components/ui/Modal'
 import { useToast } from '../../../components/ui/toastContext'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { formatCount, formatDate, formatDuration, formatLocalDateTime, formatTime, formatTimestamp } from '../../../lib/format'
@@ -61,6 +62,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const { data: serviceItems } = useAllServiceItems()
   const { data: stations } = useInspectionStations()
   const [dialog, setDialog] = useState<'customer' | 'vehicle' | null>(null)
+  const [askBooking, setAskBooking] = useState(false)
   const tires = useTaskTires(task.id, task.tireChange)
   const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
 
@@ -73,19 +75,17 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const items = workItems(task, names)
   const mfkStation = stations?.find((s) => s.id === task.mfkStationId)
 
-  async function setStatus(status: TaskStatus) {
-    // done, but the wheels of the hotel are not booked out: the place would still show them (13q)
-    const book =
-      status === 'DONE' &&
-      fromHotel &&
-      tires.data &&
-      !isBooked(tires.data) &&
-      (await confirm({
-        title: 'Radwechsel im Pneuhotel buchen?',
-        text: 'Der Auftrag wird fertig gemeldet. Die Räder sind im Pneuhotel noch nicht ausgelagert – jetzt mit den Profiltiefen vom Auftragszettel buchen?',
-        confirmLabel: 'Jetzt buchen',
-        cancelLabel: 'Später',
-      }))
+  function setStatus(status: TaskStatus) {
+    // done, but the wheels of the hotel are not booked out: the place would still show them (13q) –
+    // ask first; Esc / X / "Abbrechen" leave the status as it is (UX G-15)
+    if (status === 'DONE' && fromHotel && tires.data && !isBooked(tires.data)) {
+      setAskBooking(true)
+      return
+    }
+    saveStatus(status, false)
+  }
+
+  function saveStatus(status: TaskStatus, book: boolean) {
     changeStatus.mutate(
       { id: task.id, status },
       {
@@ -358,6 +358,36 @@ function TaskDetail({ task }: { task: AnyTask }) {
         </Card>
       </div>
 
+      <Modal
+        open={askBooking}
+        onClose={() => setAskBooking(false)}
+        title="Radwechsel im Pneuhotel buchen?"
+        footer={
+          <>
+            <Button onClick={() => setAskBooking(false)}>Abbrechen</Button>
+            <Button
+              onClick={() => {
+                setAskBooking(false)
+                saveStatus('DONE', false)
+              }}
+            >
+              Fertig, später buchen
+            </Button>
+            <Button
+              variant="primary"
+              data-autofocus
+              onClick={() => {
+                setAskBooking(false)
+                saveStatus('DONE', true)
+              }}
+            >
+              Fertig und jetzt buchen
+            </Button>
+          </>
+        }
+      >
+        <p>Die Räder sind im Pneuhotel noch nicht ausgelagert. Jetzt mit den Profiltiefen vom Auftragszettel buchen?</p>
+      </Modal>
       {dialog === 'customer' && <CustomerDialog customer={c} onSaved={() => setDialog(null)} onClose={() => setDialog(null)} />}
       {dialog === 'vehicle' && v && (
         <VehicleDialog vehicle={v} customerId={v.customerId} onSaved={() => setDialog(null)} onClose={() => setDialog(null)} />

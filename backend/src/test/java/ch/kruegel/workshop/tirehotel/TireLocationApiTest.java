@@ -122,25 +122,30 @@ class TireLocationApiTest {
     }
 
     @Test
-    void smallerOnlyWhereNoSetLiesAndTheCodeRenamesTheAddresses() {
+    void smallerOnlyWhereNoSetLiesAndTheCodeOnlyWhileEmpty() {
         String og = idOf(send("POST", "/api/tire-locations", location("OG", "FLOOR", 2, 1, 1, null)));
         String set = idOf(store(huber, placeId("OG-B1-1")));
 
         assertFieldError(send("PUT", "/api/tire-locations/" + og, location("OG", "FLOOR", 1, 1, 1, 0L)), "sizeA");
 
         send("POST", "/api/tire-sets/" + set + "/move", "{ \"placeId\": \"%s\" }".formatted(placeId("OG-A1-1")));
-        assertThat(send("PUT", "/api/tire-locations/" + og, location("W1", "FLOOR", 1, 2, 1, 0L))).hasStatusOk();
+        // the labels on the wheels say "OG-…" – the code stays while a set lies here
+        assertFieldError(send("PUT", "/api/tire-locations/" + og, location("W1", "FLOOR", 1, 2, 1, 0L)), "code");
+        assertThat(send("PUT", "/api/tire-locations/" + og, location("OG", "FLOOR", 1, 2, 1, 0L))).hasStatusOk();
 
         MvcTestResult places = mvc.get().uri("/api/tire-places").exchange();
-        assertThat(places).bodyJson().extractingPath("$[*].address").asArray().containsExactly("W1-A1-1", "W1-A2-1", "W1-B1-1");
+        assertThat(places).bodyJson().extractingPath("$[*].address").asArray().containsExactly("OG-A1-1", "OG-A2-1", "OG-B1-1");
         // the column B is no longer used – kept, the history may name it
-        assertThat(places).bodyJson().extractingPath("$[?(@.address == 'W1-B1-1')].active").asArray().containsExactly(false);
-        assertThat(mvc.get().uri("/api/tire-sets/" + set).exchange()).bodyJson().extractingPath("$.place").isEqualTo("W1-A1-1");
-        assertFieldError(store(muster, placeId("W1-B1-1")), "placeId");
+        assertThat(places).bodyJson().extractingPath("$[?(@.address == 'OG-B1-1')].active").asArray().containsExactly(false);
+        assertFieldError(store(muster, placeId("OG-B1-1")), "placeId");
 
         // not deleted while a set lies there
         assertThat(send("DELETE", "/api/tire-locations/" + og, null)).hasStatus(HttpStatus.CONFLICT);
         send("POST", "/api/tire-sets/" + set + "/retrieve", "{}");
+        // empty now: a new code renames the addresses
+        assertThat(send("PUT", "/api/tire-locations/" + og, location("W1", "FLOOR", 1, 2, 1, 1L))).hasStatusOk();
+        assertThat(mvc.get().uri("/api/tire-places").exchange()).bodyJson().extractingPath("$[*].address").asArray()
+                .containsExactly("W1-A1-1", "W1-A2-1", "W1-B1-1");
         assertThat(send("DELETE", "/api/tire-locations/" + og, null)).hasStatus(HttpStatus.NO_CONTENT);
         assertThat(mvc.get().uri("/api/tire-places").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
     }

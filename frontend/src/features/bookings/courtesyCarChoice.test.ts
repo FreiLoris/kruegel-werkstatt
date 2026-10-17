@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_APPOINTMENT, type AppointmentForm } from '../tasks/wizard/appointmentForm'
-import { choiceError, isValidPeriod, NO_COURTESY_CAR, periodOf, suggestedPeriod } from './courtesyCarChoice'
+import { choiceError, isValidPeriod, NO_COURTESY_CAR, periodOf, returnDateAfterMove, splitDateTime, suggestedPeriod } from './courtesyCarChoice'
 
 const FORM: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '11:00' }
 
@@ -49,5 +49,19 @@ describe('isValidPeriod', () => {
   it('choiceError asks for the missing part instead of letting it through', () => {
     const wanted = { ...NO_COURTESY_CAR, wanted: true, courtesyCarId: 'c1' }
     expect(choiceError({ ...wanted, pickupAt: '2026-10-20T', returnAt: 'T' }, EMPTY_APPOINTMENT)).toBe('Abholung und Rückgabe angeben')
+  })
+})
+
+describe('splitDateTime and returnDateAfterMove', () => {
+  it('keeps the time while the date is being typed (the browser reports it empty)', () => {
+    expect(splitDateTime('2026-10-21T08:00')).toEqual(['2026-10-21', '08:00'])
+    expect(splitDateTime('T08:00')).toEqual(['', '08:00'])
+    expect(splitDateTime('2026-10-21T')).toEqual(['2026-10-21', ''])
+    expect(splitDateTime(null)).toEqual(['', ''])
+  })
+
+  it('a later pickup day moves the return day along', () => {
+    expect(returnDateAfterMove('2026-10-21', '2026-10-23', '2026-10-22')).toBe('2026-10-24')
+    expect(returnDateAfterMove('', '2026-10-23', '2026-10-22')).toBe('2026-10-22')
   })
 })
