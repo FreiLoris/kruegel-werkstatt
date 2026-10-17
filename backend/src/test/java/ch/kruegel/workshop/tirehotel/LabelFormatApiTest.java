@@ -61,6 +61,8 @@ class LabelFormatApiTest {
 
     @Test
     void theLabelsMustFitOnA4AndTheNameIsUnique() {
+        // one label per wheel – 1 × 2 would print only VL and VR
+        assertFieldError(send("POST", "/api/label-formats", format("A5", 1, 2, "190", "140", "0", "0", "0", "0", null)), "rows");
         // 3 × 75 mm = 225 mm > 210 mm
         assertFieldError(send("POST", "/api/label-formats", format("Zu breit", 3, 8, "75", "37", "0", "0", "0", "0", null)), "widthMm");
         // 8 × 37 + 4.5 = 300.5 mm > 297 mm
