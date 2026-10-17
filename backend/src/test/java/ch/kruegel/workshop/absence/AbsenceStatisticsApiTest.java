@@ -4,7 +4,10 @@ import ch.kruegel.workshop.TestDatabase;
 import ch.kruegel.workshop.TestcontainersConfiguration;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
+import ch.kruegel.workshop.employee.EmployeeRequest;
+import ch.kruegel.workshop.employee.EmployeeService;
 import ch.kruegel.workshop.employee.EmployeeTestData;
+import ch.kruegel.workshop.employee.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,9 @@ class AbsenceStatisticsApiTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private EmployeeService employeeService;
+
     private Employee chef;
     private Employee reto;
     private Employee erich;
@@ -69,6 +75,21 @@ class AbsenceStatisticsApiTest {
         assertThat(response).bodyJson().extractingPath("$.people[?(@.name == 'Reto')].vacationLeft").asArray().containsExactly(17.0);
         // nothing of it in 2026 – New Year's Day and Berchtoldstag
         assertThat(statistics(2026)).bodyJson().extractingPath("$.people[?(@.name == 'Reto')].vacationTaken").asArray().containsExactly(0.0);
+    }
+
+    @Test
+    void aChangedEntitlementLeavesThePastYearsAsTheyWere() {
+        // Reto has been in the app since 2024 with 25 days
+        jdbc.update("UPDATE employee SET created_at = '2024-01-01T08:00:00Z' WHERE id = ?", reto.getId());
+        int thisYear = LocalDate.now().getYear();
+
+        employeeService.update(reto.getId(), new EmployeeRequest("Reto", Role.MECHANIC, "#9fc8f0", LocalDate.of(1990, 5, 18), 30,
+                true, true, true, false, reto.getVersion()));
+
+        // from this year on 30 – the past years keep their 25 ("Übrig" of 2025 does not change afterwards)
+        assertThat(statistics(thisYear)).bodyJson().extractingPath("$.people[?(@.name == 'Reto')].vacationEntitlement").asArray().containsExactly(30);
+        assertThat(statistics(thisYear - 1)).bodyJson().extractingPath("$.people[?(@.name == 'Reto')].vacationEntitlement").asArray().containsExactly(25);
+        assertThat(statistics(2024)).bodyJson().extractingPath("$.people[?(@.name == 'Reto')].vacationEntitlement").asArray().containsExactly(25);
     }
 
     @Test

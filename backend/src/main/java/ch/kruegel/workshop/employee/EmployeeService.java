@@ -9,8 +9,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Business logic around employees. Every public method is one transaction:
@@ -23,11 +27,16 @@ public class EmployeeService {
     static final String TOPIC = "employees";
 
     private final EmployeeRepository repository;
+    private final VacationEntitlementRepository entitlements;
     private final ApplicationEventPublisher events;
+    private final Clock clock;
 
-    EmployeeService(EmployeeRepository repository, ApplicationEventPublisher events) {
+    EmployeeService(EmployeeRepository repository, VacationEntitlementRepository entitlements, ApplicationEventPublisher events,
+                    Clock clock) {
         this.repository = repository;
+        this.entitlements = entitlements;
         this.events = events;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +73,9 @@ public class EmployeeService {
         if (employee.isActive() && repository.existsByActiveTrueAndNameIgnoreCaseAndIdNot(details.name(), id)) {
             throw nameTaken(details.name());
         }
+        if (details.vacationDaysPerYear() != employee.getVacationDaysPerYear()) {
+            keepEntitlementOfPastYears(employee);
+        }
         employee.update(details);
         return saved(employee);
     }
@@ -99,6 +111,23 @@ public class EmployeeService {
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
         return list(true);
+    }
+
+    /**
+     * The entitlement changes (decision of the workshop): the past years keep the old one – from the year
+     * the person was entered in the app, where none is kept yet. The current year takes the new one.
+     */
+    private void keepEntitlementOfPastYears(Employee employee) {
+        int thisYear = LocalDate.now(clock).getYear();
+        int firstYear = employee.getCreatedAt().atZone(clock.getZone()).getYear();
+        Set<Integer> kept = entitlements.findByEmployeeId(employee.getId()).stream()
+                .map(VacationEntitlement::getYear)
+                .collect(Collectors.toSet());
+        for (int year = firstYear; year < thisYear; year++) {
+            if (!kept.contains(year)) {
+                entitlements.save(new VacationEntitlement(employee.getId(), year, employee.getVacationDaysPerYear()));
+            }
+        }
     }
 
     private Employee find(UUID id) {
