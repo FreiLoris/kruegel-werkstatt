@@ -49,7 +49,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | German (UI) | English (code) | Notes |
 |---|---|---|
 | Auftrag / Termin | `Task` | one entity for both, like in the old app |
-| Auftragsnummer | `taskNumber` | SwissGarage order number, added by hand, unique |
+| Auftragsnummer | `taskNumber` | given by the app to every task (12d), can be changed by hand, unique |
 | Status Eingang / In Arbeit / Wartet auf Material / Fertig | `TaskStatus`: `RECEIVED` / `IN_PROGRESS` / `WAITING_FOR_PARTS` / `DONE` | |
 | Termin (Datum, Uhrzeit) | `Appointment` (`date`, `time`) | Swiss local time, no time zone |
 | Ende / Dauer ("bis") | `Appointment.end` / API `endAt` | until when the task takes its lift; default 1 h; may be on a later day |

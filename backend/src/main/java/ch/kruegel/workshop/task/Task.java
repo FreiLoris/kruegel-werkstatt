@@ -31,7 +31,7 @@ import java.util.Set;
  * and where it stands. Unlike master data, tasks can be deleted (6b).
  *
  * <p>Entered data comes in as {@link TaskDetails} ({@link #Task(TaskDetails, int) create},
- * {@link #update}). Status, task number and position have their own methods because they
+ * {@link #update}). Status and task number have their own methods because they
  * change on their own – e.g. the mechanic sets "in progress" on the dashboard.
  *
  * <p>References are LAZY: lists and calendars usually only need the IDs.
