@@ -10,7 +10,7 @@ import java.util.Objects;
 
 /**
  * Everything that is entered for a task – in the wizard and when editing it.
- * Status, task number and position in the lift column are changed separately (own actions).
+ * Status and task number are changed separately (own actions).
  *
  * @param customer    required
  * @param vehicle     may still be open, e.g. a new car that is not in SwissGarage yet

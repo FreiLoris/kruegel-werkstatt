@@ -42,7 +42,10 @@ class TaskSearchRepository {
                                  t.appointment_date < :today,
                                  CASE WHEN t.appointment_date >= :today THEN t.appointment_date END ASC,
                                  t.appointment_date DESC,
-                                 t.appointment_time
+                                 t.appointment_time,
+                                 -- tasks without appointment have no date: a fixed order, so the same search
+                                 -- always shows the same hits (the LIMIT cuts there)
+                                 t.created_at, t.id
                         LIMIT :limit""")
                 .param("words", words.toArray(String[]::new))
                 .param("today", today)

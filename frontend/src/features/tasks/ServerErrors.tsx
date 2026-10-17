@@ -4,6 +4,7 @@ import styles from './ServerErrors.module.css'
 /** Field names of the backend → words the user knows from the task form */
 const FIELD_LABELS: Record<string, string> = {
   customerId: 'Kunde',
+  acceptedById: 'Angenommen von',
   vehicleId: 'Fahrzeug',
   date: 'Datum',
   time: 'Uhrzeit',
@@ -14,6 +15,9 @@ const FIELD_LABELS: Record<string, string> = {
   liftId: 'Lift',
   tireChangeKind: 'Radwechsel',
   mfkAppointment: 'MFK-Termin',
+  mfkDriverId: 'MFK-Fahrer',
+  mfkStationId: 'Prüfstelle',
+  mfkMinutes: 'MFK-Dauer',
   serviceItemIds: 'Service',
   'parts.description': 'Material',
   'parts.status': 'Material-Status',

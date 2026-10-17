@@ -204,7 +204,7 @@ export function useChangePartsStatus() {
   })
 }
 
-/** SwissGarage order number; empty removes it. */
+/** Change the task number – it can be changed, not removed. */
 export function useAssignTaskNumber() {
   const queryClient = useQueryClient()
   return useMutation({
