@@ -119,6 +119,26 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void anotherDatabaseViolationIsAProgrammingError500() {
+        MvcTestResult response = mvc.get().uri("/test/errors/data-error").exchange();
+
+        assertThat(response).hasStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response).bodyJson().extractingPath("$.title").isEqualTo("Unerwarteter Fehler");
+        assertThat(response).bodyText().doesNotContain("Huber");
+    }
+
+    @Test
+    void springsOwnErrorsAreInGerman() {
+        MvcTestResult brokenJson = mvc.post().uri("/test/errors/validation").contentType(MediaType.APPLICATION_JSON).content("{ not json").exchange();
+        MvcTestResult wrongMethod = mvc.delete().uri("/test/errors/crash").exchange();
+
+        assertThat(brokenJson).bodyJson().extractingPath("$.title").isEqualTo("Ungültige Anfrage");
+        assertThat(brokenJson).bodyJson().extractingPath("$.detail").isEqualTo("Die Daten sind unvollständig oder haben ein falsches Format.");
+        assertThat(wrongMethod).hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
+        assertThat(wrongMethod).bodyJson().extractingPath("$.title").isEqualTo("Nicht erlaubt");
+    }
+
+    @Test
     void theLogNamesTheConstraintButNotTheRow() {
         // fictitious row – PostgreSQL puts the whole row into its message
         SQLException sql = new SQLException("new row violates check constraint. Failing row contains (Huber, 079 000 00 00)", "23514");

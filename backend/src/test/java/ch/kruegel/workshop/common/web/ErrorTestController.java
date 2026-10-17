@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 /**
@@ -51,7 +52,15 @@ class ErrorTestController {
 
     @GetMapping("/data-conflict")
     void dataConflict() {
-        throw new DataIntegrityViolationException("duplicate key value violates unique constraint");
+        throw new DataIntegrityViolationException("could not execute statement",
+                new SQLException("duplicate key value violates unique constraint", "23505"));
+    }
+
+    @GetMapping("/data-error")
+    void dataError() {
+        // fictitious row – PostgreSQL puts the whole row into its message
+        throw new DataIntegrityViolationException("could not execute statement",
+                new SQLException("null value in column. Failing row contains (Huber, 079 000 00 00)", "23502"));
     }
 
     @GetMapping("/crash")
