@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Administration of storage locations – a tree (13f). Names are unique among the places in use with
@@ -88,16 +89,22 @@ public class StorageLocationService {
         return saved(location);
     }
 
-    /** No longer used – with everything inside it (a drawer of a cleared shelf is gone too). Articles keep their place. */
+    /**
+     * No longer used – with everything inside it (a drawer of a cleared shelf is gone too). Articles keep
+     * their place. The ones already out of use stay marked with their own clearing out.
+     */
     public StorageLocationDto deactivate(UUID id) {
         List<StorageLocation> all = repository.findAllByOrderBySortOrderAscNameAsc();
         StorageLocation location = find(all, id);
         Set<UUID> inside = subtree(all, id);
-        all.stream().filter(l -> inside.contains(l.getId())).forEach(StorageLocation::deactivate);
+        all.stream().filter(l -> inside.contains(l.getId()) && l.isActive()).forEach(l -> l.deactivate(id));
         return saved(location);
     }
 
-    /** Used again – with everything inside it; only inside a place in use. */
+    /**
+     * Used again – with what was cleared out together with it (decision of the workshop): a drawer cleared
+     * out on its own before stays out. Only inside a place in use.
+     */
     public StorageLocationDto activate(UUID id) {
         List<StorageLocation> all = repository.findAllByOrderBySortOrderAscNameAsc();
         StorageLocation location = find(all, id);
@@ -109,8 +116,12 @@ public class StorageLocationService {
         }
         checkNameFree(all, location.getParentId(), location.getName(), id);
         Set<UUID> inside = subtree(all, id);
-        checkNamesFreeInside(all, inside);
-        all.stream().filter(l -> inside.contains(l.getId())).forEach(StorageLocation::activate);
+        Set<UUID> comingBack = all.stream()
+                .filter(l -> l.getId().equals(id) || (inside.contains(l.getId()) && l.deactivatedWith(id)))
+                .map(StorageLocation::getId)
+                .collect(Collectors.toSet());
+        checkNamesFreeInside(all, comingBack);
+        all.stream().filter(l -> comingBack.contains(l.getId())).forEach(StorageLocation::activate);
         return saved(location);
     }
 
@@ -165,16 +176,16 @@ public class StorageLocationService {
 
     /**
      * Every place inside that becomes active again needs a free name on its level – also among each other.
-     * Example: "Schublade 1" was cleared out on its own and a new "Schublade 1" created; activating the
-     * shelf would bring both back (the database index refuses that with a 409 nobody can resolve).
+     * Can still happen with places cleared out before V38 (they come back with their place): an old and a
+     * new "Schublade 1" – the database index would refuse that with a 409 nobody can resolve.
      */
-    private static void checkNamesFreeInside(List<StorageLocation> all, Set<UUID> inside) {
+    private static void checkNamesFreeInside(List<StorageLocation> all, Set<UUID> comingBack) {
         for (StorageLocation place : all) {
-            if (!inside.contains(place.getId()) || place.getParentId() == null || !inside.contains(place.getParentId())) {
+            if (!comingBack.contains(place.getId()) || place.getParentId() == null || !comingBack.contains(place.getParentId())) {
                 continue;
             }
             boolean taken = all.stream().anyMatch(other -> !other.getId().equals(place.getId())
-                    && (other.isActive() || inside.contains(other.getId()))
+                    && (other.isActive() || comingBack.contains(other.getId()))
                     && Objects.equals(other.getParentId(), place.getParentId())
                     && other.getName().equalsIgnoreCase(place.getName()));
             if (taken) {

@@ -32,6 +32,13 @@ public class StorageLocation extends BaseEntity implements Sortable {
     /** The place it is in; empty = top level. Only the ID – the tree is put together by the page. */
     private UUID parentId;
 
+    /**
+     * Not in use: the place whose clearing out took it along (itself if cleared out on its own) –
+     * using that place again brings back exactly these, not one cleared out before on its own.
+     * Empty for the ones cleared out before V38 (they come back with their place, as they did then).
+     */
+    private UUID deactivatedWith;
+
     protected StorageLocation() {
         // for JPA
     }
@@ -61,12 +68,20 @@ public class StorageLocation extends BaseEntity implements Sortable {
         this.name = cleaned;
     }
 
-    public void deactivate() {
+    /** @param with the place being cleared out – this one or one it lies in */
+    public void deactivate(UUID with) {
         this.active = false;
+        this.deactivatedWith = with;
     }
 
     public void activate() {
         this.active = true;
+        this.deactivatedWith = null;
+    }
+
+    /** Was it cleared out together with {@code place} (or before V38, when that was not recorded)? */
+    public boolean deactivatedWith(UUID place) {
+        return !active && (deactivatedWith == null || deactivatedWith.equals(place));
     }
 
     @Override
