@@ -109,6 +109,7 @@ public class StorageLocationService {
         }
         checkNameFree(all, location.getParentId(), location.getName(), id);
         Set<UUID> inside = subtree(all, id);
+        checkNamesFreeInside(all, inside);
         all.stream().filter(l -> inside.contains(l.getId())).forEach(StorageLocation::activate);
         return saved(location);
     }
@@ -159,6 +160,27 @@ public class StorageLocationService {
                 && Objects.equals(l.getParentId(), parentId) && l.getName().equalsIgnoreCase(name));
         if (taken) {
             throw new InvalidInputException("name", "'" + name + "' gibt es hier bereits");
+        }
+    }
+
+    /**
+     * Every place inside that becomes active again needs a free name on its level – also among each other.
+     * Example: "Schublade 1" was cleared out on its own and a new "Schublade 1" created; activating the
+     * shelf would bring both back (the database index refuses that with a 409 nobody can resolve).
+     */
+    private static void checkNamesFreeInside(List<StorageLocation> all, Set<UUID> inside) {
+        for (StorageLocation place : all) {
+            if (!inside.contains(place.getId()) || place.getParentId() == null || !inside.contains(place.getParentId())) {
+                continue;
+            }
+            boolean taken = all.stream().anyMatch(other -> !other.getId().equals(place.getId())
+                    && (other.isActive() || inside.contains(other.getId()))
+                    && Objects.equals(other.getParentId(), place.getParentId())
+                    && other.getName().equalsIgnoreCase(place.getName()));
+            if (taken) {
+                throw new InvalidInputException("name", "'%s' gibt es in %s zweimal – beide wären wieder in Gebrauch"
+                        .formatted(place.getName(), find(all, place.getParentId()).getName()));
+            }
         }
     }
 

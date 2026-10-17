@@ -110,6 +110,21 @@ class StorageLocationTreeApiTest {
     }
 
     @Test
+    void activatingAShelfWithTwoDrawersOfTheSameNameIsAFieldErrorNotAConflict() {
+        String shelf = create("Regal 2", null);
+        String oldDrawer = create("Schublade 1", shelf);
+        send("POST", "/api/storage-locations/" + oldDrawer + "/deactivate", null);
+        create("Schublade 1", shelf);
+        send("POST", "/api/storage-locations/" + shelf + "/deactivate", null);
+
+        MvcTestResult activated = send("POST", "/api/storage-locations/" + shelf + "/activate", null);
+
+        // the database would refuse both drawers active with a 409 "Bitte neu laden" that never goes away
+        assertThat(activated).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].message").asString()
+                .contains("Schublade 1").contains("Regal 2");
+    }
+
+    @Test
     void orderPerLevel() {
         String office = create("Büro", null);
         String a = create("Regal A", office);
