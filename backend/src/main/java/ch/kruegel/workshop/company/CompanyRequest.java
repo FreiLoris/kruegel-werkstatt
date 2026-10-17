@@ -9,12 +9,12 @@ import jakarta.validation.constraints.Size;
 /** Input for the company profile. Empty texts count as "not set". */
 public record CompanyRequest(
         @NotBlank @Size(max = CompanyDetails.NAME_MAX) String name,
-        @Size(max = 100) String street,
-        @Size(max = 10) String postalCode,
-        @Size(max = 60) String city,
-        @Size(max = 30) String phone,
-        @Email @Size(max = 100) String email,
-        @Size(max = 100) String website,
+        @Size(max = CompanyDetails.STREET_MAX) String street,
+        @Size(max = CompanyDetails.POSTAL_CODE_MAX) String postalCode,
+        @Size(max = CompanyDetails.CITY_MAX) String city,
+        @Size(max = CompanyDetails.PHONE_MAX) String phone,
+        @Email @Size(max = CompanyDetails.EMAIL_MAX) String email,
+        @Size(max = CompanyDetails.WEBSITE_MAX) String website,
         @NotNull @Schema(description = "The version that was loaded (optimistic locking)") Long version) {
 
     CompanyDetails toDetails() {

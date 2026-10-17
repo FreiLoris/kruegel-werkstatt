@@ -34,6 +34,8 @@ public record EmployeeDetails(
         boolean hasPinboardColumn,
         boolean flexibleHours) {
 
+    public static final int NAME_MAX = 40;
+
     private static final Pattern HEX_COLOR = Pattern.compile("^#[0-9a-f]{6}$");
 
     /** Someone with regular hours – the usual case. */
@@ -52,8 +54,8 @@ public record EmployeeDetails(
         selectableForTodos = selectableForTodos || hasPinboardColumn;
         color = color.strip().toLowerCase(Locale.ROOT);
 
-        if (name.isEmpty() || name.length() > 40) {
-            throw new IllegalArgumentException("Name must be 1–40 characters: '" + name + "'");
+        if (name.isEmpty() || name.length() > NAME_MAX) {
+            throw new IllegalArgumentException("Name must be 1–" + NAME_MAX + " characters, but has " + name.length());
         }
         if (!HEX_COLOR.matcher(color).matches()) {
             throw new IllegalArgumentException("Color must be #rrggbb: '" + color + "'");
