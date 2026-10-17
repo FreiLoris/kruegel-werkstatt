@@ -41,10 +41,16 @@ export function TireHotelPage() {
   const navigate = useNavigate()
 
   function change(key: 'view' | 'q' | 'place', value: string) {
-    const next = new URLSearchParams(params)
-    if (value) next.set(key, value)
-    else next.delete(key)
-    setParams(next, { replace: true })
+    // from the latest address, not the one of this render: typing fast lost letters (UX G-16)
+    setParams(
+      (latest) => {
+        const next = new URLSearchParams(latest)
+        if (value) next.set(key, value)
+        else next.delete(key)
+        return next
+      },
+      { replace: true },
+    )
   }
 
   const unplaced = sets.data && !retrieved ? sets.data.filter((s) => !s.placeId).length : 0

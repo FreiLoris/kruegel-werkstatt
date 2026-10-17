@@ -12,6 +12,8 @@ import {
   useDeleteTireLocation,
   useSaveTireLocation,
   useTireLocations,
+  useTirePlaces,
+  useTireSets,
   type TireLocation,
   type TireLocationKind,
 } from './tireHotelApi'
@@ -123,6 +125,11 @@ function LocationDialog({ location, onClose }: { location?: TireLocation; onClos
   const formId = useId()
   const toast = useToast()
   const save = useSaveTireLocation()
+  const { data: storedSets } = useTireSets(true)
+  const { data: places } = useTirePlaces()
+  // the labels on stored wheels carry the code – it stays while a set lies here (UX G-17, also checked by the server)
+  const occupied =
+    !!location && !!storedSets && !!places && storedSets.some((s) => places.some((p) => p.id === s.placeId && p.locationId === location.id))
   const [values, setValues] = useState({
     code: location?.code ?? '',
     name: location?.name ?? '',
@@ -200,7 +207,8 @@ function LocationDialog({ location, onClose }: { location?: TireLocation; onClos
             required
             placeholder="z. B. OG"
             maxLength={6}
-            hint="Anfang jeder Adresse"
+            disabled={occupied}
+            hint={occupied ? 'Bleibt, solange hier Sätze liegen – ihre Etiketten tragen das Kürzel' : 'Anfang jeder Adresse'}
             value={values.code}
             onChange={(e) => set('code', e.target.value)}
             error={fieldError('code')}

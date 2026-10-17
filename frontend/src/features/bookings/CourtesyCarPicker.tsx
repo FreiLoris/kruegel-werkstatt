@@ -2,7 +2,7 @@ import { CarFront } from 'lucide-react'
 import { TextField } from '../../components/ui/Fields'
 import { formatLocalDateTime } from '../../lib/format'
 import { useAvailability } from './bookingApi'
-import { isValidPeriod } from './courtesyCarChoice'
+import { isValidPeriod, returnDateAfterMove, splitDateTime } from './courtesyCarChoice'
 import styles from './CourtesyCarPicker.module.css'
 
 interface CourtesyCarPickerProps {
@@ -19,22 +19,21 @@ interface CourtesyCarPickerProps {
   name: string
 }
 
-const split = (dateTime: string | null): [string, string] => (dateTime ? [dateTime.slice(0, 10), dateTime.slice(11, 16)] : ['', ''])
-
 /**
  * Pickup, return and every courtesy car with "frei" or who has it when (7c, bug #2: one check for
  * all views – the server's availability). Only a free car can be chosen; a car that is overdue
  * (not back yet) stays choosable but says so (7d).
  */
 export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesyCarId, onCarChange, excludeBookingId, name }: CourtesyCarPickerProps) {
-  const [pickupDate, pickupTime] = split(pickupAt)
-  const [returnDate, returnTime] = split(returnAt)
+  const [pickupDate, pickupTime] = splitDateTime(pickupAt)
+  const [returnDate, returnTime] = splitDateTime(returnAt)
   const periodValid = isValidPeriod(pickupAt, returnAt)
   const availability = useAvailability(periodValid ? pickupAt : null, periodValid ? returnAt : null, excludeBookingId)
   const chosen = availability.data?.find((car) => car.courtesyCarId === courtesyCarId)
 
   const change = (part: 'pickupDate' | 'pickupTime' | 'returnDate' | 'returnTime', value: string) => {
     const p = { pickupDate, pickupTime, returnDate, returnTime, [part]: value }
+    if (part === 'pickupDate') p.returnDate = returnDateAfterMove(pickupDate, value, returnDate)
     onPeriodChange(`${p.pickupDate}T${p.pickupTime}`, `${p.returnDate}T${p.returnTime}`)
   }
 

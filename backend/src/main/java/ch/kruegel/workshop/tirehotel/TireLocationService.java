@@ -76,6 +76,10 @@ public class TireLocationService {
         if (locations.existsByCodeAndIdNot(code, id)) {
             throw codeTaken(code);
         }
+        // the labels on the stored wheels carry the old address – a new code would no longer match them (UX G-17)
+        if (!code.equals(location.getCode()) && !sets.atLocation(id).isEmpty()) {
+            throw new InvalidInputException("code", "Bleibt, solange hier Sätze liegen – ihre Etiketten tragen «" + location.getCode() + "»");
+        }
         // a set must not lose its place by making the location smaller
         sets.atLocation(id).stream()
                 .filter(s -> !fits(s.getPlace(), request))

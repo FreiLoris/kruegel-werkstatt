@@ -1,3 +1,4 @@
+import { addDays, minutesBetween } from '../../lib/format'
 import type { AppointmentForm } from '../tasks/wizard/appointmentForm'
 
 /**
@@ -55,4 +56,22 @@ export function choiceError(choice: CourtesyCarChoice, form: AppointmentForm): s
   if (period.returnAt <= period.pickupAt) return 'Die Rückgabe muss nach der Abholung liegen'
   if (!choice.courtesyCarId) return 'Einen freien Ersatzwagen wählen'
   return null
+}
+
+/**
+ * "2026-10-15T08:00" → date and time. Split at the "T", not by position: while a date is being typed
+ * the browser reports it empty ("T08:00") – the time must survive that (UX G-19).
+ */
+export function splitDateTime(dateTime: string | null): [string, string] {
+  if (!dateTime) return ['', '']
+  const [date, time = ''] = dateTime.split('T')
+  return [date, time.slice(0, 5)]
+}
+
+const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/
+
+/** A new pickup day moves the return day along by as many days – the booking keeps its length. */
+export function returnDateAfterMove(oldPickup: string, newPickup: string, returnDate: string): string {
+  if (!DAY_ONLY.test(oldPickup) || !DAY_ONLY.test(newPickup) || !DAY_ONLY.test(returnDate)) return returnDate
+  return addDays(returnDate, Math.round(minutesBetween(`${oldPickup}T00:00`, `${newPickup}T00:00`) / (24 * 60)))
 }
