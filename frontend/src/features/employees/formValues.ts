@@ -61,3 +61,6 @@ export function toRequest(values: FormValues, version?: number): EmployeeRequest
     version,
   }
 }
+
+/** Vacation days per year, like the server (0–60) */
+export const MAX_VACATION_DAYS = 60

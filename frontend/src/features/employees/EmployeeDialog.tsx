@@ -5,11 +5,12 @@ import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { wholeNumberError } from '../../lib/wholeNumber'
 import { formatTimestamp } from '../../lib/format'
 import styles from './EmployeeDialog.module.css'
 import { useSaveEmployee, useSetEmployeeActive, type Employee } from './employeeApi'
 import { EmployeeForm } from './EmployeeForm'
-import { initialValues, toRequest, type FormValues } from './formValues'
+import { initialValues, MAX_VACATION_DAYS, toRequest, type FormValues } from './formValues'
 
 interface EmployeeDialogProps {
   /** Empty = create a new person */
@@ -43,6 +44,7 @@ export function EmployeeDialog({ employee, all, onClose }: EmployeeDialogProps) 
   }
 
   function submit() {
+    if (wholeNumberError(values.vacationDaysPerYear, MAX_VACATION_DAYS)) return
     save.mutate(
       { id: employee?.id, request: toRequest(values, employee?.version) },
       {

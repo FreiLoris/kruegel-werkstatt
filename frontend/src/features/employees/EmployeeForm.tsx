@@ -1,10 +1,11 @@
 import type { FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
+import { wholeNumberError } from '../../lib/wholeNumber'
 import { Checkbox, Select, TextField } from '../../components/ui/Fields'
 import { COLOR_SUGGESTIONS } from './colors'
 import { ROLES, type Role } from './employeeApi'
 import styles from './EmployeeForm.module.css'
-import type { FormValues } from './formValues'
+import { MAX_VACATION_DAYS, type FormValues } from './formValues'
 import { NameBadge } from './NameBadge'
 
 interface EmployeeFormProps {
@@ -63,14 +64,12 @@ export function EmployeeForm({ id, values, onChange, onSubmit, error, takenColor
         <TextField
           label="Ferienanspruch"
           required
-          type="number"
+          // text, not number: a number field turned "22,5" into 225 without a word (UX G-09)
           inputMode="numeric"
-          min={0}
-          max={60}
           hint="Tage pro Jahr"
           value={values.vacationDaysPerYear}
           onChange={(e) => set('vacationDaysPerYear', e.target.value)}
-          error={fieldError('vacationDaysPerYear')}
+          error={wholeNumberError(values.vacationDaysPerYear, MAX_VACATION_DAYS) ?? fieldError('vacationDaysPerYear')}
         />
       </div>
 
