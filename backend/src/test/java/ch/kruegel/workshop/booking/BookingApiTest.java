@@ -229,6 +229,21 @@ class BookingApiTest {
     }
 
     @Test
+    void aCarStillPromisedCannotGoOutOfService() {
+        book(polo, "\"holder\": \"Frau Muster\"", "08:00", "17:00");
+
+        MvcTestResult refused = send("POST", "/api/courtesy-cars/" + polo.getId() + "/deactivate", "{}");
+
+        // the booking would disappear from every view
+        assertThat(refused).hasStatus(HttpStatus.CONFLICT);
+        assertThat(refused).bodyJson().extractingPath("$.detail").asString()
+                .isEqualTo("Ersatzwagen 1 ist noch bis %s 17:00 an Frau Muster vergeben – zuerst umbuchen oder stornieren."
+                        .formatted(DATE.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
+        // a car without bookings goes
+        assertThat(send("POST", "/api/courtesy-cars/" + fabia.getId() + "/deactivate", "{}")).hasStatusOk();
+    }
+
+    @Test
     void returnBeforePickupIsAFieldErrorEmptyMeansNow() {
         String id = idOf(book(polo, "\"holder\": \"Herr Früh\"", "08:00", "17:00"));
 
