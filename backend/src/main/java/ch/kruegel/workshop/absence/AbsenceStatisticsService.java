@@ -3,6 +3,8 @@ package ch.kruegel.workshop.absence;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
+import ch.kruegel.workshop.employee.VacationEntitlement;
+import ch.kruegel.workshop.employee.VacationEntitlementRepository;
 import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Counts the absences of a year on the server (9c) – one place for the rule instead of the
@@ -34,12 +37,15 @@ public class AbsenceStatisticsService {
 
     private final AbsenceRepository absences;
     private final EmployeeRepository employees;
+    private final VacationEntitlementRepository entitlements;
     private final ZurichPublicHolidays holidays;
     private final Clock clock;
 
-    AbsenceStatisticsService(AbsenceRepository absences, EmployeeRepository employees, ZurichPublicHolidays holidays, Clock clock) {
+    AbsenceStatisticsService(AbsenceRepository absences, EmployeeRepository employees, VacationEntitlementRepository entitlements,
+                             ZurichPublicHolidays holidays, Clock clock) {
         this.absences = absences;
         this.employees = employees;
+        this.entitlements = entitlements;
         this.holidays = holidays;
         this.clock = clock;
     }
@@ -78,9 +84,13 @@ public class AbsenceStatisticsService {
         }
 
         List<Employee> everyone = employees.findAllByOrderBySortOrderAscNameAsc();
+        // the entitlement the year had – kept when it changed later; otherwise the current one
+        Map<UUID, Integer> entitlementOfYear = entitlements.findByYear(year).stream()
+                .collect(Collectors.toMap(VacationEntitlement::getEmployeeId, VacationEntitlement::getDays));
         List<AbsenceStatisticsDto.PersonStatisticsDto> people = everyone.stream()
                 .filter(e -> e.isActive() || halves.containsKey(e.getId()))
-                .map(e -> person(e, halves.getOrDefault(e.getId(), Map.of()), plannedVacation.getOrDefault(e.getId(), 0)))
+                .map(e -> person(e, entitlementOfYear.getOrDefault(e.getId(), e.getVacationDaysPerYear()),
+                        halves.getOrDefault(e.getId(), Map.of()), plannedVacation.getOrDefault(e.getId(), 0)))
                 .toList();
         List<UUID> order = everyone.stream().map(Employee::getId).toList();
         List<AbsenceStatisticsDto.CompanyStatisticsDto> companyList = companies.values().stream()
@@ -91,9 +101,9 @@ public class AbsenceStatisticsService {
         return new AbsenceStatisticsDto(year, people, companyList);
     }
 
-    private static AbsenceStatisticsDto.PersonStatisticsDto person(Employee employee, Map<AbsenceCategory, Integer> halves, int plannedVacationHalves) {
+    private static AbsenceStatisticsDto.PersonStatisticsDto person(Employee employee, int entitlement, Map<AbsenceCategory, Integer> halves,
+                                                                   int plannedVacationHalves) {
         int vacation = halves.getOrDefault(AbsenceCategory.VACATION, 0);
-        int entitlement = employee.getVacationDaysPerYear();
         return new AbsenceStatisticsDto.PersonStatisticsDto(
                 employee.getId(),
                 employee.getName(),

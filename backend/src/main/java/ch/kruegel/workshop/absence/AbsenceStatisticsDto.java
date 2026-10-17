@@ -15,7 +15,7 @@ import java.util.UUID;
 public record AbsenceStatisticsDto(int year, List<PersonStatisticsDto> people, List<CompanyStatisticsDto> companies) {
 
     /**
-     * @param vacationEntitlement vacation days per year from the employee
+     * @param vacationEntitlement vacation days of that year – the current entitlement, or the one kept for a past year
      * @param vacationTaken       up to and including today (the whole year once it is over)
      * @param vacationPlanned     entered for after today
      * @param vacationLeft        entitlement − taken − planned; negative = more than the entitlement

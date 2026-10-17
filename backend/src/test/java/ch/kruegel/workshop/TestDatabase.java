@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public final class TestDatabase {
 
-    private static final String BUSINESS_TABLES = "stock_item_supplier, stock_item, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, inspection_station, tire_set_event, tire_set, tire_place, tire_location, tire_hotel_settings, label_format, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
+    private static final String BUSINESS_TABLES = "vacation_entitlement, stock_item_supplier, stock_item, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, inspection_station, tire_set_event, tire_set, tire_place, tire_location, tire_hotel_settings, label_format, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
 
     private TestDatabase() {
     }
