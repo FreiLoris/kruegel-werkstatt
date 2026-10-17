@@ -23,8 +23,10 @@ export function TaskEditPage() {
   // (someone changed the status) would otherwise silently throw away what was typed here.
   const [generation, setGeneration] = useState(0)
 
-  if (task.error) return <p className="muted">Auftrag konnte nicht geladen werden: {task.error.message}</p>
-  if (!task.data) return <p className="muted">Lade Auftrag …</p>
+  // the data wins: a failed background refetch (Wi-Fi gap) must not unmount the form and lose the input
+  if (!task.data) {
+    return <p className="muted">{task.error ? `Auftrag konnte nicht geladen werden: ${task.error.message}` : 'Lade Auftrag …'}</p>
+  }
   return (
     <TaskEditForm
       key={`${task.data.id}-${generation}`}
@@ -56,6 +58,7 @@ function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: ()
 
   function save() {
     setShowRequired(true)
+    setServerErrors([])
     if (!customerComplete) {
       setChangingCustomer(true)
       return
