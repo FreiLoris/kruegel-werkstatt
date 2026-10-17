@@ -42,6 +42,16 @@ public record TreadDepths(
         return depths == null ? NONE : depths;
     }
 
+    /**
+     * A new measurement over the last one: a wheel not measured now keeps its last depth (decision of the
+     * workshop) – measuring only the front must not make the rear ones "unknown".
+     */
+    public TreadDepths over(TreadDepths last) {
+        TreadDepths before = orNone(last);
+        return new TreadDepths(frontLeft != null ? frontLeft : before.frontLeft, frontRight != null ? frontRight : before.frontRight,
+                rearLeft != null ? rearLeft : before.rearLeft, rearRight != null ? rearRight : before.rearRight);
+    }
+
     /** The lowest measured depth – what decides whether the customer needs new tyres; empty if none is measured. */
     public BigDecimal lowest() {
         return Stream.of(frontLeft, frontRight, rearLeft, rearRight).filter(Objects::nonNull).min(BigDecimal::compareTo).orElse(null);

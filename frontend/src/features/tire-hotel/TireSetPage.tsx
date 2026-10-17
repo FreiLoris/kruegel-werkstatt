@@ -24,7 +24,7 @@ import {
   type TireSetEvent,
 } from './tireHotelApi'
 import styles from './TireHotel.module.css'
-import { formatDepth, WHEELS } from './tread'
+import { formatDepth, olderDepths, WHEELS } from './tread'
 import { AdviseBanner, TreadDepthsView } from './TreadDepthsView'
 
 const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
@@ -165,6 +165,12 @@ function TireSetDetail({ set }: { set: TireSet }) {
           {limits && (
             <>
               <TreadDepthsView depths={set.depths} season={set.season} limits={limits} />
+              {/* a partial measurement keeps the other wheels – say which ones are older */}
+              {olderDepths(history.data ?? []).map(({ wheels, on }) => (
+                <p key={on} className="muted">
+                  Nicht neu gemessen: {wheels.join(', ')} – Wert vom {formatDate(on)}
+                </p>
+              ))}
               <AdviseBanner depths={set.depths} season={set.season} limits={limits} />
             </>
           )}

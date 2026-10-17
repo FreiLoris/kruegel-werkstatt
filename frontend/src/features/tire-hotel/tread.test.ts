@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatDepth, treadStatus, wheelsToAdvise, worstStatus } from './tread'
+import { formatDepth, olderDepths, treadStatus, wheelsToAdvise, worstStatus } from './tread'
+import type { TireSetEvent, TreadDepths } from './tireHotelApi'
 
 const limits = { version: 0, summerMm: 3, winterMm: 4, minimumMm: 1.6 }
 
@@ -32,5 +33,25 @@ describe('a set', () => {
     expect(formatDepth(6.5)).toBe('6,5 mm')
     expect(formatDepth(4)).toBe('4,0 mm')
     expect(formatDepth(null)).toBe('–')
+  })
+})
+
+describe('olderDepths', () => {
+  const event = (kind: TireSetEvent['kind'], happenedOn: string, depths: Partial<TreadDepths>) =>
+    ({ kind, happenedOn, depths: { frontLeft: null, frontRight: null, rearLeft: null, rearRight: null, ...depths } }) as TireSetEvent
+
+  it('names the wheels not measured with the latest measurement and the day of their value', () => {
+    const history = [
+      event('STORED', '2026-04-01', { frontLeft: 5, frontRight: 5, rearLeft: 5, rearRight: 5 }),
+      event('MEASURED', '2026-10-01', { frontLeft: 3.5, frontRight: 3.4 }),
+      // a retrieval repeats the depths of that moment – not a measurement
+      event('RETRIEVED', '2026-10-02', { frontLeft: 3.5, frontRight: 3.4, rearLeft: 5, rearRight: 5 }),
+    ]
+
+    expect(olderDepths(history)).toEqual([{ wheels: ['HL', 'HR'], on: '2026-04-01' }])
+  })
+
+  it('nothing to say when all four were measured together', () => {
+    expect(olderDepths([event('MEASURED', '2026-10-01', { frontLeft: 4, frontRight: 4, rearLeft: 4, rearRight: 4 })])).toEqual([])
   })
 })

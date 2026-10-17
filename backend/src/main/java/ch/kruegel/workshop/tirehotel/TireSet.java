@@ -150,8 +150,15 @@ public class TireSet extends BaseEntity {
         if (day.isBefore(storedOn)) {
             throw new IllegalArgumentException("Measured before it was stored: " + day);
         }
-        this.depths = Objects.requireNonNull(newDepths, "depths");
+        Objects.requireNonNull(newDepths, "depths");
+        // wheels not measured now keep their last depth; the history keeps what was really measured
+        this.depths = newDepths.over(getDepths());
         events.add(new TireSetEvent(this, TireSetEventKind.MEASURED, day, newDepths, place, note, task));
+    }
+
+    /** The day of the latest step in the history – an earlier one would contradict the current state. */
+    public LocalDate lastEventDay() {
+        return events.stream().map(TireSetEvent::getHappenedOn).max(LocalDate::compareTo).orElse(storedOn);
     }
 
     /** Out of the hotel (back on the car or to the customer) – with the depths as last measured. */
