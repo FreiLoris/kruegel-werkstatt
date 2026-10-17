@@ -1,5 +1,6 @@
 package ch.kruegel.workshop.supplier;
 
+import ch.kruegel.workshop.common.Texts;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
@@ -71,13 +72,17 @@ public class SupplierService {
     private static SupplierDetails details(SupplierRequest request) {
         String webshop;
         try {
-            webshop = SupplierDetails.withScheme(request.webshopUrl() == null ? null : request.webshopUrl().strip());
+            // blank → not set (otherwise "  " would become "https://")
+            webshop = SupplierDetails.withScheme(Texts.emptyToNull(request.webshopUrl()));
         } catch (IllegalArgumentException e) {
             throw new InvalidInputException("webshopUrl", "Nur Links mit http:// oder https://");
         }
+        // @Size checks the input; "https://" added in front can make it too long
+        if (webshop != null && webshop.length() > Supplier.URL_MAX) {
+            throw new InvalidInputException("webshopUrl", "Höchstens " + Supplier.URL_MAX + " Zeichen (mit https://)");
+        }
         return new SupplierDetails(request.name(), request.contactPerson(), request.phone(), request.email(),
-                webshop == null || webshop.isEmpty() ? null : webshop, request.customerNumber(), request.orderChannel(),
-                request.delivery(), request.remark());
+                webshop, request.customerNumber(), request.orderChannel(), request.delivery(), request.remark());
     }
 
     private Supplier find(UUID id) {

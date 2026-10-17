@@ -111,6 +111,20 @@ class CustomerSearchApiTest {
     }
 
     @Test
+    void vehicleOfADeactivatedCustomerIsFoundAsAHitWithoutCustomer() {
+        Customer blocked = customers.save(CustomerTestData.local("Gesperrt"));
+        vehicles.save(Vehicle.local(blocked, vehicle("SG 888", "Fiat", "Tipo")));
+        blocked.deactivate();
+        customers.save(blocked);
+
+        MvcTestResult response = search("tipo");
+
+        assertThat(response).bodyJson().extractingPath("$.hits").asArray().hasSize(1);
+        assertThat(response).bodyJson().extractingPath("$.hits[0].customer").isNull();
+        assertThat(response).bodyJson().extractingPath("$.hits[0].vehicles[0].licensePlate").isEqualTo("SG 888");
+    }
+
+    @Test
     void customersComeFirstThenVehiclesWithoutHolderByPlate() {
         Customer fiatFan = customers.save(CustomerTestData.local("Fiatfan"));
         vehicles.save(Vehicle.local(fiatFan, vehicle("TG 5", "Fiat", "500")));
