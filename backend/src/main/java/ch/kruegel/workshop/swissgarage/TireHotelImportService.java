@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
  *   <li>The depths VL/VR/HL/HR; "vorne/hinten ok" is not needed – the app judges by its limits.</li>
  *   <li>Everything else worth keeping (second block, RDKS, remarks, the old place) goes into the
  *       remark. No place: the old places do not fit – they are assigned afterwards.</li>
- *   <li>A second run takes nothing twice: a set of the same customer, vehicle and season already in
- *       the hotel counts as "unchanged".</li>
+ *   <li>A second run takes nothing twice: a set of the same customer, vehicle and season the app already has
+ *       (in the hotel or retrieved since) counts as "unchanged".</li>
  * </ul>
  */
 @Service
@@ -99,9 +99,10 @@ public class TireHotelImportService {
         Map<String, List<Customer>> byName = customers.findAll().stream()
                 .filter(Customer::isActive)
                 .collect(Collectors.groupingBy(c -> nameKey(c.getDetails().displayName())));
-        // what is in the hotel already: customer / vehicle / season
+        // what the app has already – also retrieved since (decision of the workshop): a second run must not
+        // bring back a set taken out of the hotel as stored again
         Set<String> present = new HashSet<>();
-        sets.inHotel().forEach(s -> present.add(key(s.getCustomer(), s.getVehicle(), s.getDetails().season())));
+        sets.findAll().forEach(s -> present.add(key(s.getCustomer(), s.getVehicle(), s.getDetails().season())));
 
         LocalDate today = LocalDate.now(clock);
         int rowsRead = 0, skipped = 0, created = 0, unchanged = 0;

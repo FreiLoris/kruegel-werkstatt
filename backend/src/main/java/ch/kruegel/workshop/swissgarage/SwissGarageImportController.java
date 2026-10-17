@@ -19,7 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Upload of the SwissGarage Excel exports, the import log and the current data status.
@@ -50,10 +55,20 @@ class SwissGarageImportController {
         this.vehicles = vehicles;
     }
 
-    @Operation(summary = "Last 20 imports, newest first")
+    @Operation(summary = "Last 20 imports and the latest of every kind, newest first")
     @GetMapping
     List<ImportRunDto> list() {
-        return runs.findTop20ByOrderByCreatedAtDesc().stream().map(ImportRunDto::of).toList();
+        // the latest of every kind too: the one-off tyre hotel run would otherwise drop out after
+        // a few address/vehicle imports and its card would say "Noch nie importiert"
+        Map<UUID, ImportRun> shown = new LinkedHashMap<>();
+        runs.findTop20ByOrderByCreatedAtDesc().forEach(run -> shown.put(run.getId(), run));
+        Arrays.stream(ImportRun.Kind.values())
+                .flatMap(kind -> runs.findFirstByKindOrderByCreatedAtDesc(kind).stream())
+                .forEach(run -> shown.putIfAbsent(run.getId(), run));
+        return shown.values().stream()
+                .sorted(Comparator.comparing(ImportRun::getCreatedAt).reversed())
+                .map(ImportRunDto::of)
+                .toList();
     }
 
     @Operation(summary = "How many SwissGarage customers and vehicles are active")

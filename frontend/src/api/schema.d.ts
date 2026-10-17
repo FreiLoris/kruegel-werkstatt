@@ -1213,7 +1213,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Last 20 imports, newest first */
+        /** Last 20 imports and the latest of every kind, newest first */
         get: operations["list_14"];
         put?: never;
         post?: never;

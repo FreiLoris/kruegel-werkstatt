@@ -11,6 +11,7 @@ import ch.kruegel.workshop.employee.EmployeeTestData;
 import ch.kruegel.workshop.vehicle.Vehicle;
 import ch.kruegel.workshop.vehicle.VehicleDetails;
 import ch.kruegel.workshop.vehicle.VehicleRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,6 +53,9 @@ class TireHotelImportApiTest {
 
     @Autowired
     private VehicleRepository vehicles;
+
+    @Autowired
+    private ImportRunRepository runs;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -131,6 +140,37 @@ class TireHotelImportApiTest {
     }
 
     @Test
+    void aSetRetrievedSinceIsNotTakenAgain() {
+        byte[] file = TestExcel.with(HEADERS)
+                .row(46000, null, "ZH 123456", "VW Golf", "Huber Test", 4, "Winter-", null, null, 6, 6, "J", 6, 6, "J")
+                .bytes();
+        upload(file);
+        String set = JsonPath.read(body(mvc.get().uri("/api/tire-sets").exchange()), "$[0].id");
+        mvc.post().uri("/api/tire-sets/" + set + "/retrieve").header(CurrentPerson.HEADER, chef)
+                .contentType(MediaType.APPLICATION_JSON).content("{}").exchange();
+
+        MvcTestResult again = upload(file);
+
+        // it went onto the car – a second run must not bring it back as stored
+        assertThat(again).bodyJson().extractingPath("$.created").isEqualTo(0);
+        assertThat(mvc.get().uri("/api/tire-sets").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
+
+    @Test
+    void theTyreHotelRunStaysInTheListAfterManyOtherImports() {
+        upload(TestExcel.with(HEADERS)
+                .row(46000, null, "ZH 123456", "VW Golf", "Huber Test", 4, "Winter-", null, null, 6, 6, "J", 6, 6, "J")
+                .bytes());
+        IntStream.range(0, 25).forEach(i -> runs.save(new ImportRun(ImportRun.Kind.CUSTOMERS, "Adressen.xlsx",
+                new ImportCounts(1, 0, 0, 0, 1, 0, List.of()))));
+
+        MvcTestResult list = mvc.get().uri("/api/swissgarage-imports").exchange();
+
+        // otherwise its card would say "Noch nie importiert"
+        assertThat(list).bodyJson().extractingPath("$[*].kind").asArray().contains("TIRE_HOTEL");
+    }
+
+    @Test
     void refusesAnotherFile() {
         MvcTestResult response = upload(TestExcel.with("Int.Nr.", "Marke").row(1, "VW").bytes());
 
@@ -143,5 +183,13 @@ class TireHotelImportApiTest {
                 .multipart().file(new MockMultipartFile("file", "Pneuhotel.xlsx", null, content))
                 .header(CurrentPerson.HEADER, chef)
                 .exchange();
+    }
+
+    private static String body(MvcTestResult response) {
+        try {
+            return response.getResponse().getContentAsString();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

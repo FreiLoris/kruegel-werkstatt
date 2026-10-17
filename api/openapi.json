@@ -7245,7 +7245,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Last 20 imports, newest first",
+        "summary" : "Last 20 imports and the latest of every kind, newest first",
         "tags" : [ "SwissGarage import" ]
       }
     },
