@@ -1,5 +1,6 @@
 package ch.kruegel.workshop.customer;
 
+import ch.kruegel.workshop.common.RecordSource;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
@@ -8,6 +9,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,6 +34,15 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public CustomerDto get(UUID id) {
         return CustomerDto.of(find(id));
+    }
+
+    /** Local customers no longer used – to use them again (SwissGarage ones follow the import). */
+    @Transactional(readOnly = true)
+    public List<CustomerDto> inactiveLocal() {
+        return repository.findBySourceAndActiveFalse(RecordSource.LOCAL).stream()
+                .map(CustomerDto::of)
+                .sorted(Comparator.comparing(CustomerDto::displayName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
     }
 
     public CustomerDto create(CustomerRequest request) {

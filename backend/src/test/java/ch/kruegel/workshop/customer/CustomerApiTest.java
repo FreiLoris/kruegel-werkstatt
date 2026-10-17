@@ -125,6 +125,19 @@ class CustomerApiTest {
     }
 
     @Test
+    void inactiveLocalCustomersAreListedAndCanBeUsedAgain() {
+        String huber = idOf(send("POST", "/api/customers", "{ \"lastName\": \"Huber\" }"));
+        send("POST", "/api/customers", "{ \"lastName\": \"Muster\" }");
+        send("POST", "/api/customers/" + huber + "/deactivate", null);
+
+        assertThat(mvc.get().uri("/api/customers/inactive").exchange()).bodyJson().extractingPath("$[*].lastName").asArray()
+                .containsExactly("Huber");
+
+        send("POST", "/api/customers/" + huber + "/activate", null);
+        assertThat(mvc.get().uri("/api/customers/inactive").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
+
+    @Test
     void changesAreAnnouncedAsLiveUpdate() {
         send("POST", "/api/customers", "{ \"lastName\": \"Huber\" }");
 

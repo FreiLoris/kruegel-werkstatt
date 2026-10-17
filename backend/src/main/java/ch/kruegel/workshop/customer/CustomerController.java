@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,6 +30,12 @@ class CustomerController {
 
     CustomerController(CustomerService service) {
         this.service = service;
+    }
+
+    @Operation(summary = "Local customers no longer used", description = "To use them again – SwissGarage customers follow the import.")
+    @GetMapping("/inactive")
+    List<CustomerDto> inactive() {
+        return service.inactiveLocal();
     }
 
     @Operation(summary = "Single customer")
