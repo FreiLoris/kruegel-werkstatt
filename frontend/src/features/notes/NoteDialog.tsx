@@ -1,5 +1,5 @@
 import { Archive, ArchiveRestore, Check, ClipboardList, Save, Search, Trash2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
@@ -14,7 +14,7 @@ import { useTaskSearch } from '../tasks/taskApi'
 import { useTodos } from '../todos/todoApi'
 import { TodoForm } from '../todos/TodoForm'
 import { TodoItem } from '../todos/TodoItem'
-import { useDeleteNote, useNote, useSaveNote, useSetNoteArchived, type Note } from './noteApi'
+import { isGone, useDeleteNote, useNote, useSaveNote, useSetNoteArchived, type Note } from './noteApi'
 import styles from './NoteDialog.module.css'
 import { whenLabel } from '../tasks/taskTime'
 
@@ -27,7 +27,7 @@ const taskLabel = (t: { customerName: string; date: string | null; time: string 
 /** Opens a note by ID – from the board or the archive; closes itself when the note is deleted elsewhere. */
 export function NoteDialogById({ id, canEdit, onClose }: { id: string; canEdit: boolean; onClose: () => void }) {
   const note = useNote(id)
-  const gone = note.error !== null
+  const gone = isGone(note.error, note.data !== undefined)
   useEffect(() => {
     if (gone) onClose()
   }, [gone, onClose])
@@ -62,6 +62,8 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
     task: (note.task ? { id: note.task.id, label: taskLabel(note.task) } : null) as TaskLink,
   })
   const [savedState, setSavedState] = useState<'clean' | 'dirty' | 'saved'>('clean')
+  // the draft as it is now – to see whether something was typed while saving
+  const currentDraft = useRef(draft)
   const [search, setSearch] = useState('')
   const hits = useTaskSearch(useDebouncedValue(search))
 
@@ -70,7 +72,9 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
   const archived = note.archivedAt !== null
 
   function change(next: Partial<typeof draft>) {
-    setDraft({ ...draft, ...next })
+    const changed = { ...draft, ...next }
+    currentDraft.current = changed
+    setDraft(changed)
     setSavedState('dirty')
   }
 
@@ -80,6 +84,7 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
 
   function submit() {
     if (!draft.text.trim()) return
+    const sent = draft
     save.mutate(
       {
         id: note.id,
@@ -94,7 +99,8 @@ export function NoteDialog({ note, canEdit, onClose }: { note: Note; canEdit: bo
       {
         onSuccess: (saved) => {
           setOpenedVersion(saved.version)
-          setSavedState('saved')
+          // typed on while saving → still unsaved changes
+          setSavedState(currentDraft.current === sent ? 'saved' : 'dirty')
         },
         onError: (error) => toast.error(`Notiz nicht gespeichert: ${reasonOf(error)}`),
       },
