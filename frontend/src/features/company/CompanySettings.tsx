@@ -84,7 +84,7 @@ function CompanyForm({ company }: { company: Company }) {
           toast.success('Firmendaten gespeichert')
         },
         onError: (e) => {
-          if (e instanceof ApiError && e.isConflict) {
+          if (e instanceof ApiError && e.isVersionConflict) {
             toast.error('Die Firmendaten wurden inzwischen auf einem anderen Gerät geändert. Bitte Seite neu laden.')
           } else if (!(e instanceof ApiError && (e.problem.errors?.length ?? 0) > 0)) {
             toast.error(`Speichern fehlgeschlagen: ${e.message}`)

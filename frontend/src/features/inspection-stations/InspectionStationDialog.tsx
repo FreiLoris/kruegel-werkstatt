@@ -61,7 +61,7 @@ export function InspectionStationDialog({ station, onClose }: { station?: Inspec
         onError: (error) => {
           // Only an existing entry can have been changed elsewhere; a 409 for a new one (same name created
           // on another device at the same time) keeps the input and shows the server's reason
-          if (station && error instanceof ApiError && error.isConflict) {
+          if (station && error instanceof ApiError && error.isVersionConflict) {
             toast.error(`${station.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {

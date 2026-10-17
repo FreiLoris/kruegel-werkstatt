@@ -73,7 +73,7 @@ export function CourtesyCarDialog({ car, onClose }: { car?: CourtesyCar; onClose
         onError: (error) => {
           // Only an existing car can have been changed elsewhere; a 409 while creating (same name or plate
           // created on another device at the same time) keeps the input and shows the server's reason
-          if (car && error instanceof ApiError && error.isConflict) {
+          if (car && error instanceof ApiError && error.isVersionConflict) {
             toast.error(`${car.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {

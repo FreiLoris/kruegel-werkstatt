@@ -1,7 +1,7 @@
-import { RotateCcw, Save, X } from 'lucide-react'
+import { Check, RotateCcw, Save, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ApiError, type FieldError } from '../../../api/errors'
+import { ApiError, reasonOf, type FieldError } from '../../../api/errors'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../../components/ui/StickyFooter'
@@ -32,6 +32,7 @@ export function TaskEditPage() {
       key={`${task.data.id}-${generation}`}
       task={task.data}
       onReload={() => void task.refetch().then(() => setGeneration((g) => g + 1))}
+      latest={async () => (await task.refetch()).data}
     />
   )
 }
@@ -40,8 +41,8 @@ export function TaskEditPage() {
  * Keeps the task as it was when the form was opened (`loaded`) – its version goes with the save,
  * so a change from another device in between gives a clear conflict instead of being overwritten.
  */
-function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: () => void }) {
-  const [task] = useState(current)
+function TaskEditForm({ task: current, onReload, latest }: { task: AnyTask; onReload: () => void; latest: () => Promise<AnyTask | undefined> }) {
+  const [task, setTask] = useState(current)
   const navigate = useNavigate()
   const toast = useToast()
   const update = useUpdateTask()
@@ -75,8 +76,11 @@ function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: ()
           back()
         },
         onError: (error) => {
-          if (error instanceof ApiError && error.isConflict) {
+          if (error instanceof ApiError && error.isVersionConflict) {
             setConflict(true)
+          } else if (error instanceof ApiError && error.isConflict) {
+            // a rule, e.g. the lift was taken on another device just now – choose another, nothing to reload
+            toast.error(reasonOf(error))
           } else if (error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0) {
             setServerErrors(error.problem.errors ?? [])
           } else {
@@ -88,6 +92,17 @@ function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: ()
     )
   }
 
+  /** Keeps what was typed here and takes the version of the latest state – the next save overwrites it on purpose */
+  async function applyToLatest() {
+    const fresh = await latest()
+    if (!fresh) {
+      toast.error('Der aktuelle Stand konnte nicht geladen werden.')
+      return
+    }
+    setTask(fresh)
+    setConflict(false)
+  }
+
   const vehicle = customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle : null
 
   return (
@@ -97,12 +112,18 @@ function TaskEditForm({ task: current, onReload }: { task: AnyTask; onReload: ()
       {conflict && (
         <div className={styles.conflict} role="alert">
           <p>
-            Dieser Auftrag wurde inzwischen auf einem anderen Gerät geändert (z. B. Status oder Termin verschoben). Bitte den
-            aktuellen Stand laden – deine Änderungen hier gehen dabei verloren.
+            Dieser Auftrag wurde inzwischen auf einem anderen Gerät geändert (z. B. Status oder Termin verschoben). Deine
+            Eingaben hier bleiben stehen: Du kannst sie auf den neuen Stand anwenden und dann speichern – sie ersetzen dabei
+            die Änderung vom anderen Gerät. Oder den aktuellen Stand laden und deine Eingaben verwerfen.
           </p>
-          <Button icon={RotateCcw} onClick={onReload}>
-            Aktuellen Stand laden
-          </Button>
+          <div className={styles.conflictActions}>
+            <Button variant="primary" icon={Check} onClick={() => void applyToLatest()}>
+              Meine Eingaben auf den neuen Stand anwenden
+            </Button>
+            <Button icon={RotateCcw} onClick={onReload}>
+              Aktuellen Stand laden
+            </Button>
+          </div>
         </div>
       )}
       <ServerErrors errors={serverErrors} />

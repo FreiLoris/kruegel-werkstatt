@@ -13,11 +13,15 @@ export interface FieldError {
 }
 
 export interface ProblemDetail {
+  /** "urn:problem:version-conflict" for a version conflict, see {@link ApiError.isVersionConflict} */
+  type?: string
   status: number
   title?: string
   detail?: string
   errors?: FieldError[]
 }
+
+const VERSION_CONFLICT = 'urn:problem:version-conflict'
 
 export class ApiError extends Error {
   readonly problem: ProblemDetail
@@ -33,8 +37,14 @@ export class ApiError extends Error {
     return this.problem.errors?.find((e) => e.field === field)?.message
   }
 
+  /** Any 409: a version conflict or a business rule (e.g. "Lift 2 wurde gerade belegt") */
   get isConflict(): boolean {
     return this.problem.status === 409
+  }
+
+  /** Someone else changed the record meanwhile – it has to be loaded again (not a business rule) */
+  get isVersionConflict(): boolean {
+    return this.isConflict && this.problem.type === VERSION_CONFLICT
   }
 }
 

@@ -15,6 +15,7 @@ vi.mock('./insuranceApi', async (importOriginal) => ({
 }))
 
 const conflict = new ApiError({ status: 409, title: 'Nicht gespeichert', detail: 'Die Änderung passt nicht zu den vorhandenen Daten.' })
+const versionConflict = new ApiError({ type: 'urn:problem:version-conflict', status: 409, title: 'Inzwischen geändert' })
 
 function renderDialog(insurance?: Insurance) {
   const toast = { success: vi.fn(), error: vi.fn(), info: vi.fn() }
@@ -43,7 +44,7 @@ describe('InsuranceDialog', () => {
 
   it('a conflict while editing says that someone else changed it', () => {
     const { toast, onClose } = renderDialog({ id: 'i1', name: 'Mobiliar', version: 3, active: true } as Insurance)
-    save.mockImplementationOnce((_variables, { onError }) => onError(conflict))
+    save.mockImplementationOnce((_variables, { onError }) => onError(versionConflict))
 
     fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 

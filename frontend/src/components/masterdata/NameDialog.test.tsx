@@ -5,11 +5,12 @@ import { ToastContext } from '../ui/toastContext'
 import { NameDialog } from './NameDialog'
 
 const conflict = new ApiError({ status: 409, title: 'Nicht gespeichert', detail: 'Die Änderung passt nicht zu den vorhandenen Daten.' })
+const versionConflict = new ApiError({ type: 'urn:problem:version-conflict', status: 409, title: 'Inzwischen geändert' })
 
-function renderDialog(initialName?: string) {
+function renderDialog(initialName?: string, error: ApiError = conflict) {
   const toast = { success: vi.fn(), error: vi.fn(), info: vi.fn() }
   const onClose = vi.fn()
-  const save = vi.fn(() => Promise.reject(conflict))
+  const save = vi.fn(() => Promise.reject(error))
   render(
     <ToastContext value={toast}>
       <NameDialog title="Lift" initialName={initialName} placeholder="z.B. Lift 3" hint="Eindeutiger Name" maxLength={30} save={save} onClose={onClose} />
@@ -31,7 +32,7 @@ describe('NameDialog', () => {
   })
 
   it('a conflict while renaming says that someone else changed it', async () => {
-    const { toast, onClose } = renderDialog('Lift 1')
+    const { toast, onClose } = renderDialog('Lift 1', versionConflict)
 
     fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 

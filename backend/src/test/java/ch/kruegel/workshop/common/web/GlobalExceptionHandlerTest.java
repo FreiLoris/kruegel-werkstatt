@@ -85,6 +85,8 @@ class GlobalExceptionHandlerTest {
 
         assertThat(response).hasStatus(HttpStatus.CONFLICT);
         assertThat(response).bodyJson().extractingPath("$.title").isEqualTo("Inzwischen geändert");
+        // the client tells a version conflict apart from a business rule (also 409)
+        assertThat(response).bodyJson().extractingPath("$.type").isEqualTo("urn:problem:version-conflict");
     }
 
     @Test
