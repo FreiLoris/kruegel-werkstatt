@@ -5,6 +5,7 @@ import ch.kruegel.workshop.common.persistence.StaleVersionException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -23,6 +26,7 @@ import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Translates exceptions into uniform error responses following RFC 9457 ("Problem Details").
@@ -42,8 +46,9 @@ import java.util.Objects;
  * <p>{@code @ResponseStatus} on the methods: that way springdoc includes the error responses
  * in the API description (and the frontend gets the type {@code ProblemDetail} generated).
  *
- * <p>Spring's standard errors (e.g. broken JSON, wrong HTTP method) are already handled in
- * the same format by the base class {@link ResponseEntityExceptionHandler}.
+ * <p>Spring's standard errors (e.g. broken JSON, wrong HTTP method) are handled in the same format
+ * by the base class {@link ResponseEntityExceptionHandler} – with German texts from
+ * {@link #handleExceptionInternal}.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -105,18 +110,64 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 409 – a database constraint kicked in (e.g. two devices create the same name almost
-     * at the same time – the service check let both through, the database did not).
-     * Last line of defence; normally the service checks first and returns a more precise message.
+     * 409 – a database constraint kicked in because two devices raced (e.g. both created the same name
+     * almost at the same time – the service check let both through, the database did not): unique,
+     * exclusion (overlap) or a reference deleted meanwhile. Last line of defence; normally the service
+     * checks first and returns a more precise message.
+     *
+     * <p>Any other violation (not null, check) is a programming error: 500, logged as an error.
+     * Only the constraint is logged, never the database message: PostgreSQL adds "Failing row contains (…)"
+     * – the whole row, e.g. a customer's name and phone number.
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     ProblemDetail dataConflict(DataIntegrityViolationException ex) {
-        // Only the constraint, not the database message: PostgreSQL adds "Failing row contains (…)" –
-        // the whole row, e.g. a customer's name and phone number
-        log.warn("Database constraint violated: {}", constraintOf(ex));
-        return problem(HttpStatus.CONFLICT, "Nicht gespeichert",
-                "Die Änderung passt nicht zu den vorhandenen Daten. Bitte neu laden und erneut versuchen.");
+        if (RACE_STATES.contains(sqlStateOf(ex))) {
+            log.warn("Database constraint violated: {}", constraintOf(ex));
+            return problem(HttpStatus.CONFLICT, "Nicht gespeichert",
+                    "Die Änderung passt nicht zu den vorhandenen Daten. Bitte neu laden und erneut versuchen.");
+        }
+        // the stack trace shows where – the messages with the row data stay out
+        RuntimeException withoutData = new RuntimeException("Database constraint violated: " + constraintOf(ex));
+        withoutData.setStackTrace(ex.getStackTrace());
+        log.error("Unexpected database error", withoutData);
+        // the status of a returned ProblemDetail wins over @ResponseStatus (kept for the API description)
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "Unerwarteter Fehler", "Ein unerwarteter Fehler ist aufgetreten.");
+    }
+
+    /** Spring's own errors (broken JSON, wrong method, wrong ID format, …) in German like ours. */
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        // some errors bring their problem only on the exception (body null, e.g. 405)
+        Object problemBody = body == null && ex instanceof ErrorResponse error ? error.getBody() : body;
+        if (problemBody instanceof ProblemDetail problem && !(ex instanceof MethodArgumentNotValidException)) {
+            problem.setTitle(germanTitle(statusCode));
+            problem.setDetail(germanDetail(ex, statusCode));
+        }
+        return super.handleExceptionInternal(ex, problemBody, headers, statusCode, request);
+    }
+
+    private static String germanTitle(HttpStatusCode status) {
+        return switch (status.value()) {
+            case 404 -> "Nicht gefunden";
+            case 405 -> "Nicht erlaubt";
+            default -> status.is5xxServerError() ? "Unerwarteter Fehler" : "Ungültige Anfrage";
+        };
+    }
+
+    private static String germanDetail(Exception ex, HttpStatusCode status) {
+        if (ex instanceof HttpMessageNotReadableException) {
+            return "Die Daten sind unvollständig oder haben ein falsches Format.";
+        }
+        if (ex instanceof TypeMismatchException) {
+            return "Ein Wert in der Adresse hat ein falsches Format.";
+        }
+        return switch (status.value()) {
+            case 404 -> "Diese Adresse gibt es nicht.";
+            case 405 -> "Diese Aktion ist hier nicht möglich.";
+            default -> status.is5xxServerError() ? "Ein unerwarteter Fehler ist aufgetreten." : "Die Anfrage konnte nicht verarbeitet werden.";
+        };
     }
 
     /**
@@ -131,19 +182,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Ein unerwarteter Fehler ist aufgetreten.");
     }
 
+    /** Unique, exclusion (overlap), foreign key – what two devices racing each other can cause */
+    private static final Set<String> RACE_STATES = Set.of("23505", "23P01", "23503");
+
+    private static String sqlStateOf(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t instanceof SQLException sql && sql.getSQLState() != null) {
+                return sql.getSQLState();
+            }
+        }
+        return null;
+    }
+
     /** "customer_name_check (SQLState 23514)" – what was violated, without any data */
     static String constraintOf(Throwable ex) {
         String constraint = null;
-        String sqlState = null;
         for (Throwable t = ex; t != null; t = t.getCause()) {
             if (t instanceof ConstraintViolationException violation && violation.getConstraintName() != null) {
                 constraint = violation.getConstraintName();
             }
-            if (t instanceof SQLException sql && sql.getSQLState() != null) {
-                sqlState = sql.getSQLState();
-            }
         }
-        return Objects.toString(constraint, "unknown constraint") + " (SQLState " + Objects.toString(sqlState, "unknown") + ")";
+        return Objects.toString(constraint, "unknown constraint") + " (SQLState " + Objects.toString(sqlStateOf(ex), "unknown") + ")";
     }
 
     private static ProblemDetail invalidInput(List<FieldError> errors) {
