@@ -117,7 +117,7 @@ export function VehicleDialog({
         onSaved(saved)
       },
       onError: (error: Error) => {
-        if (error instanceof ApiError && error.isConflict) {
+        if (error instanceof ApiError && error.isVersionConflict) {
           toast.error('Das Fahrzeug wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.')
           onClose()
         } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {

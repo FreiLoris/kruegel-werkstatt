@@ -112,7 +112,7 @@ export function StockItemDialog({
         onError: (error) => {
           // Only an existing article can have been changed elsewhere; a 409 while creating (e.g. the chosen
           // supplier deleted on another device just now) keeps the input and shows the server's reason
-          if (item && error instanceof ApiError && error.isConflict) {
+          if (item && error instanceof ApiError && error.isVersionConflict) {
             toast.error(`${item.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {

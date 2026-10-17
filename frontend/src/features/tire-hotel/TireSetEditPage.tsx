@@ -43,7 +43,7 @@ function TireSetEdit({ set }: { set: TireSet }) {
           navigate(`/tires/${set.id}`)
         },
         onError: (error) => {
-          if (error instanceof ApiError && error.isConflict) {
+          if (error instanceof ApiError && error.isVersionConflict) {
             toast.error('Der Satz wurde inzwischen auf einem anderen Gerät geändert. Bitte neu laden.')
           } else {
             toast.error(`Speichern fehlgeschlagen: ${error.message}`)

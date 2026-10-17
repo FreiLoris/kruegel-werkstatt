@@ -65,3 +65,10 @@ describe('dataOrThrow', () => {
     expect(error.problem.status).toBe(502)
   })
 })
+
+describe('isVersionConflict', () => {
+  it('only a version conflict – a business rule is a 409 too, but nothing to reload', () => {
+    expect(new ApiError({ type: 'urn:problem:version-conflict', status: 409 }).isVersionConflict).toBe(true)
+    expect(new ApiError({ status: 409, title: 'Nicht möglich', detail: 'Lift 2 wurde gerade belegt.' }).isVersionConflict).toBe(false)
+  })
+})

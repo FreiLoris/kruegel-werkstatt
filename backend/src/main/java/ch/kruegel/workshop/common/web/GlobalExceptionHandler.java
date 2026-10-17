@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
@@ -93,13 +94,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "Nicht gefunden", ex.getMessage());
     }
 
+    /**
+     * Problem type of a version conflict – the client tells it apart from other 409s (a business rule,
+     * e.g. a lift taken just now): only here the record has to be loaded again.
+     */
+    public static final URI VERSION_CONFLICT = URI.create("urn:problem:version-conflict");
+
     /** 409 – someone else changed the record in the meantime. */
     @ExceptionHandler({StaleVersionException.class, OptimisticLockingFailureException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     ProblemDetail conflict(RuntimeException ex) {
         log.info("Edit conflict: {}", ex.getMessage());
-        return problem(HttpStatus.CONFLICT, "Inzwischen geändert",
+        ProblemDetail problem = problem(HttpStatus.CONFLICT, "Inzwischen geändert",
                 "Der Datensatz wurde in der Zwischenzeit von jemand anderem geändert. Bitte neu laden.");
+        problem.setType(VERSION_CONFLICT);
+        return problem;
     }
 
     /** 409 – not allowed by a business rule (e.g. decommission the last lift). The message goes to the user as is. */

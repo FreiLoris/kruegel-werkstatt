@@ -40,7 +40,7 @@ export function NameDialog({ title, initialName = '', placeholder, hint, maxLeng
       const message = error instanceof ApiError ? error.messageForField('name') : undefined
       // Only a rename can collide with a change elsewhere; a 409 while creating (same name created on
       // another device at the same time) keeps the input and shows the server's reason
-      if (initialName && error instanceof ApiError && error.isConflict) {
+      if (initialName && error instanceof ApiError && error.isVersionConflict) {
         toast.error(`${initialName} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
         onClose()
       } else if (message) {

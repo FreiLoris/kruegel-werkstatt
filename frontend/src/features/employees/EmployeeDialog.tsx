@@ -53,7 +53,7 @@ export function EmployeeDialog({ employee, all, onClose }: EmployeeDialogProps) 
         onError: (error) => {
           // Only an existing person can have been changed elsewhere; a 409 while creating (same name
           // created on another device at the same time) keeps the input and shows the server's reason
-          if (employee && error instanceof ApiError && error.isConflict) {
+          if (employee && error instanceof ApiError && error.isVersionConflict) {
             toast.error(`${employee.name} wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
           } else if (!isFieldError(error)) {
