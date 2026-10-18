@@ -90,14 +90,30 @@ export function TireLabelsPage() {
           Noch kein Etikettenformat – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Etiketten» anlegen.
         </p>
       ) : (
-        <Sheet set={set.data} format={format} start={from} />
+        <Sheet set={set.data} format={format} start={from} starts={starts} onPickStart={setStart} />
       )}
     </div>
   )
 }
 
-/** The A4 sheet: the labels of the set from the start on, the other places as faint outlines (screen only) */
-function Sheet({ set, format, start }: { set: TireSet; format: LabelFormat; start: number }) {
+/**
+ * The A4 sheet: the labels of the set from the start on, the other places as faint outlines (screen
+ * only). A free place shows its number and can be tapped to start there – no counting on a sheet
+ * that was used before (UX M-20).
+ */
+function Sheet({
+  set,
+  format,
+  start,
+  starts,
+  onPickStart,
+}: {
+  set: TireSet
+  format: LabelFormat
+  start: number
+  starts: number[]
+  onPickStart: (position: number) => void
+}) {
   const size = (spot: { left: number; top: number }): CSSProperties => ({
     left: `${spot.left}mm`,
     top: `${spot.top}mm`,
@@ -109,9 +125,24 @@ function Sheet({ set, format, start }: { set: TireSet; format: LabelFormat; star
     <article className={styles.sheet} aria-label="Etikettenbogen" style={{ fontSize: `${fontSize(format)}mm` }}>
       {spots(format)
         .filter((spot) => !used.has(spot.position))
-        .map((spot) => (
-          <span key={spot.position} className={styles.empty} style={size(spot)} aria-hidden />
-        ))}
+        .map((spot) =>
+          starts.includes(spot.position) ? (
+            <button
+              key={spot.position}
+              type="button"
+              className={`${styles.empty} ${styles.pick}`}
+              style={size(spot)}
+              onClick={() => onPickStart(spot.position)}
+              aria-label={`Ab Etikett ${spot.position} drucken`}
+            >
+              {spot.position}
+            </button>
+          ) : (
+            <span key={spot.position} className={styles.empty} style={size(spot)} aria-hidden>
+              {spot.position}
+            </span>
+          ),
+        )}
       {spotsFrom(format, start).map((spot, index) => {
         const wheel = WHEELS[index]
         return (

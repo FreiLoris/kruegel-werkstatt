@@ -80,6 +80,10 @@
   border-top: 1px solid var(--color-border);
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .table tbody tr:hover {
   background: var(--color-surface-raised);
 }

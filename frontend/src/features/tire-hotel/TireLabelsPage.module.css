@@ -51,6 +51,24 @@
   border-radius: 1.5mm;
 }
 
+.empty {
+  display: grid;
+  place-items: center;
+  color: var(--color-paper-line);
+  font: inherit;
+}
+
+/* a free place on the sheet: tap = start there */
+.pick {
+  background: transparent;
+  cursor: pointer;
+}
+
+.pick:hover {
+  border-style: solid;
+  color: inherit;
+}
+
 .label {
   position: absolute;
   box-sizing: border-box;

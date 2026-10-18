@@ -44,18 +44,22 @@ export function PlaceMap({ locations, places, sets, limits, mode, selected, onPi
     const place = at.get(key)
     if (!place) return <span key={key} className={styles.slot} />
     const set = taken.get(place.id)
-    const worn = set && limits && ['advise', 'illegal'].includes(worstStatus(set.depths, set.season, limits))
+    const tread = set && limits ? worstStatus(set.depths, set.season, limits) : 'unknown'
+    // below the legal minimum red, "ansprechen" orange – both with a sign, not the border alone (UX M-20)
+    const worn = tread === 'advise' || tread === 'illegal'
     const classes = [
       styles.slot,
       set ? styles.taken : styles.free,
       worn && styles.worn,
+      tread === 'illegal' && styles.illegal,
       place.id === selected && styles.selected,
       set && set.id === currentSetId && styles.current,
     ]
       .filter(Boolean)
       .join(' ')
-    const text = set ? shortName(set.customer.displayName) : 'frei'
-    const title = `${place.address}${set ? ` · ${set.customer.displayName}${set.vehicle?.licensePlate ? ` · ${set.vehicle.licensePlate}` : ''}` : ' · frei'}`
+    const text = set ? `${worn ? '! ' : ''}${shortName(set.customer.displayName)}` : 'frei'
+    const treadText = tread === 'illegal' ? ' · abgefahren' : tread === 'advise' ? ' · Profil ansprechen' : ''
+    const title = `${place.address}${set ? ` · ${set.customer.displayName}${set.vehicle?.licensePlate ? ` · ${set.vehicle.licensePlate}` : ''}${treadText}` : ' · frei'}`
     if (mode === 'view' && set) {
       return (
         <Link key={key} to={`/tires/${set.id}`} className={classes} title={title}>
@@ -143,7 +147,9 @@ export function PlaceMap({ locations, places, sets, limits, mode, selected, onPi
       <p className={styles.legend}>
         <span className={`${styles.key} ${styles.free}`}>frei</span>
         <span className={`${styles.key} ${styles.taken}`}>belegt</span>
-        <span className={`${styles.key} ${styles.taken} ${styles.worn}`}>belegt, Profil ansprechen</span>
+        <span className={`${styles.key} ${styles.taken} ${styles.worn}`}>! belegt, Profil ansprechen</span>
+        <span className={`${styles.key} ${styles.taken} ${styles.worn} ${styles.illegal}`}>! belegt, abgefahren</span>
+        {/* the labels in the cells: compartment, e.g. "A3" = row A, place 3 */}
       </p>
     </div>
   )

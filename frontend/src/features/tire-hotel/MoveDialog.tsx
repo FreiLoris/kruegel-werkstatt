@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { PlaceMap } from './PlaceMap'
-import { useMoveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
+import { SEASONS, useMoveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 
 /**
@@ -20,6 +20,7 @@ export function MoveDialog({ set, onClose }: { set: TireSet; onClose: () => void
   const { data: limits } = useTreadLimits()
   const move = useMoveTireSet()
   const toast = useToast()
+  const navigate = useNavigate()
   const [placeId, setPlaceId] = useState<string | null>(null)
   const [note, setNote] = useState('')
   const chosen = places?.find((p) => p.id === placeId)
@@ -30,10 +31,18 @@ export function MoveDialog({ set, onClose }: { set: TireSet; onClose: () => void
       { id: set.id, placeId, note: note.trim() || undefined },
       {
         onSuccess: (moved) => {
-          toast.success(`Satz von ${set.customer.displayName} liegt jetzt auf ${moved.place}`)
+          // the labels on the tyres still name the old place (UX G-17)
+          toast.success(`Satz von ${set.customer.displayName} liegt jetzt auf ${moved.place} – neue Etiketten drucken`, {
+            label: 'Etiketten',
+            onClick: () => navigate(`/tires/${set.id}/labels`),
+          })
           onClose()
         },
-        onError: (error) => toast.error(`Nicht umgelagert: ${reasonOf(error)}`),
+        onError: (error) => {
+          // e.g. taken on another device just now – choose again
+          setPlaceId(null)
+          toast.error(`Nicht umgelagert: ${reasonOf(error)}`)
+        },
       },
     )
   }
@@ -43,7 +52,8 @@ export function MoveDialog({ set, onClose }: { set: TireSet; onClose: () => void
       open
       onClose={onClose}
       wide
-      title={set.place ? `Umlagern – bisher ${set.place}` : 'Lagerplatz zuweisen'}
+      // which set – the dialog lies over the list (UX M-20)
+      title={`${set.place ? `Umlagern – bisher ${set.place}` : 'Lagerplatz zuweisen'} · ${set.customer.displayName}${set.vehicle?.licensePlate ? `, ${set.vehicle.licensePlate}` : ''}, ${SEASONS[set.season]}`}
       footer={
         <>
           <Button onClick={onClose}>Abbrechen</Button>
