@@ -124,7 +124,7 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
             <ShoppingBySupplier entries={open.data} canEdit={canEdit} showAssignee={person === ''} />
           ) : open.data.length === 0 ? (
             <section className={styles.card}>
-              <p className="muted">{shopping ? 'Nichts einzukaufen.' : 'Nichts offen – schön.'}</p>
+              <p className="muted">{shopping ? 'Keine Einträge auf der Einkaufsliste.' : 'Nichts offen – schön.'}</p>
             </section>
           ) : (
             <section className={styles.card} aria-label={shopping ? 'Einkaufsliste' : 'Offene To-dos'}>

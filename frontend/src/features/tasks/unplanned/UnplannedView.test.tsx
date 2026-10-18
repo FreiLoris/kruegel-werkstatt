@@ -56,7 +56,7 @@ describe('UnplannedView', () => {
     expect(screen.getByText('26-0007')).toBeTruthy()
     expect(screen.getByText('Skoda Octavia')).toBeTruthy()
     expect(screen.getByText(/Kupplung ersetzen/)).toBeTruthy()
-    expect(screen.getByText('Material: Zum bestellen')).toBeTruthy()
+    expect(screen.getByText('Material: Zu bestellen')).toBeTruthy()
     expect(screen.getByText('Döme')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Einplanen' })).toBeTruthy()
   })

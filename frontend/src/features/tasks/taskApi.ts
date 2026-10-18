@@ -44,7 +44,7 @@ export const TIRE_CHANGE_KINDS: Record<TireChangeKind, string> = {
 }
 
 export const PARTS_STATUS: Record<PartsStatus, string> = {
-  TO_ORDER: 'Zum bestellen',
+  TO_ORDER: 'Zu bestellen',
   ORDERED: 'Bestellt',
   ARRIVED: 'Angekommen',
 }

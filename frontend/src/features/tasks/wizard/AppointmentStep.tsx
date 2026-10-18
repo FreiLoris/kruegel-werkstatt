@@ -128,7 +128,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   required
                   value={form.date}
                   onChange={(e) => onChange(withDate(form, e.target.value, form.time, holidayDates))}
-                  hint="oder rechts im Raster ziehen"
+                  hint="oder im Raster ziehen"
                   error={form.date ? errors.date : required("date")}
                 />
                 <TextField

@@ -280,7 +280,7 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   if (!form.acceptedById) errors.acceptedById = 'Bitte wählen, wer den Auftrag annimmt'
   // without an appointment nothing about day and time is asked
   if (!form.noAppointment) {
-    if (!form.date) errors.date = 'Datum wählen – oder rechts im Raster ziehen'
+    if (!form.date) errors.date = 'Datum wählen – oder im Raster ziehen'
     if (!form.time) errors.time = 'Uhrzeit wählen'
     const start = form.date && form.time ? `${form.date}T${form.time}` : null
 
