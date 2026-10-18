@@ -1,4 +1,4 @@
-/* One appointment, compact: time, customer, lift + mechanic – the status as the colored bar */
+/* One appointment, compact: time, customer, mechanic, vehicle and work – the status as bar and sign */
 .task {
   position: relative;
   display: grid;
@@ -27,12 +27,46 @@
 }
 
 .time {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-weight: 700;
   white-space: nowrap;
 }
 
+.status {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  color: var(--status);
+}
+
+/* two lines rather than "…" – the name is what people look for (UX G-20) */
 .customer {
+  display: -webkit-box;
   overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* time, lift and mechanic above the customer */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.head > :last-child:not(:first-child) {
+  margin-left: auto;
+}
+
+.second {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -45,14 +79,7 @@
   color: var(--color-warning);
 }
 
-.details {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-2);
-  font-size: var(--font-size-sm);
-}
-
 .lift {
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }

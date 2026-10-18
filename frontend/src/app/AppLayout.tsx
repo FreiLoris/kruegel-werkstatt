@@ -9,7 +9,7 @@ import { useBackToDashboard } from './kiosk/useBackToDashboard'
 import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
-import { navigation } from './navigation'
+import { navigation, viewOnlyNavigation, type NavEntry } from './navigation'
 import { PersonMenu } from './person/PersonMenu'
 import { PersonPicker } from './person/PersonPicker'
 import { useDevicePerson } from './person/useDevicePerson'
@@ -34,6 +34,7 @@ export function AppLayout() {
   const { data: company } = useCompany()
   const kiosk = device.kind === 'viewOnly' && pathname === '/'
   useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
+  const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
 
   // Browser tab and bookmarks carry the workshop's name
   useEffect(() => {
@@ -52,7 +53,7 @@ export function AppLayout() {
           <Outlet />
         </main>
         <nav className={styles.bottomNav} aria-label="Hauptnavigation">
-          <MainLinks />
+          <MainLinks entries={links} />
           <span className={styles.status}>
             <KioskClock />
             <LiveIndicator status={liveStatus} />
@@ -71,7 +72,7 @@ export function AppLayout() {
           {company?.name ?? 'Werkstatt'}
         </Link>
         <nav className={styles.nav} aria-label="Hauptnavigation">
-          <MainLinks />
+          <MainLinks entries={links} />
         </nav>
         <PersonMenu status={device} active={active} />
         <LiveIndicator status={liveStatus} />
@@ -86,9 +87,9 @@ export function AppLayout() {
 }
 
 /** The pages of the app – in the header, or at the bottom on the TV */
-function MainLinks() {
+function MainLinks({ entries }: { entries: NavEntry[] }) {
   const { pathname } = useLocation()
-  return navigation.map((entry) => {
+  return entries.map((entry) => {
     // An entry with its own, longer path wins: on "/tasks/new" only "Neuer Auftrag" is active, not "Termine" too
     const moreSpecific = navigation.some(
       (other) => other !== entry && isOnPage(other.path, entry.path) && isOnPage(pathname, other.path),

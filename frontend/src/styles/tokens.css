@@ -93,7 +93,9 @@
  * size scales the whole page) and stronger contrast: lighter secondary text, visible lines.
  */
 :root:has([data-kiosk]) {
-  font-size: 125%;
+  /* follows the screen (UX G-20, M-23): 1366×768 ≈ 100 %, Full HD ≈ 135 %, 4K ≈ 250 % – a fixed
+     125 % had a small TV scroll and left a 4K screen mostly empty */
+  font-size: clamp(100%, 0.5vw + 0.8vh + 0.2rem, 250%);
 }
 
 [data-kiosk] {

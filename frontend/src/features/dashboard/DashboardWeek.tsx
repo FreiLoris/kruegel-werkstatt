@@ -53,8 +53,11 @@ export function DashboardWeek({ monday }: { monday: string }) {
             aria-label={`${WEEKDAYS_SHORT[weekdayOf(day.date)]} ${formatDate(day.date)}`}
           >
             <header className={styles.head}>
-              <span className={styles.weekday}>{WEEKDAYS_SHORT[weekdayOf(day.date)]}</span>
-              <span className={styles.date}>{formatDate(day.date).slice(0, 6)}</span>
+              {/* to the day view with every appointment of the day (UX M-23) */}
+              <Link to={`/tasks?date=${day.date}`} className={styles.dayLink}>
+                <span className={styles.weekday}>{WEEKDAYS_SHORT[weekdayOf(day.date)]}</span>
+                <span className={styles.date}>{formatDate(day.date).slice(0, 6)}</span>
+              </Link>
               <span className={styles.meta}>{holiday ?? (day.tasks.length === 1 ? '1 Termin' : `${day.tasks.length} Termine`)}</span>
             </header>
             {away.length > 0 && (
