@@ -45,3 +45,13 @@ export const navigation: NavEntry[] = [
  */
 const VIEW_ONLY_PATHS = ['/', '/tasks', '/tires', '/pinboard', '/todos']
 export const viewOnlyNavigation: NavEntry[] = navigation.filter((entry) => VIEW_ONLY_PATHS.includes(entry.path))
+
+/**
+ * The name of the page for the browser tab: the most specific entry (or sub page) the path lies in –
+ * every tab said only the company's name before (UX, cosmetics). Empty on the start page.
+ */
+export function pageTitle(pathname: string): string {
+  const all = navigation.flatMap((entry) => [entry, ...(entry.pages ?? [])]).filter((entry) => entry.path !== '/')
+  const matching = all.filter((entry) => pathname === entry.path || pathname.startsWith(`${entry.path}/`))
+  return matching.sort((a, b) => b.path.length - a.path.length)[0]?.title ?? ''
+}

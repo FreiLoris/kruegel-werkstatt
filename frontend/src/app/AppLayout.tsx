@@ -10,7 +10,7 @@ import { CustomerQuickSearch } from './CustomerQuickSearch'
 import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
-import { navigation, viewOnlyNavigation, type NavEntry } from './navigation'
+import { navigation, pageTitle, viewOnlyNavigation, type NavEntry } from './navigation'
 import { PersonMenu } from './person/PersonMenu'
 import { PersonPicker } from './person/PersonPicker'
 import { useDevicePerson } from './person/useDevicePerson'
@@ -37,10 +37,12 @@ export function AppLayout() {
   useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
   const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
 
-  // Browser tab and bookmarks carry the workshop's name
+  // Browser tab and bookmarks carry the page and the workshop's name: "Pneuhotel – Garage Muster"
   useEffect(() => {
-    if (company) document.title = company.name
-  }, [company])
+    const name = company?.name ?? 'Werkstatt'
+    const page = pageTitle(pathname)
+    document.title = page ? `${page} – ${name}` : name
+  }, [company, pathname])
 
   if (kiosk) {
     return (
