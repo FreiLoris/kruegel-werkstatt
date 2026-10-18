@@ -33,7 +33,8 @@ describe('PlaceMap', () => {
     const onPick = vi.fn()
     render(<PlaceMap locations={locations} places={places} sets={sets} limits={limits} mode="pick" onPick={onPick} />)
 
-    expect(screen.getByTitle('OG-A1-1 · Huber Peter').textContent).toContain('Huber P.')
+    // 3 mm in winter: worn – the cell says so with a sign and in the tooltip (UX M-20)
+    expect(screen.getByTitle('OG-A1-1 · Huber Peter · Profil ansprechen').textContent).toContain('! Huber P.')
     fireEvent.click(screen.getByTitle('OG-A1-2 · frei'))
     expect(onPick).toHaveBeenCalledWith(places[1])
     // one free place each

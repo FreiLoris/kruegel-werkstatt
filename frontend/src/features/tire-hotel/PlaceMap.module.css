@@ -112,6 +112,12 @@ a.taken:hover {
   box-shadow: inset 3px 0 0 var(--color-warning);
 }
 
+/* below the legal minimum: red, not the orange of "ansprechen" */
+.illegal {
+  border-color: var(--color-danger);
+  box-shadow: inset 3px 0 0 var(--color-danger);
+}
+
 /* stronger than the hover of a free place: the chosen one stays visible under the finger */
 .slot.selected,
 button.slot.selected:hover {

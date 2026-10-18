@@ -177,8 +177,15 @@ function TireSetRow({
     .filter((d): d is number => d !== null && d !== undefined)
     .reduce<number | null>((min, d) => (min === null || d < min ? d : min), null)
   const tyres = [set.brand, set.model, set.dimension].filter(Boolean).join(' ')
+  const navigate = useNavigate()
   return (
-    <tr>
+    // the whole row opens the set – not only the name (UX M-20); the link stays for keyboard and screen readers
+    <tr
+      className={styles.clickable}
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest('a, button')) navigate(`/tires/${set.id}`)
+      }}
+    >
       {!retrieved && (
         <td className={styles.nowrap}>
           {set.place ??
