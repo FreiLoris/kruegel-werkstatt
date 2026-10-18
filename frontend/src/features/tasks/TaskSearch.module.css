@@ -79,6 +79,40 @@
   cursor: pointer;
 }
 
+/* the hit and "im Tag" side by side */
+.hitRow {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--color-border);
+}
+
+.hitRow .hit {
+  border-top: 0;
+}
+
+.day {
+  flex-shrink: 0;
+  min-width: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-accent);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.day:hover,
+.day:focus-visible {
+  background: var(--color-surface-raised);
+}
+
+.number {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
 .hit:hover,
 .hit:focus-visible {
   background: var(--color-surface-raised);

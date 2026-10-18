@@ -20,6 +20,7 @@ vi.mock('./CustomerStep', () => ({
     </>
   ),
 }))
+vi.mock('../../customers/customerApi', () => ({ useCustomer: () => ({ data: undefined, error: null }) }))
 vi.mock('./AppointmentStep', () => ({ AppointmentStep: () => <p>Schritt 2</p> }))
 vi.mock('../../bookings/CourtesyCarSection', () => ({ CourtesyCarSection: () => null }))
 vi.mock('../../bookings/bookingApi', () => ({ useCreateTaskWithBooking: () => ({ mutate: vi.fn(), isPending: false, reset: vi.fn() }) }))

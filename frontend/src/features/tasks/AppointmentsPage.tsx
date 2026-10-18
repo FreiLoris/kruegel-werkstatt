@@ -85,8 +85,7 @@ export function AppointmentsPage() {
           </p>
         </div>
         <div className={styles.actions}>
-          {/* a hit without appointment has no day to show – open the order itself */}
-          <TaskSearch onOpen={(task) => (task.date ? show('day', task.date) : navigate(`/tasks/${task.id}`))} />
+          <TaskSearch onOpen={(task) => navigate(`/tasks/${task.id}`)} onShowDay={(task) => task.date && show('day', task.date)} />
           {canEdit && (
             <Button variant="primary" icon={Plus} onClick={() => navigate('/tasks/new')}>
               Neuer Auftrag

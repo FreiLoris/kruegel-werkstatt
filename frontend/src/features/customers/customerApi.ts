@@ -8,6 +8,15 @@ export type CustomerRequest = components['schemas']['CustomerRequest']
 /** Topic for query keys and live updates – same text as in the backend. */
 const TOPIC = 'customers'
 
+/** One customer – the customer page (UX G-05). */
+export function useCustomer(id: string | undefined) {
+  return useQuery({
+    queryKey: [TOPIC, 'one', id],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/customers/{id}', { params: { path: { id: id! } }, signal })),
+    enabled: id !== undefined,
+  })
+}
+
 /** Create a local customer (walk-in). SwissGarage customers come from the import. */
 export function useCreateCustomer() {
   const queryClient = useQueryClient()

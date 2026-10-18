@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { TextField } from '../../components/ui/Fields'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
@@ -67,7 +68,10 @@ function HitRow({ hit }: { hit: CustomerSearchHit }) {
       <td>
         {c ? (
           <>
-            <span className={styles.name}>{c.displayName}</span>
+            {/* to the customer page (UX G-05: the hits could not be opened) */}
+            <Link to={`/customers/${c.id}`} className={styles.name}>
+              {c.displayName}
+            </Link>
             <span className={styles.sub}>
               {c.source === 'SWISSGARAGE' ? `Nr. ${c.swissgarageNumber}` : 'nur in der App erfasst'}
             </span>

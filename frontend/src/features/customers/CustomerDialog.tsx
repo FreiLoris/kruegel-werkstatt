@@ -7,10 +7,11 @@ import styles from '../../components/ui/FormDialog.module.css'
 import { Select, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useCreateCustomer, useSetCustomerActive, useUpdateCustomer, type CustomerRequest } from './customerApi'
 import { phoneError, prefillFromSearch } from './customerForm'
-import type { Customer } from './customerSearchApi'
+import { MIN_SEARCH_LENGTH, useCustomerSearch, type Customer } from './customerSearchApi'
 
 type Field = Exclude<keyof CustomerRequest, 'version'>
 type FormValues = Record<Field, string>
@@ -83,6 +84,12 @@ export function CustomerDialog({
   const [values, setValues] = useState<FormValues>(() => (customer ? valuesOf(customer) : { ...EMPTY, ...prefillFromSearch(initialName) }))
 
   const fieldError = (field: Field) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
+
+  // a new customer: is the person already there? (UX G-06 – "Bronnimann" found nothing, a second
+  // "Brönnimann Lea" was created). The search forgives umlauts; only a hint, creating stays possible.
+  const probe = useDebouncedValue(customer ? '' : (values.lastName.trim() || values.company.trim()), 400)
+  const similar = useCustomerSearch(probe.length >= MIN_SEARCH_LENGTH ? probe : '', 5)
+  const existing = (similar.data?.hits ?? []).flatMap((hit) => (hit.customer ? [hit.customer] : []))
 
   function set(field: Field, value: string) {
     setValues({ ...values, [field]: value })
@@ -171,6 +178,22 @@ export function CustomerDialog({
     >
       {/* our own field messages instead of the browser's bubbles (e-mail is checked by the server) */}
       <form id={formId} className={styles.form} onSubmit={submit} noValidate>
+        {existing.length > 0 && (
+          <div className={styles.note} role="status">
+            <strong>Gibt es den Kunden schon?</strong>
+            <ul className={styles.similar}>
+              {existing.map((c) => (
+                <li key={c.id}>
+                  {c.displayName}
+                  <span className="muted"> {[c.city, c.mobile ?? c.phone].filter(Boolean).join(' · ')}</span>{' '}
+                  <Button small onClick={() => onSaved(c)}>
+                    Diesen nehmen
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {!customer && (
           <p className={styles.note}>
             Für Laufkundschaft. Stammkunden kommen aus SwissGarage – ist der Kunde dort schon erfasst, erscheint er nach

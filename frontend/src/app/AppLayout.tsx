@@ -6,6 +6,7 @@ import { useActiveEmployees } from '../features/employees/employeeApi'
 import styles from './AppLayout.module.css'
 import { KioskClock } from './kiosk/KioskClock'
 import { useBackToDashboard } from './kiosk/useBackToDashboard'
+import { CustomerQuickSearch } from './CustomerQuickSearch'
 import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
@@ -74,6 +75,7 @@ export function AppLayout() {
         <nav className={styles.nav} aria-label="Hauptnavigation">
           <MainLinks entries={links} />
         </nav>
+        {device.kind === 'person' && <CustomerQuickSearch />}
         <PersonMenu status={device} active={active} />
         <LiveIndicator status={liveStatus} />
       </header>

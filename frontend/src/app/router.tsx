@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
+import { CustomerPage } from '../features/customers/CustomerPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { PinboardPage } from '../features/notes/PinboardPage'
@@ -55,6 +56,8 @@ export const router = createBrowserRouter([
           // FB-08: the tab "Lager" under "Material"
           { path: 'stock', element: <StockPage /> },
           { path: 'suppliers', element: <SuppliersPage /> },
+          // UX G-05: look a customer up without starting a task
+          { path: 'customers/:id', element: <CustomerPage /> },
           { path: 'tasks/new', element: <TaskWizardPage /> },
           { path: 'tasks/:id', element: <TaskDetailPage /> },
           { path: 'tasks/:id/edit', element: <TaskEditPage /> },
