@@ -1826,6 +1826,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tire-sets/{id}/undo-retrieve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo a retrieval made by mistake
+         * @description Only while it is the set's latest step; back onto the given place.
+         */
+        post: operations["undoRetrieve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/todos": {
         parameters: {
             query?: never;
@@ -3493,6 +3513,13 @@ export interface components {
             frontRight?: number | null;
             rearLeft?: number | null;
             rearRight?: number | null;
+        };
+        UndoRetrieveRequest: {
+            /**
+             * Format: uuid
+             * @description The place it lay on – empty = in the hotel without a place
+             */
+            placeId?: string;
         };
         VehicleDto: {
             active: boolean;
@@ -12313,6 +12340,77 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RetrieveRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    undoRetrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoRetrieveRequest"];
             };
         };
         responses: {

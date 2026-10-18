@@ -62,7 +62,16 @@ export function TodoItem({
   const today = useToday()
 
   function tick(isDone: boolean) {
-    setDone.mutate({ id: todo.id, done: isDone }, { onError: (error) => toast.error(reasonOf(error)) })
+    setDone.mutate(
+      { id: todo.id, done: isDone },
+      {
+        // a ticked to-do leaves the open list – one tap brings it back if it was the wrong one (UX M-21)
+        onSuccess: () => {
+          if (isDone) toast.success(`Erledigt: ${todo.text}`, { label: 'Rückgängig', onClick: () => setDone.mutate({ id: todo.id, done: false }) })
+        },
+        onError: (error) => toast.error(reasonOf(error)),
+      },
+    )
   }
 
   async function deleteTodo() {

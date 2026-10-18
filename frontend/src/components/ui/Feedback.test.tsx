@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Button } from './Button'
 import { ConfirmProvider } from './Confirm'
 import { useConfirm } from './confirmContext'
@@ -31,7 +31,28 @@ function DeleteDemo() {
   )
 }
 
+function UndoDemo({ onUndo }: { onUndo: () => void }) {
+  const toast = useToast()
+  return <Button onClick={() => toast.success('Ausgelagert', { label: 'Rückgängig', onClick: onUndo })}>Auslagern</Button>
+}
+
 describe('Toast', () => {
+  it('"Rückgängig" in the message does it and closes the message', async () => {
+    const undo = vi.fn()
+    render(
+      <ToastProvider>
+        <UndoDemo onUndo={undo} />
+      </ToastProvider>,
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Auslagern' }))
+    // the region is a popover – jsdom does not open it, so by text
+    await userEvent.click(screen.getByText('Rückgängig'))
+
+    expect(undo).toHaveBeenCalledOnce()
+    expect(screen.queryByText('Ausgelagert')).toBeNull()
+  })
+
   it('shows the message', async () => {
     render(
       <ToastProvider>

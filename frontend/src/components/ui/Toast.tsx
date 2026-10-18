@@ -1,16 +1,20 @@
 import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import styles from './Toast.module.css'
-import { ToastContext, type ToastApi, type ToastKind } from './toastContext'
+import { ToastContext, type ToastAction, type ToastApi, type ToastKind } from './toastContext'
 
 interface ToastEntry {
   id: number
   text: string
   kind: ToastKind
+  action?: ToastAction
 }
 
 /** Display time – errors a bit longer so they can be read; 3 s was gone before a glance up (UX M-07) */
 const DURATION_MS: Record<ToastKind, number> = { success: 5000, info: 5000, error: 8000 }
+
+/** With "Rückgängig": time to notice the mistake and reach the button */
+const WITH_ACTION_MS = 10_000
 
 const ICONS = { success: CircleCheck, error: CircleAlert, info: Info }
 
@@ -39,17 +43,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const show = useCallback(
-    (kind: ToastKind, text: string) => {
+    (kind: ToastKind, text: string, action?: ToastAction) => {
       const id = nextId.current++
-      setToasts((all) => [...all, { id, text, kind }])
-      setTimeout(() => remove(id), DURATION_MS[kind])
+      setToasts((all) => [...all, { id, text, kind, action }])
+      setTimeout(() => remove(id), action ? WITH_ACTION_MS : DURATION_MS[kind])
     },
     [remove],
   )
 
   const api = useMemo<ToastApi>(
     () => ({
-      success: (text) => show('success', text),
+      success: (text, action) => show('success', text, action),
       error: (text) => show('error', text),
       info: (text) => show('info', text),
     }),
@@ -66,6 +70,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div key={toast.id} className={`${styles.toast} ${styles[toast.kind]}`} role={toast.kind === 'error' ? 'alert' : 'status'}>
               <Icon className={styles.icon} aria-hidden />
               <span className={styles.text}>{toast.text}</span>
+              {toast.action && (
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    remove(toast.id)
+                    toast.action?.onClick()
+                  }}
+                >
+                  {toast.action.label}
+                </button>
+              )}
               <button type="button" className={styles.close} onClick={() => remove(toast.id)} aria-label="Meldung schliessen">
                 <X aria-hidden />
               </button>

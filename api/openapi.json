@@ -10417,6 +10417,95 @@
         "tags" : [ "Tyre hotel" ]
       }
     },
+    "/api/tire-sets/{id}/undo-retrieve" : {
+      "post" : {
+        "description" : "Only while it is the set's latest step; back onto the given place.",
+        "operationId" : "undoRetrieve",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UndoRetrieveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireSetDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Undo a retrieval made by mistake",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
     "/api/todos" : {
       "get" : {
         "description" : "Open ones (default) by deadline – without deadline at the end; `done=true`: the latest 200 done ones, newest first. Filters: empty = all; `unassigned=true`: only those without person.",
@@ -14464,6 +14553,16 @@
           },
           "rearRight" : {
             "type" : [ "number", "null" ]
+          }
+        }
+      },
+      "UndoRetrieveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "placeId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "The place it lay on – empty = in the hotel without a place"
           }
         }
       },

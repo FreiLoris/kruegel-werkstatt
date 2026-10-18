@@ -82,6 +82,16 @@ export function useRetrieveTireSet() {
   })
 }
 
+/** Retrieved by mistake: back onto `placeId` (where it lay), the retrieval gone from the history (UX G-13). */
+export function useUndoRetrieveTireSet() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, placeId }: { id: string; placeId: string | null }) =>
+      dataOrThrow(await api.POST('/api/tire-sets/{id}/undo-retrieve', { params: { path: { id } }, body: { placeId: placeId ?? undefined } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
 export function useTreadLimits() {
   return useQuery({
     queryKey: [SETTINGS_TOPIC],
