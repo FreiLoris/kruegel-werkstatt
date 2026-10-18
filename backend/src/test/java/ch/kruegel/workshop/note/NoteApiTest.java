@@ -227,6 +227,11 @@ class NoteApiTest {
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Öl bestellen", "Bremsen Huber");
         assertThat(mvc.get().uri("/api/notes?archived=true&q=BREMS").exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Bremsen Huber");
+        // word by word, in any order, umlauts forgiven (UX G-04, M-18)
+        assertThat(mvc.get().uri("/api/notes").param("archived", "true").param("q", "huber bremsen").exchange())
+                .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Bremsen Huber");
+        assertThat(mvc.get().uri("/api/notes").param("archived", "true").param("q", "oel").exchange())
+                .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Öl bestellen");
         // % is a character, not "anything"
         assertThat(mvc.get().uri("/api/notes").param("archived", "true").param("q", "100%").exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Bremsen Huber");

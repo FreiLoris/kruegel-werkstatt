@@ -32,12 +32,13 @@ class TaskSearchRepository {
                         LEFT JOIN vehicle v ON v.id = t.vehicle_id
                         WHERE NOT EXISTS (
                             SELECT 1 FROM unnest(cast(:words AS text[])) AS w(word)
-                            WHERE strpos(lower(concat_ws(' ',
+                            -- search_fold (V40): "Huebscher" finds "Hübscher", "ZH-445566" finds "ZH 445566"
+                            WHERE strpos(search_fold(concat_ws(' ',
                                       c.last_name, c.first_name, c.company, c.addition, c.city, c.swissgarage_number,
                                       c.phone, replace(c.phone, ' ', ''), c.mobile, replace(c.mobile, ' ', ''),
                                       v.license_plate, replace(v.license_plate, ' ', ''), v.make, v.model, v.vin,
                                       v.swissgarage_number,
-                                      t.task_number, t.work_description, t.notes, t.parts_description)), w.word) = 0)
+                                      t.task_number, t.work_description, t.notes, t.parts_description)), search_fold(w.word)) = 0)
                         ORDER BY t.appointment_date IS NOT NULL,
                                  t.appointment_date < :today,
                                  CASE WHEN t.appointment_date >= :today THEN t.appointment_date END ASC,

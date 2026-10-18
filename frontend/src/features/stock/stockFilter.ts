@@ -1,3 +1,4 @@
+import { matchesAll, searchWords } from '../../lib/search'
 import { CATEGORY_LABEL, type StockCategory, type StockItem } from './stockApi'
 
 /** Location or supplier filter "articles without one" */
@@ -40,7 +41,6 @@ function searchText(item: StockItem, lookup: StockLookup) {
   ]
     .filter(Boolean)
     .join(' ')
-    .toLocaleLowerCase('de-CH')
 }
 
 /** At the place or anywhere inside it: "Büro" finds the drawer of a shelf in the office */
@@ -59,16 +59,14 @@ function matches(filter: string, ids: string[]) {
  * narrow down: "filter vw" finds "Ölfilter" with the remark "für VW".
  */
 export function filterStock(items: StockItem[], filter: StockFilter, lookup: StockLookup): StockItem[] {
-  const words = filter.query.toLocaleLowerCase('de-CH').split(/\s+/).filter(Boolean)
+  const words = searchWords(filter.query)
   return items.filter((item) => {
     if (filter.category && item.category !== filter.category) return false
     if (filter.location === NONE ? item.storageLocationId !== null : filter.location && !inPlace(item, filter.location, lookup)) {
       return false
     }
     if (!matches(filter.supplier, item.suppliers.map((s) => s.supplierId))) return false
-    if (words.length === 0) return true
-    const text = searchText(item, lookup)
-    return words.every((word) => text.includes(word))
+    return matchesAll(words, [searchText(item, lookup)])
   })
 }
 

@@ -1,5 +1,6 @@
 import { mondayOf } from '../../../lib/calendar'
 import { addDays } from '../../../lib/format'
+import { matchesAll, searchWords } from '../../../lib/search'
 import type { Employee } from '../../employees/employeeApi'
 import type { Lift } from '../../lifts/liftApi'
 import type { Task, TaskStatus } from '../taskApi'
@@ -47,17 +48,13 @@ export type SortDirection = 'asc' | 'desc'
 const STATUS_ORDER: Record<TaskStatus, number> = { RECEIVED: 0, IN_PROGRESS: 1, WAITING_FOR_PARTS: 2, DONE: 3 }
 
 export function filterTasks(tasks: Task[], filter: TaskFilter, workOf: (task: Task) => string): Task[] {
-  const words = filter.text.toLowerCase().split(/\s+/).filter(Boolean)
+  const words = searchWords(filter.text)
   return tasks.filter((task) => {
     if (filter.statuses.length > 0 && !filter.statuses.includes(task.status)) return false
     if (filter.mechanicId && task.mechanicId !== filter.mechanicId) return false
     if (words.length === 0) return true
     const plate = task.vehicle?.licensePlate ?? ''
-    const haystack = [task.customer.displayName, plate, plate.replace(/\s/g, ''), task.vehicle?.description, task.taskNumber, workOf(task)]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-    return words.every((word) => haystack.includes(word))
+    return matchesAll(words, [task.customer.displayName, plate, plate.replace(/\s/g, ''), task.vehicle?.description, task.taskNumber, workOf(task)])
   })
 }
 

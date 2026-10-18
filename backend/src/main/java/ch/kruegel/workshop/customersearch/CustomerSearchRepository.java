@@ -14,7 +14,7 @@ import java.util.UUID;
  * then loaded through the normal repositories.
  *
  * <p>{@code strpos} instead of {@code LIKE}: characters such as % or _ in the input have no
- * special meaning.
+ * special meaning. Both sides go through {@code search_fold} (V40): umlauts, accents, hyphens.
  */
 @Repository
 class CustomerSearchRepository {
@@ -22,7 +22,7 @@ class CustomerSearchRepository {
     /** All words occur in the search text = there is no word that does not occur */
     private static final String ALL_WORDS_MATCH = """
             NOT EXISTS (SELECT 1 FROM unnest(cast(:words AS text[])) AS w(word)
-                        WHERE strpos(s.search_text, w.word) = 0)""";
+                        WHERE strpos(search_fold(s.search_text), search_fold(w.word)) = 0)""";
 
     private final JdbcClient jdbc;
 

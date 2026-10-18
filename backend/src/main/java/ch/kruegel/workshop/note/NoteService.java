@@ -15,7 +15,6 @@ import ch.kruegel.workshop.todo.TodoRepository;
 import ch.kruegel.workshop.todo.TodoRequest;
 import ch.kruegel.workshop.todo.TodoService;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +72,7 @@ public class NoteService {
     @Transactional(readOnly = true)
     public List<NoteDto> list(boolean archived, UUID assigneeId, boolean unassigned, UUID taskId, String query) {
         List<Note> found = archived
-                ? repository.archived(taskId, pattern(query), Limit.of(ARCHIVE_LIMIT))
+                ? archived(taskId, query)
                 : repository.open(assigneeId, unassigned, taskId);
         return withCounts(found);
     }
@@ -188,13 +187,12 @@ public class NoteService {
         return tasks.findById(id).orElseThrow(() -> new InvalidInputException("taskId", "Diesen Auftrag gibt es nicht"));
     }
 
-    /** "brems" → "%brems%" – % and _ typed by the user are taken literally */
-    private static String pattern(String query) {
-        if (query == null || query.isBlank()) {
-            return null;
-        }
-        String escaped = query.strip().toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-        return "%" + escaped + "%";
+    /** Word by word (UX M-18): "bremsen huber" finds "Huber: Bremsen hinten" */
+    private List<Note> archived(UUID taskId, String query) {
+        String[] words = query == null || query.isBlank() ? new String[0] : query.strip().toLowerCase(Locale.ROOT).split("\\s+");
+        List<UUID> ids = repository.archivedIds(taskId, words, ARCHIVE_LIMIT);
+        Map<UUID, Note> byId = repository.findWithTaskByIdIn(ids).stream().collect(Collectors.toMap(Note::getId, note -> note));
+        return ids.stream().map(byId::get).toList();
     }
 
     private List<NoteDto> withCounts(List<Note> notes) {

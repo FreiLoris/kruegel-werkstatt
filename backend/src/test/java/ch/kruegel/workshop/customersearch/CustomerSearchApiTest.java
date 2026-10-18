@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,6 +90,16 @@ class CustomerSearchApiTest {
         customers.save(Customer.local(new CustomerDetails(null, "Jürg", "Müller", null, null, null, null, "Zürich", null, null, null)));
 
         assertThat(search("MÜLLER zürich")).bodyJson().extractingPath("$.hits[0].customer.lastName").isEqualTo("Müller");
+    }
+
+    @Test
+    void umlautsAccentsAndHyphensAreForgiven() {
+        customers.save(Customer.local(new CustomerDetails(null, "Françoise", "Hübscher-Yılmaz", null, null, null, null, "Bösingen", null, null, null)));
+
+        // fictitious – how people type it on a keyboard without the letters
+        for (String typed : List.of("hubscher", "huebscher", "HUBSCHER francoise", "yilmaz", "hubscheryilmaz", "boesingen")) {
+            assertThat(search(typed)).as(typed).bodyJson().extractingPath("$.hits[0].customer.firstName").isEqualTo("Françoise");
+        }
     }
 
     @Test
