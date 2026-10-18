@@ -439,10 +439,11 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
           )}
         </Section>
 
-        <Section title="Interne Notizen">
+        {/* printed on the task sheet – "Nur intern" promised the opposite (UX M-17) */}
+        <Section title="Notizen">
           <TextArea
-            label="Notizen"
-            hint="Nur intern, z. B. «Schlüssel im Briefkasten»"
+            label="Notizen für die Werkstatt"
+            hint="Stehen auch auf dem Auftragszettel, z. B. «Schlüssel im Briefkasten»"
             rows={3}
             maxLength={2000}
             value={form.notes}

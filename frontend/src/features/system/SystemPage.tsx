@@ -4,6 +4,9 @@ import { HealthPanel } from './HealthPanel'
 export function SystemPage() {
   return (
     <>
+      <p>
+        <Link to="/settings">← Einstellungen</Link>
+      </p>
       <h1>System</h1>
       <p className="muted">Verbindung zu Backend und Datenbank</p>
       <HealthPanel />
