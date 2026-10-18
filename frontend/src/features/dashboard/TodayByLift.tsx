@@ -1,3 +1,4 @@
+import { useMyEmployeeId } from '../../app/person/useDevicePerson'
 import { useToday } from '../../lib/clock'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate } from '../../lib/format'
@@ -22,6 +23,7 @@ const LOOK_AHEAD_DAYS = 60
  */
 export function TodayByLift() {
   const today = useToday()
+  const me = useMyEmployeeId()
   const tasks = useTasksOfDay(today)
   const { data: mfkSlots = [] } = useMfkSlots(today, today)
   const ahead = useTasksBetween(addDays(today, 1), addDays(today, LOOK_AHEAD_DAYS))
@@ -73,7 +75,12 @@ export function TodayByLift() {
                 ))}
               {column.tasks.map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} mechanic={mechanicOf(task.mechanicId)} work={workSummary(task, serviceItemNames)} />
+                  <TaskRow
+                    task={task}
+                    mechanic={mechanicOf(task.mechanicId)}
+                    work={workSummary(task, serviceItemNames)}
+                    mine={me !== undefined && task.mechanicId === me}
+                  />
                 </li>
               ))}
             </ul>

@@ -1,3 +1,4 @@
+import { useMyEmployeeId } from '../../app/person/useDevicePerson'
 import { useToday } from '../../lib/clock'
 import { Link } from 'react-router'
 import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
@@ -30,6 +31,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
   const { data: holidays } = usePublicHolidays(monday, sunday)
   const { data: employees } = useAllEmployees()
   const today = useToday()
+  const me = useMyEmployeeId()
 
   // the data wins: after a backend restart the TV keeps the week instead of an error until the next refetch
   if (!tasks.data) return <p className="muted">{tasks.error ? `Termine konnten nicht geladen werden: ${tasks.error.message}` : 'Lade Woche …'}</p>
@@ -77,7 +79,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
               ))}
               {day.tasks.slice(0, rows).map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} oneLine />
+                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} oneLine mine={me !== undefined && task.mechanicId === me} />
                 </li>
               ))}
               {day.tasks.length > rows && (

@@ -126,7 +126,8 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
         },
       }}
     >
-      <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(10rem, 1fr))` }}>
+      {/* Friday no longer cut off on a laptop/tablet (UX M-16) */}
+      <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(8.5rem, 1fr))` }}>
         {days.map((day) => (
           <DayColumn
             key={day.date}

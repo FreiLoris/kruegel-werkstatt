@@ -24,12 +24,15 @@ export function TaskRow({
   liftName,
   work,
   oneLine = false,
+  mine = false,
 }: {
   task: Task
   mechanic: Employee | undefined
   liftName?: string
   work?: string
   oneLine?: boolean
+  /** the mechanic is the person of this device – framed, so "my work" is found at a glance (UX M-13) */
+  mine?: boolean
 }) {
   const period = periodLabel(task)
   const customer = (
@@ -42,7 +45,7 @@ export function TaskRow({
     return (
       <Link
         to={`/tasks/${task.id}`}
-        className={[styles.task, styles.oneLine, statusAccentClass(task.status)].join(' ')}
+        className={[styles.task, styles.oneLine, statusAccentClass(task.status), mine && styles.mine].filter(Boolean).join(' ')}
         title={`${period} · ${TASK_STATUS[task.status]}`}
       >
         <span className={styles.time}>
@@ -53,6 +56,7 @@ export function TaskRow({
         {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} short />}
         <span className="visually-hidden">
           {period}, Status: {TASK_STATUS[task.status]}
+          {mine && ', dein Auftrag'}
         </span>
       </Link>
     )
@@ -60,7 +64,7 @@ export function TaskRow({
   const vehicle = [task.vehicle?.licensePlate, task.vehicle?.description].filter(Boolean).join(' · ')
   const second = [vehicle, work].filter(Boolean).join(' – ')
   return (
-    <Link to={`/tasks/${task.id}`} className={[styles.task, statusAccentClass(task.status)].join(' ')} title={TASK_STATUS[task.status]}>
+    <Link to={`/tasks/${task.id}`} className={[styles.task, statusAccentClass(task.status), mine && styles.mine].filter(Boolean).join(' ')} title={TASK_STATUS[task.status]}>
       <span className={styles.head}>
         <span className={styles.time}>
           <StatusIcon status={task.status} className={styles.status} />
@@ -71,7 +75,10 @@ export function TaskRow({
       </span>
       {customer}
       {second && <span className={styles.second}>{second}</span>}
-      <span className="visually-hidden">Status: {TASK_STATUS[task.status]}</span>
+      <span className="visually-hidden">
+        Status: {TASK_STATUS[task.status]}
+        {mine && ', dein Auftrag'}
+      </span>
     </Link>
   )
 }

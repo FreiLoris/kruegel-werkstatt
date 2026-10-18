@@ -25,3 +25,12 @@ export function useDevicePerson(): DeviceStatus {
 export function useCanEdit(): boolean {
   return canEdit(useDevicePerson())
 }
+
+/**
+ * The person of this device – to mark "my" appointments (UX M-13). Only the stored choice, no list:
+ * a mark for someone just deactivated does no harm.
+ */
+export function useMyEmployeeId(): string | undefined {
+  const choice = useSyncExternalStore(subscribe, deviceChoice)
+  return choice?.kind === 'person' ? choice.id : undefined
+}
