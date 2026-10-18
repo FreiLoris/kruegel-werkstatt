@@ -11,6 +11,7 @@ let device: DeviceStatus = { kind: 'viewOnly' }
 vi.mock('./live/useLiveUpdates', () => ({ useLiveUpdates: () => 'connected' }))
 vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useCanEdit: () => false }))
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
+vi.mock('./CustomerQuickSearch', () => ({ CustomerQuickSearch: () => null }))
 vi.mock('../features/employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../features/company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Testgarage', logoUrl: null } }) }))
 

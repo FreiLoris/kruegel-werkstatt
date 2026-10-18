@@ -10,6 +10,8 @@ import { useToast } from '../../../components/ui/toastContext'
 import { useSingleFlight } from '../../../lib/useSingleFlight'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTaskWithBooking, type Booking } from '../../bookings/bookingApi'
+import { useCustomer } from '../../customers/customerApi'
+import type { Customer } from '../../customers/customerSearchApi'
 import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { CourtesyCarSection } from '../../bookings/CourtesyCarSection'
 import { useCreateTask, type AnyTask } from '../taskApi'
@@ -38,8 +40,25 @@ const REVIEW_BEFORE_SAVE_MS = 400
  * and after a reload the started task is offered again (UX G-01).
  */
 export function TaskWizardPage() {
+  const [params] = useSearchParams()
+  // "Neuer Auftrag für diesen Kunden" on the customer page (UX G-05)
+  const customerId = params.get('customer') ?? undefined
+  const preset = useCustomer(customerId)
+  if (customerId && !preset.data && !preset.error) {
+    return (
+      <>
+        <h1>Neuer Auftrag</h1>
+        <p className="muted">Lade Kunde …</p>
+      </>
+    )
+  }
+  return <TaskWizard initialCustomer={preset.data ?? null} />
+}
+
+function TaskWizard({ initialCustomer }: { initialCustomer: Customer | null }) {
   const [step, setStep] = useState<Step>(1)
-  const [customerStep, setCustomerStep] = useState<CustomerStepValue>(EMPTY_CUSTOMER_STEP)
+  const [startCustomerStep] = useState<CustomerStepValue>({ customer: initialCustomer, vehicle: null })
+  const [customerStep, setCustomerStep] = useState<CustomerStepValue>(startCustomerStep)
   const [params] = useSearchParams()
   // dragged open in the day view → date, time, end and lift are already there
   const [startAppointment] = useState<AppointmentForm>(() => {
@@ -60,7 +79,10 @@ export function TaskWizardPage() {
   const toast = useToast()
   const once = useSingleFlight()
   const dirty =
-    saved === null && (customerStep.customer !== null || courtesyCar.wanted || JSON.stringify(appointment) !== JSON.stringify(startAppointment))
+    saved === null &&
+    (JSON.stringify(customerStep) !== JSON.stringify(startCustomerStep) ||
+      courtesyCar.wanted ||
+      JSON.stringify(appointment) !== JSON.stringify(startAppointment))
   useUnsavedChanges(dirty)
 
   // while the old draft is still offered it stays stored – the empty form must not overwrite it

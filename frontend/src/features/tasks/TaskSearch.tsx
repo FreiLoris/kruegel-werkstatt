@@ -11,9 +11,10 @@ import { whenLabel } from './taskTime'
 
 /**
  * Search over ALL appointments (F11: the old search only looked at the visible week, without
- * saying that there were hits elsewhere). A hit opens its day.
+ * saying that there were hits elsewhere). A hit opens the task – that is what is looked for
+ * (UX G-07); "im Tag" next to it shows its day.
  */
-export function TaskSearch({ onOpen }: { onOpen: (task: AnyTask) => void }) {
+export function TaskSearch({ onOpen, onShowDay }: { onOpen: (task: AnyTask) => void; onShowDay: (task: AnyTask) => void }) {
   const [input, setInput] = useState('')
   const [open, setOpen] = useState(false)
   const query = useDebouncedValue(input, 250)
@@ -33,10 +34,10 @@ export function TaskSearch({ onOpen }: { onOpen: (task: AnyTask) => void }) {
 
   const showList = open && query.trim().length >= 2
 
-  function choose(task: AnyTask) {
+  function choose(task: AnyTask, open: (task: AnyTask) => void) {
     setOpen(false)
     setInput('')
-    onOpen(task)
+    open(task)
   }
 
   return (
@@ -76,11 +77,12 @@ export function TaskSearch({ onOpen }: { onOpen: (task: AnyTask) => void }) {
               </p>
               <ul className={styles.hits}>
                 {search.data.hits.map((task) => (
-                  <li key={task.id}>
-                    <button type="button" className={[styles.hit, task.date !== null && task.date < today && styles.past].filter(Boolean).join(' ')} onClick={() => choose(task)}>
+                  <li key={task.id} className={styles.hitRow}>
+                    <button type="button" className={[styles.hit, task.date !== null && task.date < today && styles.past].filter(Boolean).join(' ')} onClick={() => choose(task, onOpen)}>
                       <span className={styles.when}>
                         {task.date && `${WEEKDAYS_SHORT[weekdayOf(task.date)]} `}
                         {whenLabel(task, true)}
+                        {task.taskNumber && <span className={styles.number}> · {task.taskNumber}</span>}
                       </span>
                       <span className={styles.who}>{task.customer.displayName}</span>
                       <span className={styles.what}>
@@ -89,6 +91,11 @@ export function TaskSearch({ onOpen }: { onOpen: (task: AnyTask) => void }) {
                         <TaskStatusBadge status={task.status} />
                       </span>
                     </button>
+                    {task.date && (
+                      <button type="button" className={styles.day} onClick={() => choose(task, onShowDay)}>
+                        im Tag
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

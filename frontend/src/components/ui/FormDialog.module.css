@@ -20,6 +20,15 @@
   font-size: var(--font-size-sm);
 }
 
+/* customers that may be the same as the one being created */
+.similar {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
 /* footer: an action on the left, apart from Abbrechen/Speichern */
 .left {
   margin-right: auto;

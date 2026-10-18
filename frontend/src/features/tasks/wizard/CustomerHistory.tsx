@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { formatDate } from '../../../lib/format'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -7,8 +8,12 @@ import { workSummary } from '../workSummary'
 import styles from './CustomerHistory.module.css'
 import { NO_APPOINTMENT } from '../taskTime'
 
-/** The customer's last tasks – what was done last time, which car came (UI review: no empty area). */
-export function CustomerHistory({ customerId }: { customerId: string }) {
+/**
+ * The customer's last tasks – what was done last time, which car came (UI review: no empty area).
+ *
+ * @param linked the date opens the task (customer page) – not in the wizard, it would leave the input
+ */
+export function CustomerHistory({ customerId, linked = false }: { customerId: string; linked?: boolean }) {
   const history = useCustomerHistory(customerId)
   const { data: serviceItems } = useAllServiceItems()
   const names = useMemo(() => new Map((serviceItems ?? []).map((item) => [item.id, item.name])), [serviceItems])
@@ -29,7 +34,9 @@ export function CustomerHistory({ customerId }: { customerId: string }) {
           {history.data.map((task) => (
             <li key={task.id} className={styles.item}>
               <div className={styles.line}>
-                <span className={styles.date}>{task.date ? formatDate(task.date) : NO_APPOINTMENT}</span>
+                <span className={styles.date}>
+                  {linked ? <Link to={`/tasks/${task.id}`}>{task.date ? formatDate(task.date) : NO_APPOINTMENT}</Link> : task.date ? formatDate(task.date) : NO_APPOINTMENT}
+                </span>
                 <span className={styles.status}>{TASK_STATUS[task.status]}</span>
               </div>
               <div className={styles.line}>
