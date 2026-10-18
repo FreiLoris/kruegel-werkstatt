@@ -54,3 +54,12 @@
   padding: 0;
   list-style: none;
 }
+
+/* task material in the supplier's group – shown, ordered from "Material für Aufträge" */
+.part {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-info);
+}

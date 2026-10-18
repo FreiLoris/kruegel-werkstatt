@@ -5,8 +5,10 @@ import { choiceError, isValidPeriod, NO_COURTESY_CAR, periodOf, returnDateAfterM
 const FORM: AppointmentForm = { ...EMPTY_APPOINTMENT, date: '2026-10-15', time: '08:00', endDate: '2026-10-15', endTime: '11:00' }
 
 describe('suggestedPeriod', () => {
-  it('from start to end of the appointment', () => {
-    expect(suggestedPeriod(FORM)).toEqual({ pickupAt: '2026-10-15T08:00', returnAt: '2026-10-15T11:00' })
+  it('from the start of the appointment to closing time of its last day (UX M-04: not the end of the lift slot)', () => {
+    expect(suggestedPeriod(FORM)).toEqual({ pickupAt: '2026-10-15T08:00', returnAt: '2026-10-15T17:30' })
+    // a later end stays
+    expect(suggestedPeriod({ ...FORM, endTime: '18:00' })?.returnAt).toBe('2026-10-15T18:00')
     expect(suggestedPeriod(EMPTY_APPOINTMENT)).toBeNull()
   })
 
