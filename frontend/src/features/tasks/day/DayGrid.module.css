@@ -156,6 +156,21 @@
   opacity: 1;
 }
 
+/* a finger has no hover: on the tablet the grip is always visible and big enough (UX G-12) */
+@media (pointer: coarse) {
+  .handle {
+    left: 25%;
+    right: 25%;
+    height: 24px;
+  }
+
+  .handle::after {
+    bottom: 6px;
+    height: 4px;
+    opacity: 0.8;
+  }
+}
+
 /* The card under the pointer while dragging: as wide as a column */
 .overlay {
   height: 100%;

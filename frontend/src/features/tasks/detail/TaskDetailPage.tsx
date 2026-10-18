@@ -1,10 +1,11 @@
-import { ArrowLeft, CalendarX, CircleDot, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarX, Check, CircleDot, Mail, Pencil, Phone, Printer, Smartphone, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError } from '../../../api/errors'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import { Button } from '../../../components/ui/Button'
+import { StatusIcon } from '../StatusIcon'
 import { LoadFailed } from '../../../components/ui/LoadFailed'
 import { useConfirm } from '../../../components/ui/confirmContext'
 import { Facts } from '../../../components/ui/Facts'
@@ -172,19 +173,26 @@ function TaskDetail({ task }: { task: AnyTask }) {
       </div>
 
       {canEdit && (
-        <div className={styles.status} role="group" aria-label="Status ändern">
-          {(Object.keys(TASK_STATUS) as TaskStatus[]).map((status) => (
-            <Button
-              key={status}
-              small
-              variant={task.status === status ? 'primary' : 'secondary'}
-              aria-pressed={task.status === status}
-              disabled={changeStatus.isPending}
-              onClick={() => task.status !== status && setStatus(status)}
-            >
-              {TASK_STATUS[status]}
-            </Button>
-          ))}
+        // one row of large segments with a heading – tapped with gloves on the tablet (UX G-12)
+        <div className={styles.statusBlock}>
+          <span className={styles.statusLabel} id="status-label">
+            Status
+          </span>
+          <div className={styles.status} role="group" aria-labelledby="status-label">
+            {(Object.keys(TASK_STATUS) as TaskStatus[]).map((status) => (
+              <button
+                key={status}
+                type="button"
+                className={styles.segment}
+                aria-pressed={task.status === status}
+                disabled={changeStatus.isPending}
+                onClick={() => task.status !== status && setStatus(status)}
+              >
+                {task.status === status ? <Check aria-hidden /> : <StatusIcon status={status} />}
+                {TASK_STATUS[status]}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

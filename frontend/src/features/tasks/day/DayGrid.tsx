@@ -360,7 +360,8 @@ export function DayGrid({
       }}
     >
       <div ref={scroller} className={[styles.scroller, mode === 'pick' && styles.compact].filter(Boolean).join(' ')}>
-        <div className={styles.grid} style={{ gridTemplateColumns: `3.5rem repeat(${columns.length}, minmax(${mode === 'pick' ? '6rem' : '13rem'}, 1fr))` }}>
+        {/* 10rem: four lifts and "Ohne Lift" fit a 1024 px tablet without scrolling sideways (UX M-16) */}
+        <div className={styles.grid} style={{ gridTemplateColumns: `3.5rem repeat(${columns.length}, minmax(${mode === 'pick' ? '6rem' : '10rem'}, 1fr))` }}>
           <div className={styles.corner} />
           {columns.map((column) => (
             <h2 key={column.id} className={styles.columnTitle}>
