@@ -1,18 +1,31 @@
+import { fold } from '../../lib/search'
 import type { StockItem } from '../stock/stockApi'
 import type { Supplier } from '../suppliers/supplierApi'
+import type { AnyTask } from '../tasks/taskApi'
 import type { Todo } from './todoApi'
 
 export interface ShoppingGroup {
   /** empty = "Ohne Lieferant" */
   supplier: Supplier | null
   entries: Todo[]
+  /** material of tasks still to order from this supplier – same order, one mail (UX G-18) */
+  parts: AnyTask[]
+}
+
+/**
+ * The task material of a supplier: the task names its supplier as text ("Teilehandel"), so it is
+ * matched by name, forgiving case and umlauts.
+ */
+export function partsOf(supplier: Supplier, tasks: AnyTask[]): AnyTask[] {
+  const name = fold(supplier.name.trim())
+  return tasks.filter((task) => task.parts?.supplier && fold(task.parts.supplier.trim()) === name)
 }
 
 /**
  * The open shopping list by supplier (FB-09: order everything from one supplier at once) – suppliers
  * by name, "Ohne Lieferant" last. A supplier that was deleted meanwhile counts as none.
  */
-export function shoppingGroups(entries: Todo[], suppliers: Supplier[]): ShoppingGroup[] {
+export function shoppingGroups(entries: Todo[], suppliers: Supplier[], tasks: AnyTask[] = []): ShoppingGroup[] {
   const byId = new Map(suppliers.map((s) => [s.id, s]))
   const groups = new Map<string | null, Todo[]>()
   for (const entry of entries) {
@@ -21,8 +34,15 @@ export function shoppingGroups(entries: Todo[], suppliers: Supplier[]): Shopping
     if (list) list.push(entry)
     else groups.set(key, [entry])
   }
+  // a supplier with only task material gets its group too
+  for (const supplier of suppliers) {
+    if (!groups.has(supplier.id) && partsOf(supplier, tasks).length > 0) groups.set(supplier.id, [])
+  }
   return [...groups.entries()]
-    .map(([id, list]) => ({ supplier: id ? byId.get(id)! : null, entries: list }))
+    .map(([id, list]) => {
+      const supplier = id ? byId.get(id)! : null
+      return { supplier, entries: list, parts: supplier ? partsOf(supplier, tasks) : [] }
+    })
     .sort((a, b) => {
       if (!a.supplier || !b.supplier) return (a.supplier ? 0 : 1) - (b.supplier ? 0 : 1)
       return a.supplier.name.localeCompare(b.supplier.name, 'de-CH', { sensitivity: 'base' })
@@ -45,6 +65,7 @@ export function orderText(group: ShoppingGroup, items: StockItem[]): string {
     const number = orderNumber(entry, items)
     return number ? `- ${entry.text} (Art.-Nr. ${number})` : `- ${entry.text}`
   })
+  const parts = group.parts.map((task) => `- ${task.parts!.description} (für ${task.taskNumber ? `Auftrag ${task.taskNumber}` : task.customer.displayName})`)
   const customer = group.supplier?.customerNumber ? [`Kundennummer: ${group.supplier.customerNumber}`, ''] : []
-  return [...customer, ...lines].join('\n')
+  return [...customer, ...lines, ...parts].join('\n')
 }

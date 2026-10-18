@@ -1,5 +1,5 @@
 import { addDays, minutesBetween } from '../../lib/format'
-import type { AppointmentForm } from '../tasks/wizard/appointmentForm'
+import { READY_BY_TIME, type AppointmentForm } from '../tasks/wizard/appointmentForm'
 
 /**
  * Wizard: the courtesy car for a new task as form state. Pickup and return follow the appointment
@@ -36,7 +36,12 @@ export function suggestedPeriod(form: AppointmentForm): { pickupAt: string; retu
       form.arrivesEarlier && form.arrivesEarlierDate && form.arrivesEarlierTime
         ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}`
         : `${form.date}T${form.time}`,
-    returnAt: form.readyBy && form.readyByDate && form.readyByTime ? `${form.readyByDate}T${form.readyByTime}` : `${form.endDate}T${form.endTime}`,
+    // the customer brings the courtesy car back when fetching their own – "fertig bis", else at closing
+    // time of the last day; the end of the lift slot (often one hour) was far too early (UX M-04)
+    returnAt:
+      form.readyBy && form.readyByDate && form.readyByTime
+        ? `${form.readyByDate}T${form.readyByTime}`
+        : `${form.endDate}T${form.endTime > READY_BY_TIME ? form.endTime : READY_BY_TIME}`,
   }
 }
 

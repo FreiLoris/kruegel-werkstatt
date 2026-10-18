@@ -5,6 +5,7 @@ import { copyText } from '../../lib/clipboard'
 import { useToast } from '../../components/ui/toastContext'
 import { useStockItems } from '../stock/stockApi'
 import { ORDER_CHANNEL_LABEL, useSuppliers } from '../suppliers/supplierApi'
+import { usePartsToOrder } from '../tasks/taskApi'
 import { orderNumber, orderText, shoppingGroups } from './shoppingGroups'
 import styles from './ShoppingBySupplier.module.css'
 import type { Todo } from './todoApi'
@@ -18,8 +19,9 @@ import { TodoItem } from './TodoItem'
 export function ShoppingBySupplier({ entries, canEdit, showAssignee }: { entries: Todo[]; canEdit: boolean; showAssignee: boolean }) {
   const { data: suppliers = [] } = useSuppliers()
   const { data: items = [] } = useStockItems()
+  const { data: tasks = [] } = usePartsToOrder()
   const toast = useToast()
-  const groups = useMemo(() => shoppingGroups(entries, suppliers), [entries, suppliers])
+  const groups = useMemo(() => shoppingGroups(entries, suppliers, tasks), [entries, suppliers, tasks])
 
   async function copy(text: string, name: string) {
     try {
@@ -37,7 +39,7 @@ export function ShoppingBySupplier({ entries, canEdit, showAssignee }: { entries
       <section key={supplier?.id ?? 'none'} className={styles.group} aria-label={name}>
         <header className={styles.header}>
           <h2>
-            {name} <span className="muted">{group.entries.length}</span>
+            {name} <span className="muted">{group.entries.length + group.parts.length}</span>
           </h2>
           {supplier && (
             <span className={styles.how}>
@@ -73,6 +75,16 @@ export function ShoppingBySupplier({ entries, canEdit, showAssignee }: { entries
               />
             )
           })}
+          {/* task material from the same supplier – in the copied order too (UX G-18); "Bestellt" is above */}
+          {group.parts.map((task) => (
+            <li key={`parts-${task.id}`} className={styles.part}>
+              <span>{task.parts!.description}</span>
+              <span className="muted">
+                Material für {task.taskNumber ? `Auftrag ${task.taskNumber}, ` : ''}
+                {task.customer.displayName}
+              </span>
+            </li>
+          ))}
         </ul>
       </section>
     )

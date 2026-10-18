@@ -1,6 +1,7 @@
 import { CarFront } from 'lucide-react'
 import { TextField } from '../../components/ui/Fields'
 import { formatLocalDateTime } from '../../lib/format'
+import { useAllCourtesyCars } from '../courtesy-cars/courtesyCarApi'
 import { useAvailability } from './bookingApi'
 import { isValidPeriod, returnDateAfterMove, splitDateTime } from './courtesyCarChoice'
 import styles from './CourtesyCarPicker.module.css'
@@ -25,6 +26,13 @@ interface CourtesyCarPickerProps {
  * (not back yet) stays choosable but says so (7d).
  */
 export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesyCarId, onCarChange, excludeBookingId, name }: CourtesyCarPickerProps) {
+  const { data: cars } = useAllCourtesyCars()
+  /** service or insurance overdue – the car should not go out unnoticed (UX M-04) */
+  const dueWarning = (id: string) => {
+    const car = cars?.find((c) => c.id === id)
+    const due = [car?.serviceStatus === 'OVERDUE' && 'Service überfällig', car?.insuranceStatus === 'OVERDUE' && 'Versicherung abgelaufen'].filter(Boolean)
+    return due.length > 0 ? `Achtung: ${due.join(', ')}` : null
+  }
   const [pickupDate, pickupTime] = splitDateTime(pickupAt)
   const [returnDate, returnTime] = splitDateTime(returnAt)
   const periodValid = isValidPeriod(pickupAt, returnAt)
@@ -80,7 +88,8 @@ export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesy
                 <span className="muted">{[car.model, car.licensePlate].filter(Boolean).join(' · ')}</span>
               </span>
               {car.available ? (
-                <span className={styles.free}>frei</span>
+                // free in this period, but still out with someone: not the plain green "frei" (UX M-04)
+                <span className={car.overdue ? styles.freeLate : styles.free}>{car.overdue ? 'frei, aber noch nicht zurück' : 'frei'}</span>
               ) : (
                 <span className={styles.busy}>
                   {car.conflicts.map((b) => (
@@ -90,6 +99,7 @@ export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesy
                   ))}
                 </span>
               )}
+              {dueWarning(car.courtesyCarId) && <span className={styles.overdue}>{dueWarning(car.courtesyCarId)}</span>}
               {car.overdue && (
                 <span className={styles.overdue}>
                   Achtung: noch nicht zurück von {car.overdue.holderName} (fällig {formatLocalDateTime(car.overdue.returnAt)})
