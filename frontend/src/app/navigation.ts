@@ -30,3 +30,10 @@ export const navigation: NavEntry[] = [
   { path: '/settings', title: 'Einstellungen' },
   { path: '/system', title: 'System' },
 ]
+
+/**
+ * A "view only" device (the workshop TV) can change nothing – no "Neuer Auftrag", no
+ * administration; five entries large enough to hit from the bottom bar (UX M-23).
+ */
+const VIEW_ONLY_PATHS = ['/', '/tasks', '/tires', '/pinboard', '/todos']
+export const viewOnlyNavigation: NavEntry[] = navigation.filter((entry) => VIEW_ONLY_PATHS.includes(entry.path))

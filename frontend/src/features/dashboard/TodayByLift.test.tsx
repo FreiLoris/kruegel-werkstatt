@@ -19,6 +19,12 @@ const task = (id: string, liftId: string, date: string, time: string, name: stri
   waitingCustomer: false,
   mechanicId: null,
   customer: { displayName: name },
+  vehicle: null,
+  serviceItemIds: [],
+  tireChange: false,
+  mfk: false,
+  parts: null,
+  workDescription: null,
 })
 
 let today: ReturnType<typeof task>[] = []
@@ -34,6 +40,7 @@ vi.mock('../tasks/taskApi', async (importOriginal) => ({
 }))
 vi.mock('../lifts/liftApi', () => ({ useAllLifts: () => ({ data: lifts }) }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [] }) }))
+vi.mock('../service-items/serviceItemApi', () => ({ useAllServiceItems: () => ({ data: [] }) }))
 vi.mock('../inspection-stations/inspectionStationApi', () => ({
   // fictitious
   useInspectionStations: () => ({ data: [{ id: 's1', name: 'Prüfstelle Muster' }] }),

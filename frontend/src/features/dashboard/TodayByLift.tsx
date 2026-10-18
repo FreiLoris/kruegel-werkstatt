@@ -3,8 +3,10 @@ import { weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
 import { useAllLifts } from '../lifts/liftApi'
+import { useAllServiceItems } from '../service-items/serviceItemApi'
 import { MfkEntry } from '../tasks/mfk/MfkEntry'
 import { useMfkSlots, useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
+import { workSummary } from '../tasks/workSummary'
 import { TaskRow } from './TaskRow'
 import styles from './TodayByLift.module.css'
 import { liftColumns, nextAppointment, NO_LIFT } from './todayColumns'
@@ -25,6 +27,7 @@ export function TodayByLift() {
   const ahead = useTasksBetween(addDays(today, 1), addDays(today, LOOK_AHEAD_DAYS))
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
+  const { data: serviceItems } = useAllServiceItems()
 
   // the data wins: after a backend restart the TV keeps today's tasks instead of an error
   if (!tasks.data || !lifts) {
@@ -32,6 +35,7 @@ export function TodayByLift() {
   }
 
   const mechanicOf = (id: string | null) => employees?.find((e) => e.id === id)
+  const serviceItemNames = new Map((serviceItems ?? []).map((s) => [s.id, s.name]))
 
   if (tasks.data.length === 0 && mfkSlots.length === 0) {
     const next = ahead.data ? nextAppointment(ahead.data, today) : undefined
@@ -69,7 +73,7 @@ export function TodayByLift() {
                 ))}
               {column.tasks.map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} mechanic={mechanicOf(task.mechanicId)} />
+                  <TaskRow task={task} mechanic={mechanicOf(task.mechanicId)} work={workSummary(task, serviceItemNames)} />
                 </li>
               ))}
             </ul>

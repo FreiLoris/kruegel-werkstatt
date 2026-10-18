@@ -56,6 +56,16 @@ describe('AppLayout', () => {
     expect(document.querySelector('time')).not.toBeNull()
   })
 
+  it('the TV links only what it can use – no "Neuer Auftrag", no administration (UX M-23)', () => {
+    device = { kind: 'viewOnly' }
+    renderAt('/')
+
+    const links = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(links).toEqual(expect.arrayContaining(['Start', 'Termine', 'Pneuhotel', 'Pinnwand', 'To-dos']))
+    expect(links).not.toContain('Neuer Auftrag')
+    expect(links).not.toContain('Einstellungen')
+  })
+
   it('the TV returns to the dashboard by itself – touching restarts the wait', () => {
     vi.useFakeTimers()
     device = { kind: 'viewOnly' }

@@ -1,8 +1,9 @@
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
 import { useToday } from '../../lib/clock'
-import { isoWeek } from '../../lib/calendar'
+import { isoWeek, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate } from '../../lib/format'
+import { TaskStatusLegend } from '../tasks/TaskStatusBadge'
 import { BoardOverview } from './BoardOverview'
 import styles from './DashboardPage.module.css'
 import { dashboardMonday } from './shownWeek'
@@ -36,10 +37,12 @@ export function DashboardPage() {
       </div>
       <PresentToday />
       <DashboardWeek monday={monday} />
+      {/* what bar color and sign mean (UX M-12) */}
+      <TaskStatusLegend />
       <div className={styles.below}>
         <section className={styles.area} aria-labelledby="today-heading">
           <h2 id="today-heading" className={styles.areaTitle}>
-            Heute nach Lift
+            Heute, {WEEKDAYS_SHORT[weekdayOf(today)]} {formatDate(today).slice(0, 6)} – nach Lift
           </h2>
           <TodayByLift />
         </section>
