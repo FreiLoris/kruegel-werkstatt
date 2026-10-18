@@ -25,10 +25,18 @@ export const navigation: NavEntry[] = [
   { path: '/tires', title: 'Pneuhotel' },
   { path: '/pinboard', title: 'Pinnwand' },
   { path: '/todos', title: 'To-dos' },
-  { path: '/shopping', title: 'Material', pages: materialPages },
+  // "Material" alone read like the shopping list only – stock and suppliers are behind it too (UX M-15)
+  { path: '/shopping', title: 'Material & Lager', pages: materialPages },
   { path: '/employees', title: 'Mitarbeiter' },
-  { path: '/settings', title: 'Einstellungen' },
-  { path: '/system', title: 'System' },
+  // "System" is for the one who looks after the app – a tile in the settings, not a main entry
+  {
+    path: '/settings',
+    title: 'Einstellungen',
+    pages: [
+      { path: '/settings/swissgarage', title: 'SwissGarage-Import' },
+      { path: '/system', title: 'System' },
+    ],
+  },
 ]
 
 /**

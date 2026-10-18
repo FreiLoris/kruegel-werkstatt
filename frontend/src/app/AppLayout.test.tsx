@@ -118,7 +118,7 @@ describe('AppLayout', () => {
     ['/tasks', 'Termine'],
     ['/tasks/new', 'Neuer Auftrag'],
     ['/tasks/123', 'Termine'],
-    ['/stock', 'Material'],
+    ['/stock', 'Material & Lager'],
   ])('on %s exactly one navigation entry is active: %s', (path, title) => {
     device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
     renderAt(path)
