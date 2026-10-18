@@ -2,8 +2,15 @@ import { createContext, useContext } from 'react'
 
 export type ToastKind = 'success' | 'error' | 'info'
 
+/** A button in the message, e.g. "Rückgängig" (UX G-13) – pressing it closes the message */
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
 export interface ToastApi {
-  success: (text: string) => void
+  /** @param action e.g. "Rückgängig" – the message then stays longer, there is time to press it */
+  success: (text: string, action?: ToastAction) => void
   error: (text: string) => void
   info: (text: string) => void
 }

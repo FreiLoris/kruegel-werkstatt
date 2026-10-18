@@ -70,7 +70,8 @@ public class TireSet extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private TirePlace place;
 
-    @OneToMany(mappedBy = "tireSet", cascade = CascadeType.ALL)
+    // orphanRemoval: undoing a retrieval takes its event back
+    @OneToMany(mappedBy = "tireSet", cascade = CascadeType.ALL, orphanRemoval = true)
     // id last: two events of one save (measured and retrieved) can have the same time – UUIDv7 keeps their order
     @OrderBy("happenedOn, createdAt, id")
     private List<TireSetEvent> events = new ArrayList<>();
@@ -178,6 +179,28 @@ public class TireSet extends BaseEntity {
         // the place it came from, then it is free for the next set
         events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), place, note, task));
         this.place = null;
+    }
+
+    /**
+     * Takes back a retrieval pressed by mistake – only while it is the set's latest step and was not
+     * booked from a task (that one is corrected on the task). The history then looks as before.
+     * That the place is free is checked by the service.
+     *
+     * @return false when there is nothing to take back
+     */
+    public boolean undoRetrieve(TirePlace formerPlace) {
+        if (isInHotel() || events.isEmpty()) {
+            return false;
+        }
+        // the newest by time of saving (not by day – a retrieval may be dated back); on a tie the later in the list
+        TireSetEvent last = events.stream().reduce((a, b) -> b.getCreatedAt().isBefore(a.getCreatedAt()) ? a : b).orElseThrow();
+        if (last.getKind() != TireSetEventKind.RETRIEVED || last.getTask() != null) {
+            return false;
+        }
+        events.remove(last);
+        this.retrievedOn = null;
+        this.place = checkedPlace(formerPlace);
+        return true;
     }
 
     private void apply(TireSetDetails details) {

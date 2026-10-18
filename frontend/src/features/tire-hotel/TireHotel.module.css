@@ -153,6 +153,14 @@
   background: var(--color-surface);
 }
 
+/* a heads-up, not an error – storing goes on */
+.warning {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-surface-raised);
+}
+
 .hint {
   color: var(--color-danger);
   font-size: var(--font-size-sm);

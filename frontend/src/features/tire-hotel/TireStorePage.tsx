@@ -7,10 +7,11 @@ import { Button } from '../../components/ui/Button'
 import { StickyFooter, StickyFooterSpacer } from '../../components/ui/StickyFooter'
 import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
+import { formatDate } from '../../lib/format'
 import { CustomerStep } from '../tasks/wizard/CustomerStep'
 import type { CustomerStepValue } from '../tasks/wizard/wizardState'
 import { PlaceMap } from './PlaceMap'
-import { useSaveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
+import { SEASONS, useSaveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
 import { emptyForm, tireSetErrors, toTireSetRequest, type TireSetForm } from './tireSetForm'
@@ -91,6 +92,8 @@ export function TireStorePage() {
   }
 
   const vehicle = customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle : null
+  // the same car already has a set of this season in the hotel – stored twice by mistake? (UX G-13)
+  const sameSeason = vehicle ? inHotel?.find((s) => s.vehicle?.id === vehicle.id && s.season === form.season) : undefined
 
   return (
     <>
@@ -128,6 +131,13 @@ export function TireStorePage() {
           <section className={styles.section} aria-labelledby="set-title">
             <h2 id="set-title">Satz</h2>
             <TireSetFields form={form} onChange={setForm} errors={errors} showRequired={showRequired} />
+            {sameSeason && (
+              <p className={styles.warning} role="status">
+                Für dieses Fahrzeug liegt schon ein {SEASONS[sameSeason.season]}satz im Hotel
+                {sameSeason.place ? ` (${sameSeason.place})` : ''}, eingelagert {formatDate(sameSeason.storedOn)} –{' '}
+                <Link to={`/tires/${sameSeason.id}`}>ansehen</Link>. Wirklich einen zweiten einlagern?
+              </p>
+            )}
           </section>
           <section className={styles.section} aria-labelledby="tread-title">
             <h2 id="tread-title">Profiltiefe</h2>

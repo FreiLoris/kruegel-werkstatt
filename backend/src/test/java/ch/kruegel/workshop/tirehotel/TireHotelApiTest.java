@@ -131,6 +131,26 @@ class TireHotelApiTest {
     }
 
     @Test
+    void aRetrievalByMistakeIsTakenBackOntoItsPlace() {
+        send("POST", "/api/tire-locations", """
+                { "code": "OG", "name": "Werkstatt", "kind": "FLOOR", "sizeA": 1, "sizeB": 1, "sizeC": 2 }""");
+        String place = read(mvc.get().uri("/api/tire-places").exchange(), "$[0].id");
+        String id = idOf(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"2026-04-01\", \"placeId\": \"" + place + "\""));
+        send("POST", "/api/tire-sets/" + id + "/retrieve", "{}");
+
+        MvcTestResult undone = send("POST", "/api/tire-sets/" + id + "/undo-retrieve", "{ \"placeId\": \"" + place + "\" }");
+
+        assertThat(undone).hasStatusOk();
+        assertThat(undone).bodyJson().extractingPath("$.retrievedOn").isNull();
+        assertThat(undone).bodyJson().extractingPath("$.storedOn").isEqualTo("2026-04-01");
+        assertThat(undone).bodyJson().extractingPath("$.placeId").isEqualTo(place);
+        assertThat(mvc.get().uri("/api/tire-sets/" + id + "/history").exchange()).bodyJson().extractingPath("$[*].kind").asArray()
+                .containsExactly("STORED");
+        // nothing more to take back
+        assertThat(send("POST", "/api/tire-sets/" + id + "/undo-retrieve", "{}")).hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void checksRimsDaysAndDepths() {
         assertFieldError(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"rims\": \"ALU\""), "rims");
         assertFieldError(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"storedOn\": \"" + LocalDate.now().plusDays(1) + "\""), "storedOn");
@@ -192,8 +212,12 @@ class TireHotelApiTest {
     }
 
     private static String idOf(MvcTestResult response) {
+        return read(response, "$.id");
+    }
+
+    private static String read(MvcTestResult response, String path) {
         try {
-            return JsonPath.read(response.getResponse().getContentAsString(), "$.id");
+            return JsonPath.read(response.getResponse().getContentAsString(), path);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }

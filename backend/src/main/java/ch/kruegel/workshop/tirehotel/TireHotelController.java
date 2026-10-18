@@ -78,6 +78,12 @@ class TireHotelController {
         return service.retrieve(id, request);
     }
 
+    @Operation(summary = "Undo a retrieval made by mistake", description = "Only while it is the set's latest step; back onto the given place.")
+    @PostMapping("/api/tire-sets/{id}/undo-retrieve")
+    TireSetDto undoRetrieve(@PathVariable UUID id, @RequestBody UndoRetrieveRequest request) {
+        return service.undoRetrieve(id, request);
+    }
+
     @Operation(summary = "Tread limits of the tyre hotel")
     @GetMapping("/api/tire-hotel-settings")
     TireHotelSettingsDto settings() {

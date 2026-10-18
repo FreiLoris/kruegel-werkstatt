@@ -79,4 +79,8 @@ public class TireSetEvent extends BaseEntity {
     public String getPlace() {
         return place;
     }
+
+    public Task getTask() {
+        return task;
+    }
 }

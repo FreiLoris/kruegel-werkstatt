@@ -147,6 +147,17 @@ public class TireHotelService {
         return saved(set);
     }
 
+    /** Retrieved by mistake (UX G-13): back onto its place, the retrieval gone from the history. */
+    public TireSetDto undoRetrieve(UUID id, UndoRetrieveRequest request) {
+        TireSet set = find(id);
+        TirePlace place = request.placeId() == null ? null : freePlace(request.placeId(), set);
+        // User-facing messages, hence German
+        if (!set.undoRetrieve(place)) {
+            throw new BusinessRuleException("Das Auslagern lässt sich nicht mehr rückgängig machen – inzwischen ist mit dem Satz etwas anderes passiert.");
+        }
+        return saved(set);
+    }
+
     @Transactional(readOnly = true)
     public TireHotelSettingsDto settings() {
         return TireHotelSettingsDto.of(theSettings());

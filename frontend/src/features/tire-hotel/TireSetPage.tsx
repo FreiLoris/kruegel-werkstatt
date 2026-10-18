@@ -21,6 +21,7 @@ import {
   useTireSet,
   useTireSetHistory,
   useTreadLimits,
+  useUndoRetrieveTireSet,
   type TireSet,
   type TireSetEvent,
 } from './tireHotelApi'
@@ -71,6 +72,7 @@ function TireSetDetail({ set }: { set: TireSet }) {
   const toast = useToast()
   const navigate = useNavigate()
   const retrieve = useRetrieveTireSet()
+  const undoRetrieve = useUndoRetrieveTireSet()
   const [dialog, setDialog] = useState<'measure' | 'move' | null>(null)
   const inHotel = !set.retrievedOn
   const v = set.vehicle
@@ -86,7 +88,19 @@ function TireSetDetail({ set }: { set: TireSet }) {
       // today – the server's day
       { id: set.id },
       {
-        onSuccess: () => toast.success(`Satz von ${set.customer.displayName} ausgelagert`),
+        onSuccess: () =>
+          toast.success(`Satz von ${set.customer.displayName} ausgelagert`, {
+            label: 'Rückgängig',
+            // back onto the place it lay on – that place is free for a moment only
+            onClick: () =>
+              undoRetrieve.mutate(
+                { id: set.id, placeId: set.placeId },
+                {
+                  onSuccess: () => toast.success(`Satz von ${set.customer.displayName} ist wieder eingelagert`),
+                  onError: (error) => toast.error(`Nicht rückgängig gemacht: ${reasonOf(error)}`),
+                },
+              ),
+          }),
         onError: (error) => toast.error(`Nicht ausgelagert: ${reasonOf(error)}`),
       },
     )
