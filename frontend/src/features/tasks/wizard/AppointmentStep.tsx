@@ -25,8 +25,10 @@ import {
 } from './appointmentForm'
 import styles from './AppointmentStep.module.css'
 import { CapacityOverview } from './CapacityOverview'
+import { AppointmentWarnings } from './AppointmentWarnings'
 import { PartsDialog } from './PartsDialog'
 import { SameVehicleHint } from './SameVehicleHint'
+import { useAppointmentWarnings } from './useAppointmentWarnings'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -59,6 +61,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   // the material order is entered in its own window; the form only changes on "Übernehmen"
   const [partsOpen, setPartsOpen] = useState(false)
   const errors = appointmentErrors(form)
+  const warnings = useAppointmentWarnings(form, taskId)
   // "missing" errors only after trying to continue – not while the user is still filling in
   const required = (field: 'date' | 'serviceItemIds' | 'acceptedById' | 'insuranceId') => (showRequired ? errors[field] : undefined)
 
@@ -159,6 +162,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                 />
               </div>
               {vehicleId && <SameVehicleHint vehicleId={vehicleId} date={form.date} taskId={taskId} />}
+              <AppointmentWarnings warnings={warnings} />
               <Checkbox
                 label="Uhrzeit noch offen – der Lift bleibt für die Zeit oben reserviert, angezeigt wird «Zeit offen»"
                 checked={form.timeOpen}

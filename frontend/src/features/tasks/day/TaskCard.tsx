@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import type { Employee } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
-import type { Task } from '../taskApi'
-import { TaskStatusBadge } from '../TaskStatusBadge'
+import { TASK_STATUS, type Task } from '../taskApi'
+import { StatusIcon } from '../StatusIcon'
 import { statusAccentClass } from '../taskStatusStyle'
 import { periodLabel, timeSeenFrom } from '../taskTime'
 import { workSummary } from '../workSummary'
@@ -45,9 +45,20 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
       }}
       {...rest}
     >
+      {/* who and in which state in the first line – a one-hour block shows nothing more (UX G-11) */}
       <div className={styles.top}>
-        <span className={styles.time}>{periodLabel(task)}</span>
-        <TaskStatusBadge status={task.status} />
+        <span className={styles.time}>
+          <StatusIcon status={task.status} className={styles.status} />
+          <span className="visually-hidden">{TASK_STATUS[task.status]}, </span>
+          {periodLabel(task)}
+        </span>
+        {mechanic ? (
+          <NameBadge name={mechanic.name} color={mechanic.color} short />
+        ) : (
+          <span className={styles.open} title="Mechaniker offen">
+            offen
+          </span>
+        )}
       </div>
       {/* the tooltip has the whole name – a short block shortens it with "…" */}
       <p className={styles.customer} title={task.customer.displayName}>
@@ -74,7 +85,6 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
       </p>
       {work && <p className={styles.work}>{work}</p>}
       <div className={styles.bottom}>
-        {mechanic ? <NameBadge name={mechanic.name} color={mechanic.color} /> : <span className="muted">Mechaniker offen</span>}
         <span className={styles.flags}>
           {task.waitingCustomer && (
             <span className={styles.flag} title="Wartekunde – Kunde wartet vor Ort">

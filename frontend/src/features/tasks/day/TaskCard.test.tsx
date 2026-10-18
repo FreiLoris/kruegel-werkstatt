@@ -39,8 +39,8 @@ describe('TaskCard', () => {
   it('shows status, mechanic and all work (UI review: mechanic was missing)', () => {
     renderCard(reto)
 
-    expect(screen.getByText('In Arbeit')).toBeTruthy()
-    expect(screen.getByText('Reto')).toBeTruthy()
+    expect(screen.getByText(/In Arbeit/)).toBeTruthy()
+    expect(screen.getByLabelText('Reto')).toBeTruthy()
     expect(screen.getByText('Radwechsel · Winterräder')).toBeTruthy()
   })
 
@@ -48,7 +48,7 @@ describe('TaskCard', () => {
     renderCard()
 
     expect(screen.getByText('Fahrzeug offen')).toBeTruthy()
-    expect(screen.getByText('Mechaniker offen')).toBeTruthy()
+    expect(screen.getByTitle('Mechaniker offen')).toBeTruthy()
     expect(screen.getByText(/Wartet/)).toBeTruthy()
     expect(screen.getByText(/bis Fr 16\.10\. 12:00/)).toBeTruthy()
   })

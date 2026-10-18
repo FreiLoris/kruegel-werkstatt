@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { useToday } from '../../../lib/clock'
 import { Button } from '../../../components/ui/Button'
-import { isoWeek, isWeekend, mondayOf, weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
+import { isoWeek, isWeekend, mondayOf, nextWorkingDay, weekdayOf, WEEKDAYS_SHORT } from '../../../lib/calendar'
 import { addDays, formatDate } from '../../../lib/format'
 import { useAllLifts } from '../../lifts/liftApi'
 import { DayGrid, type Slot } from '../day/DayGrid'
@@ -32,7 +32,9 @@ interface CapacityOverviewProps {
  */
 export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, taskId }: CapacityOverviewProps) {
   const today = useToday()
-  const [day, setDay] = useState(picked.date || today)
+  const holidayDates = new Set(holidays.keys())
+  // on a weekend or holiday the next working day – not the week that is over (UX M-09)
+  const [day, setDay] = useState(() => picked.date || nextWorkingDay(today, holidayDates))
   const [monday, setMonday] = useState(() => mondayOf(day))
   // A date typed in the form shows its day ("adjust state while rendering", no effect needed)
   const [shownFor, setShownFor] = useState(picked.date)
@@ -54,6 +56,12 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
     (d) => !isWeekend(d) || counts.has(d) || d === picked.date,
   )
 
+  /** Another week shows its first working day below – not the old day of another week (UX M-09) */
+  function showWeek(newMonday: string) {
+    setMonday(newMonday)
+    setDay(picked.date && mondayOf(picked.date) === newMonday ? picked.date : nextWorkingDay(newMonday, holidayDates))
+  }
+
   function choose(d: string) {
     setDay(d)
     onPickDay(d)
@@ -66,11 +74,11 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
           KW {isoWeek(monday)} <span className="muted">· {formatDate(monday).slice(0, 6)}–{formatDate(addDays(monday, 4))}</span>
         </h2>
         <div className={styles.nav}>
-          <Button small variant="ghost" icon={ChevronLeft} onClick={() => setMonday(addDays(monday, -7))} aria-label="Vorherige Woche" />
-          <Button small variant="ghost" onClick={() => setMonday(mondayOf(today))}>
+          <Button small variant="ghost" icon={ChevronLeft} onClick={() => showWeek(addDays(monday, -7))} aria-label="Vorherige Woche" />
+          <Button small variant="ghost" onClick={() => showWeek(mondayOf(nextWorkingDay(today, holidayDates)))}>
             Heute
           </Button>
-          <Button small variant="ghost" icon={ChevronRight} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche" />
+          <Button small variant="ghost" icon={ChevronRight} onClick={() => showWeek(addDays(monday, 7))} aria-label="Nächste Woche" />
         </div>
       </div>
       {week.error && <p className="muted">Termine konnten nicht geladen werden: {week.error.message}</p>}

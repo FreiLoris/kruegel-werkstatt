@@ -74,6 +74,15 @@
   color: var(--color-danger);
 }
 
+/* the hints of a day: past, weekend, holiday, mechanic away, lift taken, no work (UX M-01, M-02) */
+.warnings {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 /* A hint, not an error: saving stays possible (like the hint of the same vehicle) */
 .warning {
   margin: 0;

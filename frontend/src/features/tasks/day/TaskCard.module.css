@@ -31,9 +31,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* start–end and the badge side by side; the badge goes below in a narrow column */
+  /* start–end and the mechanic side by side; the mechanic goes below in a narrow column */
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.status {
+  width: 1em;
+  height: 1em;
+  margin-right: var(--space-1);
+  vertical-align: -0.125em;
+  color: var(--status);
+}
+
+.open {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 /* one line, so no reading distance between lines is needed – the status badge sets the row height */

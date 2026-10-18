@@ -19,6 +19,8 @@ import { workItems } from '../workSummary'
 import type { AppointmentForm } from './appointmentForm'
 import styles from './ReviewStep.module.css'
 import type { CustomerStepValue } from './wizardState'
+import { AppointmentWarnings } from './AppointmentWarnings'
+import { useAppointmentWarnings } from './useAppointmentWarnings'
 
 interface ReviewStepProps {
   customerStep: CustomerStepValue
@@ -39,6 +41,7 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
   const { data: insurances } = useInsurances()
   const { data: stations } = useInspectionStations()
 
+  const warnings = useAppointmentWarnings(f)
   const customer = customerStep.customer!
   const planned = !f.noAppointment
   const vehicle = customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle : null
@@ -61,6 +64,8 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
     <div className={styles.review}>
       <div className={styles.full}>
         <ServerErrors errors={serverErrors} />
+        {/* once more before saving – the hints of step 2 were easy to scroll past */}
+        <AppointmentWarnings warnings={warnings} />
       </div>
 
       <Block title="Kunde & Fahrzeug" onEdit={() => onEdit(1)}>
