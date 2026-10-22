@@ -705,7 +705,12 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   the age (below 8 years fine, from 8 orange, from 10 red) side by side. Shown in the wizard under
   "Arbeiten" for the chosen vehicle and with each vehicle on the customer page. "Jahrgang oder DOT":
   a DOT code ("2321") gives its year.
-- [ ] **14i – "Termin abmachen" from the tyre hotel** (FB-18)
+- [x] **14i – "Termin abmachen" from the tyre hotel** (FB-18)
+  Done: "Termin abmachen" on a set's page and "Termin" per row of the hotel lists open the wizard
+  with the set's customer and vehicle (straight to step 2; without vehicle step 1 first) and the
+  tyre change ticked – "eingelagert" from the hotel, "mitgebracht" when it lies at the customer's,
+  open for a set on the car. Under "Radwechsel" a hint lists open tyre changes of the vehicle on
+  other days (wizard and edit page), the links open in a new tab.
 - [ ] **14j – Season change overview** (FB-21): changed / planned / open (forgotten after the
   deadline) / acknowledged / not collected for a season; deadlines 1 June and 1 December
 

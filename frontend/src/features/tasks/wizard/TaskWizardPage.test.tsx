@@ -5,6 +5,8 @@ import { ToastContext } from '../../../components/ui/toastContext'
 import type { Customer, Vehicle } from '../../customers/customerSearchApi'
 import { TaskWizardPage } from './TaskWizardPage'
 import type { CustomerStepValue } from './wizardState'
+import type { AppointmentForm } from './appointmentForm'
+import type { TireSet } from '../../tire-hotel/tireHotelApi'
 
 // fictitious
 const customer = { id: 'c1', displayName: 'Beispiel Anna' } as Customer
@@ -21,7 +23,16 @@ vi.mock('./CustomerStep', () => ({
   ),
 }))
 vi.mock('../../customers/customerApi', () => ({ useCustomer: () => ({ data: undefined, error: null }) }))
-vi.mock('./AppointmentStep', () => ({ AppointmentStep: () => <p>Schritt 2</p> }))
+vi.mock('./AppointmentStep', () => ({
+  AppointmentStep: ({ value }: { value: AppointmentForm }) => (
+    <>
+      <p>Schritt 2</p>
+      {value.tireChange && <p>Radwechsel {value.tireChangeKind || 'offen'}</p>}
+    </>
+  ),
+}))
+let tireSet: TireSet | undefined
+vi.mock('../../tire-hotel/tireHotelApi', () => ({ useTireSet: () => ({ data: tireSet, error: null }) }))
 vi.mock('../../bookings/CourtesyCarSection', () => ({ CourtesyCarSection: () => null }))
 vi.mock('../../bookings/bookingApi', () => ({ useCreateTaskWithBooking: () => ({ mutate: vi.fn(), isPending: false, reset: vi.fn() }) }))
 vi.mock('../../publicholidays/publicHolidayApi', () => ({ useHolidayNames: () => new Map() }))
@@ -30,9 +41,9 @@ vi.mock('../taskApi', async (importOriginal) => ({
   useCreateTask: () => ({ mutate: vi.fn(), isPending: false, reset: vi.fn() }),
 }))
 
-function renderWizard() {
+function renderWizard(url = '/tasks/new') {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[url]}>
       <ToastContext value={{ success: vi.fn(), error: vi.fn(), info: vi.fn() }}>
         <TaskWizardPage />
       </ToastContext>
@@ -45,6 +56,7 @@ beforeEach(() => {
   window.scrollTo = vi.fn()
   // the half-typed task is kept per tab – every test starts without one
   sessionStorage.clear()
+  tireSet = undefined
 })
 
 describe('TaskWizardPage – on to step 2 by itself', () => {
@@ -112,5 +124,27 @@ describe('TaskWizardPage – a started task survives a reload (UX G-01)', () => 
     renderWizard()
 
     expect(screen.queryByRole('button', { name: 'Weitermachen' })).toBeNull()
+  })
+})
+
+describe('TaskWizardPage – "Termin abmachen" in the tyre hotel (FB-18)', () => {
+  it('customer and vehicle of the set, the tyre change ticked – straight to the appointment', () => {
+    tireSet = { id: 's1', customer, vehicle, state: 'IN_HOTEL', kind: 'WHEELS' } as TireSet
+    renderWizard('/tasks/new?tireSet=s1')
+
+    expect(screen.getByText('Schritt 2')).toBeTruthy()
+    expect(screen.getByText('Beispiel Anna')).toBeTruthy()
+    expect(screen.getByText('Radwechsel WHEELS_STORED')).toBeTruthy()
+    // the prefill is not typed input – no draft offered after a reload
+    expect(sessionStorage.length).toBe(0)
+  })
+
+  it('a set without vehicle: the vehicle is chosen first', () => {
+    tireSet = { id: 's1', customer, vehicle: null, state: 'WITH_CUSTOMER', kind: 'TIRES' } as TireSet
+    renderWizard('/tasks/new?tireSet=s1')
+
+    expect(screen.queryByText('Schritt 2')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Fahrzeug' }))
+    expect(screen.getByText('Radwechsel TIRES_BROUGHT')).toBeTruthy()
   })
 })
