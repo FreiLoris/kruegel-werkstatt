@@ -15,7 +15,12 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
         <p>
           Montiert: <Link to={`/tires/${tires.mounted.id}`}>{setSummary(tires.mounted)}</Link>
           {/* stored again next season → no retrieval date any more (it crashed the old task's page) */}
-          {tires.mounted.retrievedOn && <span className="muted"> – ausgelagert am {formatDate(tires.mounted.retrievedOn)}</span>}
+          {/* what this task did (FB-12) – the set may have moved on since */}
+          {tires.mountedAs === 'MOUNTED' ? (
+            <span className="muted"> – vom Kunden mitgebracht</span>
+          ) : (
+            tires.mounted.retrievedOn && <span className="muted"> – ausgelagert am {formatDate(tires.mounted.retrievedOn)}</span>
+          )}
         </p>
       ) : (
         fromHotel &&
@@ -29,7 +34,11 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
           ))
         ))
       )}
-      {tires.removed ? (
+      {tires.removed && tires.removedAs === 'TAKEN_HOME' ? (
+        <p>
+          Abmontiert, nimmt der Kunde mit: <Link to={`/tires/${tires.removed.id}`}>{setSummary(tires.removed)}</Link>
+        </p>
+      ) : tires.removed ? (
         <p>
           Eingelagert: <Link to={`/tires/${tires.removed.id}`}>{setSummary(tires.removed)}</Link>{' '}
           <strong>{tires.removed.place ?? 'ohne Platz'}</strong>
@@ -39,7 +48,7 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
           </span>
         </p>
       ) : (
-        tires.mounted && <p className="muted">Abmontierte Räder nicht eingelagert.</p>
+        tires.mounted && <p className="muted">Abmontierte Räder nicht erfasst.</p>
       )}
       {!tires.mounted && !tires.removed && <p className="muted">Nach dem Radwechsel hier buchen – mit den Profiltiefen vom Auftragszettel.</p>}
     </div>

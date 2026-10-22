@@ -17,6 +17,7 @@ import {
   KINDS,
   RIMS,
   SEASONS,
+  SET_STATES,
   useRetrieveTireSet,
   useTireSet,
   useTireSetHistory,
@@ -35,6 +36,9 @@ const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
   MEASURED: 'Nachgemessen',
   MOVED: 'Umgelagert',
   RETRIEVED: 'Ausgelagert',
+  RECORDED: 'Erfasst (nicht eingelagert)',
+  MOUNTED: 'Vom Kunden mitgebracht, montiert',
+  TAKEN_HOME: 'Abmontiert, nimmt der Kunde mit',
 }
 
 /** "auf OG-B3-1", "nach OG-B3-2", "von OG-B3-2" – the place of a step in words */
@@ -75,7 +79,7 @@ function TireSetDetail({ set }: { set: TireSet }) {
   const retrieve = useRetrieveTireSet()
   const undoRetrieve = useUndoRetrieveTireSet()
   const [dialog, setDialog] = useState<'measure' | 'move' | null>(null)
-  const inHotel = !set.retrievedOn
+  const inHotel = set.state === 'IN_HOTEL'
   const v = set.vehicle
 
   async function retrieveSet() {
@@ -175,7 +179,9 @@ function TireSetDetail({ set }: { set: TireSet }) {
               ['Dimension', set.dimension],
               ['Jahrgang', set.year?.toString()],
               ['Bemerkung', set.remark],
-              ['Eingelagert', formatDate(set.storedOn)],
+              // FB-12: also tyres never stored – where they are now
+              ['Wo', SET_STATES[set.state]],
+              ['Eingelagert', set.storedOn && formatDate(set.storedOn)],
               // a retrieved set has none
               ['Lagerplatz', inHotel ? (set.place ?? 'noch nicht zugewiesen') : null],
             ]}

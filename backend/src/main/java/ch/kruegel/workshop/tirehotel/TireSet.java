@@ -21,13 +21,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- * A set of tyres or wheels in the tyre hotel (FB-07). It is stored, may be {@linkplain #measure
- * measured} again and is {@linkplain #retrieve retrieved} – each step is kept in its
- * {@linkplain #getEvents() history} with the tread depths of that moment, so the wear can be
+ * A set of tyres or wheels of a vehicle (FB-07, FB-12). It is stored in the tyre hotel, may be
+ * {@linkplain #measure measured} again and is {@linkplain #retrieve retrieved} – each step is kept in
+ * its {@linkplain #getEvents() history} with the tread depths of that moment, so the wear can be
  * followed over the seasons. A retrieved set stays (history), it is not deleted – and comes back
  * {@linkplain #storeAgain stored again} the next season: the same tyres, one history.
+ * Tyres not in the hotel are sets too (FB-12): {@linkplain #recorded recorded} when the customer
+ * brings them or takes them home, then {@linkplain #mount mounted} and {@linkplain #takeHome taken home}
+ * – so the next call shows whether they are still good. Where it is: {@link #getState()}.
  */
 @Entity
 public class TireSet extends BaseEntity {
@@ -64,8 +69,12 @@ public class TireSet extends BaseEntity {
     @Embedded
     private TreadDepths depths;
 
-    @Column(nullable = false)
+    /** When it went into the hotel last – empty for a set that never was there (FB-12) */
     private LocalDate storedOn;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TireSetState state;
 
     /** Empty = in the hotel */
     private LocalDate retrievedOn;
@@ -98,8 +107,49 @@ public class TireSet extends BaseEntity {
         apply(details);
         this.depths = Objects.requireNonNull(depths, "depths");
         this.storedOn = Objects.requireNonNull(day, "day");
+        this.state = TireSetState.IN_HOTEL;
         this.place = checkedPlace(place);
         events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, depths, place, note, task));
+    }
+
+    /**
+     * Tyres not stored (FB-12): brought by the customer and mounted, or taken off and taken home –
+     * recorded with the depths measured, so they are known next time.
+     *
+     * @param state {@link TireSetState#MOUNTED} or {@link TireSetState#WITH_CUSTOMER}
+     */
+    public static TireSet recorded(TireSetDetails details, TreadDepths depths, LocalDate day, TireSetState state, String note, Task task) {
+        if (state == TireSetState.IN_HOTEL) {
+            throw new IllegalArgumentException("Into the hotel it is stored, not recorded");
+        }
+        TireSet set = new TireSet();
+        set.apply(details);
+        set.depths = Objects.requireNonNull(depths, "depths");
+        set.state = state;
+        set.events.add(new TireSetEvent(set, TireSetEventKind.RECORDED, day, depths, null, note, task));
+        set.events.add(new TireSetEvent(set, state == TireSetState.MOUNTED ? TireSetEventKind.MOUNTED : TireSetEventKind.TAKEN_HOME,
+                day, depths, null, note, task));
+        return set;
+    }
+
+    /** Brought along again and put on the car (FB-12) – with the depths as measured now, if any. */
+    public void mount(LocalDate day, String note, Task task) {
+        if (state != TireSetState.WITH_CUSTOMER) {
+            throw new IllegalStateException("Only a set with the customer is brought and mounted: " + state);
+        }
+        checkNotBefore(day, "Mounted");
+        this.state = TireSetState.MOUNTED;
+        events.add(new TireSetEvent(this, TireSetEventKind.MOUNTED, day, getDepths(), null, note, task));
+    }
+
+    /** Taken off, the customer takes it home (FB-12). */
+    public void takeHome(LocalDate day, String note, Task task) {
+        if (state != TireSetState.MOUNTED) {
+            throw new IllegalStateException("Only a set on the car is taken home: " + state);
+        }
+        checkNotBefore(day, "Taken home");
+        this.state = TireSetState.WITH_CUSTOMER;
+        events.add(new TireSetEvent(this, TireSetEventKind.TAKEN_HOME, day, getDepths(), null, note, task));
     }
 
     /**
@@ -110,12 +160,11 @@ public class TireSet extends BaseEntity {
         if (isInHotel()) {
             throw new IllegalStateException("Already in the hotel since " + storedOn);
         }
-        if (day.isBefore(retrievedOn)) {
-            throw new IllegalArgumentException("Stored again before it was retrieved: " + day);
-        }
+        checkNotBefore(day, "Stored again");
         this.depths = Objects.requireNonNull(newDepths, "depths");
         this.storedOn = day;
         this.retrievedOn = null;
+        this.state = TireSetState.IN_HOTEL;
         this.place = checkedPlace(newPlace);
         events.add(new TireSetEvent(this, TireSetEventKind.STORED, day, newDepths, newPlace, note, task));
     }
@@ -126,9 +175,7 @@ public class TireSet extends BaseEntity {
             throw new IllegalStateException("A retrieved set has no place");
         }
         Objects.requireNonNull(newPlace, "place");
-        if (day.isBefore(storedOn)) {
-            throw new IllegalArgumentException("Moved before it was stored: " + day);
-        }
+        checkNotBefore(day, "Moved");
         this.place = checkedPlace(newPlace);
         events.add(new TireSetEvent(this, TireSetEventKind.MOVED, day, getDepths(), newPlace, note, null));
     }
@@ -152,9 +199,7 @@ public class TireSet extends BaseEntity {
 
     /** @param task the task whose sheet the depths were noted on (13q); may be empty */
     public void measure(TreadDepths newDepths, LocalDate day, String note, Task task) {
-        if (day.isBefore(storedOn)) {
-            throw new IllegalArgumentException("Measured before it was stored: " + day);
-        }
+        checkNotBefore(day, "Measured");
         Objects.requireNonNull(newDepths, "depths");
         // wheels not measured now keep their last depth; the history keeps what was really measured
         this.depths = newDepths.over(getDepths());
@@ -166,6 +211,22 @@ public class TireSet extends BaseEntity {
         return events.stream().map(TireSetEvent::getHappenedOn).max(LocalDate::compareTo).orElse(storedOn);
     }
 
+    /** A step before the latest one would contradict the current state */
+    private void checkNotBefore(LocalDate day, String step) {
+        LocalDate last = lastEventDay();
+        if (last != null && day.isBefore(last)) {
+            throw new IllegalArgumentException(step + " before " + last + ": " + day);
+        }
+    }
+
+    /** What a task did with this set (13q, FB-12) – the kind of its step of that task among {@code kinds}; empty = none */
+    public TireSetEventKind bookedAs(UUID taskId, Set<TireSetEventKind> kinds) {
+        return events.stream()
+                .filter(e -> e.getTask() != null && e.getTask().getId().equals(taskId) && kinds.contains(e.getKind()))
+                .map(TireSetEvent::getKind)
+                .findFirst().orElse(null);
+    }
+
     /** Out of the hotel (back on the car or to the customer) – with the depths as last measured. */
     public void retrieve(LocalDate day, String note) {
         retrieve(day, note, null);
@@ -174,12 +235,14 @@ public class TireSet extends BaseEntity {
     /** @param task the task whose tyre change mounted it (13q); may be empty */
     public void retrieve(LocalDate day, String note, Task task) {
         if (!isInHotel()) {
-            throw new IllegalStateException("Already retrieved on " + retrievedOn);
+            throw new IllegalStateException("Not in the hotel: " + state);
         }
         if (day.isBefore(storedOn)) {
             throw new IllegalArgumentException("Retrieved before it was stored: " + day);
         }
         this.retrievedOn = day;
+        // out of the hotel = on the car (the tyre change; "nimmt der Kunde mit" is a step of its own)
+        this.state = TireSetState.MOUNTED;
         // the place it came from, then it is free for the next set
         events.add(new TireSetEvent(this, TireSetEventKind.RETRIEVED, day, getDepths(), place, note, task));
         this.place = null;
@@ -203,6 +266,7 @@ public class TireSet extends BaseEntity {
         }
         events.remove(last);
         this.retrievedOn = null;
+        this.state = TireSetState.IN_HOTEL;
         this.place = checkedPlace(formerPlace);
         return true;
     }
@@ -255,7 +319,11 @@ public class TireSet extends BaseEntity {
     }
 
     public boolean isInHotel() {
-        return retrievedOn == null;
+        return state == TireSetState.IN_HOTEL;
+    }
+
+    public TireSetState getState() {
+        return state;
     }
 
     /** Oldest first */

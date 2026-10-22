@@ -13597,12 +13597,16 @@
           "depths" : {
             "$ref" : "#/components/schemas/DepthsRequest"
           },
+          "newSet" : {
+            "$ref" : "#/components/schemas/NewSet",
+            "description" : "Only for a new set the customer brought"
+          },
           "setId" : {
             "type" : "string",
-            "format" : "uuid"
+            "format" : "uuid",
+            "description" : "A set of the vehicle in the hotel or with the customer – empty = a new one"
           }
-        },
-        "required" : [ "setId" ]
+        }
       },
       "MoveRequest" : {
         "type" : "object",
@@ -13623,6 +13627,79 @@
           }
         },
         "required" : [ "placeId" ]
+      },
+      "NewSet" : {
+        "type" : "object",
+        "properties" : {
+          "brand" : {
+            "type" : "string",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "dimension" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "hubCaps" : {
+            "type" : "boolean",
+            "description" : "Missing = false"
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Needed",
+            "enum" : [ "WHEELS", "TIRES" ]
+          },
+          "model" : {
+            "type" : "string",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "pressureFront" : {
+            "type" : "number",
+            "description" : "Pressure front in bar",
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
+          "pressureRear" : {
+            "type" : "number",
+            "description" : "Pressure rear in bar",
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
+          "remark" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "rims" : {
+            "type" : "string",
+            "description" : "Only with complete wheels",
+            "enum" : [ "ALU", "STEEL" ]
+          },
+          "season" : {
+            "type" : "string",
+            "description" : "Needed",
+            "enum" : [ "SUMMER", "WINTER", "ALL_SEASON" ]
+          },
+          "torque" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Torque in Nm",
+            "maximum" : 999,
+            "minimum" : 10
+          },
+          "wheelBolts" : {
+            "type" : "boolean",
+            "description" : "Radschrauben beachten; missing = false"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 2100,
+            "minimum" : 1990
+          }
+        }
       },
       "NoteArchivedRequest" : {
         "type" : "object",
@@ -13834,87 +13911,27 @@
       "RemovedSet" : {
         "type" : "object",
         "properties" : {
-          "brand" : {
-            "type" : "string",
-            "maxLength" : 60,
-            "minLength" : 0
-          },
           "depths" : {
             "$ref" : "#/components/schemas/DepthsRequest",
             "description" : "As noted on the task sheet"
           },
-          "dimension" : {
-            "type" : "string",
-            "maxLength" : 40,
-            "minLength" : 0
-          },
-          "hubCaps" : {
-            "type" : "boolean",
-            "description" : "Only for a new set; missing = false"
-          },
-          "kind" : {
-            "type" : "string",
-            "description" : "Only for a new set (needed then)",
-            "enum" : [ "WHEELS", "TIRES" ]
-          },
-          "model" : {
-            "type" : "string",
-            "maxLength" : 60,
-            "minLength" : 0
+          "newSet" : {
+            "$ref" : "#/components/schemas/NewSet",
+            "description" : "Only for a new set"
           },
           "placeId" : {
             "type" : "string",
             "format" : "uuid",
-            "description" : "Empty = assigned later"
-          },
-          "pressureFront" : {
-            "type" : "number",
-            "description" : "Only for a new set: pressure front in bar",
-            "maximum" : 9.99,
-            "minimum" : 0.5
-          },
-          "pressureRear" : {
-            "type" : "number",
-            "description" : "Only for a new set: pressure rear in bar",
-            "maximum" : 9.99,
-            "minimum" : 0.5
-          },
-          "remark" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          },
-          "rims" : {
-            "type" : "string",
-            "description" : "Only for a new set with complete wheels",
-            "enum" : [ "ALU", "STEEL" ]
-          },
-          "season" : {
-            "type" : "string",
-            "description" : "Only for a new set (needed then)",
-            "enum" : [ "SUMMER", "WINTER", "ALL_SEASON" ]
+            "description" : "Only into the hotel: the place; empty = assigned later"
           },
           "setId" : {
             "type" : "string",
             "format" : "uuid",
-            "description" : "A retrieved set of the customer – empty = a new set"
+            "description" : "A set of the vehicle not in the hotel – empty = a new one"
           },
-          "torque" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "Only for a new set: torque in Nm",
-            "maximum" : 999,
-            "minimum" : 10
-          },
-          "wheelBolts" : {
+          "store" : {
             "type" : "boolean",
-            "description" : "Only for a new set; missing = false"
-          },
-          "year" : {
-            "type" : "integer",
-            "format" : "int32",
-            "maximum" : 2100,
-            "minimum" : 1990
+            "description" : "Into the hotel (default) or the customer takes it home (false)"
           }
         }
       },
@@ -14941,11 +14958,11 @@
         "properties" : {
           "mounted" : {
             "$ref" : "#/components/schemas/MountedSet",
-            "description" : "The set from the hotel now on the car – missing = none mounted from the hotel"
+            "description" : "The set now on the car – missing = not recorded"
           },
           "removed" : {
             "$ref" : "#/components/schemas/RemovedSet",
-            "description" : "The set taken off, into the hotel – missing = not stored"
+            "description" : "The set taken off – missing = not recorded"
           }
         }
       },
@@ -14959,29 +14976,39 @@
             }
           },
           "mounted" : {
-            "description" : "The set the task mounted – empty = not booked yet",
+            "description" : "The set the task put on the car – empty = not booked yet",
             "oneOf" : [ {
               "$ref" : "#/components/schemas/TireSetDto"
             }, {
               "type" : "null"
             } ]
           },
-          "removed" : {
-            "description" : "The set the task stored – empty = not booked yet",
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/TireSetDto"
-            }, {
-              "type" : "null"
-            } ]
+          "mountedAs" : {
+            "type" : [ "string", "null" ],
+            "description" : "How: RETRIEVED from the hotel, MOUNTED brought by the customer (FB-12)",
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
           },
-          "retrieved" : {
+          "outside" : {
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/TireSetDto"
             }
+          },
+          "removed" : {
+            "description" : "The set the task took off (stored or home) – empty = not booked yet",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/TireSetDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "removedAs" : {
+            "type" : [ "string", "null" ],
+            "description" : "How: STORED into the hotel, TAKEN_HOME by the customer (FB-12)",
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
           }
         },
-        "required" : [ "inHotel", "mounted", "removed", "retrieved" ]
+        "required" : [ "inHotel", "mounted", "mountedAs", "outside", "removed", "removedAs" ]
       },
       "TaskWithBookingDto" : {
         "type" : "object",
@@ -15246,9 +15273,15 @@
             "type" : "string",
             "enum" : [ "SUMMER", "WINTER", "ALL_SEASON" ]
           },
-          "storedOn" : {
+          "state" : {
             "type" : "string",
-            "format" : "date"
+            "description" : "In the hotel, on the car or with the customer (FB-12)",
+            "enum" : [ "IN_HOTEL", "MOUNTED", "WITH_CUSTOMER" ]
+          },
+          "storedOn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Empty = never in the hotel (FB-12)"
           },
           "torque" : {
             "type" : [ "integer", "null" ],
@@ -15286,7 +15319,7 @@
             "description" : "Year of manufacture (DOT)"
           }
         },
-        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "pressureFront", "pressureRear", "remark", "retrievedOn", "rims", "season", "storedOn", "torque", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
+        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "pressureFront", "pressureRear", "remark", "retrievedOn", "rims", "season", "state", "storedOn", "torque", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
       },
       "TireSetEventDto" : {
         "type" : "object",
@@ -15314,7 +15347,7 @@
           },
           "kind" : {
             "type" : "string",
-            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED" ]
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
           },
           "note" : {
             "type" : [ "string", "null" ]

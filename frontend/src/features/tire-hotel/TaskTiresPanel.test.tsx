@@ -27,4 +27,24 @@ describe('TaskTiresPanel', () => {
     expect(screen.getByText(/Montiert/)).toBeTruthy()
     expect(screen.queryByText(/ausgelagert am/)).toBeNull()
   })
+
+  it('what the task booked, not where the sets are now (FB-12)', () => {
+    // brought by the customer, retrieved from the hotel in an earlier season
+    const brought = { ...winter, retrievedOn: '2025-10-15', state: 'MOUNTED' } as unknown as TireSet
+    // taken home then, put on again since
+    const summer = { ...winter, id: 's', season: 'SUMMER', state: 'MOUNTED' } as unknown as TireSet
+    render(
+      <MemoryRouter>
+        <TaskTiresPanel
+          tires={{ mounted: brought, mountedAs: 'MOUNTED', removed: summer, removedAs: 'TAKEN_HOME', inHotel: [] } as unknown as TaskTires}
+          fromHotel={false}
+        />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText(/vom Kunden mitgebracht/)).toBeTruthy()
+    expect(screen.queryByText(/ausgelagert am/)).toBeNull()
+    expect(screen.getByText(/Abmontiert, nimmt der Kunde mit/)).toBeTruthy()
+    expect(screen.queryByText(/Eingelagert/)).toBeNull()
+  })
 })

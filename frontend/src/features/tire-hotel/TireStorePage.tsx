@@ -154,7 +154,7 @@ export function TireStorePage() {
             {sameSeason && (
               <p className={styles.warning} role="status">
                 Für dieses Fahrzeug liegt schon ein {SEASONS[sameSeason.season]}satz im Hotel
-                {sameSeason.place ? ` (${sameSeason.place})` : ''}, eingelagert {formatDate(sameSeason.storedOn)} –{' '}
+                {sameSeason.place ? ` (${sameSeason.place})` : ''}, eingelagert {formatDate(sameSeason.storedOn!)} –{' '}
                 <Link to={`/tires/${sameSeason.id}`}>ansehen</Link>. Wirklich einen zweiten einlagern?
               </p>
             )}

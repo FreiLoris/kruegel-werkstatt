@@ -2698,8 +2698,13 @@ export interface components {
         };
         MountedSet: {
             depths?: components["schemas"]["DepthsRequest"];
-            /** Format: uuid */
-            setId: string;
+            /** @description Only for a new set the customer brought */
+            newSet?: components["schemas"]["NewSet"];
+            /**
+             * Format: uuid
+             * @description A set of the vehicle in the hotel or with the customer – empty = a new one
+             */
+            setId?: string;
         };
         MoveRequest: {
             note?: string;
@@ -2710,6 +2715,42 @@ export interface components {
             on?: string;
             /** Format: uuid */
             placeId: string;
+        };
+        NewSet: {
+            brand?: string;
+            dimension?: string;
+            /** @description Missing = false */
+            hubCaps?: boolean;
+            /**
+             * @description Needed
+             * @enum {string}
+             */
+            kind?: "WHEELS" | "TIRES";
+            model?: string;
+            /** @description Pressure front in bar */
+            pressureFront?: number;
+            /** @description Pressure rear in bar */
+            pressureRear?: number;
+            remark?: string;
+            /**
+             * @description Only with complete wheels
+             * @enum {string}
+             */
+            rims?: "ALU" | "STEEL";
+            /**
+             * @description Needed
+             * @enum {string}
+             */
+            season?: "SUMMER" | "WINTER" | "ALL_SEASON";
+            /**
+             * Format: int32
+             * @description Torque in Nm
+             */
+            torque?: number;
+            /** @description Radschrauben beachten; missing = false */
+            wheelBolts?: boolean;
+            /** Format: int32 */
+            year?: number;
         };
         NoteArchivedRequest: {
             archived: boolean;
@@ -2810,52 +2851,22 @@ export interface components {
             name: string;
         };
         RemovedSet: {
-            brand?: string;
             /** @description As noted on the task sheet */
             depths?: components["schemas"]["DepthsRequest"];
-            dimension?: string;
-            /** @description Only for a new set; missing = false */
-            hubCaps?: boolean;
-            /**
-             * @description Only for a new set (needed then)
-             * @enum {string}
-             */
-            kind?: "WHEELS" | "TIRES";
-            model?: string;
+            /** @description Only for a new set */
+            newSet?: components["schemas"]["NewSet"];
             /**
              * Format: uuid
-             * @description Empty = assigned later
+             * @description Only into the hotel: the place; empty = assigned later
              */
             placeId?: string;
-            /** @description Only for a new set: pressure front in bar */
-            pressureFront?: number;
-            /** @description Only for a new set: pressure rear in bar */
-            pressureRear?: number;
-            remark?: string;
-            /**
-             * @description Only for a new set with complete wheels
-             * @enum {string}
-             */
-            rims?: "ALU" | "STEEL";
-            /**
-             * @description Only for a new set (needed then)
-             * @enum {string}
-             */
-            season?: "SUMMER" | "WINTER" | "ALL_SEASON";
             /**
              * Format: uuid
-             * @description A retrieved set of the customer – empty = a new set
+             * @description A set of the vehicle not in the hotel – empty = a new one
              */
             setId?: string;
-            /**
-             * Format: int32
-             * @description Only for a new set: torque in Nm
-             */
-            torque?: number;
-            /** @description Only for a new set; missing = false */
-            wheelBolts?: boolean;
-            /** Format: int32 */
-            year?: number;
+            /** @description Into the hotel (default) or the customer takes it home (false) */
+            store?: boolean;
         };
         RetrieveRequest: {
             note?: string;
@@ -3416,18 +3427,28 @@ export interface components {
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
         };
         TaskTireBookingRequest: {
-            /** @description The set from the hotel now on the car – missing = none mounted from the hotel */
+            /** @description The set now on the car – missing = not recorded */
             mounted?: components["schemas"]["MountedSet"];
-            /** @description The set taken off, into the hotel – missing = not stored */
+            /** @description The set taken off – missing = not recorded */
             removed?: components["schemas"]["RemovedSet"];
         };
         TaskTiresDto: {
             inHotel: components["schemas"]["TireSetDto"][];
-            /** @description The set the task mounted – empty = not booked yet */
+            /** @description The set the task put on the car – empty = not booked yet */
             mounted: components["schemas"]["TireSetDto"] | null;
-            /** @description The set the task stored – empty = not booked yet */
+            /**
+             * @description How: RETRIEVED from the hotel, MOUNTED brought by the customer (FB-12)
+             * @enum {string|null}
+             */
+            mountedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | null;
+            outside: components["schemas"]["TireSetDto"][];
+            /** @description The set the task took off (stored or home) – empty = not booked yet */
             removed: components["schemas"]["TireSetDto"] | null;
-            retrieved: components["schemas"]["TireSetDto"][];
+            /**
+             * @description How: STORED into the hotel, TAKEN_HOME by the customer (FB-12)
+             * @enum {string|null}
+             */
+            removedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | null;
         };
         TaskWithBookingDto: {
             booking: components["schemas"]["BookingDto"];
@@ -3578,8 +3599,16 @@ export interface components {
             rims: "ALU" | "STEEL" | null;
             /** @enum {string} */
             season: "SUMMER" | "WINTER" | "ALL_SEASON";
-            /** Format: date */
-            storedOn: string;
+            /**
+             * @description In the hotel, on the car or with the customer (FB-12)
+             * @enum {string}
+             */
+            state: "IN_HOTEL" | "MOUNTED" | "WITH_CUSTOMER";
+            /**
+             * Format: date
+             * @description Empty = never in the hotel (FB-12)
+             */
+            storedOn: string | null;
             /**
              * Format: int32
              * @description Torque of the wheel bolts in Nm
@@ -3619,7 +3648,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED";
+            kind: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME";
             note: string | null;
             /**
              * @description The place of that moment

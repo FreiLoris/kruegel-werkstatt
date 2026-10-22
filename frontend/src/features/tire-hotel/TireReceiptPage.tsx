@@ -133,7 +133,7 @@ function Receipt({ set, company, limits, advise }: { set: TireSet; company: Comp
           </div>
           <div>
             <dt>Eingelagert am</dt>
-            <dd>{formatDate(set.storedOn)}</dd>
+            <dd>{set.storedOn ? formatDate(set.storedOn) : '–'}</dd>
           </div>
           {set.remark && (
             <div>

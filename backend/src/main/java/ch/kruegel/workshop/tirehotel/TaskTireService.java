@@ -15,16 +15,24 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * The tyre change of a task in the tyre hotel (FB-06/FB-07, 13q): the sheet prints the stored set
- * and its place; once the wheels are changed, the set mounted is retrieved and the one taken off
- * stored – in one step, with the depths noted on the sheet. The history keeps the task.
+ * The tyre change of a task (FB-06/FB-07, 13q, FB-12): the sheet prints the set to mount and its
+ * place; once the wheels are changed, both sets are booked in one step with the depths noted on the
+ * sheet – the one put on from the hotel, brought by the customer or new, the one taken off into the
+ * hotel or home with the customer. Tyres not stored are kept too, so the next call knows them. The
+ * history keeps the task.
  */
 @Service
 @Transactional
 public class TaskTireService {
+
+    /** What putting a set on the car leaves in its history */
+    static final Set<TireSetEventKind> MOUNTING = Set.of(TireSetEventKind.RETRIEVED, TireSetEventKind.MOUNTED);
+    /** What taking a set off leaves in its history */
+    static final Set<TireSetEventKind> REMOVING = Set.of(TireSetEventKind.STORED, TireSetEventKind.TAKEN_HOME);
 
     private final TireSetRepository repository;
     private final TireHotelService hotel;
@@ -59,34 +67,54 @@ public class TaskTireService {
         String note = task.getTaskNumber() == null ? "Radwechsel im Auftrag" : "Radwechsel, Auftrag " + task.getTaskNumber();
 
         // every check before the first change
-        TireSet mounted = request.mounted() == null ? null : mountedSet(task, request.mounted(), candidates);
+        TaskTireBookingRequest.MountedSet m = request.mounted();
+        TireSet mounted = m == null ? null : mountedSet(task, m, candidates);
+        TaskTireBookingRequest.RemovedSet r = request.removed();
         TireSet removed = null;
         TirePlace place = null;
-        if (request.removed() != null) {
-            TaskTireBookingRequest.RemovedSet r = request.removed();
-            if (repository.bookedBy(task.getId(), TireSetEventKind.STORED).isPresent()) {
-                throw new BusinessRuleException("Die abmontierten Räder dieses Auftrags sind schon eingelagert.");
+        if (r != null) {
+            if (repository.bookedBy(task.getId(), REMOVING).isPresent()) {
+                throw new BusinessRuleException("Die abmontierten Räder dieses Auftrags sind schon gebucht.");
             }
-            removed = r.setId() == null ? null : setToStoreAgain(r.setId(), mounted, candidates);
+            checkOneOf(r.setId(), r.newSet(), "removed");
+            removed = r.setId() == null ? null : removedSet(task, r, mounted, candidates);
+            if (!r.store() && r.placeId() != null) {
+                throw new InvalidInputException("removed.placeId", "Nur beim Einlagern");
+            }
             // the place of the set mounted is free once it is retrieved – the wheels simply swap places
-            place = r.placeId() == null ? null : hotel.freePlace(r.placeId(), mounted);
+            place = r.store() && r.placeId() != null ? hotel.freePlace(r.placeId(), mounted) : null;
         }
 
-        if (mounted != null) {
-            TreadDepths depths = DepthsRequest.toDepths(request.mounted().depths());
-            if (depths.lowest() != null) {
-                mounted.measure(depths, today, note, task);
+        if (m != null) {
+            TreadDepths depths = DepthsRequest.toDepths(m.depths());
+            if (mounted == null) {
+                repository.save(TireSet.recorded(details(task, m.newSet(), "mounted"), depths, today, TireSetState.MOUNTED, note, task));
+            } else {
+                if (depths.lowest() != null) {
+                    mounted.measure(depths, today, note, task);
+                }
+                // from the hotel its place is free now – the removed set may go there
+                if (mounted.isInHotel()) {
+                    mounted.retrieve(today, note, task);
+                } else {
+                    mounted.mount(today, note, task);
+                }
             }
-            // its place is free now – the removed set may go there
-            mounted.retrieve(today, note, task);
             repository.flush();
         }
-        if (request.removed() != null) {
-            TreadDepths depths = DepthsRequest.toDepths(request.removed().depths());
-            if (removed != null) {
+        if (r != null) {
+            TreadDepths depths = DepthsRequest.toDepths(r.depths());
+            if (removed == null) {
+                TireSetDetails details = details(task, r.newSet(), "removed");
+                repository.save(r.store() ? new TireSet(details, depths, today, place, note, task)
+                        : TireSet.recorded(details, depths, today, TireSetState.WITH_CUSTOMER, note, task));
+            } else if (r.store()) {
                 removed.storeAgain(depths, today, place, note, task);
             } else {
-                repository.save(new TireSet(newDetails(task, request.removed()), depths, today, place, note, task));
+                if (depths.lowest() != null) {
+                    removed.measure(depths, today, note, task);
+                }
+                removed.takeHome(today, note, task);
             }
         }
         repository.flush();
@@ -94,42 +122,60 @@ public class TaskTireService {
         return dto(task);
     }
 
+    /** A set of the vehicle in the hotel or with the customer – or none: a new one is recorded */
     private TireSet mountedSet(Task task, TaskTireBookingRequest.MountedSet m, List<TireSet> candidates) {
-        if (repository.bookedBy(task.getId(), TireSetEventKind.RETRIEVED).isPresent()) {
-            throw new BusinessRuleException("Die montierten Räder dieses Auftrags sind schon ausgelagert.");
+        if (repository.bookedBy(task.getId(), MOUNTING).isPresent()) {
+            throw new BusinessRuleException("Die montierten Räder dieses Auftrags sind schon gebucht.");
+        }
+        checkOneOf(m.setId(), m.newSet(), "mounted");
+        if (m.setId() == null) {
+            return null;
         }
         TireSet set = candidates.stream().filter(s -> s.getId().equals(m.setId())).findFirst()
                 .orElseThrow(() -> new InvalidInputException("mounted.setId", "Satz gehört nicht zu Kunde/Fahrzeug des Auftrags"));
-        if (!set.isInHotel()) {
-            throw new InvalidInputException("mounted.setId", "Satz ist nicht im Pneuhotel");
+        if (set.getState() == TireSetState.MOUNTED) {
+            throw new InvalidInputException("mounted.setId", "Satz ist schon montiert");
         }
         return set;
     }
 
-    private TireSet setToStoreAgain(UUID setId, TireSet mounted, List<TireSet> candidates) {
-        if (mounted != null && mounted.getId().equals(setId)) {
-            throw new InvalidInputException("removed.setId", "Derselbe Satz kann nicht montiert und eingelagert werden");
+    /** A set of the vehicle not in the hotel: stored again, or taken home when it is on the car */
+    private TireSet removedSet(Task task, TaskTireBookingRequest.RemovedSet r, TireSet mounted, List<TireSet> candidates) {
+        boolean justMounted = mounted != null && mounted.getId().equals(r.setId())
+                || repository.bookedBy(task.getId(), MOUNTING).map(s -> s.getId().equals(r.setId())).orElse(false);
+        if (justMounted) {
+            throw new InvalidInputException("removed.setId", "Derselbe Satz kann nicht montiert und abmontiert werden");
         }
-        TireSet set = candidates.stream().filter(s -> s.getId().equals(setId)).findFirst()
+        TireSet set = candidates.stream().filter(s -> s.getId().equals(r.setId())).findFirst()
                 .orElseThrow(() -> new InvalidInputException("removed.setId", "Satz gehört nicht zu Kunde/Fahrzeug des Auftrags"));
         if (set.isInHotel()) {
             throw new InvalidInputException("removed.setId", "Satz liegt schon im Pneuhotel");
         }
+        if (!r.store() && set.getState() == TireSetState.WITH_CUSTOMER) {
+            throw new InvalidInputException("removed.setId", "Satz ist schon beim Kunden");
+        }
         return set;
     }
 
-    private static TireSetDetails newDetails(Task task, TaskTireBookingRequest.RemovedSet r) {
-        if (r.season() == null) {
-            throw new InvalidInputException("removed.season", "Saison wählen");
+    /** A known set or a new one – exactly one */
+    private static void checkOneOf(UUID setId, TaskTireBookingRequest.NewSet newSet, String field) {
+        if ((setId == null) == (newSet == null)) {
+            throw new InvalidInputException(field, "Einen Satz wählen oder einen neuen erfassen");
         }
-        if (r.kind() == null) {
-            throw new InvalidInputException("removed.kind", "Kompletträder oder nur Reifen?");
+    }
+
+    private static TireSetDetails details(Task task, TaskTireBookingRequest.NewSet n, String field) {
+        if (n.season() == null) {
+            throw new InvalidInputException(field + ".newSet.season", "Saison wählen");
         }
-        if (r.kind() != TireSetKind.WHEELS && r.rims() != null) {
-            throw new InvalidInputException("removed.rims", "nur bei Kompletträdern");
+        if (n.kind() == null) {
+            throw new InvalidInputException(field + ".newSet.kind", "Kompletträder oder nur Reifen?");
         }
-        return new TireSetDetails(task.getCustomer(), task.getVehicle(), r.season(), r.kind(), r.rims(), r.hubCaps(), r.wheelBolts(),
-                r.brand(), r.model(), r.dimension(), r.year(), r.remark(), r.torque(), r.pressureFront(), r.pressureRear());
+        if (n.kind() != TireSetKind.WHEELS && n.rims() != null) {
+            throw new InvalidInputException(field + ".newSet.rims", "nur bei Kompletträdern");
+        }
+        return new TireSetDetails(task.getCustomer(), task.getVehicle(), n.season(), n.kind(), n.rims(), n.hubCaps(), n.wheelBolts(),
+                n.brand(), n.model(), n.dimension(), n.year(), n.remark(), n.torque(), n.pressureFront(), n.pressureRear());
     }
 
     /** The sets of the task's vehicle – and those of the customer without a vehicle (e.g. taken over from SwissGarage). */
@@ -142,12 +188,18 @@ public class TaskTireService {
 
     private TaskTiresDto dto(Task task) {
         List<TireSet> candidates = candidates(task);
+        TireSet mounted = repository.bookedBy(task.getId(), MOUNTING).orElse(null);
+        TireSet removed = repository.bookedBy(task.getId(), REMOVING).orElse(null);
         return new TaskTiresDto(
-                repository.bookedBy(task.getId(), TireSetEventKind.RETRIEVED).map(TireSetDto::of).orElse(null),
-                repository.bookedBy(task.getId(), TireSetEventKind.STORED).map(TireSetDto::of).orElse(null),
+                mounted == null ? null : TireSetDto.of(mounted),
+                mounted == null ? null : mounted.bookedAs(task.getId(), MOUNTING),
+                removed == null ? null : TireSetDto.of(removed),
+                removed == null ? null : removed.bookedAs(task.getId(), REMOVING),
                 candidates.stream().filter(TireSet::isInHotel).map(TireSetDto::of).toList(),
+                // the one on the car first, then the latest step first
                 candidates.stream().filter(s -> !s.isInHotel())
-                        .sorted(Comparator.comparing(TireSet::getRetrievedOn).reversed())
+                        .sorted(Comparator.comparing((TireSet s) -> s.getState() != TireSetState.MOUNTED)
+                                .thenComparing(TireSet::lastEventDay, Comparator.reverseOrder()))
                         .map(TireSetDto::of).toList());
     }
 
