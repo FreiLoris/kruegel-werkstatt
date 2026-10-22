@@ -19,8 +19,8 @@ public class SupplierService {
     static final String TOPIC = "suppliers";
     /** A deleted supplier disappears from its articles. Same value as {@code StockItemService.TOPIC}. */
     private static final String STOCK_TOPIC = "stock-items";
-    /** A deleted supplier also disappears from the shopping list (13g). Same value as {@code TodoService.TOPIC}. */
-    private static final String TODO_TOPIC = "todos";
+    /** A deleted supplier also disappears from the shopping list (13g). Same value as {@code ShoppingService.TOPIC}. */
+    private static final String SHOPPING_TOPIC = "shopping-items";
 
     private final SupplierRepository repository;
     private final ApplicationEventPublisher events;
@@ -66,7 +66,7 @@ public class SupplierService {
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
         events.publishEvent(new DataChanged(STOCK_TOPIC));
-        events.publishEvent(new DataChanged(TODO_TOPIC));
+        events.publishEvent(new DataChanged(SHOPPING_TOPIC));
     }
 
     private static SupplierDetails details(SupplierRequest request) {

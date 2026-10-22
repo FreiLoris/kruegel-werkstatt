@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-/** REST API for to-dos (and the shopping list – to-dos with the flag `shopping`). */
+/** REST API for to-dos. The shopping list has its own (`/api/shopping-items`, FB-20). */
 @RestController
 @RequestMapping("/api/todos")
 @Tag(name = "To-dos")
@@ -46,10 +46,9 @@ class TodoController {
     List<TodoDto> list(@RequestParam(defaultValue = "false") boolean done,
                        @RequestParam(required = false) UUID assigneeId,
                        @RequestParam(defaultValue = "false") boolean unassigned,
-                       @RequestParam(required = false) Boolean shopping,
                        @RequestParam(required = false) UUID taskId,
                        @RequestParam(required = false) UUID noteId) {
-        return service.list(done, assigneeId, unassigned, shopping, taskId, noteId);
+        return service.list(done, assigneeId, unassigned, taskId, noteId);
     }
 
     @Operation(summary = "Create to-do")

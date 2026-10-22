@@ -4,8 +4,6 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { DoneFilter } from '../../components/ui/DoneFilter'
 import { useActiveEmployees } from '../employees/employeeApi'
-import { PartsToOrder } from '../tasks/parts/PartsToOrder'
-import { ShoppingBySupplier } from './ShoppingBySupplier'
 import { useTodos, type Todo, type TodoFilter } from './todoApi'
 import { dueState } from './todoDue'
 import { TodoBoard } from './TodoBoard'
@@ -17,12 +15,12 @@ import styles from './TodoListView.module.css'
 const NOBODY = 'none'
 
 /**
- * The to-dos or the shopping list – each a page of its own since FB-04 (before: views of the
- * pinboard). Filtered by person from the employee list (bug #3), "Offen | Erledigt" like on the
+ * The to-dos – a page of its own since FB-04 (before: a view of the pinboard; the shopping list has
+ * its own since FB-20). Filtered by person from the employee list (bug #3), "Offen | Erledigt" like on the
  * pinboard. Person and filter are in the address (`person=`, `done=1`), so a tablet can open
  * "Reto's to-dos" directly. Everyone's open to-dos are in columns per person, dragged to reassign.
  */
-export function TodoListView({ shopping }: { shopping: boolean }) {
+export function TodoListView() {
   const [params, setParams] = useSearchParams()
   const canEdit = useCanEdit()
   const { data: active } = useActiveEmployees()
@@ -36,8 +34,8 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
   const person = !active || personParam === NOBODY || people.some((p) => p.id === personParam) ? personParam : ''
 
   const personFilter: TodoFilter = person === NOBODY ? { unassigned: true } : person ? { assigneeId: person } : {}
-  const open = useTodos({ ...personFilter, shopping })
-  const done = useTodos({ ...personFilter, shopping, done: true })
+  const open = useTodos(personFilter)
+  const done = useTodos({ ...personFilter, done: true })
 
   function change(key: 'person' | 'done', value: string) {
     const next = new URLSearchParams(params)
@@ -47,14 +45,14 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
   }
 
   const overdue = (open.data ?? []).filter((t) => dueState(t.dueDate, today) === 'overdue').length
-  // columns only for everyone's open to-dos – one person, or the shopping list, is one list
-  const columns = !shopping && !showDone && person === ''
+  // columns only for everyone's open to-dos – one person is one list
+  const columns = !showDone && person === ''
 
   return (
     // the columns use the whole screen width, like the pinboard (AppLayout: data-wide)
     <div data-wide={columns ? '' : undefined}>
       <div className={styles.header}>
-        <h1>{shopping ? 'Einkaufsliste' : 'To-dos'}</h1>
+        <h1>To-dos</h1>
         <DoneFilter done={showDone} onChange={(on) => change('done', on ? '1' : '')} openCount={open.data?.length} />
       </div>
 
@@ -102,16 +100,9 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
           {canEdit && (
             <section className={styles.card} aria-label="Neues To-do">
               {/* new key per filter: the defaults follow the chosen person and page */}
-              <TodoForm
-                key={`${person}-${shopping}`}
-                defaults={{ assigneeId: person && person !== NOBODY ? person : undefined, shopping }}
-                withShopping
-              />
+              <TodoForm key={person} defaults={{ assigneeId: person && person !== NOBODY ? person : undefined }} />
             </section>
           )}
-
-          {/* material of the orders (12c) belongs to nobody – shown with every person filter */}
-          {shopping && <PartsToOrder canEdit={canEdit} />}
 
           {open.error ? (
             <p className="muted">To-dos konnten nicht geladen werden: {open.error.message}</p>
@@ -119,15 +110,12 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
             <p className="muted">Lade …</p>
           ) : columns ? (
             <TodoBoard todos={open.data} people={people} canEdit={canEdit} />
-          ) : shopping && open.data.length > 0 ? (
-            // 13g: by supplier – order everything from one at once
-            <ShoppingBySupplier entries={open.data} canEdit={canEdit} showAssignee={person === ''} />
           ) : open.data.length === 0 ? (
             <section className={styles.card}>
-              <p className="muted">{shopping ? 'Keine Einträge auf der Einkaufsliste.' : 'Nichts offen – schön.'}</p>
+              <p className="muted">Nichts offen – schön.</p>
             </section>
           ) : (
-            <section className={styles.card} aria-label={shopping ? 'Einkaufsliste' : 'Offene To-dos'}>
+            <section className={styles.card} aria-label="Offene To-dos">
               <OpenList todos={open.data} canEdit={canEdit} showAssignee={person === ''} />
             </section>
           )}
@@ -137,12 +125,12 @@ export function TodoListView({ shopping }: { shopping: boolean }) {
   )
 }
 
-/** Open to-dos with the shopping list tick in the edit form; the person only where no filter says who */
+/** Open to-dos; the person only where no filter says who */
 function OpenList({ todos, canEdit, showAssignee }: { todos: Todo[]; canEdit: boolean; showAssignee: boolean }) {
   return (
     <ul className={styles.list}>
       {todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} canEdit={canEdit} showTask withShopping showAssignee={showAssignee && todo.assigneeId !== null} />
+        <TodoItem key={todo.id} todo={todo} canEdit={canEdit} showTask showAssignee={showAssignee && todo.assigneeId !== null} />
       ))}
     </ul>
   )

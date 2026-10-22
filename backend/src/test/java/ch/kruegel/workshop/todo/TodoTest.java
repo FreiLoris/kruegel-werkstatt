@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TodoTest {
 
     private static TodoDetails text(String text) {
-        return new TodoDetails(text, null, null, false, null);
+        return new TodoDetails(text, null, null, null);
     }
 
     @Test

@@ -14,7 +14,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * A to-do: something someone has to do – call back, order parts, buy coffee (shopping list).
+ * A to-do: something someone has to do – call back, check a lift. Ordering a position of the shopping
+ * list is one too: its to-do knows the position (FB-20).
  * Always created and changed through {@link TodoDetails}; done/undone on its own.
  */
 @Entity
@@ -30,8 +31,6 @@ public class Todo extends BaseEntity {
 
     private LocalDate dueDate;
 
-    private boolean shopping;
-
     @ManyToOne(fetch = FetchType.LAZY)
     private Task task;
 
@@ -45,11 +44,11 @@ public class Todo extends BaseEntity {
 
     private UUID doneBy;
 
-    /** Shopping list only (13g): the article in stock it is about – only the ID, like the note */
-    private UUID stockItemId;
-
-    /** Shopping list only (13g): where to order it */
-    private UUID supplierId;
+    /**
+     * The position of the shopping list this is the order of ("Bestellen durch", FB-20) – only the ID,
+     * like the note. Ticked off = ordered. Set once, never changed.
+     */
+    private UUID shoppingItemId;
 
     protected Todo() {
         // for JPA
@@ -65,17 +64,15 @@ public class Todo extends BaseEntity {
         this.noteId = Objects.requireNonNull(noteId, "noteId");
     }
 
-    public void update(TodoDetails details) {
-        apply(details);
+    /** The order of a position of the shopping list – for the person who orders it (FB-20). */
+    public static Todo forShoppingItem(TodoDetails details, UUID shoppingItemId) {
+        Todo todo = new Todo(details);
+        todo.shoppingItemId = Objects.requireNonNull(shoppingItemId, "shoppingItemId");
+        return todo;
     }
 
-    /**
-     * What to buy and where (13g) – kept only on the shopping list: an entry taken off it loses both.
-     * Call after {@link #update}.
-     */
-    public void purchase(UUID stockItemId, UUID supplierId) {
-        this.stockItemId = shopping ? stockItemId : null;
-        this.supplierId = shopping ? supplierId : null;
+    public void update(TodoDetails details) {
+        apply(details);
     }
 
     /** Someone else takes care of it (dragged on the pinboard); empty = nobody yet. */
@@ -99,12 +96,11 @@ public class Todo extends BaseEntity {
         this.text = details.text();
         this.assignee = details.assignee();
         this.dueDate = details.dueDate();
-        this.shopping = details.shopping();
         this.task = details.task();
     }
 
     public TodoDetails getDetails() {
-        return new TodoDetails(text, assignee, dueDate, shopping, task);
+        return new TodoDetails(text, assignee, dueDate, task);
     }
 
     public String getText() {
@@ -117,10 +113,6 @@ public class Todo extends BaseEntity {
 
     public LocalDate getDueDate() {
         return dueDate;
-    }
-
-    public boolean isShopping() {
-        return shopping;
     }
 
     public Task getTask() {
@@ -143,11 +135,7 @@ public class Todo extends BaseEntity {
         return doneAt != null;
     }
 
-    public UUID getStockItemId() {
-        return stockItemId;
-    }
-
-    public UUID getSupplierId() {
-        return supplierId;
+    public UUID getShoppingItemId() {
+        return shoppingItemId;
     }
 }

@@ -1,0 +1,28 @@
+import type { ShoppingItem } from './shoppingApi'
+
+type TaskRef = NonNullable<ShoppingItem['task']>
+
+/** "26-0007 · Muster AG · ZH 123456" – which task a part is for (FB-19: number, customer, plate) */
+export function taskLabel(task: TaskRef): string {
+  return [task.taskNumber, task.customerName, task.licensePlate].filter(Boolean).join(' · ')
+}
+
+/** "2× Bremsscheiben vorne" – the quantity only when more than one */
+export function quantityText(item: Pick<ShoppingItem, 'quantity' | 'description'>): string {
+  return item.quantity > 1 ? `${item.quantity}× ${item.description}` : item.description
+}
+
+/** "3 zu bestellen · 2 bestellt" – '' when nothing is open */
+export function openSummary(items: ShoppingItem[]): string {
+  const toOrder = items.filter((i) => i.status === 'TO_ORDER').length
+  const ordered = items.filter((i) => i.status === 'ORDERED').length
+  return [toOrder > 0 && `${toOrder} zu bestellen`, ordered > 0 && `${ordered} bestellt`].filter(Boolean).join(' · ')
+}
+
+/** Which positions: all, those for a task, those for the workshop (FB-20: filter "mit / ohne Auftrag") */
+export type TaskFilter = 'all' | 'task' | 'workshop'
+
+export function byTask(items: ShoppingItem[], filter: TaskFilter): ShoppingItem[] {
+  if (filter === 'all') return items
+  return items.filter((i) => (filter === 'task') === (i.task !== null))
+}

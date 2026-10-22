@@ -5,7 +5,7 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { MaterialTabs } from '../stock/MaterialTabs'
 import { useStockItems } from '../stock/stockApi'
-import { useTodos } from '../todos/todoApi'
+import { useShoppingItems } from '../shopping/shoppingApi'
 import { ORDER_CHANNEL_LABEL, useSuppliers, type Supplier } from './supplierApi'
 import { SupplierDialog } from './SupplierDialog'
 import styles from './SuppliersPage.module.css'
@@ -21,7 +21,7 @@ export function SuppliersPage() {
   const canEdit = useCanEdit()
   const suppliers = useSuppliers()
   const { data: items } = useStockItems()
-  const { data: shoppingList } = useTodos({ shopping: true })
+  const { data: shoppingList } = useShoppingItems()
   const [dialog, setDialog] = useState<Dialog>(null)
 
   // how many articles each one sells
@@ -33,7 +33,7 @@ export function SuppliersPage() {
     return counts
   }, [items])
 
-  // open entries of the shopping list to order from each one (13g)
+  // open positions of the shopping list to order from each one (13g)
   const openCounts = useMemo(() => {
     const counts = new Map<string, number>()
     for (const entry of shoppingList ?? []) {

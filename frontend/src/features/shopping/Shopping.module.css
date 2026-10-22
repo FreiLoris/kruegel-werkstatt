@@ -1,0 +1,278 @@
+/* The shopping list (FB-20) and the parts of a task (FB-19) */
+
+/* title and "Offen | Erledigt" on one line */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-3);
+}
+
+.filters > [role='group'] {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.card {
+  max-width: 72rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.card h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-lg);
+}
+
+/* ── quick entry: the six fields in one row on a laptop, wrapping on a tablet ── */
+.entry {
+  display: grid;
+  grid-template-columns: minmax(10rem, 2.5fr) minmax(6rem, 1.2fr) minmax(4rem, 0.5fr) repeat(3, minmax(7rem, 1fr));
+  align-items: end;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* tablet: description on its own line, the rest in two rows of three */
+@media (max-width: 64rem) {
+  .entry {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .description {
+    grid-column: 1 / -1;
+  }
+}
+
+.entryActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ── table: one line per part, the details as a second line ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-2);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table th {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table tbody tr + tr td {
+  border-top: 1px solid var(--color-border);
+}
+
+.table .number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  width: 4rem;
+}
+
+.itemLink {
+  font-weight: 600;
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.sub:empty {
+  display: none;
+}
+
+.task {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: inherit;
+}
+
+.task svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.arrived .itemLink {
+  color: var(--color-text-muted);
+}
+
+/* the state: a select that looks like a badge – colour bar, text stays readable */
+.status {
+  min-height: 2.75rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-left: 4px solid var(--color-border-strong);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: inherit;
+}
+
+span.status {
+  display: inline-flex;
+  align-items: center;
+}
+
+.TO_ORDER {
+  border-left-color: var(--color-warning);
+}
+
+.ORDERED {
+  border-left-color: var(--color-info);
+}
+
+.ARRIVED {
+  border-left-color: var(--color-success);
+}
+
+.people {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+}
+
+.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── the position's page ── */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.back svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.title {
+  margin: 0 0 var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+  max-width: 72rem;
+}
+
+.columns .card {
+  margin: 0;
+}
+
+.detailForm,
+.fieldset {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3);
+}
+
+.noteForm {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.noteForm > :first-child {
+  justify-self: stretch;
+}
+
+.history {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history li {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-accent);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.history .statusEntry {
+  border-left-color: var(--color-border-strong);
+  color: var(--color-text-muted);
+}
+
+.when {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

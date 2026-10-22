@@ -26,7 +26,7 @@ const todo = {
   text: 'Kunde anrufen',
   assigneeId: null,
   dueDate: '2000-01-01',
-  shopping: false,
+  shoppingItemId: null,
   task: null,
   doneAt: null,
   doneBy: null,
@@ -89,5 +89,14 @@ describe('TodoItem', () => {
     expect(screen.getByText(/erledigt von Reto/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Rückgängig' }))
     expect(setDone).toHaveBeenCalledWith({ id: 't1', done: false }, expect.anything())
+  })
+
+  it('the to-do of a shopping list position: ticked here, changed there (FB-20)', () => {
+    renderItem(true, { ...todo, text: 'Bestellen: Ölfilter', shoppingItemId: 's1' })
+
+    expect(screen.getByRole('button', { name: /Einkaufsliste/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '«Bestellen: Ölfilter» bearbeiten' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '«Bestellen: Ölfilter» löschen' })).toBeNull()
+    expect(screen.getByRole('checkbox', { name: '«Bestellen: Ölfilter» erledigt' })).toBeTruthy()
   })
 })

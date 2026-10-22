@@ -16,7 +16,6 @@ export interface TodoFilter {
   assigneeId?: string
   /** only those nobody takes care of yet */
   unassigned?: boolean
-  shopping?: boolean
   taskId?: string
   /** only the sub-tasks of this note */
   noteId?: string
@@ -71,8 +70,8 @@ export function useDeleteTodo() {
   })
 }
 
-/** Everyone's open to-dos (not the shopping list) – the columns of the to-do page and the dashboard */
-export const BOARD_TODOS: TodoFilter = { shopping: false }
+/** Everyone's open to-dos – the columns of the to-do page and the dashboard */
+export const BOARD_TODOS: TodoFilter = {}
 
 /** Dragged to another column of the to-dos: someone else (or nobody) takes care of it. */
 export function useReassignTodo() {

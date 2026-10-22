@@ -6,7 +6,8 @@ import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { PinboardPage } from '../features/notes/PinboardPage'
 import { StockPage } from '../features/stock/StockPage'
 import { SuppliersPage } from '../features/suppliers/SuppliersPage'
-import { ShoppingListPage } from '../features/todos/ShoppingListPage'
+import { ShoppingItemPage } from '../features/shopping/ShoppingItemPage'
+import { ShoppingListPage } from '../features/shopping/ShoppingListPage'
 import { TodosPage } from '../features/todos/TodosPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
@@ -53,6 +54,8 @@ export const router = createBrowserRouter([
           { path: 'pinboard', element: <PinboardPage /> },
           { path: 'todos', element: <TodosPage /> },
           { path: 'shopping', element: <ShoppingListPage /> },
+          // FB-20: a position with everything about the part
+          { path: 'shopping/:id', element: <ShoppingItemPage /> },
           // FB-08: the tab "Lager" under "Material"
           { path: 'stock', element: <StockPage /> },
           { path: 'suppliers', element: <SuppliersPage /> },

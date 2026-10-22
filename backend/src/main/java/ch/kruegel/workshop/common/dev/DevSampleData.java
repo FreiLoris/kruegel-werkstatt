@@ -23,6 +23,10 @@ import ch.kruegel.workshop.note.Note;
 import ch.kruegel.workshop.note.NoteDetails;
 import ch.kruegel.workshop.note.NoteRepository;
 import ch.kruegel.workshop.task.Appointment;
+import ch.kruegel.workshop.shopping.ShoppingItem;
+import ch.kruegel.workshop.shopping.ShoppingItemDetails;
+import ch.kruegel.workshop.shopping.ShoppingItemRepository;
+import ch.kruegel.workshop.shopping.ShoppingStatus;
 import ch.kruegel.workshop.task.PartsOrder;
 import ch.kruegel.workshop.task.PartsStatus;
 import ch.kruegel.workshop.task.Task;
@@ -82,6 +86,7 @@ class DevSampleData implements ApplicationRunner {
     private final ServiceItemRepository serviceItems;
     private final TaskRepository tasks;
     private final TodoRepository todos;
+    private final ShoppingItemRepository shoppingItems;
     private final NoteRepository notes;
     private final AbsenceRepository absences;
     private final InspectionStationRepository stations;
@@ -89,8 +94,8 @@ class DevSampleData implements ApplicationRunner {
 
     DevSampleData(EmployeeRepository employees, CourtesyCarRepository courtesyCars, CustomerRepository customers,
                   VehicleRepository vehicles, LiftRepository lifts, ServiceItemRepository serviceItems,
-                  TaskRepository tasks, TodoRepository todos, NoteRepository notes, AbsenceRepository absences,
-                  InspectionStationRepository stations, Clock clock) {
+                  TaskRepository tasks, TodoRepository todos, ShoppingItemRepository shoppingItems, NoteRepository notes,
+                  AbsenceRepository absences, InspectionStationRepository stations, Clock clock) {
         this.employees = employees;
         this.courtesyCars = courtesyCars;
         this.customers = customers;
@@ -99,6 +104,7 @@ class DevSampleData implements ApplicationRunner {
         this.serviceItems = serviceItems;
         this.tasks = tasks;
         this.todos = todos;
+        this.shoppingItems = shoppingItems;
         this.notes = notes;
         this.absences = absences;
         this.stations = stations;
@@ -174,12 +180,12 @@ class DevSampleData implements ApplicationRunner {
         notes.flush();
 
         todos.saveAll(List.of(
-                new Todo(new TodoDetails("Öl und Filter bereitlegen", forNotes.get(1), today, false, null), service.getId()),
-                new Todo(new TodoDetails("Termin mit Kunde bestätigen", forNotes.get(0), null, false, null), service.getId())));
+                new Todo(new TodoDetails("Öl und Filter bereitlegen", forNotes.get(1), today, null), service.getId()),
+                new Todo(new TodoDetails("Termin mit Kunde bestätigen", forNotes.get(0), null, null), service.getId())));
         log.info("Dev sample data created: 4 notes");
     }
 
-    /** A few to-dos: overdue, for a task, on the shopping list, without person, one done. */
+    /** A few to-dos: overdue, for a task, without person, one done – and a position on the shopping list. */
     private void createTodos() {
         LocalDate today = LocalDate.now(clock);
         List<Employee> forTodos = employees.findByActiveTrueOrderBySortOrderAscNameAsc().stream()
@@ -192,14 +198,17 @@ class DevSampleData implements ApplicationRunner {
         Task firstTask = tasks.findAll().stream().findFirst().orElse(null);
 
         List<Todo> sample = List.of(
-                new Todo(new TodoDetails("Kunde wegen Offerte zurückrufen", person.apply(0), today.minusDays(1), false, null)),
-                new Todo(new TodoDetails("Bremsscheiben bestellen", person.apply(1), today, false, firstTask)),
-                new Todo(new TodoDetails("Kaffee und Milch", null, null, true, null)),
-                new Todo(new TodoDetails("Altöl entsorgen lassen", null, today.plusDays(5), false, null)),
-                new Todo(new TodoDetails("Hebebühne 2 prüfen lassen", person.apply(2), today.minusDays(3), false, null)));
-        sample.get(4).markDone(clock.instant(), person.apply(0).getId());
+                new Todo(new TodoDetails("Kunde wegen Offerte zurückrufen", person.apply(0), today.minusDays(1), null)),
+                new Todo(new TodoDetails("Bremsscheiben bestellen", person.apply(1), today, firstTask)),
+                new Todo(new TodoDetails("Altöl entsorgen lassen", null, today.plusDays(5), null)),
+                new Todo(new TodoDetails("Hebebühne 2 prüfen lassen", person.apply(2), today.minusDays(3), null)));
+        sample.get(3).markDone(clock.instant(), person.apply(0).getId());
         todos.saveAll(sample);
         log.info("Dev sample data created: {} to-dos", sample.size());
+
+        // the shopping list (FB-20): coffee for the workshop, not assigned yet
+        shoppingItems.save(new ShoppingItem(new ShoppingItemDetails("Kaffee und Milch", null, 1, person.apply(0), null, null, null, null, null, null),
+                ShoppingStatus.TO_ORDER, today));
     }
 
     private void createEmployees() {

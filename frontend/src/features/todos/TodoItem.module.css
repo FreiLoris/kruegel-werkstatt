@@ -31,13 +31,6 @@
   overflow-wrap: anywhere;
 }
 
-.icon {
-  flex: none;
-  width: 1rem;
-  height: 1rem;
-  color: var(--color-text-muted);
-}
-
 .meta {
   grid-column: 2;
   display: flex;
@@ -125,11 +118,4 @@
 
 .draggable .meta {
   grid-column: 3;
-}
-
-/* e.g. the supplier's article number on the shopping list */
-.detail {
-  margin-left: var(--space-2);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }

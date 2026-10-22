@@ -28,7 +28,7 @@ vi.mock('../stock/stockApi', () => ({
     data: [{ suppliers: [{ supplierId: 'm' }] }, { suppliers: [{ supplierId: 'x' }, { supplierId: 'm' }] }, { suppliers: [] }],
   }),
 }))
-vi.mock('../todos/todoApi', () => ({ useTodos: () => ({ data: [{ supplierId: 'm' }, { supplierId: null }] }) }))
+vi.mock('../shopping/shoppingApi', () => ({ useShoppingItems: () => ({ data: [{ supplierId: 'm' }, { supplierId: null }] }) }))
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => false }))
 
 describe('SuppliersPage', () => {
