@@ -9,6 +9,7 @@ import { LiftSettings } from '../lifts/LiftSettings'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
 import { StorageLocationSettings } from '../stock/StorageLocationSettings'
 import { LabelFormatSettings } from '../tire-hotel/LabelFormatSettings'
+import { SeasonDeadlineSettings } from '../tire-hotel/SeasonDeadlineSettings'
 import { TireLocationSettings } from '../tire-hotel/TireLocationSettings'
 import { TreadLimitsSettings } from '../tire-hotel/TreadLimitsSettings'
 import styles from './SettingsPage.module.css'
@@ -24,6 +25,7 @@ const SECTIONS: { id: string; title: string; content: ReactNode }[] = [
   { id: 'lagerorte', title: 'Lagerorte', content: <StorageLocationSettings /> },
   { id: 'pneuhotel-standorte', title: 'Pneuhotel-Standorte', content: <TireLocationSettings /> },
   { id: 'profilgrenzen', title: 'Profilgrenzen', content: <TreadLimitsSettings /> },
+  { id: 'stichtage', title: 'Stichtage Saisonwechsel', content: <SeasonDeadlineSettings /> },
   { id: 'etiketten', title: 'Etiketten', content: <LabelFormatSettings /> },
   {
     id: 'kunden',

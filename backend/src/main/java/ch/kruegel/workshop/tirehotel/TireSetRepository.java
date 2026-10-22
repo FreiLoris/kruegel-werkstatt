@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,11 @@ public interface TireSetRepository extends JpaRepository<TireSet, UUID> {
     @EntityGraph(attributePaths = {"customer", "vehicle", "place"})
     @Query("SELECT DISTINCT s FROM TireSet s JOIN s.events e WHERE e.task.id = :taskId AND e.kind IN :kinds")
     Optional<TireSet> bookedBy(UUID taskId, Collection<TireSetEventKind> kinds);
+
+    /** The sets with a step from that day on – who changed in a season (FB-21) */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "place"})
+    @Query("SELECT DISTINCT s FROM TireSet s JOIN s.events e WHERE e.happenedOn >= :from")
+    List<TireSet> withStepsFrom(LocalDate from);
 
     /** The sets in the hotel at a location – before it is made smaller or deleted. */
     @EntityGraph(attributePaths = {"place"})

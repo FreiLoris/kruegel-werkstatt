@@ -12,6 +12,16 @@ describe('onDataChanged', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['employees'] })
   })
 
+  it('a task also reloads the season change – its "Termin geplant" (FB-21)', () => {
+    const queryClient = new QueryClient()
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    onDataChanged('{"topic":"tasks"}', queryClient)
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tasks'] })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tire-sets', 'season-change'] })
+  })
+
   it('marks only the affected topic as stale', async () => {
     const queryClient = new QueryClient()
     queryClient.setQueryData(['employees'], [])

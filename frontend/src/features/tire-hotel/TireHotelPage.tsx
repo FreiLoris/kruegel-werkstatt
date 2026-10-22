@@ -1,4 +1,4 @@
-import { Archive, CalendarPlus, LayoutGrid, MapPin, Plus, Warehouse } from 'lucide-react'
+import { Archive, CalendarPlus, CalendarSync, LayoutGrid, MapPin, Plus, Warehouse } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
@@ -9,6 +9,7 @@ import { formatDate } from '../../lib/format'
 import { tireAppointmentUrl } from '../tasks/wizard/tireAppointment'
 import { MoveDialog } from './MoveDialog'
 import { PlaceMap } from './PlaceMap'
+import { SeasonChangeView } from './SeasonChangeView'
 import { KINDS, SEASONS, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { freeCount, occupancy } from './tirePlaces'
@@ -23,7 +24,8 @@ import { TreadChip } from './TreadDepthsView'
  */
 export function TireHotelPage() {
   const [params, setParams] = useSearchParams()
-  const view = params.get('view') === 'retrieved' ? 'retrieved' : params.get('view') === 'places' ? 'places' : 'list'
+  const views = ['retrieved', 'places', 'season'] as const
+  const view = views.find((v) => v === params.get('view')) ?? 'list'
   const retrieved = view === 'retrieved'
   const query = params.get('q') ?? ''
   // e.g. after the takeover from SwissGarage: the sets still to be given a place
@@ -99,6 +101,10 @@ export function TireHotelPage() {
           <Button icon={Archive} variant={retrieved ? 'primary' : 'secondary'} aria-pressed={retrieved} onClick={() => change('view', 'retrieved')}>
             Ausgelagert
           </Button>
+          {/* FB-21: who changed this season, who still has to be called */}
+          <Button icon={CalendarSync} variant={view === 'season' ? 'primary' : 'secondary'} aria-pressed={view === 'season'} onClick={() => change('view', 'season')}>
+            Saisonwechsel
+          </Button>
         </div>
       </div>
       {view === 'list' && (unplaced > 0 || withoutPlace) && (
@@ -110,7 +116,9 @@ export function TireHotelPage() {
         </p>
       )}
 
-      {view === 'places' ? (
+      {view === 'season' ? (
+        <SeasonChangeView query={query} limits={limits} canEdit={canEdit} />
+      ) : view === 'places' ? (
         !locations || !places || !sets.data ? (
           <p className="muted">{placesFailed ? `Konnte nicht geladen werden: ${placesFailed.message}` : 'Lade …'}</p>
         ) : locations.length === 0 ? (
