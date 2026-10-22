@@ -25,6 +25,7 @@ import styles from './AppointmentStep.module.css'
 import { CapacityOverview } from './CapacityOverview'
 import { AppointmentWarnings } from './AppointmentWarnings'
 import { SameVehicleHint } from './SameVehicleHint'
+import { TireChangeHint } from './TireChangeHint'
 import { useAppointmentWarnings } from './useAppointmentWarnings'
 import { VehicleLocationSwitch } from '../VehicleLocationSwitch'
 import { VehicleTires } from '../../tire-hotel/VehicleTires'
@@ -40,6 +41,8 @@ interface AppointmentStepProps {
   taskId?: string
   /** the chosen vehicle – for the hint that it already has a task (FB-01); empty = still open */
   vehicleId?: string
+  /** its customer – for the hint that a tyre change is planned already (FB-18) */
+  customerId?: string
   /** more sections below the form, e.g. the courtesy car in the wizard */
   children?: ReactNode
 }
@@ -50,7 +53,7 @@ interface AppointmentStepProps {
  * day of the appointment at opening time (the evening before for an appointment at opening time),
  * "fertig bis" = the same evening.
  */
-export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, children }: AppointmentStepProps) {
+export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, customerId, children }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -272,6 +275,9 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                 ))}
               </Select>
             </div>
+          )}
+          {form.tireChange && vehicleId && customerId && (
+            <TireChangeHint customerId={customerId} vehicleId={vehicleId} date={form.noAppointment ? '' : form.date} taskId={taskId} />
           )}
           <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked, standardStation))} />
           {form.mfk && (

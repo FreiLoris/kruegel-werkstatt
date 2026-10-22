@@ -1,4 +1,4 @@
-import { Archive, LayoutGrid, MapPin, Plus, Warehouse } from 'lucide-react'
+import { Archive, CalendarPlus, LayoutGrid, MapPin, Plus, Warehouse } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
@@ -6,6 +6,7 @@ import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { formatDate } from '../../lib/format'
+import { tireAppointmentUrl } from '../tasks/wizard/tireAppointment'
 import { MoveDialog } from './MoveDialog'
 import { PlaceMap } from './PlaceMap'
 import { KINDS, SEASONS, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
@@ -144,11 +145,16 @@ export function TireHotelPage() {
                     <th>Satz</th>
                     <th>Profil</th>
                     <th>{retrieved ? 'Ausgelagert' : 'Eingelagert'}</th>
+                    {canEdit && (
+                      <th>
+                        <span className="visually-hidden">Termin</span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {shown.map((set) => (
-                    <TireSetRow key={set.id} set={set} limits={limits} retrieved={retrieved} onAssign={canEdit ? () => setAssigning(set) : undefined} />
+                    <TireSetRow key={set.id} set={set} limits={limits} retrieved={retrieved} onAssign={canEdit ? () => setAssigning(set) : undefined} onAppointment={canEdit ? () => navigate(tireAppointmentUrl(set.id)) : undefined} />
                   ))}
                 </tbody>
               </table>
@@ -166,12 +172,15 @@ function TireSetRow({
   limits,
   retrieved,
   onAssign,
+  onAppointment,
 }: {
   set: TireSet
   limits: ReturnType<typeof useTreadLimits>['data']
   retrieved: boolean
   /** a set without place: choose it right here */
   onAssign?: () => void
+  /** FB-18: the customer on the phone – straight to the appointment */
+  onAppointment?: () => void
 }) {
   const lowest = [set.depths.frontLeft, set.depths.frontRight, set.depths.rearLeft, set.depths.rearRight]
     .filter((d): d is number => d !== null && d !== undefined)
@@ -220,6 +229,13 @@ function TireSetRow({
         <span className={styles.nowrap}>{formatDepth(lowest)}</span> {limits && <TreadChip status={worstStatus(set.depths, set.season, limits)} />}
       </td>
       <td className={`${styles.nowrap} ${styles.day}`}>{formatDate(retrieved && set.retrievedOn ? set.retrievedOn : set.storedOn!)}</td>
+      {onAppointment && (
+        <td>
+          <Button small icon={CalendarPlus} onClick={onAppointment} aria-label={`Termin abmachen für ${set.customer.displayName}`}>
+            Termin
+          </Button>
+        </td>
+      )}
     </tr>
   )
 }

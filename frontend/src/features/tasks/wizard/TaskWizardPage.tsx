@@ -11,6 +11,7 @@ import { useSingleFlight } from '../../../lib/useSingleFlight'
 import { useHolidayNames } from '../../publicholidays/publicHolidayApi'
 import { useCreateTaskWithBooking, type Booking } from '../../bookings/bookingApi'
 import { useCustomer } from '../../customers/customerApi'
+import { useTireSet, type TireSet } from '../../tire-hotel/tireHotelApi'
 import type { Customer } from '../../customers/customerSearchApi'
 import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { CourtesyCarSection } from '../../bookings/CourtesyCarSection'
@@ -20,6 +21,7 @@ import { AppointmentStep } from './AppointmentStep'
 import { CustomerStep } from './CustomerStep'
 import { ReviewStep } from './ReviewStep'
 import { SavedStep } from './SavedStep'
+import { tireChangeKindOf } from './tireAppointment'
 import styles from './TaskWizardPage.module.css'
 import { clearDraft, loadDraft, storeDraft, type WizardDraft } from './wizardDraft'
 import type { CustomerStepValue } from './wizardState'
@@ -44,26 +46,43 @@ export function TaskWizardPage() {
   // "Neuer Auftrag für diesen Kunden" on the customer page (UX G-05)
   const customerId = params.get('customer') ?? undefined
   const preset = useCustomer(customerId)
-  if (customerId && !preset.data && !preset.error) {
+  // "Termin abmachen" on a tyre set (FB-18)
+  const tireSetId = params.get('tireSet') ?? undefined
+  const tireSet = useTireSet(tireSetId)
+  if ((customerId && !preset.data && !preset.error) || (tireSetId && !tireSet.data && !tireSet.error)) {
     return (
       <>
         <h1>Neuer Auftrag</h1>
-        <p className="muted">Lade Kunde …</p>
+        <p className="muted">{tireSetId ? 'Lade Satz …' : 'Lade Kunde …'}</p>
       </>
     )
   }
-  return <TaskWizard initialCustomer={preset.data ?? null} />
+  return (
+    <>
+      {tireSet.error && <p className="muted">Satz konnte nicht geladen werden ({tireSet.error.message}) – bitte Kunde wählen.</p>}
+      <TaskWizard initialCustomer={tireSet.data?.customer ?? preset.data ?? null} tireSet={tireSet.data ?? null} />
+    </>
+  )
 }
 
-function TaskWizard({ initialCustomer }: { initialCustomer: Customer | null }) {
-  const [step, setStep] = useState<Step>(1)
-  const [startCustomerStep] = useState<CustomerStepValue>({ customer: initialCustomer, vehicle: null })
+/**
+ * @param tireSet from the tyre hotel (FB-18): its customer and vehicle, the tyre change ticked – the
+ *   wizard starts with the appointment
+ */
+function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | null; tireSet: TireSet | null }) {
+  // what counts as "nothing typed yet" – the prefill, and empty again after "Weiteren Auftrag erfassen"
+  const [startCustomerStep, setStartCustomerStep] = useState<CustomerStepValue>(() => ({
+    customer: initialCustomer,
+    vehicle: tireSet?.vehicle ? { kind: 'vehicle', vehicle: tireSet.vehicle } : null,
+  }))
+  const [step, setStep] = useState<Step>(startCustomerStep.vehicle ? 2 : 1)
   const [customerStep, setCustomerStep] = useState<CustomerStepValue>(startCustomerStep)
   const [params] = useSearchParams()
   // dragged open in the day view → date, time, end and lift are already there
-  const [startAppointment] = useState<AppointmentForm>(() => {
+  const [startAppointment, setStartAppointment] = useState<AppointmentForm>(() => {
     const slot = slotFromUrl(params)
-    return slot ? withSlot(EMPTY_APPOINTMENT, slot, new Set()) : EMPTY_APPOINTMENT
+    const start = tireSet ? { ...EMPTY_APPOINTMENT, tireChange: true, tireChangeKind: tireChangeKindOf(tireSet) } : EMPTY_APPOINTMENT
+    return slot ? withSlot(start, slot, new Set()) : start
   })
   const [appointment, setAppointment] = useState<AppointmentForm>(startAppointment)
   // a task started before a reload – offered, not filled in by itself: it may be someone else's
@@ -174,6 +193,8 @@ function TaskWizard({ initialCustomer }: { initialCustomer: Customer | null }) {
   }
 
   function startOver() {
+    setStartCustomerStep(EMPTY_CUSTOMER_STEP)
+    setStartAppointment(EMPTY_APPOINTMENT)
     setCustomerStep(EMPTY_CUSTOMER_STEP)
     setAppointment(EMPTY_APPOINTMENT)
     setCourtesyCar(NO_COURTESY_CAR)
@@ -233,6 +254,7 @@ function TaskWizard({ initialCustomer }: { initialCustomer: Customer | null }) {
             holidays={holidays}
             showRequired={showRequired}
             vehicleId={customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle.id : undefined}
+            customerId={customerStep.customer?.id}
           >
             {/* a courtesy car is booked for a period – without an appointment there is none yet */}
             {!appointment.noAppointment && (

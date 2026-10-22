@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, LogOut, MapPin, Pencil, Ruler, Tag } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, FileText, LogOut, MapPin, Pencil, Ruler, Tag } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, reasonOf } from '../../api/errors'
@@ -11,6 +11,7 @@ import { Facts } from '../../components/ui/Facts'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDate } from '../../lib/format'
 import { useAllEmployees } from '../employees/employeeApi'
+import { tireAppointmentUrl } from '../tasks/wizard/tireAppointment'
 import { MeasureDialog } from './MeasureDialog'
 import { MoveDialog } from './MoveDialog'
 import {
@@ -143,6 +144,10 @@ function TireSetDetail({ set }: { set: TireSet }) {
                 </Button>
               </>
             )}
+            {/* FB-18: the customer calls about the change – the wizard with all that is known */}
+            <Button icon={CalendarPlus} onClick={() => navigate(tireAppointmentUrl(set.id))}>
+              Termin abmachen
+            </Button>
             <Button icon={Pencil} onClick={() => navigate(`/tires/${set.id}/edit`)}>
               Bearbeiten
             </Button>
