@@ -27,6 +27,7 @@ import { AppointmentWarnings } from './AppointmentWarnings'
 import { SameVehicleHint } from './SameVehicleHint'
 import { useAppointmentWarnings } from './useAppointmentWarnings'
 import { VehicleLocationSwitch } from '../VehicleLocationSwitch'
+import { VehicleTires } from '../../tire-hotel/VehicleTires'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -249,6 +250,8 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
         </Section>
 
         <Section title="Arbeiten">
+          {/* FB-12: the car's tyres – still good? – while the customer is on the phone */}
+          {vehicleId && <VehicleTires vehicleId={vehicleId} title="Reifen dieses Fahrzeugs" />}
           <Checkbox
             label="Radwechsel"
             checked={form.tireChange}

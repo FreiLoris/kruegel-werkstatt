@@ -698,9 +698,13 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   the car or a new one, "Ins Pneuhotel" or "Nimmt der Kunde mit"; each with the depths from the sheet.
   New history steps: recorded, mounted (brought), taken home. The hotel's lists stay the hotel's
   (in the hotel / retrieved from it); the set page says where a set is.
-- [ ] **14h-2 – Tyres of a vehicle** (FB-12, part 2): overview per vehicle (both seasons, where, last
-  depth with its day, year) with traffic lights for tread and age (from 8 years orange, from 10 red),
-  DOT optional (the year from it), shown when entering a task for the vehicle
+- [x] **14h-2 – Tyres of a vehicle** (FB-12, part 2)
+  Done: "Reifen" of a vehicle – per season the set used last (older ones counted): where it is (in
+  the hotel with its place, mounted, with the customer), the last depth with the day it was measured
+  (new `measuredOn`), the year with the age – a light for the tread (the limits of FB-07) and one for
+  the age (below 8 years fine, from 8 orange, from 10 red) side by side. Shown in the wizard under
+  "Arbeiten" for the chosen vehicle and with each vehicle on the customer page. "Jahrgang oder DOT":
+  a DOT code ("2321") gives its year.
 - [ ] **14i – "Termin abmachen" from the tyre hotel** (FB-18)
 - [ ] **14j – Season change overview** (FB-21): changed / planned / open (forgotten after the
   deadline) / acknowledged / not collected for a season; deadlines 1 June and 1 December

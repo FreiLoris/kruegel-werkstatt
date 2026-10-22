@@ -30,6 +30,7 @@ vi.mock('../tire-hotel/tireHotelApi', () => ({
     data: [{ id: 's1', customer: { id: 'c1' }, vehicle: { licensePlate: 'ZH 123' }, season: 'WINTER', place: 'A1', storedOn: '2026-04-01' }],
   }),
 }))
+vi.mock('../tire-hotel/VehicleTires', () => ({ VehicleTires: () => null }))
 vi.mock('../tasks/wizard/CustomerHistory', () => ({ CustomerHistory: () => <p>Bisherige Aufträge</p> }))
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => true }))
 

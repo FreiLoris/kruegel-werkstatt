@@ -14,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -85,6 +86,8 @@ public class TireSet extends BaseEntity {
 
     // orphanRemoval: undoing a retrieval takes its event back
     @OneToMany(mappedBy = "tireSet", cascade = CascadeType.ALL, orphanRemoval = true)
+    // lists show the day each set was measured (FB-12) – their histories in batches, not one query per set
+    @BatchSize(size = 100)
     // id last: two events of one save (measured and retrieved) can have the same time – UUIDv7 keeps their order
     @OrderBy("happenedOn, createdAt, id")
     private List<TireSetEvent> events = new ArrayList<>();
@@ -209,6 +212,21 @@ public class TireSet extends BaseEntity {
     /** The day of the latest step in the history – an earlier one would contradict the current state. */
     public LocalDate lastEventDay() {
         return events.stream().map(TireSetEvent::getHappenedOn).max(LocalDate::compareTo).orElse(storedOn);
+    }
+
+    /** The steps that measure – a move or retrieval only repeats the depths of that moment */
+    private static final Set<TireSetEventKind> MEASURING = Set.of(TireSetEventKind.STORED, TireSetEventKind.MEASURED, TireSetEventKind.RECORDED);
+
+    /**
+     * When its depths were measured last (FB-12: "letzte Profiltiefe mit Messdatum"). Empty = never
+     * measured. After measuring only some wheels the others keep an older depth – the set's page says
+     * which ones; the overview shows this day.
+     */
+    public LocalDate measuredOn() {
+        return events.stream()
+                .filter(e -> MEASURING.contains(e.getKind()) && e.getDepths().lowest() != null)
+                .map(TireSetEvent::getHappenedOn)
+                .max(LocalDate::compareTo).orElse(null);
     }
 
     /** A step before the latest one would contradict the current state */

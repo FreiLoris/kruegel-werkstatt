@@ -5,6 +5,7 @@ import {
   mountingOf,
   mountingProposal,
   tireSetErrors,
+  yearOf,
   withMountingProposal,
   type TireSetErrors,
   type TireSetForm,
@@ -155,7 +156,7 @@ function newSetOf(set: TireSetForm): NewTireSet {
     brand: text(set.brand),
     model: text(set.model),
     dimension: text(set.dimension),
-    year: set.year.trim() ? Number(set.year.trim()) : undefined,
+    year: yearOf(set.year),
     remark: text(set.remark),
     ...mountingOf(set),
   }

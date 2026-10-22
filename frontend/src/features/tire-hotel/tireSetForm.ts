@@ -1,5 +1,7 @@
 import type { CustomerStepValue } from '../tasks/wizard/wizardState'
 import type { DepthsRequest, RimKind, Season, TireSet, TireSetKind, TireSetRequest } from './tireHotelApi'
+import { todayIso } from '../../lib/format'
+import { parseYearOrDot } from './tireAge'
 import { WHEELS, type Wheel } from './tread'
 
 /**
@@ -16,7 +18,7 @@ export interface TireSetForm {
   brand: string
   model: string
   dimension: string
-  /** year of manufacture from the DOT code, e.g. "2022" */
+  /** year of manufacture, e.g. "2022" – or the DOT code, "2321" = week 23 of 2021 (FB-12) */
   year: string
   remark: string
   /** FB-11: torque of the wheel bolts in Nm, e.g. "120" */
@@ -99,6 +101,16 @@ const TORQUE_MAX = 999
 const PRESSURE_MIN = 0.5
 const PRESSURE_MAX = 9.99
 
+/**
+ * The year to send – a DOT code typed becomes its year (FB-12). Checked before by
+ * {@link tireSetErrors}: anything else here is a mistake of the caller, not of the user.
+ */
+export function yearOf(text: string, today: string = todayIso()): number | undefined {
+  const year = parseYearOrDot(text, today)
+  if (Number.isNaN(year)) throw new Error(`Not a year: ${text}`)
+  return year ?? undefined
+}
+
 /** "120" → 120, "" → null; anything else → NaN */
 export function parseTorque(text: string): number | null {
   const trimmed = text.trim()
@@ -117,11 +129,8 @@ export function tireSetErrors(form: TireSetForm, today: string): TireSetErrors {
   const errors: TireSetErrors = {}
   if (!form.season) errors.season = 'Saison wählen'
   if (!form.kind) errors.kind = 'Kompletträder oder nur Reifen?'
-  if (form.year.trim()) {
-    const year = Number(form.year.trim())
-    if (!/^\d{4}$/.test(form.year.trim()) || year < YEAR_MIN || year > Number(today.slice(0, 4))) {
-      errors.year = `Jahrgang zwischen ${YEAR_MIN} und heute, z. B. 2022`
-    }
+  if (Number.isNaN(parseYearOrDot(form.year, today))) {
+    errors.year = `Jahrgang (${YEAR_MIN} bis heute) oder DOT, z. B. 2022 oder 2321`
   }
   const torque = parseTorque(form.torque)
   if (Number.isNaN(torque) || (torque !== null && (torque < TORQUE_MIN || torque > TORQUE_MAX))) errors.torque = 'in Nm, z. B. 120'
@@ -157,7 +166,7 @@ export function toTireSetRequest(step1: CustomerStepValue, form: TireSetForm, ve
     brand: text(form.brand),
     model: text(form.model),
     dimension: text(form.dimension),
-    year: form.year.trim() ? Number(form.year.trim()) : undefined,
+    year: yearOf(form.year),
     remark: text(form.remark),
     ...mountingOf(form),
     depths: version === undefined ? depthsOf(form) : undefined,

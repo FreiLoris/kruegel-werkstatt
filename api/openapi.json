@@ -15237,6 +15237,11 @@
             "type" : "string",
             "enum" : [ "WHEELS", "TIRES" ]
           },
+          "measuredOn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "When they were measured last; empty = never (FB-12)"
+          },
           "model" : {
             "type" : [ "string", "null" ]
           },
@@ -15319,7 +15324,7 @@
             "description" : "Year of manufacture (DOT)"
           }
         },
-        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "pressureFront", "pressureRear", "remark", "retrievedOn", "rims", "season", "state", "storedOn", "torque", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
+        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "measuredOn", "model", "place", "placeId", "pressureFront", "pressureRear", "remark", "retrievedOn", "rims", "season", "state", "storedOn", "torque", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
       },
       "TireSetEventDto" : {
         "type" : "object",

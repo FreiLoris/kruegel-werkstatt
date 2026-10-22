@@ -172,6 +172,8 @@ class TaskTireApiTest {
         assertThat(booked).hasStatusOk();
         assertThat(booked).bodyJson().extractingPath("$.mounted.state").isEqualTo("MOUNTED");
         assertThat(booked).bodyJson().extractingPath("$.mounted.storedOn").isNull();
+        // the day they were measured – for the overview of the car's tyres
+        assertThat(booked).bodyJson().extractingPath("$.mounted.measuredOn").isEqualTo(LocalDate.now().toString());
         assertThat(booked).bodyJson().extractingPath("$.removed.state").isEqualTo("WITH_CUSTOMER");
         assertThat(booked).bodyJson().extractingPath("$.removed.place").isNull();
         String summer = read(booked, "$.removed.id");

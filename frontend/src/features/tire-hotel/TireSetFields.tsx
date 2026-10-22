@@ -1,6 +1,6 @@
 import { Checkbox, Select, TextArea, TextField } from '../../components/ui/Fields'
 import { KINDS, RIMS, SEASONS, type RimKind, type Season, type TireSetKind } from './tireHotelApi'
-import { withKind, type TireSetErrors, type TireSetForm } from './tireSetForm'
+import { withKind, yearOf, type TireSetErrors, type TireSetForm } from './tireSetForm'
 import styles from './TireHotel.module.css'
 
 /**
@@ -116,13 +116,19 @@ export function TireSetFields({
       </div>
       <div className={styles.row}>
         <TextField
-          label="Jahrgang"
-          hint="aus der DOT-Nummer, z. B. 2022"
+          label="Jahrgang oder DOT"
+          hint="z. B. 2022 – oder die DOT-Nummer 2321 (Woche 23/2021)"
           inputMode="numeric"
           maxLength={4}
           autoComplete="off"
           value={form.year}
           onChange={(e) => set('year', e.target.value)}
+          // a DOT code shows its year once typed (FB-12)
+          onBlur={() => {
+            if (errors.year) return
+            const year = yearOf(form.year)
+            if (year !== undefined && String(year) !== form.year.trim()) set('year', String(year))
+          }}
           error={errors.year}
         />
         <TextArea
