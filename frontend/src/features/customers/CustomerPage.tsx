@@ -14,6 +14,7 @@ import { useCustomer } from './customerApi'
 import { CustomerDialog } from './CustomerDialog'
 import styles from './CustomerPage.module.css'
 import type { Customer } from './customerSearchApi'
+import { VehicleTires } from '../tire-hotel/VehicleTires'
 
 /**
  * A customer at a glance (UX G-05): how to reach them, their vehicles, the last tasks and what lies in
@@ -99,6 +100,8 @@ function CustomerView({ customer }: { customer: Customer }) {
                   {vehicle.licensePlate ? <LicensePlate text={vehicle.licensePlate} size="sm" /> : <span className="muted">ohne Kennzeichen</span>}{' '}
                   {vehicle.description}
                   {!vehicle.active && <span className="muted"> (nicht mehr verwendet)</span>}
+                  {/* FB-12: its tyres – in the hotel, on the car or with the customer */}
+                  <VehicleTires vehicleId={vehicle.id} />
                 </li>
               ))}
             </ul>

@@ -56,7 +56,7 @@ describe('depths', () => {
 
   it('a wrong depth and a wrong year are errors at their field', () => {
     const form: TireSetForm = { ...withKind(emptyForm(TODAY), 'TIRES'), sameDepth: false, depths: { ...emptyForm(TODAY).depths, rearLeft: '25' }, year: '2030' }
-    expect(tireSetErrors(form, TODAY)).toEqual({ rearLeft: 'in mm, z. B. 6,5', year: 'Jahrgang zwischen 1990 und heute, z. B. 2022' })
+    expect(tireSetErrors(form, TODAY)).toEqual({ rearLeft: 'in mm, z. B. 6,5', year: 'Jahrgang (1990 bis heute) oder DOT, z. B. 2022 oder 2321' })
   })
 })
 

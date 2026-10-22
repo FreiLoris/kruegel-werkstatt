@@ -46,6 +46,12 @@ export function wheelsToAdvise(depths: TreadDepths, season: Season, limits: Trea
   }).map((w) => w.short)
 }
 
+/** The lowest measured depth – what decides whether the customer needs new tyres; null if none is measured */
+export function lowestDepth(depths: TreadDepths): number | null {
+  const measured = WHEELS.map((w) => depths[w.key]).filter((d): d is number => d != null)
+  return measured.length === 0 ? null : Math.min(...measured)
+}
+
 /** "6.5" → "6,5 mm"; not measured → "–" */
 export function formatDepth(depth: number | null | undefined): string {
   return depth === null || depth === undefined ? '–' : `${depth.toFixed(1).replace('.', ',')} mm`
@@ -61,12 +67,12 @@ export const STATUS_TEXT: Record<TreadStatus, string> = {
 /**
  * Wheels whose depth was not measured with the latest measurement – it comes from an earlier one
  * (a partial measurement keeps the others, decision E7). Grouped by the day it was measured, oldest first.
- * Only storing and measuring count: a move or retrieval just repeats the depths of that moment.
+ * Only storing, measuring and recording count: a move or retrieval just repeats the depths of that moment.
  */
 export function olderDepths(history: TireSetEvent[]): { wheels: string[]; on: string }[] {
   const measuredOn = new Map<Wheel, string>()
   const measurements = history
-    .filter((e) => e.kind === 'STORED' || e.kind === 'MEASURED')
+    .filter((e) => e.kind === 'STORED' || e.kind === 'MEASURED' || e.kind === 'RECORDED')
     .sort((a, b) => a.happenedOn.localeCompare(b.happenedOn))
   for (const event of measurements) {
     for (const w of WHEELS) {

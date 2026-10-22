@@ -29,6 +29,7 @@ public record TireSetDto(
         @Schema(types = {"number", "null"}, description = "Tyre pressure front in bar") BigDecimal pressureFront,
         @Schema(types = {"number", "null"}, description = "Tyre pressure rear in bar") BigDecimal pressureRear,
         @Schema(description = "As last measured") TreadDepths depths,
+        @Schema(types = {"string", "null"}, format = "date", description = "When they were measured last; empty = never (FB-12)") LocalDate measuredOn,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = never in the hotel (FB-12)") LocalDate storedOn,
         @Schema(description = "In the hotel, on the car or with the customer (FB-12)") TireSetState state,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = in the hotel") LocalDate retrievedOn,
@@ -42,7 +43,7 @@ public record TireSetDto(
         return new TireSetDto(s.getId(), s.getVersion(), CustomerDto.of(d.customer()), d.vehicle() == null ? null : VehicleDto.of(d.vehicle()),
                 d.season(), d.kind(), d.rims(), d.hubCaps(), d.wheelBolts(), d.brand(), d.model(), d.dimension(), d.year(), d.remark(),
                 d.torque(), d.pressureFront(), d.pressureRear(),
-                s.getDepths(), s.getStoredOn(), s.getState(), s.getRetrievedOn(), s.getPlace() == null ? null : s.getPlace().getId(),
+                s.getDepths(), s.measuredOn(), s.getStoredOn(), s.getState(), s.getRetrievedOn(), s.getPlace() == null ? null : s.getPlace().getId(),
                 s.getPlace() == null ? null : s.getPlace().getAddress(), s.getUpdatedAt(), s.getUpdatedBy());
     }
 }

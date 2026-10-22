@@ -3577,6 +3577,11 @@ export interface components {
             id: string;
             /** @enum {string} */
             kind: "WHEELS" | "TIRES";
+            /**
+             * Format: date
+             * @description When they were measured last; empty = never (FB-12)
+             */
+            measuredOn: string | null;
             model: string | null;
             /** @example OG-B3-1 */
             place: string | null;
