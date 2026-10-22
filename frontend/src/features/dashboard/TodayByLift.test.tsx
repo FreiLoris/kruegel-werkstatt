@@ -23,7 +23,6 @@ const task = (id: string, liftId: string, date: string, time: string, name: stri
   serviceItemIds: [],
   tireChange: false,
   mfk: false,
-  parts: null,
   workDescription: null,
 })
 

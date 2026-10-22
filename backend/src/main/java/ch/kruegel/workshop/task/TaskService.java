@@ -143,11 +143,6 @@ public class TaskService {
         return repository.waitingForPartsSince(LocalDate.now(clock)).stream().map(TaskDto::of).toList();
     }
 
-    /** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
-    @Transactional(readOnly = true)
-    public List<TaskDto> withPartsToOrder() {
-        return repository.withPartsToOrder().stream().map(TaskDto::of).toList();
-    }
 
     @Transactional(readOnly = true)
     public TaskDto get(UUID id) {
@@ -247,19 +242,6 @@ public class TaskService {
         return saved(task);
     }
 
-    /**
-     * Parts ordered / arrived – ticked off on the shopping list. No version needed, like the status:
-     * it must not fail because someone else edited the task meanwhile.
-     */
-    public TaskDto changePartsStatus(UUID id, PartsStatus status) {
-        Task task = find(id);
-        PartsOrder parts = task.getWork().parts();
-        if (parts == null) {
-            throw new BusinessRuleException("Für diesen Auftrag ist kein Material erfasst.");
-        }
-        task.changeParts(parts.withStatus(status, LocalDate.now(clock)));
-        return saved(task);
-    }
 
     public TaskDto assignTaskNumber(UUID id, String taskNumber) {
         Task task = find(id);
@@ -401,8 +383,7 @@ public class TaskService {
             throw new InvalidInputException("mfkStationId", "nur mit MFK");
         }
         return new TaskWork(request.tireChange(), request.tireChangeKind(), request.mfk(), request.mfkAppointment(),
-                serviceItems(request.serviceItemIds(), current),
-                request.parts() == null ? null : request.parts().toPartsOrder(), request.workDescription());
+                serviceItems(request.serviceItemIds(), current), request.workDescription());
     }
 
     private Set<ServiceItem> serviceItems(List<UUID> ids, Set<ServiceItem> current) {

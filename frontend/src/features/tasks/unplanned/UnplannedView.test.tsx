@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ShoppingItem } from '../../shopping/shoppingApi'
 import type { AnyTask } from '../taskApi'
 import { UnplannedView } from './UnplannedView'
 
@@ -20,7 +21,6 @@ const waiting = {
   mfk: false,
   mfkAppointment: null,
   serviceItemIds: [],
-  parts: { description: 'Kupplungssatz', status: 'TO_ORDER', supplier: null, orderedOn: null },
   workDescription: 'Kupplung ersetzen',
   createdAt: '2026-10-09T08:15:00Z',
 } as unknown as AnyTask
@@ -34,6 +34,10 @@ vi.mock('../taskApi', async (importOriginal) => ({
   useTasksWithoutAppointment: () => ({ data: tasks }),
   useTasksWaitingForParts: () => ({ data: waitingSinceTheirDay }),
 }))
+// the parts of the tasks on the shopping list (FB-19)
+let parts: ShoppingItem[] = []
+const part = (taskId: string, description: string, status: ShoppingItem['status']) => ({ description, quantity: 1, status, task: { id: taskId } }) as ShoppingItem
+vi.mock('../../shopping/shoppingApi', () => ({ useTasksShoppingItems: () => ({ data: parts, error: null }) }))
 vi.mock('../../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit }))
 vi.mock('../../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [{ id: 'm1', name: 'Döme', color: '#9fdfaa' }] }) }))
 vi.mock('../../service-items/serviceItemApi', () => ({ useAllServiceItems: () => ({ data: [] }) }))
@@ -46,6 +50,7 @@ const renderView = () =>
   )
 
 beforeEach(() => {
+  parts = [part('t1', 'Kupplungssatz', 'TO_ORDER')]
   tasks = [waiting]
   waitingSinceTheirDay = []
   canEdit = true
@@ -59,28 +64,28 @@ describe('UnplannedView', () => {
     expect(screen.getByText('26-0007')).toBeTruthy()
     expect(screen.getByText('Skoda Octavia')).toBeTruthy()
     expect(screen.getByText(/Kupplung ersetzen/)).toBeTruthy()
-    expect(screen.getByText('Material: Zu bestellen')).toBeTruthy()
+    expect(screen.getByText('Fehlt: Kupplungssatz')).toBeTruthy()
     expect(screen.getByText('Döme')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Einplanen' })).toBeTruthy()
   })
 
   it('waiting for parts in a group of their own – also still on a day that is over, with what is missing (FB-15)', () => {
-    const open = { ...waiting, id: 't2', status: 'RECEIVED', parts: null, customer: { displayName: 'Huber Peter' } } as unknown as AnyTask
+    const open = { ...waiting, id: 't2', status: 'RECEIVED', customer: { displayName: 'Huber Peter' } } as unknown as AnyTask
     const dayOver = {
       ...waiting,
       id: 't3',
       date: '2026-10-12',
       customer: { displayName: 'Meier Anna' },
-      parts: { description: 'Bremsscheiben vorne', status: 'ARRIVED', supplier: null, orderedOn: null },
     } as unknown as AnyTask
     tasks = [waiting, open]
     waitingSinceTheirDay = [dayOver]
+    parts = [part('t1', 'Kupplungssatz', 'TO_ORDER'), part('t3', 'Bremsscheiben vorne', 'ARRIVED')]
     renderView()
 
     const waitingList = screen.getByRole('list', { name: 'Aufträge, die auf Material warten' })
     // the parts arrived first – it can be planned now
     expect([...waitingList.querySelectorAll('li')].map((li) => li.querySelector('a')?.textContent)).toEqual(['Meier Anna', 'Muster Transport AG'])
-    expect(screen.getByText(/✓ Material angekommen – jetzt einplanen: Bremsscheiben vorne/)).toBeTruthy()
+    expect(screen.getByText('✓ Alle Teile geliefert – jetzt einplanen')).toBeTruthy()
     expect(screen.getByText('Termin war 12.10.2026')).toBeTruthy()
     expect(screen.getByText('Fehlt: Kupplungssatz')).toBeTruthy()
     expect(screen.getByRole('list', { name: 'Aufträge ohne Termin' }).textContent).toContain('Huber Peter')

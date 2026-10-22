@@ -1,3 +1,5 @@
+import type { ShoppingItem } from '../../shopping/shoppingApi'
+import { quantityText } from '../../shopping/shoppingText'
 import type { AnyTask } from '../taskApi'
 
 /**
@@ -11,12 +13,31 @@ export interface UnplannedGroups {
   withoutAppointment: AnyTask[]
 }
 
-/** Waiting, and the parts are here – it can be planned now */
-export const partsArrived = (task: AnyTask) => task.status === 'WAITING_FOR_PARTS' && task.parts?.status === 'ARRIVED'
+/** The parts of a task on the shopping list (FB-19) */
+export interface TaskParts {
+  /** what is not here yet: "2× Bremsscheiben vorne" */
+  missing: string[]
+  /** it has parts and all of them arrived – it can be planned now */
+  arrived: boolean
+}
 
-export function unplannedGroups(withoutAppointment: AnyTask[], waitingSinceTheirDay: AnyTask[]): UnplannedGroups {
+/** Per task: what is missing, and whether all its parts arrived – from all positions of the tasks */
+export function partsByTask(items: ShoppingItem[]): Map<string, TaskParts> {
+  const parts = new Map<string, TaskParts>()
+  for (const item of items) {
+    if (!item.task) continue
+    const task = parts.get(item.task.id) ?? parts.set(item.task.id, { missing: [], arrived: true }).get(item.task.id)!
+    if (item.status !== 'ARRIVED') {
+      task.missing.push(quantityText(item))
+      task.arrived = false
+    }
+  }
+  return parts
+}
+
+export function unplannedGroups(withoutAppointment: AnyTask[], waitingSinceTheirDay: AnyTask[], parts = new Map<string, TaskParts>()): UnplannedGroups {
   const waiting = (task: AnyTask) => task.status === 'WAITING_FOR_PARTS'
-  const arrived = (task: AnyTask) => (partsArrived(task) ? 0 : 1)
+  const arrived = (task: AnyTask) => (parts.get(task.id)?.arrived ? 0 : 1)
   // without a day they wait since they were taken, else since their day
   const since = (task: AnyTask) => task.date ?? task.createdAt.slice(0, 10)
   const waitingForParts = [...withoutAppointment.filter(waiting), ...waitingSinceTheirDay].sort(

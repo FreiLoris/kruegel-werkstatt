@@ -41,13 +41,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             ORDER BY t.appointment.date, t.appointment.time""")
     List<Task> waitingForPartsSince(LocalDate today);
 
-    /** Tasks whose parts are still to be ordered – the next appointment first (shopping list, 12c). */
-    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
-    @Query("""
-            SELECT t FROM Task t
-            WHERE t.parts.status = ch.kruegel.workshop.task.PartsStatus.TO_ORDER
-            ORDER BY t.appointment.date, t.appointment.time""")
-    List<Task> withPartsToOrder();
 
     /**
      * Tasks with their MFK appointment in [from, until) – the hints in the calendars (FB-10). Also

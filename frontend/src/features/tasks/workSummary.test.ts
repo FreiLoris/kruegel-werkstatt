@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ShoppingItem } from '../shopping/shoppingApi'
 import type { Task } from './taskApi'
 import { workItems, workSummary } from './workSummary'
 
@@ -25,13 +26,12 @@ describe('workSummary', () => {
         tireChange: true,
         mfk: true,
         serviceItemIds: ['oil', 'wipers'],
-        parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: null, orderedOn: null },
         workDescription: 'Geräusch hinten links',
       }),
       names,
     )
 
-    expect(summary).toBe('Radwechsel · MFK · Ölwechsel · Wischblätter · Material: Bremsscheiben · Geräusch hinten links')
+    expect(summary).toBe('Radwechsel · MFK · Ölwechsel · Wischblätter · Geräusch hinten links')
   })
 
   it('is empty when nothing is entered', () => {
@@ -47,15 +47,16 @@ describe('workItems', () => {
         tireChangeKind: 'WHEELS_STORED',
         mfk: true,
         mfkAppointment: '2026-10-15T10:00:00',
-        parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: null },
       }),
       new Map(),
+      // its parts on the shopping list (FB-19), fictitious
+      [{ description: 'Bremsscheiben', quantity: 2, status: 'ORDERED', partNumber: 'BS-1' } as ShoppingItem],
     )
 
     expect(items).toEqual([
       { label: 'Radwechsel', detail: 'Räder eingelagert' },
       { label: 'MFK', detail: 'Termin 15.10.2026, 10:00' },
-      { label: 'Material: Bremsscheiben', detail: 'Bestellt · Derendinger' },
+      { label: 'Material: 2× Bremsscheiben', detail: 'bestellt · Nr. BS-1' },
     ])
   })
 })

@@ -11,6 +11,7 @@ import { useInspectionStations } from '../../inspection-stations/inspectionStati
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
+import { useTaskShoppingItems } from '../../shopping/shoppingApi'
 import { useTaskTires } from '../../tire-hotel/tireHotelApi'
 import { useTask } from '../taskApi'
 import { TaskSheet } from './TaskSheet'
@@ -34,6 +35,8 @@ export function TaskSheetPage() {
   const stationList = useInspectionStations()
   const tireChange = !!task.data?.tireChange
   const tires = useTaskTires(id, tireChange)
+  // its parts on the shopping list (FB-19) – on the sheet with the work
+  const parts = useTaskShoppingItems(id)
   const employees = employeeList.data
   const lifts = liftList.data
   const serviceItems = serviceItemList.data
@@ -44,10 +47,10 @@ export function TaskSheetPage() {
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
   // all lists loaded – otherwise a quick print would say "Mechaniker: noch offen" although one is assigned
-  const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars && insurances && stations && (!tireChange || tires.data)
+  const ready = task.data && company.data && serviceItems && employees && lifts && bookings.data && cars && insurances && stations && parts.data && (!tireChange || tires.data)
   // any list that could not be loaded at all – otherwise the page would wait forever; a failed
   // background refetch keeps the sheet that is shown
-  const lists = [task, company, employeeList, liftList, serviceItemList, bookings, carList, insuranceList, stationList, ...(tireChange ? [tires] : [])]
+  const lists = [task, company, employeeList, liftList, serviceItemList, bookings, carList, insuranceList, stationList, parts, ...(tireChange ? [tires] : [])]
   const error = lists.find((list) => list.error && !list.data)?.error
   // the car still out (or not yet picked up) – a returned one is history, not for the mechanic
   const booking = bookings.data?.find((b) => !b.returnedAt)
@@ -87,6 +90,7 @@ export function TaskSheetPage() {
             mfkStation: stations?.find((s) => s.id === task.data.mfkStationId),
             mfkDriverName: employees?.find((e) => e.id === task.data.mfkDriverId)?.name,
             tires: tires.data,
+            parts: parts.data,
           }}
         />
       )}

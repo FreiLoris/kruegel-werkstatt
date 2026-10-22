@@ -38,7 +38,10 @@ class TaskSearchRepository {
                                       c.phone, replace(c.phone, ' ', ''), c.mobile, replace(c.mobile, ' ', ''),
                                       v.license_plate, replace(v.license_plate, ' ', ''), v.make, v.model, v.vin,
                                       v.swissgarage_number,
-                                      t.task_number, t.work_description, t.notes, t.parts_description)), search_fold(w.word)) = 0)
+                                      t.task_number, t.work_description, t.notes,
+                                      -- its parts on the shopping list (FB-19)
+                                      (SELECT string_agg(s.description, ' ') FROM shopping_item s WHERE s.task_id = t.id))),
+                                  search_fold(w.word)) = 0)
                         ORDER BY t.appointment_date IS NOT NULL,
                                  t.appointment_date < :today,
                                  CASE WHEN t.appointment_date >= :today THEN t.appointment_date END ASC,

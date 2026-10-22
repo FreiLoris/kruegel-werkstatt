@@ -52,9 +52,6 @@ export function ReviewStep({ customerStep, appointment: f, courtesyCar, onEdit, 
       mfk: f.mfk,
       mfkAppointment: f.mfk && f.mfkDate && f.mfkTime ? `${f.mfkDate}T${f.mfkTime}` : null,
       serviceItemIds: (serviceItems ?? []).filter((s) => f.serviceItemIds.includes(s.id)).map((s) => s.id),
-      parts: f.parts
-        ? { description: f.partsDescription.trim(), status: f.partsStatus, supplier: f.partsSupplier.trim() || null, orderedOn: f.partsOrderedOn || null }
-        : null,
     },
     new Map((serviceItems ?? []).map((s) => [s.id, s.name])),
   )

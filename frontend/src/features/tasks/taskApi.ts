@@ -19,7 +19,6 @@ export const isPlanned = (task: AnyTask): task is Task => task.date !== null
 export type TaskStatus = Task['status']
 export type TaskRequest = components['schemas']['TaskRequest']
 export type TireChangeKind = NonNullable<Task['tireChangeKind']>
-export type PartsStatus = NonNullable<Task['parts']>['status']
 
 /** Topic for query keys and live updates – same text as in the backend. */
 const TOPIC = 'tasks'
@@ -43,11 +42,6 @@ export const TIRE_CHANGE_KINDS: Record<TireChangeKind, string> = {
   TIRES_BROUGHT: 'Reifen mitgebracht',
 }
 
-export const PARTS_STATUS: Record<PartsStatus, string> = {
-  TO_ORDER: 'Zu bestellen',
-  ORDERED: 'Bestellt',
-  ARRIVED: 'Angekommen',
-}
 
 /** Query key of a period – also used to update the week view right away when moving a card. */
 export function tasksBetweenKey(from: string, to: string) {
@@ -197,23 +191,7 @@ export function useRemoveAppointment() {
   })
 }
 
-/** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
-export function usePartsToOrder() {
-  return useQuery({
-    queryKey: [TOPIC, 'parts-to-order'],
-    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/parts-to-order', { signal })),
-  })
-}
 
-/** Parts ordered / arrived – no version, like the status. */
-export function useChangePartsStatus() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: PartsStatus }) =>
-      dataOrThrow(await api.PUT('/api/tasks/{id}/parts-status', { params: { path: { id } }, body: { status } })),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
-  })
-}
 
 /** Change the task number – it can be changed, not removed. */
 export function useAssignTaskNumber() {

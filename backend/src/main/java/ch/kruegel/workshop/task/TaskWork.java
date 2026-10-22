@@ -7,14 +7,14 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
- * What is done on the vehicle – everything ticked in the wizard ends up on the task sheet (F1).
+ * What is done on the vehicle – everything ticked in the wizard ends up on the task sheet (F1). The
+ * parts to order are positions of the shopping list (FB-19).
  *
  * @param tireChange      Radwechsel
  * @param tireChangeKind  which wheels/tires – only with a tire change, may still be open
  * @param mfk             vehicle goes to the official inspection (MFK)
  * @param mfkAppointment  appointment at the inspection station – only with MFK, may still be open
  * @param serviceItems    ticked service items (Ölwechsel, Wischblätter, …)
- * @param parts           parts to order; {@code null} = none needed
  * @param description     further work as free text ("Arbeiten")
  */
 public record TaskWork(
@@ -23,7 +23,6 @@ public record TaskWork(
         boolean mfk,
         LocalDateTime mfkAppointment,
         Set<ServiceItem> serviceItems,
-        PartsOrder parts,
         String description) {
 
     static final int DESCRIPTION_MAX = 2000;
@@ -41,6 +40,6 @@ public record TaskWork(
 
     /** Only free text, nothing ticked. */
     public static TaskWork described(String description) {
-        return new TaskWork(false, null, false, null, Set.of(), null, description);
+        return new TaskWork(false, null, false, null, Set.of(), description);
     }
 }

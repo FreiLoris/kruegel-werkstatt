@@ -1,7 +1,7 @@
 import { previousWorkingDay } from '../../../lib/calendar'
 import { addDays, addMinutes, formatDate, minutesBetween } from '../../../lib/format'
 import type { Schedule } from '../day/timeGrid'
-import type { AnyTask, PartsStatus, TaskRequest, TireChangeKind } from '../taskApi'
+import type { AnyTask, TaskRequest, TireChangeKind } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
 /**
@@ -47,11 +47,6 @@ export interface AppointmentForm {
   /** "Service" ticked – only then the service items are offered; unticking clears them ({@link withService}) */
   service: boolean
   serviceItemIds: string[]
-  parts: boolean
-  partsDescription: string
-  partsStatus: PartsStatus
-  partsSupplier: string
-  partsOrderedOn: string
   workDescription: string
   notes: string
   /** "Versicherungsfall" (FB-06): the insurance must then be chosen, the claim number may follow later */
@@ -107,11 +102,6 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   mfkStationId: '',
   service: false,
   serviceItemIds: [],
-  parts: false,
-  partsDescription: '',
-  partsStatus: 'TO_ORDER',
-  partsSupplier: '',
-  partsOrderedOn: '',
   workDescription: '',
   notes: '',
   insuranceCase: false,
@@ -309,7 +299,6 @@ export function appointmentErrors(form: AppointmentForm): AppointmentErrors {
   if (form.mfk && form.mfkDate && !form.mfkTime) errors.mfkTime = 'Uhrzeit zum Datum angeben – oder beide leer lassen'
   // "Service" ticked but nothing chosen would be saved as "no service" without anyone noticing
   if (form.service && form.serviceItemIds.length === 0) errors.serviceItemIds = 'Mindestens eine Leistung wählen – oder «Service» abwählen'
-  if (form.parts && !form.partsDescription.trim()) errors.partsDescription = 'Was muss bestellt werden?'
   if (form.insuranceCase && !form.insuranceId) errors.insuranceId = 'Versicherung wählen – oder «Versicherungsfall» abwählen'
   return errors
 }
@@ -340,14 +329,6 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     mfkDriverId: form.mfk ? form.mfkDriverId || undefined : undefined,
     mfkStationId: form.mfk ? form.mfkStationId || undefined : undefined,
     serviceItemIds: form.serviceItemIds,
-    parts: form.parts
-      ? {
-          description: form.partsDescription.trim(),
-          status: form.partsStatus,
-          supplier: text(form.partsSupplier),
-          orderedOn: form.partsOrderedOn || undefined,
-        }
-      : undefined,
     workDescription: text(form.workDescription),
     notes: text(form.notes),
     // unticked: what was chosen before is not sent – the task is no insurance case any more
@@ -398,11 +379,6 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     mfkStationId: task.mfkStationId ?? '',
     service: task.serviceItemIds.length > 0,
     serviceItemIds: task.serviceItemIds,
-    parts: task.parts !== null,
-    partsDescription: task.parts?.description ?? '',
-    partsStatus: task.parts?.status ?? 'TO_ORDER',
-    partsSupplier: task.parts?.supplier ?? '',
-    partsOrderedOn: task.parts?.orderedOn ?? '',
     workDescription: task.workDescription ?? '',
     notes: task.notes ?? '',
     insuranceCase: !!task.insuranceId,

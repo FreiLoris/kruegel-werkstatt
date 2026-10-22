@@ -14,6 +14,7 @@ vi.mock('../tasks/taskApi', () => ({
   useTasksWithoutAppointment: () => ({ data: tasks }),
   useTasksWaitingForParts: () => ({ data: waiting }),
 }))
+vi.mock('../shopping/shoppingApi', () => ({ useTasksShoppingItems: () => ({ data: [], error: null }) }))
 
 const renderLine = () =>
   render(

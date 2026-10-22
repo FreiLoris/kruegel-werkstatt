@@ -72,10 +72,6 @@
   overflow-wrap: anywhere;
 }
 
-.parts {
-  color: var(--color-warning);
-}
-
 .action {
   margin-left: auto;
 }

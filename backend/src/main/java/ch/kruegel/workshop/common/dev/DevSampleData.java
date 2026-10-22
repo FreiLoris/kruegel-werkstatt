@@ -27,8 +27,6 @@ import ch.kruegel.workshop.shopping.ShoppingItem;
 import ch.kruegel.workshop.shopping.ShoppingItemDetails;
 import ch.kruegel.workshop.shopping.ShoppingItemRepository;
 import ch.kruegel.workshop.shopping.ShoppingStatus;
-import ch.kruegel.workshop.task.PartsOrder;
-import ch.kruegel.workshop.task.PartsStatus;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskDetails;
 import ch.kruegel.workshop.task.TaskRepository;
@@ -300,22 +298,20 @@ class DevSampleData implements ApplicationRunner {
 
         Task wheels = sample.add(golf, new Appointment(today, LocalTime.of(7, 30), today.atTime(8, 30), null, null, true),
                 mechanic.apply(0), lift.apply(0),
-                new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, "Winterräder montieren"), null);
+                new TaskWork(true, TireChangeKind.WHEELS_STORED, false, null, Set.of(), "Winterräder montieren"), null);
         wheels.changeStatus(TaskStatus.IN_PROGRESS);
 
         Task inspection = sample.add(sprinter, until(Appointment.at(today, LocalTime.of(8, 0)), 11, 0), mechanic.apply(1), lift.apply(1),
-                new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null, null), "Schlüssel im Briefkasten");
+                new TaskWork(false, null, true, today.atTime(10, 0), oilAndBrakes, null), "Schlüssel im Briefkasten");
         // to the standard station (the migration creates it), driven by the mechanic of the task
         inspection.mfkTrip(stations.findStandard().orElse(null), null, mechanic.apply(1));
 
         Task waiting = sample.add(octavia, new Appointment(today, LocalTime.of(10, 0), today.plusDays(1).atTime(12, 0), null, null, false), mechanic.apply(2), lift.apply(2),
-                new TaskWork(false, null, false, null, Set.of(),
-                        new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", today.minusDays(1)),
-                        "Bremsen vorne ersetzen"), null);
+                new TaskWork(false, null, false, null, Set.of(), "Bremsen vorne ersetzen"), null);
         waiting.changeStatus(TaskStatus.WAITING_FOR_PARTS);
 
         Task done = sample.add(yaris, Appointment.at(today, LocalTime.of(13, 30)), mechanic.apply(3), lift.apply(0),
-                new TaskWork(true, TireChangeKind.TIRES_BROUGHT, false, null, Set.of(), null, null), null);
+                new TaskWork(true, TireChangeKind.TIRES_BROUGHT, false, null, Set.of(), null), null);
         done.changeStatus(TaskStatus.DONE);
 
         // tomorrow: one with the vehicle still open, one without lift that arrives the evening before
@@ -325,8 +321,8 @@ class DevSampleData implements ApplicationRunner {
                 today.plusDays(1).atTime(16, 0), false), mechanic.apply(1), null, TaskWork.described("Klimaanlage prüfen"), null);
 
         // taken, but not planned: the parts have to arrive first (12d-3)
-        sample.add(octavia, Appointment.NONE, mechanic.apply(2), null,
-                new TaskWork(false, null, false, null, Set.of(), PartsOrder.toOrder("Kupplungssatz"), "Kupplung ersetzen"),
+        Task clutch = sample.add(octavia, Appointment.NONE, mechanic.apply(2), null,
+                new TaskWork(false, null, false, null, Set.of(), "Kupplung ersetzen"),
                 "Termin abmachen, sobald die Teile da sind");
 
         Task yesterday = sample.add(sprinter, Appointment.at(today.minusDays(1), LocalTime.of(7, 30)), mechanic.apply(0),
@@ -346,6 +342,13 @@ class DevSampleData implements ApplicationRunner {
         }
         tasks.saveAll(sample.created);
         log.info("Dev sample data created: {} tasks", sample.created.size());
+
+        // their parts on the shopping list (FB-19): ordered yesterday, and one still to order
+        shoppingItems.saveAll(List.of(
+                new ShoppingItem(new ShoppingItemDetails("Bremsscheiben vorne", null, 2, acceptedBy, null, waiting, null, null,
+                        today.minusDays(1), null), ShoppingStatus.ORDERED, today),
+                new ShoppingItem(new ShoppingItemDetails("Kupplungssatz", null, 1, acceptedBy, null, clutch, null, null, null, null),
+                        ShoppingStatus.TO_ORDER, today)));
     }
 
     /** The same appointment, ending at the given time of its day – realistic durations in the sample */

@@ -99,9 +99,6 @@ public class Task extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "service_item_id"))
     private Set<ServiceItem> serviceItems = new HashSet<>();
 
-    /** Empty (null) = no parts needed */
-    @Embedded
-    private PartsOrder parts;
 
     private String workDescription;
     private String notes;
@@ -132,13 +129,6 @@ public class Task extends BaseEntity {
         this.status = Objects.requireNonNull(newStatus, "status");
     }
 
-    /** The parts order moves on (ordered, arrived) – only for a task that needs parts. */
-    public void changeParts(PartsOrder newParts) {
-        if (parts == null) {
-            throw new IllegalStateException("Task has no parts order");
-        }
-        this.parts = Objects.requireNonNull(newParts, "parts");
-    }
 
     /** Who took the order from the customer – required from 12d on, so it cannot be removed again. */
     public void acceptedBy(Employee employee) {
@@ -237,7 +227,6 @@ public class Task extends BaseEntity {
         // change the managed collection instead of replacing it – Hibernate tracks it
         this.serviceItems.clear();
         this.serviceItems.addAll(work.serviceItems());
-        this.parts = work.parts();
         this.workDescription = work.description();
         this.notes = details.notes();
     }
@@ -247,7 +236,7 @@ public class Task extends BaseEntity {
     }
 
     public TaskWork getWork() {
-        return new TaskWork(tireChange, tireChangeKind, mfk, mfkAppointment, serviceItems, parts, workDescription);
+        return new TaskWork(tireChange, tireChangeKind, mfk, mfkAppointment, serviceItems, workDescription);
     }
 
     public Employee getAcceptedBy() {

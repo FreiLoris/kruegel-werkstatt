@@ -8,10 +8,10 @@ import { formatDate, formatTimestamp } from '../../../lib/format'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { NameBadge } from '../../employees/NameBadge'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
-import { PARTS_STATUS, type AnyTask } from '../taskApi'
+import type { AnyTask } from '../taskApi'
 import { TaskStatusBadge } from '../TaskStatusBadge'
 import { workSummary } from '../workSummary'
-import { partsArrived, unplannedTotal } from './unplannedGroups'
+import { unplannedTotal, type TaskParts } from './unplannedGroups'
 import { useUnplanned } from './useUnplanned'
 import styles from './UnplannedView.module.css'
 
@@ -23,7 +23,7 @@ import styles from './UnplannedView.module.css'
  * over, where they would go under; the ones whose parts arrived first.
  */
 export function UnplannedView() {
-  const { data: groups, error } = useUnplanned()
+  const { data: groups, parts, error } = useUnplanned()
 
   if (error) return <p className="muted">Aufträge konnten nicht geladen werden: {error.message}</p>
   if (!groups) return <p className="muted">Lade Aufträge …</p>
@@ -36,7 +36,7 @@ export function UnplannedView() {
           <h2 id="waiting-title" className={styles.groupTitle}>
             Wartet auf Material
           </h2>
-          <TaskList tasks={groups.waitingForParts} label="Aufträge, die auf Material warten" />
+          <TaskList tasks={groups.waitingForParts} parts={parts} label="Aufträge, die auf Material warten" />
         </section>
       )}
       {groups.withoutAppointment.length > 0 && (
@@ -44,14 +44,14 @@ export function UnplannedView() {
           <h2 id="unplanned-title" className={styles.groupTitle}>
             Noch nicht eingeplant
           </h2>
-          <TaskList tasks={groups.withoutAppointment} label="Aufträge ohne Termin" />
+          <TaskList tasks={groups.withoutAppointment} parts={parts} label="Aufträge ohne Termin" />
         </section>
       )}
     </div>
   )
 }
 
-function TaskList({ tasks, label }: { tasks: AnyTask[]; label: string }) {
+function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string, TaskParts>; label: string }) {
   const { data: employees } = useAllEmployees()
   const { data: serviceItems } = useAllServiceItems()
   const canEdit = useCanEdit()
@@ -63,7 +63,7 @@ function TaskList({ tasks, label }: { tasks: AnyTask[]; label: string }) {
       {tasks.map((task) => {
         const mechanic = employees?.find((e) => e.id === task.mechanicId)
         const work = workSummary(task, names)
-        const arrived = partsArrived(task)
+        const ofTask = parts.get(task.id)
         return (
           <li key={task.id} className={styles.item}>
             <div className={styles.head}>
@@ -78,15 +78,14 @@ function TaskList({ tasks, label }: { tasks: AnyTask[]; label: string }) {
               {task.vehicle ? task.vehicle.description : <span className="muted">Fahrzeug offen</span>}
             </div>
             {work && <p className={styles.work}>{work}</p>}
-            {task.status === 'WAITING_FOR_PARTS' && task.parts && (
-              <p className={arrived ? styles.arrived : styles.missing}>
-                {arrived ? '✓ Material angekommen – jetzt einplanen: ' : 'Fehlt: '}
-                {task.parts.description}
+            {/* its parts on the shopping list (FB-19): what is missing – or all here, plan it now */}
+            {ofTask && (
+              <p className={ofTask.arrived ? styles.arrived : styles.missing}>
+                {ofTask.arrived ? '✓ Alle Teile geliefert – jetzt einplanen' : `Fehlt: ${ofTask.missing.join(', ')}`}
               </p>
             )}
             <div className={styles.foot}>
               {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} />}
-              {task.parts && <span className={styles.parts}>Material: {PARTS_STATUS[task.parts.status]}</span>}
               {task.date ? (
                 <span className="muted">Termin war {formatDate(task.date)}</span>
               ) : (

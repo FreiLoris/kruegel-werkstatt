@@ -65,8 +65,7 @@ class TaskPersistenceTest {
         Appointment appointment = new Appointment(DAY, LocalTime.of(8, 0), DAY.atTime(11, 30),
                 DAY.minusDays(1).atTime(18, 0), DAY.atTime(16, 30), true);
         TaskWork work = new TaskWork(true, TireChangeKind.WHEELS_STORED, true, DAY.atTime(10, 0),
-                Set.of(oil, wipers), new PartsOrder("Bremsscheiben vorne", PartsStatus.ORDERED, "Derendinger", DAY.minusDays(3)),
-                "Bremsen vorne ersetzen");
+                Set.of(oil, wipers), "Bremsen vorne ersetzen");
         Task task = new Task(new TaskDetails(huber, golf, appointment, reto, lift, work, "Kunde ruft an"));
         task.assignTaskNumber("A-17");
         task.changeStatus(TaskStatus.WAITING_FOR_PARTS);
@@ -86,14 +85,13 @@ class TaskPersistenceTest {
     }
 
     @Test
-    void minimalTaskHasNoPartsAndNoVehicle() {
+    void minimalTaskHasNothingTickedAndNoVehicle() {
         Task task = new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(7, 30)), null, null,
                 TaskWork.described(null), null));
 
         Task loaded = saveAndReload(task);
 
         assertThat(loaded.getVehicle()).isNull();
-        assertThat(loaded.getWork().parts()).isNull();
         assertThat(loaded.getWork().serviceItems()).isEmpty();
         assertThat(loaded.getAppointment().waitingCustomer()).isFalse();
     }
@@ -112,7 +110,7 @@ class TaskPersistenceTest {
     @Test
     void deletingATaskRemovesItsTickedServiceItemsButNotTheServiceItems() {
         Task task = new Task(new TaskDetails(huber, null, Appointment.at(DAY, LocalTime.of(8, 0)), null, null,
-                new TaskWork(false, null, false, null, Set.of(oil), null, null), null));
+                new TaskWork(false, null, false, null, Set.of(oil), null), null));
         tasks.saveAndFlush(task);
 
         tasks.delete(task);

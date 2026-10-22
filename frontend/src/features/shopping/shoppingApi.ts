@@ -32,10 +32,21 @@ export function useShoppingItems(arrived = false) {
 }
 
 /** All positions of a task, whatever their state (FB-19) */
-export function useTaskShoppingItems(taskId: string) {
+export function useTaskShoppingItems(taskId: string | undefined) {
   return useQuery({
     queryKey: [TOPIC, 'task', taskId],
-    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/shopping-items', { params: { query: { taskId } }, signal })),
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/shopping-items', { params: { query: { taskId: taskId! } }, signal })),
+    enabled: !!taskId,
+  })
+}
+
+/** All positions of several tasks – what each order of "Ohne Termin" waits for (FB-15, FB-19) */
+export function useTasksShoppingItems(taskIds: string[]) {
+  const ids = [...taskIds].sort()
+  return useQuery({
+    queryKey: [TOPIC, 'tasks', ids],
+    queryFn: async ({ signal }) =>
+      ids.length === 0 ? [] : dataOrThrow(await api.GET('/api/shopping-items', { params: { query: { taskIds: ids } }, signal })),
   })
 }
 

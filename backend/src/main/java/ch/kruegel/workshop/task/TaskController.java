@@ -91,11 +91,6 @@ class TaskController {
         return service.waitingForParts();
     }
 
-    @Operation(summary = "Tasks whose parts are still to be ordered", description = "The next appointment first – shown on the shopping list.")
-    @GetMapping("/parts-to-order")
-    List<TaskDto> withPartsToOrder() {
-        return service.withPartsToOrder();
-    }
 
     @Operation(summary = "Single task")
     @GetMapping("/{id}")
@@ -137,12 +132,6 @@ class TaskController {
         return service.removeAppointment(id);
     }
 
-    @Operation(summary = "Parts ordered / arrived",
-            description = "No version needed. \"Ordered\" remembers today as the day of the order if none is entered.")
-    @PutMapping("/{id}/parts-status")
-    TaskDto changePartsStatus(@PathVariable UUID id, @Valid @RequestBody PartsStatusRequest request) {
-        return service.changePartsStatus(id, request.status());
-    }
 
     @Operation(summary = "Correct the task number", description = "The app assigns it when the task is created. Must be unique, cannot be removed.")
     @PutMapping("/{id}/task-number")

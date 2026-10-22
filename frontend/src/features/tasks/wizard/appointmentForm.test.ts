@@ -140,10 +140,6 @@ describe('appointmentErrors', () => {
     expect(appointmentErrors({ ...THURSDAY, endDate: '2026-10-16', endTime: '07:00' })).toEqual({})
   })
 
-  it('parts need a description', () => {
-    expect(appointmentErrors({ ...THURSDAY, parts: true }).partsDescription).toBeDefined()
-  })
-
   it('"Service" ticked needs at least one item – otherwise it would be saved as no service', () => {
     expect(appointmentErrors(withService(THURSDAY, true)).serviceItemIds).toBeDefined()
     expect(appointmentErrors({ ...withService(THURSDAY, true), serviceItemIds: ['oil'] })).toEqual({})
@@ -180,8 +176,6 @@ describe('toTaskRequest', () => {
       mfk: true,
       mfkDate: '2026-10-15',
       mfkTime: '',
-      parts: false,
-      partsDescription: 'vergessen',
       liftId: 'l1',
       workDescription: '  ',
     }
@@ -207,7 +201,6 @@ describe('toTaskRequest', () => {
       mfkDriverId: undefined,
       mfkStationId: undefined,
       serviceItemIds: [],
-      parts: undefined,
       workDescription: undefined,
       notes: undefined,
       acceptedById: 'r',
@@ -289,7 +282,6 @@ describe('formFromTask', () => {
     mfk: true,
     mfkAppointment: '2026-10-15T10:30:00',
     serviceItemIds: ['oil'],
-    parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: null },
     workDescription: 'Geräusch',
     notes: null,
   } as unknown as Task
@@ -311,7 +303,6 @@ describe('formFromTask', () => {
       tireChangeKind: 'WHEELS_STORED',
       mfkAppointment: '2026-10-15T10:30',
       serviceItemIds: ['oil'],
-      parts: { description: 'Bremsscheiben', status: 'ORDERED', supplier: 'Derendinger', orderedOn: undefined },
       workDescription: 'Geräusch',
       notes: undefined,
       version: 3,
@@ -404,7 +395,7 @@ describe('an order without appointment', () => {
   })
 
   it('opens for editing with the usual defaults, ready to be planned', () => {
-    const saved = { date: null, time: null, endAt: null, arrivesEarlier: null, readyBy: null, mfkAppointment: null, serviceItemIds: [], parts: null } as unknown as AnyTask
+    const saved = { date: null, time: null, endAt: null, arrivesEarlier: null, readyBy: null, mfkAppointment: null, serviceItemIds: [] } as unknown as AnyTask
 
     expect(formFromTask(saved)).toMatchObject({ noAppointment: true, date: '', time: '08:00', endDate: '', endTime: '09:00' })
   })

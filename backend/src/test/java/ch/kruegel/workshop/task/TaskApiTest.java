@@ -99,7 +99,6 @@ class TaskApiTest {
                 "arrivesEarlier": "2026-10-14T18:00", "readyBy": "2026-10-15T16:30", "waitingCustomer": true,
                 "tireChange": true, "tireChangeKind": "WHEELS_STORED", "mfk": true, "mfkAppointment": "2026-10-15T10:00",
                 "serviceItemIds": ["%s", "%s"],
-                "parts": { "description": "Bremsscheiben vorne", "status": "ORDERED", "supplier": "Derendinger" },
                 "workDescription": "Bremsen vorne", "notes": "Kunde ruft an"
                 """.formatted(golf.getId(), reto.getId(), lift1.getId(), wipers.getId(), oil.getId()));
 
@@ -113,7 +112,6 @@ class TaskApiTest {
         // in the order of the service item list, not of the request
         assertThat(response).bodyJson().extractingPath("$.serviceItemIds").asArray()
                 .containsExactly(oil.getId().toString(), wipers.getId().toString());
-        assertThat(response).bodyJson().extractingPath("$.parts.supplier").isEqualTo("Derendinger");
         assertThat(response).bodyJson().extractingPath("$.createdBy").isEqualTo(chef);
     }
 
@@ -135,7 +133,6 @@ class TaskApiTest {
     void detailsOnlyWithTheirWork() {
         assertFieldError(create("\"tireChangeKind\": \"TIRES_BROUGHT\""), "tireChangeKind");
         assertFieldError(create("\"mfkAppointment\": \"2026-10-15T10:00\""), "mfkAppointment");
-        assertFieldError(create("\"parts\": { \"description\": \" \", \"status\": \"TO_ORDER\" }"), "parts.description");
     }
 
     @Test
@@ -207,26 +204,6 @@ class TaskApiTest {
 
         assertThat(response).bodyJson().extractingPath("$.status").isEqualTo("IN_PROGRESS");
         assertFieldError(send("PUT", "/api/tasks/" + id + "/status", "{ \"status\": null }"), "status");
-    }
-
-    @Test
-    void partsToOrderAreListedUntilTheyAreOrdered() {
-        String waiting = idOf(createAt("09:00", "\"parts\": { \"description\": \"Bremsscheiben\", \"status\": \"TO_ORDER\" }"));
-        createAt("10:00", "\"parts\": { \"description\": \"Filter\", \"status\": \"ORDERED\" }");
-        String without = idOf(createAt("11:00", null));
-
-        assertThat(mvc.get().uri("/api/tasks/parts-to-order").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(waiting);
-
-        MvcTestResult ordered = send("PUT", "/api/tasks/" + waiting + "/parts-status", "{ \"status\": \"ORDERED\" }");
-        assertThat(ordered).bodyJson().extractingPath("$.parts.status").isEqualTo("ORDERED");
-        // the day of the order is remembered
-        assertThat(ordered).bodyJson().extractingPath("$.parts.orderedOn").isNotNull();
-        assertThat(mvc.get().uri("/api/tasks/parts-to-order").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
-        // ticked off by mistake: back on the list, the day forgotten
-        assertThat(send("PUT", "/api/tasks/" + waiting + "/parts-status", "{ \"status\": \"TO_ORDER\" }"))
-                .bodyJson().extractingPath("$.parts.orderedOn").isNull();
-        // a task without parts has nothing to order
-        assertThat(send("PUT", "/api/tasks/" + without + "/parts-status", "{ \"status\": \"ORDERED\" }")).hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test

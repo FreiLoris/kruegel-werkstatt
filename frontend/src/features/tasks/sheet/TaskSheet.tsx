@@ -10,6 +10,7 @@ import { MfkBlock } from './MfkBlock'
 import { Block, Box, Facts } from './SheetParts'
 import styles from './TaskSheet.module.css'
 import { TireBlock } from './TireBlock'
+import type { ShoppingItem } from '../../shopping/shoppingApi'
 
 export interface SheetLookups {
   /** name per service item ID */
@@ -27,6 +28,8 @@ export interface SheetLookups {
   mfkDriverName?: string
   /** the sets of the tire change from the tire hotel (13q) */
   tires?: TaskTires
+  /** its parts on the shopping list (FB-19) – listed with the work */
+  parts?: ShoppingItem[]
 }
 
 /**
@@ -38,7 +41,7 @@ export interface SheetLookups {
 export function TaskSheet({ task, company, lookups }: { task: AnyTask; company: Company; lookups: SheetLookups }) {
   const c = task.customer
   const v = task.vehicle
-  const items = workItems(task, lookups.serviceItemNames)
+  const items = workItems(task, lookups.serviceItemNames, lookups.parts)
   const blocks = sheetBlocks(task)
   const address = [c.addition, c.street, [c.postalCode, c.city].filter(Boolean).join(' ')].filter(Boolean)
   const companyLine = [company.street, [company.postalCode, company.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')

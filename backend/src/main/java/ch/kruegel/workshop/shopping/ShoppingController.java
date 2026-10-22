@@ -44,10 +44,11 @@ class ShoppingController {
 
     @Operation(summary = "Positions of the shopping list", description = "Not arrived yet (default): to order first, then ordered – "
             + "each oldest first; `arrived=true`: the latest " + ShoppingService.ARRIVED_LIMIT + " arrived ones. "
-            + "`taskId`: all positions of that task, whatever their state.")
+            + "`taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").")
     @GetMapping
-    List<ShoppingItemDto> list(@RequestParam(defaultValue = "false") boolean arrived, @RequestParam(required = false) UUID taskId) {
-        return service.list(arrived, taskId);
+    List<ShoppingItemDto> list(@RequestParam(defaultValue = "false") boolean arrived, @RequestParam(required = false) UUID taskId,
+                               @RequestParam(required = false) List<UUID> taskIds) {
+        return service.list(arrived, taskId, taskIds);
     }
 
     @Operation(summary = "One position")

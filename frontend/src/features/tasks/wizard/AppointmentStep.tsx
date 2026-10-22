@@ -1,14 +1,12 @@
-import { Pencil } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
-import { Button } from '../../../components/ui/Button'
+import type { ReactNode } from 'react'
 import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fields'
-import { formatDate, formatDuration } from '../../../lib/format'
+import { formatDuration } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
-import { PARTS_STATUS, TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
+import { TIRE_CHANGE_KINDS, type TireChangeKind } from '../taskApi'
 import {
   appointmentErrors,
   appointmentMinutes,
@@ -26,7 +24,6 @@ import {
 import styles from './AppointmentStep.module.css'
 import { CapacityOverview } from './CapacityOverview'
 import { AppointmentWarnings } from './AppointmentWarnings'
-import { PartsDialog } from './PartsDialog'
 import { SameVehicleHint } from './SameVehicleHint'
 import { useAppointmentWarnings } from './useAppointmentWarnings'
 
@@ -58,8 +55,6 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const { data: insurances } = useInsurances()
   const { data: stations } = useInspectionStations()
   const holidayDates = new Set(holidays.keys())
-  // the material order is entered in its own window; the form only changes on "Übernehmen"
-  const [partsOpen, setPartsOpen] = useState(false)
   const errors = appointmentErrors(form)
   const warnings = useAppointmentWarnings(form, taskId)
   // "missing" errors only after trying to continue – not while the user is still filling in
@@ -355,42 +350,6 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                 </div>
               )}
             </>
-          )}
-
-          {/* ticking opens the window; the tick only stays once something was entered there */}
-          <Checkbox
-            label="Material bestellen"
-            checked={form.parts}
-            onChange={(e) => (e.target.checked ? setPartsOpen(true) : set('parts', false))}
-          />
-          {form.parts && (
-            <div className={`${styles.indented} ${styles.partsSummary}`}>
-              <p className={styles.partsText}>
-                <strong>{form.partsDescription}</strong>
-                {' · '}
-                {PARTS_STATUS[form.partsStatus]}
-                {form.partsSupplier.trim() && ` · ${form.partsSupplier.trim()}`}
-                {form.partsOrderedOn && ` · bestellt am ${formatDate(form.partsOrderedOn)}`}
-              </p>
-              <Button small icon={Pencil} onClick={() => setPartsOpen(true)}>
-                Ändern
-              </Button>
-            </div>
-          )}
-          {partsOpen && (
-            <PartsDialog
-              initial={{
-                partsDescription: form.partsDescription,
-                partsStatus: form.partsStatus,
-                partsSupplier: form.partsSupplier,
-                partsOrderedOn: form.partsOrderedOn,
-              }}
-              onApply={(parts) => {
-                onChange({ ...form, parts: true, ...parts })
-                setPartsOpen(false)
-              }}
-              onClose={() => setPartsOpen(false)}
-            />
           )}
 
           <TextArea

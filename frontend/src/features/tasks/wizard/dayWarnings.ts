@@ -29,7 +29,7 @@ const time = (dateTime: string) => dateTime.slice(11, 16)
  */
 export function dayWarnings(form: AppointmentForm, context: WarningContext): string[] {
   const warnings: string[] = []
-  const work = form.tireChange || form.mfk || form.service || form.parts || form.workDescription.trim() !== ''
+  const work = form.tireChange || form.mfk || form.service || form.workDescription.trim() !== ''
   if (!form.noAppointment && form.date) {
     if (form.date < context.today) warnings.push(`Das Datum (${formatDate(form.date)}) liegt in der Vergangenheit.`)
     const holiday = context.holidays.get(form.date)
