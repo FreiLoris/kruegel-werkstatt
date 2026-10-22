@@ -10,10 +10,11 @@ const waiting = {
   id: 't1',
   taskNumber: '26-0007',
   status: 'WAITING_FOR_PARTS',
+  vehicleLocation: 'AT_CUSTOMER',
   date: null,
   time: null,
   endAt: null,
-  customer: { displayName: 'Muster Transport AG' },
+  customer: { displayName: 'Muster Transport AG', phone: '052 000 00 00', mobile: null },
   vehicle: { licensePlate: 'ZH 900 003', description: 'Skoda Octavia' },
   mechanicId: 'm1',
   tireChange: false,
@@ -38,6 +39,7 @@ vi.mock('../taskApi', async (importOriginal) => ({
 let parts: ShoppingItem[] = []
 const part = (taskId: string, description: string, status: ShoppingItem['status']) => ({ description, quantity: 1, status, task: { id: taskId } }) as ShoppingItem
 vi.mock('../../shopping/shoppingApi', () => ({ useTasksShoppingItems: () => ({ data: parts, error: null }) }))
+vi.mock('../VehicleLocationSwitch', () => ({ TaskVehicleLocation: ({ task }: { task: AnyTask }) => <span>Standort {task.vehicleLocation}</span> }))
 vi.mock('../../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit }))
 vi.mock('../../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [{ id: 'm1', name: 'Döme', color: '#9fdfaa' }] }) }))
 vi.mock('../../service-items/serviceItemApi', () => ({ useAllServiceItems: () => ({ data: [] }) }))
@@ -100,5 +102,26 @@ describe('UnplannedView', () => {
     tasks = []
     renderView()
     expect(screen.getByText(/alles ist eingeplant/)).toBeTruthy()
+  })
+
+  it('where the vehicle is: filtered, the number to call, "Jetzt aufbieten" when nothing is missing (FB-16)', () => {
+    const here = { ...waiting, id: 't2', status: 'RECEIVED', vehicleLocation: 'AT_WORKSHOP', customer: { displayName: 'Huber Peter', phone: null, mobile: null } } as unknown as AnyTask
+    const ready = { ...waiting, id: 't3', date: '2026-10-12', customer: { displayName: 'Meier Anna', phone: null, mobile: '079 000 00 00' } } as unknown as AnyTask
+    tasks = [waiting, here]
+    waitingSinceTheirDay = [ready]
+    parts = [part('t1', 'Kupplungssatz', 'TO_ORDER'), part('t3', 'Bremsscheiben vorne', 'ARRIVED')]
+    render(
+      <MemoryRouter initialEntries={['/tasks?view=unplanned&where=customer']}>
+        <UnplannedView />
+      </MemoryRouter>,
+    )
+
+    // with the customer only: Huber's car is here
+    expect(screen.queryByText('Huber Peter')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Beim Kunden – aufbieten (2)' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('link', { name: /052 000 00 00/ }).getAttribute('href')).toBe('tel:0520000000')
+    // parts arrived, car with the customer: call in now – the one still missing parts not
+    expect(screen.getAllByText('Jetzt aufbieten')).toHaveLength(1)
+    expect(screen.getByText('Jetzt aufbieten').closest('li')?.textContent).toContain('Meier Anna')
   })
 })

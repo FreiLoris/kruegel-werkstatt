@@ -26,6 +26,7 @@ import { CapacityOverview } from './CapacityOverview'
 import { AppointmentWarnings } from './AppointmentWarnings'
 import { SameVehicleHint } from './SameVehicleHint'
 import { useAppointmentWarnings } from './useAppointmentWarnings'
+import { VehicleLocationSwitch } from '../VehicleLocationSwitch'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -209,6 +210,11 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
         </Section>
 
         <Section title="Wer und wo">
+          {/* FB-16: whether the customer must be called in once it can be planned */}
+          <div className={styles.vehicleLocation}>
+            <span>Fahrzeug</span>
+            <VehicleLocationSwitch value={form.vehicleLocation} onChange={(location) => set('vehicleLocation', location)} />
+          </div>
           <div className={styles.row}>
             <Select label="Mechaniker" value={form.mechanicId} onChange={(e) => set('mechanicId', e.target.value)}>
               <option value="">noch offen</option>

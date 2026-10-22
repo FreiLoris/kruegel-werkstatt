@@ -50,6 +50,8 @@ public record TaskRequest(
         @Schema(description = "Who took the order from the customer (\"Annehmer\") – required; checked by the service") UUID acceptedById,
         @Schema(description = "Insurance case: the insurance; empty = no insurance case") UUID insuranceId,
         @Size(max = Task.CLAIM_NUMBER_MAX) @Schema(description = "The insurance's claim number – only with an insurance, may still be open") String claimNumber,
+        @Schema(description = "Where the vehicle is (FB-16); missing = with the customer when new, unchanged when editing")
+        VehicleLocation vehicleLocation,
         @Schema(description = "Only needed when editing") Long version) {
 
     public TaskRequest {

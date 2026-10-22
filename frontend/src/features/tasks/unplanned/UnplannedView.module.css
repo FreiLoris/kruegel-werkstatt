@@ -75,3 +75,35 @@
 .action {
   margin-left: auto;
 }
+
+/* "Alle | Beim Kunden – aufbieten | Bei uns" (FB-16) */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* the car is with the customer and nothing is missing: call them in now */
+.callIn {
+  border-color: var(--color-accent);
+  border-width: 2px;
+}
+
+.callInLabel {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.phone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.75rem;
+  font-weight: 600;
+}
+
+.phone svg {
+  width: 1rem;
+  height: 1rem;
+}

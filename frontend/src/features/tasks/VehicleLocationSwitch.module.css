@@ -1,0 +1,6 @@
+/* "Beim Kunden | Bei uns" side by side */
+.switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

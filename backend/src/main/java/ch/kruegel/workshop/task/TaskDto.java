@@ -23,6 +23,7 @@ public record TaskDto(
         long version,
         @Schema(types = {"string", "null"}, description = "Assigned by the app (\"26-0001\"); older ones may be SwissGarage numbers") String taskNumber,
         TaskStatus status,
+        @Schema(description = "Where the vehicle is (FB-16)") VehicleLocation vehicleLocation,
         CustomerDto customer,
         @Schema(types = {"object", "null"}, description = "Still open if empty") VehicleDto vehicle,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = no appointment yet; then time and end are empty too") LocalDate date,
@@ -66,7 +67,7 @@ public record TaskDto(
                 .sorted(Comparator.comparingInt(ServiceItem::getSortOrder).thenComparing(ServiceItem::getName))
                 .map(ServiceItem::getId)
                 .toList();
-        return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(),
+        return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(), task.getVehicleLocation(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
                 w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, mfkStationId, serviceItemIds,

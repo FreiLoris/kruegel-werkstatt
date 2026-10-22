@@ -34,6 +34,7 @@ import { TIME_OPEN, timeRange, whenLabel } from '../taskTime'
 import { workItems } from '../workSummary'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
+import { TaskVehicleLocation } from '../VehicleLocationSwitch'
 
 /**
  * A task as readable text (UI review: the old view looked like a form but nothing could be typed).
@@ -290,6 +291,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
               ['Kommt früher', task.arrivesEarlier && formatLocalDateTime(task.arrivesEarlier)],
               ['Fertig bis', task.readyBy && formatLocalDateTime(task.readyBy)],
               ['Wartekunde', task.waitingCustomer && 'Ja – Kunde wartet vor Ort'],
+              ['Fahrzeug', <TaskVehicleLocation key="l" task={task} canEdit={canEdit} />],
               // UI review: the old view called the mechanic "Termin erstellt von"
               ['Mechaniker', <PersonOrOpen key="m" employee={employee(task.mechanicId)} />],
               ['Lift', task.date ? (lifts?.find((l) => l.id === task.liftId)?.name ?? 'noch offen') : null],

@@ -58,3 +58,27 @@ export function unplannedCount({ waitingForParts, withoutAppointment }: Unplanne
     .filter(Boolean)
     .join(' · ')
 }
+
+/** Which ones: all, those with the customer (call them in), those here (FB-16) */
+export type LocationFilter = 'all' | 'customer' | 'workshop'
+
+export function byLocation(groups: UnplannedGroups, filter: LocationFilter): UnplannedGroups {
+  if (filter === 'all') return groups
+  const location = filter === 'customer' ? 'AT_CUSTOMER' : 'AT_WORKSHOP'
+  const keep = (tasks: AnyTask[]) => tasks.filter((t) => t.vehicleLocation === location)
+  return { waitingForParts: keep(groups.waitingForParts), withoutAppointment: keep(groups.withoutAppointment) }
+}
+
+/** The filter from the address (`where=customer|workshop`); anything else = all */
+export function locationFilterOf(param: string | null): LocationFilter {
+  return param === 'customer' || param === 'workshop' ? param : 'all'
+}
+
+/**
+ * Call the customer in now (FB-16 with FB-15): the parts arrived and the car is with them – the case
+ * the workshop wants to see first ("Material da, Fahrzeug beim Kunden"). Only then: marking every
+ * order with the car at the customer would mark nearly all.
+ */
+export function callInNow(task: AnyTask, parts: Map<string, TaskParts>): boolean {
+  return task.vehicleLocation === 'AT_CUSTOMER' && parts.get(task.id)?.arrived === true
+}

@@ -73,6 +73,11 @@ public class Task extends BaseEntity {
     @Column(nullable = false)
     private TaskStatus status;
 
+    /** Where the vehicle is (FB-16) – changed on its own, like the status */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VehicleLocation vehicleLocation;
+
     private boolean tireChange;
 
     @Enumerated(EnumType.STRING)
@@ -117,6 +122,7 @@ public class Task extends BaseEntity {
     /** New task – always starts as {@link TaskStatus#RECEIVED}. */
     public Task(TaskDetails details) {
         this.status = TaskStatus.RECEIVED;
+        this.vehicleLocation = VehicleLocation.AT_CUSTOMER;
         apply(details);
     }
 
@@ -124,9 +130,15 @@ public class Task extends BaseEntity {
         apply(details);
     }
 
-    /** Any status can follow any other – also back, e.g. "done" turns out to be too early. */
+    /**
+     * Any status can follow any other – also back, e.g. "done" turns out to be too early. Work started
+     * means the car is here (FB-16) – nobody calls the customer in for a car in the workshop.
+     */
     public void changeStatus(TaskStatus newStatus) {
         this.status = Objects.requireNonNull(newStatus, "status");
+        if (newStatus == TaskStatus.IN_PROGRESS) {
+            this.vehicleLocation = VehicleLocation.AT_WORKSHOP;
+        }
     }
 
 
@@ -269,6 +281,15 @@ public class Task extends BaseEntity {
 
     public TaskStatus getStatus() {
         return status;
+    }
+
+    public VehicleLocation getVehicleLocation() {
+        return vehicleLocation;
+    }
+
+    /** The car came in, or went back to the customer (FB-16). */
+    public void moveVehicle(VehicleLocation location) {
+        this.vehicleLocation = Objects.requireNonNull(location, "location");
     }
 
     public Customer getCustomer() {
