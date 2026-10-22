@@ -6,12 +6,13 @@ import { useAllEmployees } from '../employees/employeeApi'
 import { useAllLifts } from '../lifts/liftApi'
 import { useAllServiceItems } from '../service-items/serviceItemApi'
 import { MfkEntry } from '../tasks/mfk/MfkEntry'
-import { useMfkSlots, useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
+import { useCarriedOver, useMfkSlots, useTasksBetween, useTasksOfDay } from '../tasks/taskApi'
 import { workSummary } from '../tasks/workSummary'
 import { TaskRow } from './TaskRow'
 import styles from './TodayByLift.module.css'
 import { liftColumns, nextAppointment, NO_LIFT } from './todayColumns'
 import { startLabel } from '../tasks/taskTime'
+import { CarriedOver } from '../tasks/day/CarriedOver'
 
 /** How far ahead "nächster Termin" looks when today is empty */
 const LOOK_AHEAD_DAYS = 60
@@ -26,6 +27,8 @@ export function TodayByLift() {
   const me = useMyEmployeeId()
   const tasks = useTasksOfDay(today)
   const { data: mfkSlots = [] } = useMfkSlots(today, today)
+  // not finished on their day (FB-14): still in the workshop, "Ohne Lift"
+  const { data: carriedOver = [] } = useCarriedOver(today)
   const ahead = useTasksBetween(addDays(today, 1), addDays(today, LOOK_AHEAD_DAYS))
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
@@ -39,7 +42,7 @@ export function TodayByLift() {
   const mechanicOf = (id: string | null) => employees?.find((e) => e.id === id)
   const serviceItemNames = new Map((serviceItems ?? []).map((s) => [s.id, s.name]))
 
-  if (tasks.data.length === 0 && mfkSlots.length === 0) {
+  if (tasks.data.length === 0 && mfkSlots.length === 0 && carriedOver.length === 0) {
     const next = ahead.data ? nextAppointment(ahead.data, today) : undefined
     return (
       <div className={styles.empty}>
@@ -56,7 +59,7 @@ export function TodayByLift() {
   }
 
   // the MFK appointments stand in "Ohne Lift" – they take no lift (FB-10)
-  const columns = liftColumns(tasks.data, lifts, mfkSlots.length > 0)
+  const columns = liftColumns(tasks.data, lifts, mfkSlots.length > 0 || carriedOver.length > 0)
   return (
     // columns shrink rather than scroll – nobody scrolls on the TV
     <div className={styles.lifts} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}>
@@ -67,6 +70,11 @@ export function TodayByLift() {
             <p className={styles.free}>frei</p>
           ) : (
             <ul className={styles.tasks}>
+              {column.id === NO_LIFT && carriedOver.length > 0 && (
+                <li>
+                  <CarriedOver tasks={carriedOver} />
+                </li>
+              )}
               {column.id === NO_LIFT &&
                 mfkSlots.map((slot) => (
                   <li key={`mfk-${slot.task.id}`}>

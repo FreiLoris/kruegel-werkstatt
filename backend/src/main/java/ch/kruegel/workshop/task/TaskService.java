@@ -137,6 +137,15 @@ public class TaskService {
         return repository.withoutAppointment().stream().map(TaskDto::of).toList();
     }
 
+    /**
+     * Carried over to {@code day} (FB-14): not finished, the appointment over before it. Computed, not
+     * moved – the appointment stays as it was, its day says since when the task is carried.
+     */
+    @Transactional(readOnly = true)
+    public List<TaskDto> carriedOver(LocalDate day) {
+        return repository.carriedOverTo(day.atStartOfDay()).stream().map(TaskDto::of).toList();
+    }
+
     /** Waiting for parts, their appointment over – shown with "Ohne Termin" (FB-15). */
     @Transactional(readOnly = true)
     public List<TaskDto> waitingForParts() {

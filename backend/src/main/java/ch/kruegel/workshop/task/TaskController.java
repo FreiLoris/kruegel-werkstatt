@@ -84,6 +84,14 @@ class TaskController {
         return service.withoutAppointment();
     }
 
+    @Operation(summary = "Tasks carried over to a day",
+            description = "Received or in work, the appointment over before that day (FB-14) – shown in \"Ohne Lift\" without time. "
+                    + "The longest carried first.")
+    @GetMapping("/carried-over")
+    List<TaskDto> carriedOver(@RequestParam LocalDate day) {
+        return service.carriedOver(day);
+    }
+
     @Operation(summary = "Orders waiting for parts whose appointment is over",
             description = "Shown together with the orders without appointment (FB-15) – the ones without a day are in that list already. "
                     + "Planned again (a day from today on) = no longer listed. The longest waiting first.")

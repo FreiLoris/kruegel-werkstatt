@@ -181,6 +181,18 @@ export function useChangeTaskStatus() {
   })
 }
 
+/**
+ * Carried over to a day (FB-14): not finished, the appointment over before it – "Ohne Lift", without
+ * time. Only up to today (`enabled`): a future day does not know what will be finished.
+ */
+export function useCarriedOver(day: string, enabled = true) {
+  return useQuery({
+    queryKey: [TOPIC, 'carried-over', day],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/carried-over', { params: { query: { day } }, signal })) as Task[],
+    enabled,
+  })
+}
+
 /** Orders without appointment – taken but not planned yet, or taken out of the plan again (12d-3). */
 export function useTasksWithoutAppointment() {
   return useQuery({

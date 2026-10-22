@@ -29,6 +29,7 @@ import { periodLabel } from '../taskTime'
 import { dayColumns, NO_LIFT, type DayColumn } from './dayColumns'
 import styles from './DayGrid.module.css'
 import { TaskCard } from './TaskCard'
+import { CarriedOver } from './CarriedOver'
 import {
   blockingIn,
   draggedTo,
@@ -52,6 +53,7 @@ import {
 /** A chosen place for a new task: lift, start and end */
 export type Slot = Schedule
 
+const NO_TASKS: Task[] = []
 const NO_MFK: MfkSlot[] = []
 
 const DAY_MINUTES = 24 * 60
@@ -88,6 +90,8 @@ interface DayGridProps {
   courtesyCars?: ReadonlyMap<string, string>
   /** plan: the MFK appointments of the day – hints in "Ohne Lift", they take no time of anybody (FB-10) */
   mfkSlots?: MfkSlot[]
+  /** not finished on their day (FB-14) – in "Ohne Lift" above its time, without time and duration */
+  carriedOver?: Task[]
 }
 
 /** Finger: hold this long before dragging opens a time (moving earlier = scrolling) */
@@ -125,6 +129,7 @@ export function DayGrid({
   serviceItemNames = new Map(),
   courtesyCars,
   mfkSlots = NO_MFK,
+  carriedOver = NO_TASKS,
 }: DayGridProps) {
   const toast = useToast()
   const schedule = useScheduleTask(viewKey)
@@ -368,6 +373,17 @@ export function DayGrid({
               {column.title} <span className="muted">{column.tasks.length}</span>
             </h2>
           ))}
+
+          {carriedOver.length > 0 && (
+            <>
+              <div className={styles.carriedCorner} />
+              {columns.map((column) => (
+                <div key={`carried-${column.id}`} className={styles.carried}>
+                  {column.id === NO_LIFT && <CarriedOver tasks={carriedOver} />}
+                </div>
+              ))}
+            </>
+          )}
 
           <TimeAxis range={range} scale={scale} />
 

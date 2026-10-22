@@ -225,3 +225,24 @@
   background: var(--color-danger);
   pointer-events: none;
 }
+
+/* the row of tasks carried over (FB-14) – under the titles, filled only in "Ohne Lift" */
+.carriedCorner,
+.carried {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+/* stays at the left like the corner and the hours when scrolling sideways on a tablet */
+.carriedCorner {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+/* many carried ones do not push the time grid away – they scroll on their own */
+.carried {
+  max-height: 9rem;
+  overflow-y: auto;
+  border-left: 1px solid var(--color-border);
+}

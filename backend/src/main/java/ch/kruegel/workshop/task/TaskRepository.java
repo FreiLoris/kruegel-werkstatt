@@ -41,6 +41,19 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             ORDER BY t.appointment.date, t.appointment.time""")
     List<Task> waitingForPartsSince(LocalDate today);
 
+    /**
+     * Not finished although their appointment is over (FB-14): received or in work, the end before the
+     * given day (one ending at 24:00 is over at the start of the next one) – carried over to it. The
+     * longest carried first. Waiting for parts is not carried (FB-15 shows those).
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.status IN (ch.kruegel.workshop.task.TaskStatus.RECEIVED, ch.kruegel.workshop.task.TaskStatus.IN_PROGRESS)
+              AND t.appointment.end <= :dayStart
+            ORDER BY t.appointment.end, t.id""")
+    List<Task> carriedOverTo(LocalDateTime dayStart);
+
 
     /**
      * Tasks with their MFK appointment in [from, until) – the hints in the calendars (FB-10). Also
