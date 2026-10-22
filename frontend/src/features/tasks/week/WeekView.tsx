@@ -50,7 +50,19 @@ const dropTarget: CollisionDetection = (args) => {
  * guessed). The lift must be free then, otherwise the server says by whom. Who is away (vacation,
  * sick, …) stands under each day's head (9a). Absences of employees follow with phase 9.
  */
-export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (date: string) => void }) {
+export function WeekView({
+  monday,
+  onOpenDay,
+  readOnly = false,
+  compact = false,
+}: {
+  monday: string
+  onOpenDay: (date: string) => void
+  /** only to look at, nothing is moved – the week in the task wizard (FB-13) */
+  readOnly?: boolean
+  /** narrow (next to the wizard's form): the days share the width instead of scrolling sideways */
+  compact?: boolean
+}) {
   const sunday = addDays(monday, 6)
   const viewKey = tasksBetweenKey(monday, sunday)
   const tasks = useTasksBetween(monday, sunday)
@@ -61,7 +73,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   const absences = useAbsences(monday, sunday)
   const schedule = useScheduleTask(viewKey)
   const courtesyCars = useCourtesyCarsByTask(`${monday}T00:00`, `${addDays(monday, 7)}T00:00`)
-  const canEdit = useCanEdit()
+  const canEdit = useCanEdit() && !readOnly
   const toast = useToast()
   const [activeId, setActiveId] = useState<string | null>(null)
   // After dropping: show the card on its new day until the tasks themselves do (no flash back)
@@ -134,7 +146,10 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
       }}
     >
       {/* Friday no longer cut off on a laptop/tablet (UX M-16) */}
-      <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(8.5rem, 1fr))` }}>
+      <div
+        className={[styles.week, compact && styles.compact].filter(Boolean).join(' ')}
+        style={{ gridTemplateColumns: `repeat(${days.length}, minmax(${compact ? '0' : '8.5rem'}, 1fr))` }}
+      >
         {days.map((day) => (
           <DayColumn
             key={day.date}
@@ -146,21 +161,38 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
             today={day.date === today}
             onOpen={() => onOpenDay(day.date)}
           >
-            {day.date === today && <CarriedOver tasks={carriedOver ?? []} />}
+            {day.date === today && <CarriedOver tasks={carriedOver ?? []} onOpen={readOnly ? () => onOpenDay(day.date) : undefined} />}
             {/* the MFK appointments first: hints, they cannot be dragged – they move in the task */}
             {mfkSlotsOn(mfkSlots ?? [], day.date).map((slot) => (
-              <MfkEntry key={`mfk-${slot.task.id}`} slot={slot} driver={employees.find((e) => e.id === slot.task.mfkDriverId)} />
-            ))}
-            {day.tasks.map((task) => (
-              <DraggableCard
-                key={task.id}
-                task={task}
-                mechanic={mechanicOf(task)}
-                liftName={liftNameOf(task)}
-                courtesyCar={courtesyCars.get(task.id)}
-                disabled={!canEdit}
+              <MfkEntry
+                key={`mfk-${slot.task.id}`}
+                slot={slot}
+                driver={employees.find((e) => e.id === slot.task.mfkDriverId)}
+                onOpen={readOnly ? () => onOpenDay(day.date) : undefined}
               />
             ))}
+            {day.tasks.map((task) =>
+              // only to look at (the wizard): nothing to drag, a tap opens the day's grid – the form stays
+              readOnly ? (
+                <WeekCard
+                  key={task.id}
+                  task={task}
+                  mechanic={mechanicOf(task)}
+                  liftName={liftNameOf(task)}
+                  courtesyCar={courtesyCars.get(task.id)}
+                  onOpen={() => onOpenDay(day.date)}
+                />
+              ) : (
+                <DraggableCard
+                  key={task.id}
+                  task={task}
+                  mechanic={mechanicOf(task)}
+                  liftName={liftNameOf(task)}
+                  courtesyCar={courtesyCars.get(task.id)}
+                  disabled={!canEdit}
+                />
+              ),
+            )}
           </DayColumn>
         ))}
       </div>

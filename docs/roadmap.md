@@ -684,7 +684,12 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   those). Not done: dragging it from there onto a lift – open it and plan it instead. As specified
   by the workshop "Eingang" counts too – also a car that never came: such a task is set "Fertig"
   or planned again. Computed means a past day shows today's state (finished ones are gone there too).
-- [ ] **14g – Week view in the wizard** (FB-13)
+- [x] **14g – Week view in the wizard** (FB-13)
+  Done: "Tag | Woche" above the planning grid of the wizard (new and edit). The week is the one of
+  "Termine › Woche" (WeekView, only to look at, the days sharing the narrow width): tasks with time,
+  lift, customer, plate and status, absences. A day opens its time grid right away – lift and time
+  are taken there as before; the form stays as it is. No load indicator, no "next free slot"
+  (as decided by the workshop).
 - [ ] **14h – Tyres without the hotel** (FB-12): a set has a status (in the hotel / on the car /
   with the customer), overview per vehicle with traffic lights for tread and age
 - [ ] **14i – "Termin abmachen" from the tyre hotel** (FB-18)

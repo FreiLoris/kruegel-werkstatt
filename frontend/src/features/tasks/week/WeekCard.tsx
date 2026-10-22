@@ -17,6 +17,8 @@ interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
   dragging?: boolean
   /** name of the courtesy car the customer has for this task */
   courtesyCar?: string
+  /** what click/Enter does – default: open the task (the wizard opens its day instead, FB-13) */
+  onOpen?: () => void
   ref?: Ref<HTMLDivElement>
 }
 
@@ -24,9 +26,9 @@ interface WeekCardProps extends HTMLAttributes<HTMLDivElement> {
  * Compact card for the week: time, customer, plate, lift and mechanic. Status as colored bar +
  * tooltip. Click or Enter opens the task; keyboard dragging starts with space.
  */
-export function WeekCard({ task, mechanic, liftName, dragging = false, courtesyCar, className, onKeyDown, ...rest }: WeekCardProps) {
+export function WeekCard({ task, mechanic, liftName, dragging = false, courtesyCar, onOpen, className, onKeyDown, ...rest }: WeekCardProps) {
   const navigate = useNavigate()
-  const open = () => navigate(`/tasks/${task.id}`)
+  const open = onOpen ?? (() => navigate(`/tasks/${task.id}`))
   return (
     <div
       className={[styles.card, statusAccentClass(task.status), dragging && styles.dragging, className].filter(Boolean).join(' ')}

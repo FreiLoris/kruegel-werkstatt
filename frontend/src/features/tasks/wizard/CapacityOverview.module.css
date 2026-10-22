@@ -85,3 +85,10 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 }
+
+/* "Tag | Woche" (FB-13) */
+.views {
+  display: flex;
+  gap: var(--space-1);
+  margin-right: var(--space-2);
+}

@@ -6,6 +6,7 @@ import { isoWeek, isWeekend, mondayOf, nextWorkingDay, weekdayOf, WEEKDAYS_SHORT
 import { addDays, formatDate } from '../../../lib/format'
 import { useAllLifts } from '../../lifts/liftApi'
 import { DayGrid, type Slot } from '../day/DayGrid'
+import { WeekView } from '../week/WeekView'
 import { useTasksBetween, useTasksOfDay } from '../taskApi'
 import styles from './CapacityOverview.module.css'
 
@@ -29,6 +30,8 @@ interface CapacityOverviewProps {
  * Where is room? (6k) The week with the number of tasks per day, below it the chosen day as a
  * time grid per lift – dragging open a free area takes over lift, start and end. A lift already
  * taken at that time shows red ("belegt"). Weekends only appear when there are tasks.
+ * "Tag | Woche" (FB-13): the week as on "Termine › Woche" – who comes when, who is away – to find a
+ * day without clicking through; a day opens its time grid again. The form stays as it is.
  */
 export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, taskId }: CapacityOverviewProps) {
   const today = useToday()
@@ -36,6 +39,7 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
   // on a weekend or holiday the next working day – not the week that is over (UX M-09)
   const [day, setDay] = useState(() => picked.date || nextWorkingDay(today, holidayDates))
   const [monday, setMonday] = useState(() => mondayOf(day))
+  const [view, setView] = useState<'day' | 'week'>('day')
   // A date typed in the form shows its day ("adjust state while rendering", no effect needed)
   const [shownFor, setShownFor] = useState(picked.date)
   if (picked.date !== shownFor) {
@@ -67,6 +71,12 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
     onPickDay(d)
   }
 
+  /** A day of the week: its time grid, to drag the slot there */
+  function openDay(d: string) {
+    choose(d)
+    setView('day')
+  }
+
   return (
     <section className={styles.overview} aria-labelledby="capacity-heading">
       <div className={styles.header}>
@@ -74,6 +84,14 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
           KW {isoWeek(monday)} <span className="muted">· {formatDate(monday).slice(0, 6)}–{formatDate(addDays(monday, 4))}</span>
         </h2>
         <div className={styles.nav}>
+          <div className={styles.views} role="group" aria-label="Ansicht">
+            <Button small variant={view === 'day' ? 'primary' : 'secondary'} aria-pressed={view === 'day'} onClick={() => setView('day')}>
+              Tag
+            </Button>
+            <Button small variant={view === 'week' ? 'primary' : 'secondary'} aria-pressed={view === 'week'} onClick={() => setView('week')}>
+              Woche
+            </Button>
+          </div>
           <Button small variant="ghost" icon={ChevronLeft} onClick={() => showWeek(addDays(monday, -7))} aria-label="Vorherige Woche" />
           <Button small variant="ghost" onClick={() => showWeek(mondayOf(nextWorkingDay(today, holidayDates)))}>
             Heute
@@ -81,53 +99,62 @@ export function CapacityOverview({ picked, holidays, onPickDay, onPickSlot, task
           <Button small variant="ghost" icon={ChevronRight} onClick={() => showWeek(addDays(monday, 7))} aria-label="Nächste Woche" />
         </div>
       </div>
-      {week.error && <p className="muted">Termine konnten nicht geladen werden: {week.error.message}</p>}
+      {view === 'day' && week.error && <p className="muted">Termine konnten nicht geladen werden: {week.error.message}</p>}
 
-      <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
-        {days.map((d) => {
-          const count = counts.get(d) ?? 0
-          const holiday = holidays.get(d)
-          return (
-            <button
-              key={d}
-              type="button"
-              className={[styles.day, d === today && styles.today, d === day && styles.shown, holiday && styles.holiday]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => choose(d)}
-              aria-pressed={d === picked.date}
-            >
-              <span className={styles.dayName}>
-                {WEEKDAYS_SHORT[weekdayOf(d)]} {formatDate(d).slice(0, 6)}
-              </span>
-              <span className={styles.dayInfo}>{holiday ?? (count === 1 ? '1 Termin' : `${count} Termine`)}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <h3 className={styles.dayTitle}>
-        {WEEKDAYS_SHORT[weekdayOf(day)]} {formatDate(day)}
-        {holidays.has(day) && <span className={styles.holidayName}> · {holidays.get(day)}</span>}
-      </h3>
-      {dayTasks.data && lifts ? (
-        <DayGrid
-          date={day}
-          tasks={dayTasks.data}
-          lifts={lifts}
-          mode="pick"
-          scale={SCALE}
-          canEdit
-          onPick={onPickSlot}
-          picked={picked.date ? picked : null}
-          hiddenTaskId={taskId}
-        />
+      {view === 'week' ? (
+        <>
+          <WeekView monday={monday} onOpenDay={openDay} readOnly compact />
+          <p className={styles.legend}>Einen Tag antippen öffnet ihn im Raster – dort Lift und Zeit wählen.</p>
+        </>
       ) : (
-        <p className="muted">Lade Termine …</p>
+        <>
+          <div className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+            {days.map((d) => {
+              const count = counts.get(d) ?? 0
+              const holiday = holidays.get(d)
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  className={[styles.day, d === today && styles.today, d === day && styles.shown, holiday && styles.holiday]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => choose(d)}
+                  aria-pressed={d === picked.date}
+                >
+                  <span className={styles.dayName}>
+                    {WEEKDAYS_SHORT[weekdayOf(d)]} {formatDate(d).slice(0, 6)}
+                  </span>
+                  <span className={styles.dayInfo}>{holiday ?? (count === 1 ? '1 Termin' : `${count} Termine`)}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <h3 className={styles.dayTitle}>
+            {WEEKDAYS_SHORT[weekdayOf(day)]} {formatDate(day)}
+            {holidays.has(day) && <span className={styles.holidayName}> · {holidays.get(day)}</span>}
+          </h3>
+          {dayTasks.data && lifts ? (
+            <DayGrid
+              date={day}
+              tasks={dayTasks.data}
+              lifts={lifts}
+              mode="pick"
+              scale={SCALE}
+              canEdit
+              onPick={onPickSlot}
+              picked={picked.date ? picked : null}
+              hiddenTaskId={taskId}
+            />
+          ) : (
+            <p className="muted">Lade Termine …</p>
+          )}
+          <p className={styles.legend}>
+            Im Raster ziehen übernimmt Lift, Beginn und Ende (am Tablet: kurz halten, dann ziehen) – tippen eine Stunde.
+          </p>
+        </>
       )}
-      <p className={styles.legend}>
-        Im Raster ziehen übernimmt Lift, Beginn und Ende (am Tablet: kurz halten, dann ziehen) – tippen eine Stunde.
-      </p>
     </section>
   )
 }
