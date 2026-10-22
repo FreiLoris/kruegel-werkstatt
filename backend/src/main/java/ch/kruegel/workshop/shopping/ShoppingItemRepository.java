@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,4 +32,9 @@ public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, UUID
     @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})
     @Query("SELECT s FROM ShoppingItem s WHERE s.task.id = :taskId ORDER BY s.createdAt")
     List<ShoppingItem> ofTask(UUID taskId);
+
+    /** All positions of these tasks, whatever their state – what each order waits for ("Ohne Termin") */
+    @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})
+    @Query("SELECT s FROM ShoppingItem s WHERE s.task.id IN :taskIds ORDER BY s.createdAt")
+    List<ShoppingItem> ofTasks(Collection<UUID> taskIds);
 }

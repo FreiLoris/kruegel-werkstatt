@@ -3,7 +3,6 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { DoneFilter } from '../../components/ui/DoneFilter'
 import { MaterialTabs } from '../stock/MaterialTabs'
-import { PartsToOrder } from '../tasks/parts/PartsToOrder'
 import { useShoppingItems } from './shoppingApi'
 import { ShoppingBySupplier } from './ShoppingBySupplier'
 import { ShoppingEntryForm } from './ShoppingEntryForm'
@@ -75,9 +74,6 @@ export function ShoppingListPage() {
           <ShoppingEntryForm />
         </section>
       )}
-
-      {/* the material written into tasks (12c) – until it moves into positions (14d) */}
-      {!showDone && taskFilter !== 'workshop' && <PartsToOrder canEdit={canEdit} />}
 
       {list.error ? (
         <p className="muted">Einkaufsliste konnte nicht geladen werden: {list.error.message}</p>

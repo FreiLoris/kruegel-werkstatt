@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { Company } from '../../company/companyApi'
 import type { Task } from '../taskApi'
 import { TaskSheet } from './TaskSheet'
+import type { ShoppingItem } from '../../shopping/shoppingApi'
 
 const company: Company = {
   version: 0,
@@ -36,7 +37,6 @@ const task = {
   mfk: true,
   mfkAppointment: null,
   serviceItemIds: ['oil'],
-  parts: { description: 'Bremsscheiben vorne', status: 'ORDERED', supplier: null, orderedOn: null },
   workDescription: 'Geräusch hinten links',
   notes: null,
   createdAt: '2026-10-05T07:00:00Z',
@@ -44,7 +44,9 @@ const task = {
 
 describe('TaskSheet', () => {
   it('prints every ticked piece of work, not only the free text (F1)', () => {
-    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto', acceptedByName: 'Carina' }} />)
+    // its parts on the shopping list (FB-19), fictitious
+    const parts = [{ description: 'Bremsscheiben vorne', quantity: 1, status: 'ORDERED', partNumber: null }] as unknown as ShoppingItem[]
+    render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map([['oil', 'Ölwechsel']]), mechanicName: 'Reto', acceptedByName: 'Carina', parts }} />)
 
     expect(screen.getByText('Radwechsel', { selector: 'li span' })).toBeTruthy()
     // in the list to tick off – and as its own block

@@ -85,61 +85,6 @@ describe('AppointmentStep – Service', () => {
   })
 })
 
-describe('AppointmentStep – Material bestellen', () => {
-  it('ticking opens the window; closing it leaves the task without material', () => {
-    const seen = renderStep()
-
-    fireEvent.click(tick('Material bestellen'))
-    expect(screen.getByRole('textbox', { name: /^Was/ })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
-
-    expect(seen.form.parts).toBe(false)
-    expect(tick('Material bestellen').checked).toBe(false)
-    expect(screen.queryByRole('textbox', { name: /^Was/ })).toBeNull()
-  })
-
-  it('"Übernehmen" puts the order into the task and shows it in one line', () => {
-    const seen = renderStep()
-
-    fireEvent.click(tick('Material bestellen'))
-    fireEvent.change(screen.getByRole('textbox', { name: /^Was/ }), { target: { value: ' Bremsscheiben vorne ' } })
-    fireEvent.change(screen.getByRole('textbox', { name: 'Lieferant' }), { target: { value: 'Derendinger' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Übernehmen' }))
-
-    expect(seen.form).toMatchObject({ parts: true, partsDescription: 'Bremsscheiben vorne', partsSupplier: 'Derendinger', partsStatus: 'TO_ORDER' })
-    expect(tick('Material bestellen').checked).toBe(true)
-    expect(screen.getByText('Bremsscheiben vorne')).toBeTruthy()
-    expect(screen.queryByRole('textbox', { name: /^Was/ })).toBeNull()
-  })
-
-  it('"Ändern" opens the window with what is there; unticking removes the order', () => {
-    const seen = renderStep({ ...THURSDAY, parts: true, partsDescription: 'Bremsscheiben', partsStatus: 'ORDERED' })
-
-    fireEvent.click(screen.getByRole('button', { name: 'Ändern' }))
-    expect(screen.getByRole<HTMLInputElement>('textbox', { name: /^Was/ }).value).toBe('Bremsscheiben')
-    fireEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
-    fireEvent.click(tick('Material bestellen'))
-
-    expect(seen.form.parts).toBe(false)
-  })
-
-  it('does not take over an order without "Was" – the window stays open', () => {
-    const seen = renderStep()
-
-    fireEvent.click(tick('Material bestellen'))
-    // empty: the browser itself stops the required field (as in every other dialog)
-    fireEvent.click(screen.getByRole('button', { name: 'Übernehmen' }))
-    expect(seen.form.parts).toBe(false)
-    expect(screen.getByRole('textbox', { name: /^Was/ })).toBeTruthy()
-
-    // only blanks get past the browser – then the dialog says it
-    fireEvent.change(screen.getByRole('textbox', { name: /^Was/ }), { target: { value: '   ' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Übernehmen' }))
-    expect(screen.getByText('Was muss bestellt werden?')).toBeTruthy()
-    expect(seen.form.parts).toBe(false)
-  })
-})
-
 describe('AppointmentStep – Versicherungsfall', () => {
   const choices = () => screen.getAllByRole<HTMLOptionElement>('option').filter((o) => o.closest('select')?.labels?.[0]?.textContent?.startsWith('Versicherung'))
 

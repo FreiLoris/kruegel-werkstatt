@@ -658,9 +658,15 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   ordered and back; ticking it off or giving it to someone else changes the position too. The old
   shopping to-dos were taken over (open with a person: their to-do stays, linked; ticked off =
   arrived); to-dos have no shopping flag any more. The material written into tasks follows in 14d.
-- [ ] **14d – Parts block on the task** (FB-19): quick entry with the same 6 fields, inline editing;
-  the text "Material bestellen" of tasks taken over into positions, the field and "Material für
-  Aufträge" on the shopping list go
+- [x] **14d – Parts block on the task** (FB-19)
+  Done: the task page has "Ersatzteilbestellungen" – its positions of the shopping list, edited and
+  deleted in place, and the quick entry with the same six fields, linked to the task by itself;
+  "✓ Alle Teile geliefert" when everything arrived. Right after saving a new task the same block
+  ("Ersatzteile bestellen"). The task's own "Material bestellen" goes (wizard tick, field, the box
+  "Material für Aufträge"): V43 takes each text over as a position (state and day of order as
+  they were, a supplier of the list linked by name, any other as a note). "Ohne Termin" says what
+  is missing from the positions; the task sheet prints them with the work; the task search finds
+  a task by its parts.
 - [ ] **14e – Where the vehicle is** (FB-16): "Bei uns" / "Beim Kunden", "Ohne Termin" grouped,
   phone to call
 - [ ] **14f – Unfinished tasks carried over** (FB-14): shown in "Ohne Lift" on the following

@@ -197,6 +197,17 @@ class ShoppingApiTest {
         assertThat(get(arrived)).bodyJson().extractingPath("$.arrivedOn").isEqualTo(LocalDate.now().toString());
         assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$[*].id").asArray()
                 .containsExactly(forTask);
+        // several tasks at once ("Ohne Termin"), whatever their state
+        assertThat(mvc.get().uri("/api/shopping-items?taskIds=" + task + "," + ordered).exchange()).bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactly(forTask);
+    }
+
+    @Test
+    void theTaskIsFoundByItsParts() {
+        create("\"description\": \"Kupplungssatz\", \"taskId\": \"%s\"".formatted(task));
+
+        assertThat(mvc.get().uri("/api/tasks/search?q=kupplungssatz").exchange()).bodyJson().extractingPath("$.hits[*].id").asArray()
+                .containsExactly(task);
     }
 
     @Test

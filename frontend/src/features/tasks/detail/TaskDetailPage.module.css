@@ -100,6 +100,11 @@
   background: var(--color-surface);
 }
 
+/* a card over the whole width – a table (FB-19) */
+.wide {
+  grid-column: 1 / -1;
+}
+
 .card p {
   margin: 0;
 }

@@ -21,7 +21,6 @@ const task = {
   mfk: false,
   mfkAppointment: null,
   serviceItemIds: [],
-  parts: null,
   workDescription: 'Winterräder',
 } as unknown as Task
 

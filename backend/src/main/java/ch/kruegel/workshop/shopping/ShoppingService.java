@@ -66,10 +66,12 @@ public class ShoppingService {
     /**
      * @param arrived false = not arrived yet (to order first); true = the latest arrived ones
      * @param taskId  all positions of this task, whatever their state (then {@code arrived} does not count)
+     * @param taskIds all positions of these tasks, whatever their state
      */
     @Transactional(readOnly = true)
-    public List<ShoppingItemDto> list(boolean arrived, UUID taskId) {
+    public List<ShoppingItemDto> list(boolean arrived, UUID taskId, List<UUID> taskIds) {
         List<ShoppingItem> found = taskId != null ? repository.ofTask(taskId)
+                : taskIds != null ? (taskIds.isEmpty() ? List.of() : repository.ofTasks(taskIds))
                 : arrived ? repository.arrived(Limit.of(ARRIVED_LIMIT)) : repository.open();
         return found.stream().map(ShoppingItemDto::of).toList();
     }

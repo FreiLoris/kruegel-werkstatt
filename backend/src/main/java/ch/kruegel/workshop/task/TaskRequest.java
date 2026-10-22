@@ -45,7 +45,6 @@ public record TaskRequest(
         @Schema(description = "MFK: who drives the car there; may be open") UUID mfkDriverId,
         @Schema(description = "MFK: the inspection station; empty = the standard one") UUID mfkStationId,
         List<UUID> serviceItemIds,
-        @Valid @Schema(description = "Empty = no parts needed") Parts parts,
         @Size(max = TaskWork.DESCRIPTION_MAX) String workDescription,
         @Size(max = TaskDetails.NOTES_MAX) String notes,
         @Schema(description = "Who took the order from the customer (\"Annehmer\") – required; checked by the service") UUID acceptedById,
@@ -60,15 +59,4 @@ public record TaskRequest(
         mfk = Boolean.TRUE.equals(mfk);
     }
 
-    /** Parts to order. */
-    public record Parts(
-            @NotBlank @Size(max = PartsOrder.DESCRIPTION_MAX) String description,
-            @NotNull PartsStatus status,
-            @Size(max = PartsOrder.SUPPLIER_MAX) String supplier,
-            LocalDate orderedOn) {
-
-        PartsOrder toPartsOrder() {
-            return new PartsOrder(description, status, supplier, orderedOn);
-        }
-    }
 }

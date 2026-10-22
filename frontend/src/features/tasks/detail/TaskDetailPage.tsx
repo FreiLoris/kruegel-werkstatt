@@ -23,6 +23,7 @@ import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { TaskPinboard } from '../../notes/TaskPinboard'
 import { isBooked } from '../../tire-hotel/taskTires'
+import { TaskParts } from '../../shopping/TaskParts'
 import { TaskTiresPanel } from '../../tire-hotel/TaskTiresPanel'
 import { useTaskTires } from '../../tire-hotel/tireHotelApi'
 import { MfkHint } from '../../vehicles/MfkHint'
@@ -339,6 +340,11 @@ function TaskDetail({ task }: { task: AnyTask }) {
           </Card>
         )}
 
+        {/* FB-19: its parts right here – entered, changed and ordered without "Bearbeiten" */}
+        <Card title="Ersatzteilbestellungen" wide>
+          <TaskParts taskId={task.id} canEdit={canEdit} />
+        </Card>
+
         {task.insuranceId && (
           <Card title="Versicherungsfall">
             <InsuranceFacts insuranceId={task.insuranceId} claimNumber={task.claimNumber} />
@@ -408,9 +414,9 @@ function TaskDetail({ task }: { task: AnyTask }) {
   )
 }
 
-function Card({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+function Card({ title, action, wide = false, children }: { title: string; action?: ReactNode; wide?: boolean; children: ReactNode }) {
   return (
-    <section className={styles.card}>
+    <section className={wide ? `${styles.card} ${styles.wide}` : styles.card}>
       <div className={styles.cardHeader}>
         <h2>{title}</h2>
         {action}

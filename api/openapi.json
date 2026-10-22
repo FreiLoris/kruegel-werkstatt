@@ -6060,7 +6060,7 @@
     },
     "/api/shopping-items" : {
       "get" : {
-        "description" : "Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state.",
+        "description" : "Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").",
         "operationId" : "list_6",
         "parameters" : [ {
           "in" : "query",
@@ -6077,6 +6077,17 @@
           "schema" : {
             "type" : "string",
             "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "taskIds",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
           }
         } ],
         "responses" : {
@@ -8732,79 +8743,6 @@
         "tags" : [ "Tasks" ]
       }
     },
-    "/api/tasks/parts-to-order" : {
-      "get" : {
-        "description" : "The next appointment first – shown on the shopping list.",
-        "operationId" : "withPartsToOrder",
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/TaskDto"
-                  }
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Tasks whose parts are still to be ordered",
-        "tags" : [ "Tasks" ]
-      }
-    },
     "/api/tasks/search" : {
       "get" : {
         "description" : "Every word must occur in customer, plate, vehicle, task number, work or notes. Upcoming first (nearest first), then past ones (newest first). At least 2 characters.",
@@ -9428,95 +9366,6 @@
           }
         },
         "summary" : "Take the task out of the plan",
-        "tags" : [ "Tasks" ]
-      }
-    },
-    "/api/tasks/{id}/parts-status" : {
-      "put" : {
-        "description" : "No version needed. \"Ordered\" remembers today as the day of the order if none is entered.",
-        "operationId" : "changePartsStatus",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/PartsStatusRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TaskDto"
-                }
-              }
-            },
-            "description" : "OK"
-          },
-          "400" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Bad Request"
-          },
-          "403" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Forbidden"
-          },
-          "404" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Not Found"
-          },
-          "409" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Conflict"
-          },
-          "500" : {
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemDetail"
-                }
-              }
-            },
-            "description" : "Internal Server Error"
-          }
-        },
-        "summary" : "Parts ordered / arrived",
         "tags" : [ "Tasks" ]
       }
     },
@@ -13727,60 +13576,6 @@
         },
         "required" : [ "text" ]
       },
-      "Parts" : {
-        "type" : "object",
-        "properties" : {
-          "description" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          },
-          "orderedOn" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "status" : {
-            "type" : "string",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
-          },
-          "supplier" : {
-            "type" : "string",
-            "maxLength" : 100,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "description", "status" ]
-      },
-      "PartsOrderDto" : {
-        "type" : "object",
-        "properties" : {
-          "description" : {
-            "type" : "string"
-          },
-          "orderedOn" : {
-            "type" : [ "string", "null" ],
-            "format" : "date"
-          },
-          "status" : {
-            "type" : "string",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
-          },
-          "supplier" : {
-            "type" : [ "string", "null" ]
-          }
-        },
-        "required" : [ "description", "orderedOn", "status", "supplier" ]
-      },
-      "PartsStatusRequest" : {
-        "type" : "object",
-        "properties" : {
-          "status" : {
-            "type" : "string",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
-          }
-        },
-        "required" : [ "status" ]
-      },
       "PersonStatisticsDto" : {
         "type" : "object",
         "properties" : {
@@ -14668,14 +14463,6 @@
             "type" : [ "string", "null" ],
             "description" : "Internal notes"
           },
-          "parts" : {
-            "description" : "Empty = no parts needed",
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/PartsOrderDto"
-            }, {
-              "type" : "null"
-            } ]
-          },
           "readyBy" : {
             "type" : [ "string", "null" ],
             "format" : "date-time",
@@ -14744,7 +14531,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "notes", "parts", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -14867,10 +14654,6 @@
             "type" : "string",
             "maxLength" : 2000,
             "minLength" : 0
-          },
-          "parts" : {
-            "$ref" : "#/components/schemas/Parts",
-            "description" : "Empty = no parts needed"
           },
           "readyBy" : {
             "type" : "string",

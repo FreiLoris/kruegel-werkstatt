@@ -106,19 +106,19 @@ class TaskTest {
 
     @Test
     void tireChangeKindAndMfkAppointmentOnlyWithTheirWork() {
-        assertThatThrownBy(() -> new TaskWork(false, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null, null))
+        assertThatThrownBy(() -> new TaskWork(false, TireChangeKind.WHEELS_STORED, false, null, Set.of(), null))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new TaskWork(false, null, false, DAY.atTime(10, 0), Set.of(), null, null))
+        assertThatThrownBy(() -> new TaskWork(false, null, false, DAY.atTime(10, 0), Set.of(), null))
                 .isInstanceOf(IllegalArgumentException.class);
 
         // kind and appointment may still be open
-        TaskWork open = new TaskWork(true, null, true, null, null, null, null);
+        TaskWork open = new TaskWork(true, null, true, null, null, null);
         assertThat(open.serviceItems()).isEmpty();
     }
 
     @Test
     void theMfkTripGoesWithTheMfk() {
-        TaskWork mfk = new TaskWork(false, null, true, DAY.atTime(10, 0), Set.of(), null, null);
+        TaskWork mfk = new TaskWork(false, null, true, DAY.atTime(10, 0), Set.of(), null);
         Task task = new Task(details(mfk));
         // one hour until said otherwise – also for sample data that never says it
         assertThat(task.getMfkMinutes()).isEqualTo(60);
@@ -133,19 +133,12 @@ class TaskTest {
     }
 
     @Test
-    void partsNeedADescription() {
-        assertThatThrownBy(() -> PartsOrder.toOrder("  ")).isInstanceOf(IllegalArgumentException.class);
-        assertThat(new PartsOrder(" Bremsscheiben ", PartsStatus.ORDERED, " ", null))
-                .isEqualTo(new PartsOrder("Bremsscheiben", PartsStatus.ORDERED, null, null));
-    }
-
-    @Test
     void updateReplacesTheTickedServiceItems() {
         ServiceItem oil = new ServiceItem("Ölwechsel", 0);
         ServiceItem wipers = new ServiceItem("Wischblätter", 1);
-        Task task = new Task(details(new TaskWork(false, null, false, null, Set.of(oil), null, null)));
+        Task task = new Task(details(new TaskWork(false, null, false, null, Set.of(oil), null)));
 
-        task.update(details(new TaskWork(false, null, false, null, Set.of(wipers), null, null)));
+        task.update(details(new TaskWork(false, null, false, null, Set.of(wipers), null)));
 
         assertThat(task.getWork().serviceItems()).containsExactly(wipers);
     }
