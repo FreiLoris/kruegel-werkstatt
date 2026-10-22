@@ -177,6 +177,22 @@ class TireHotelApiTest {
     }
 
     @Test
+    void keepsTorqueAndPressureOfTheSet() {
+        MvcTestResult stored = store("""
+                "season": "WINTER", "kind": "WHEELS", "wheelBolts": true, "torque": 120, "pressureFront": 2.5, "pressureRear": 2.75""");
+
+        assertThat(stored).hasStatus(HttpStatus.CREATED);
+        assertThat(stored).bodyJson().extractingPath("$.torque").isEqualTo(120);
+        assertThat(stored).bodyJson().extractingPath("$.pressureFront").isEqualTo(2.5);
+        assertThat(stored).bodyJson().extractingPath("$.pressureRear").isEqualTo(2.75);
+        assertThat(stored).bodyJson().extractingPath("$.wheelBolts").isEqualTo(true);
+
+        assertFieldError(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"torque\": 5"), "torque");
+        assertFieldError(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"pressureFront\": 25"), "pressureFront");
+        assertFieldError(store("\"season\": \"SUMMER\", \"kind\": \"TIRES\", \"pressureRear\": 2.555"), "pressureRear");
+    }
+
+    @Test
     void theTreadLimitsCanBeChangedButTheMinimumStaysBelow() {
         MvcTestResult limits = mvc.get().uri("/api/tire-hotel-settings").exchange();
         assertThat(limits).bodyJson().extractingPath("$.winterMm").isEqualTo(4.0);

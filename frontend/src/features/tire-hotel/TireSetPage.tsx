@@ -28,6 +28,7 @@ import {
 import styles from './TireHotel.module.css'
 import { formatDepth, olderDepths, WHEELS } from './tread'
 import { AdviseBanner, TreadDepthsView } from './TreadDepthsView'
+import { mountingSummary } from './taskTires'
 
 const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
   STORED: 'Eingelagert',
@@ -167,7 +168,9 @@ function TireSetDetail({ set }: { set: TireSet }) {
               ['Saison', SEASONS[set.season]],
               ['Typ', KINDS[set.kind]],
               ['Felgen', set.rims ? RIMS[set.rims] : null],
-              ['Dabei', [set.hubCaps && 'Radkappen', set.wheelBolts && 'Radschrauben'].filter(Boolean).join(', ') || null],
+              ['Dabei', set.hubCaps ? 'Radkappen' : null],
+              ['Radschrauben', set.wheelBolts ? '⚠ beachten – passende Schrauben im Auto suchen' : null],
+              ['Montage', mountingSummary(set) || null],
               ['Reifen', [set.brand, set.model].filter(Boolean).join(' ') || null],
               ['Dimension', set.dimension],
               ['Jahrgang', set.year?.toString()],

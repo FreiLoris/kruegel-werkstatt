@@ -4,7 +4,7 @@ import { withKind, type TireSetErrors, type TireSetForm } from './tireSetForm'
 import styles from './TireHotel.module.css'
 
 /**
- * What a set is (FB-07): season, wheels or tyres, rims, what comes with it, and the tyres themselves
+ * What a set is (FB-07): season, wheels or tyres, rims, what comes with it, torque and pressure to mount it (FB-11), and the tyres themselves
  * – one brand, model, dimension and year for the set (the newer concept of the workshop; no DOT
  * per wheel). Used to store a set and to edit it.
  */
@@ -64,7 +64,43 @@ export function TireSetFields({
       </div>
       <div className={styles.checks}>
         <Checkbox label="Radkappen dabei" checked={form.hubCaps} onChange={(e) => set('hubCaps', e.target.checked)} />
-        <Checkbox label="Radschrauben dabei" checked={form.wheelBolts} onChange={(e) => set('wheelBolts', e.target.checked)} />
+        <Checkbox
+          label="Radschrauben beachten (spezielle Schrauben – im Auto suchen)"
+          checked={form.wheelBolts}
+          onChange={(e) => set('wheelBolts', e.target.checked)}
+        />
+      </div>
+      <div className={styles.row}>
+        <TextField
+          label="Drehmoment Radschrauben (Nm)"
+          placeholder="z. B. 120"
+          inputMode="numeric"
+          maxLength={3}
+          autoComplete="off"
+          value={form.torque}
+          onChange={(e) => set('torque', e.target.value)}
+          error={errors.torque}
+        />
+        <TextField
+          label="Luftdruck vorne (bar)"
+          placeholder="z. B. 2,5"
+          inputMode="decimal"
+          maxLength={4}
+          autoComplete="off"
+          value={form.pressureFront}
+          onChange={(e) => set('pressureFront', e.target.value)}
+          error={errors.pressureFront}
+        />
+        <TextField
+          label="Luftdruck hinten (bar)"
+          placeholder="z. B. 2,7"
+          inputMode="decimal"
+          maxLength={4}
+          autoComplete="off"
+          value={form.pressureRear}
+          onChange={(e) => set('pressureRear', e.target.value)}
+          error={errors.pressureRear}
+        />
       </div>
       <div className={styles.row}>
         <TextField label="Marke" placeholder="z. B. Michelin" maxLength={60} autoComplete="off" value={form.brand} onChange={(e) => set('brand', e.target.value)} />

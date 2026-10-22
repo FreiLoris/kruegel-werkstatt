@@ -2001,6 +2001,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/vehicles/{vehicleId}/tire-sets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All sets of a vehicle, in the hotel or not (newest first) */
+        get: operations["ofVehicle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2717,6 +2734,10 @@ export interface components {
              * @description Empty = assigned later
              */
             placeId?: string;
+            /** @description Only for a new set: pressure front in bar */
+            pressureFront?: number;
+            /** @description Only for a new set: pressure rear in bar */
+            pressureRear?: number;
             remark?: string;
             /**
              * @description Only for a new set with complete wheels
@@ -2733,6 +2754,11 @@ export interface components {
              * @description A retrieved set of the customer – empty = a new set
              */
             setId?: string;
+            /**
+             * Format: int32
+             * @description Only for a new set: torque in Nm
+             */
+            torque?: number;
             /** @description Only for a new set; missing = false */
             wheelBolts?: boolean;
             /** Format: int32 */
@@ -3331,6 +3357,10 @@ export interface components {
              * @description Where it lies; empty = not assigned (or retrieved)
              */
             placeId: string | null;
+            /** @description Tyre pressure front in bar */
+            pressureFront: number | null;
+            /** @description Tyre pressure rear in bar */
+            pressureRear: number | null;
             remark: string | null;
             /**
              * Format: date
@@ -3343,6 +3373,11 @@ export interface components {
             season: "SUMMER" | "WINTER" | "ALL_SEASON";
             /** Format: date */
             storedOn: string;
+            /**
+             * Format: int32
+             * @description Torque of the wheel bolts in Nm
+             */
+            torque: number | null;
             /** Format: date-time */
             updatedAt: string;
             /**
@@ -3354,6 +3389,7 @@ export interface components {
             vehicle: components["schemas"]["VehicleDto"] | null;
             /** Format: int64 */
             version: number;
+            /** @description Radschrauben beachten (FB-17) */
             wheelBolts: boolean;
             /**
              * Format: int32
@@ -3402,6 +3438,16 @@ export interface components {
              * @description Only when storing: the place; empty = assigned later (then by moving)
              */
             placeId?: string;
+            /**
+             * @description Tyre pressure front in bar
+             * @example 2.5
+             */
+            pressureFront?: number;
+            /**
+             * @description Tyre pressure rear in bar
+             * @example 2.7
+             */
+            pressureRear?: number;
             remark?: string;
             /**
              * @description Only with complete wheels; may be unknown
@@ -3416,6 +3462,12 @@ export interface components {
              */
             storedOn?: string;
             /**
+             * Format: int32
+             * @description Torque of the wheel bolts in Nm
+             * @example 120
+             */
+            torque?: number;
+            /**
              * Format: uuid
              * @description May be open
              */
@@ -3425,7 +3477,7 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
-            /** @description Missing = false */
+            /** @description Radschrauben beachten (FB-17); missing = false */
             wheelBolts?: boolean;
             /**
              * Format: int32
@@ -13248,6 +13300,73 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["VehicleDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    ofVehicle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vehicleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSetDto"][];
                 };
             };
             /** @description Bad Request */

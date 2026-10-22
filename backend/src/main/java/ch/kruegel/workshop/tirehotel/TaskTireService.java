@@ -129,7 +129,7 @@ public class TaskTireService {
             throw new InvalidInputException("removed.rims", "nur bei Kompletträdern");
         }
         return new TireSetDetails(task.getCustomer(), task.getVehicle(), r.season(), r.kind(), r.rims(), r.hubCaps(), r.wheelBolts(),
-                r.brand(), r.model(), r.dimension(), r.year(), r.remark());
+                r.brand(), r.model(), r.dimension(), r.year(), r.remark(), r.torque(), r.pressureFront(), r.pressureRear());
     }
 
     /** The sets of the task's vehicle – and those of the customer without a vehicle (e.g. taken over from SwissGarage). */

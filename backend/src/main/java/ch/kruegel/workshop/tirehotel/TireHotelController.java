@@ -34,6 +34,12 @@ class TireHotelController {
         return service.list(inHotel);
     }
 
+    @Operation(summary = "All sets of a vehicle, in the hotel or not (newest first)")
+    @GetMapping("/api/vehicles/{vehicleId}/tire-sets")
+    List<TireSetDto> ofVehicle(@PathVariable UUID vehicleId) {
+        return service.ofVehicle(vehicleId);
+    }
+
     @Operation(summary = "One set")
     @GetMapping("/api/tire-sets/{id}")
     TireSetDto get(@PathVariable UUID id) {

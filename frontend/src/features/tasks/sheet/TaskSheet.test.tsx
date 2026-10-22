@@ -95,13 +95,31 @@ describe('TaskSheet', () => {
     expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toEqual(['VL', 'VR', 'HL', 'HR'])
     // the data once per set, not per wheel
     expect(block.textContent?.match(/Felgen/g)).toHaveLength(2)
-    expect(screen.getByText(/Radschrauben mit Drehmoment angezogen/)).toBeTruthy()
+    // torque and pressure unknown: lines to fill in, no warning about the bolts
+    expect(block.textContent).toMatch(/Radschrauben mit\s+Nm angezogen · Luftdruck v\s+h\s+bar/)
+    expect(block.textContent).not.toContain('beachten')
   })
 
   it('tire change from the tire hotel: its set, place and last depths printed, the set probably on the car too (13q)', () => {
     // fictitious tyres
     const depths = { frontLeft: 6, frontRight: 6, rearLeft: 5.5, rearRight: null }
-    const winter = { id: 'w', season: 'WINTER', kind: 'WHEELS', rims: 'ALU', brand: 'Muster', model: 'Snow', dimension: '205/55 R16', year: 2022, depths, place: 'OG-B3-1' }
+    const winter = {
+      id: 'w',
+      season: 'WINTER',
+      kind: 'WHEELS',
+      rims: 'ALU',
+      brand: 'Muster',
+      model: 'Snow',
+      dimension: '205/55 R16',
+      year: 2022,
+      depths,
+      place: 'OG-B3-1',
+      wheelBolts: true,
+      remark: 'Felgenschloss im Handschuhfach',
+      torque: 120,
+      pressureFront: 2.5,
+      pressureRear: 2.7,
+    }
     const summer = { id: 's', season: 'SUMMER', kind: 'WHEELS', rims: null, brand: 'Sommer', model: null, dimension: null, year: null, depths, place: null }
     const tires = { mounted: null, removed: null, inHotel: [winter], retrieved: [summer] } as never
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map(), tires }} />)
@@ -110,6 +128,10 @@ describe('TaskSheet', () => {
     expect(screen.getByText('Lagerplatz OG-B3-1')).toBeTruthy()
     expect(screen.getByText(/Sommer · Kompletträder · Sommer/)).toBeTruthy()
     expect(screen.getAllByText(/^zuletzt/).map((cell) => cell.textContent)).toEqual(['zuletzt 6,0 mm', 'zuletzt 6,0 mm', 'zuletzt 5,5 mm'])
+    // FB-11, FB-17: what to mount it with, and the bolts not to miss
+    expect(screen.getByText('120 Nm')).toBeTruthy()
+    expect(screen.getByText('Luftdruck v 2,5 / h 2,7 bar')).toBeTruthy()
+    expect(screen.getByText(/⚠ Radschrauben beachten – passende Schrauben im Auto suchen \(Felgenschloss im Handschuhfach\)/)).toBeTruthy()
   })
 
   it('tires brought: asks whether the removed ones are stored, no rims for tires only', () => {

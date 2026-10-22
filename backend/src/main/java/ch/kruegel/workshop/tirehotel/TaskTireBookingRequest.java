@@ -2,11 +2,15 @@ package ch.kruegel.workshop.tirehotel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -38,6 +42,9 @@ public record TaskTireBookingRequest(
             @Size(max = TireSetDetails.DIMENSION_MAX) String dimension,
             @Min(TireSetDetails.YEAR_MIN) @Max(TireSetDetails.YEAR_MAX) Integer year,
             @Size(max = TireSetDetails.REMARK_MAX) String remark,
+            @Min(TireSetDetails.TORQUE_MIN) @Max(TireSetDetails.TORQUE_MAX) @Schema(description = "Only for a new set: torque in Nm") Integer torque,
+            @DecimalMin(TireSetDetails.PRESSURE_MIN) @DecimalMax(TireSetDetails.PRESSURE_MAX) @Digits(integer = 1, fraction = 2) @Schema(description = "Only for a new set: pressure front in bar") BigDecimal pressureFront,
+            @DecimalMin(TireSetDetails.PRESSURE_MIN) @DecimalMax(TireSetDetails.PRESSURE_MAX) @Digits(integer = 1, fraction = 2) @Schema(description = "Only for a new set: pressure rear in bar") BigDecimal pressureRear,
             @Valid @Schema(description = "As noted on the task sheet") DepthsRequest depths,
             @Schema(description = "Empty = assigned later") UUID placeId) {
 

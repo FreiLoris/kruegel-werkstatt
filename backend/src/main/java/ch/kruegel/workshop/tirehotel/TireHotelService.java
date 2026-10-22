@@ -54,6 +54,12 @@ public class TireHotelService {
         return (inHotel ? repository.inHotel() : repository.retrieved()).stream().map(TireSetDto::of).toList();
     }
 
+    /** All sets of a vehicle, in the hotel or not (newest first) – e.g. to propose torque and pressure (FB-11) */
+    @Transactional(readOnly = true)
+    public List<TireSetDto> ofVehicle(UUID vehicleId) {
+        return repository.ofVehicle(vehicleId).stream().map(TireSetDto::of).toList();
+    }
+
     @Transactional(readOnly = true)
     public TireSetDto get(UUID id) {
         return TireSetDto.of(find(id));
@@ -219,7 +225,8 @@ public class TireHotelService {
                             .orElseThrow(() -> new InvalidInputException("vehicleId", "Fahrzeug gibt es nicht oder ist nicht mehr aktiv"));
         }
         return new TireSetDetails(customer, vehicle, request.season(), request.kind(), request.rims(), request.hubCaps(),
-                request.wheelBolts(), request.brand(), request.model(), request.dimension(), request.year(), request.remark());
+                request.wheelBolts(), request.brand(), request.model(), request.dimension(), request.year(), request.remark(),
+                request.torque(), request.pressureFront(), request.pressureRear());
     }
 
     private TireSet find(UUID id) {

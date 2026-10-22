@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../../api/errors'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
@@ -11,10 +11,19 @@ import { formatDate } from '../../lib/format'
 import { CustomerStep } from '../tasks/wizard/CustomerStep'
 import type { CustomerStepValue } from '../tasks/wizard/wizardState'
 import { PlaceMap } from './PlaceMap'
-import { SEASONS, useSaveTireSet, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TireSet } from './tireHotelApi'
+import {
+  SEASONS,
+  useSaveTireSet,
+  useTireLocations,
+  useTirePlaces,
+  useTireSets,
+  useTreadLimits,
+  useVehicleTireSets,
+  type TireSet,
+} from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
-import { emptyForm, tireSetErrors, toTireSetRequest, type TireSetForm } from './tireSetForm'
+import { emptyForm, mountingProposal, NO_MOUNTING, tireSetErrors, toTireSetRequest, withMountingProposal, type TireSetForm } from './tireSetForm'
 import { lastUsedPlace, nextFreePlace, occupancy } from './tirePlaces'
 import { TreadDepthsInput } from './TreadDepthsInput'
 import { scrollToFirstError } from '../../lib/scrollToFirstError'
@@ -50,6 +59,17 @@ export function TireStorePage() {
 
   const errors = tireSetErrors(form, today)
   const complete = Object.keys(errors).length === 0
+
+  // torque and pressure proposed from the car's earlier sets (FB-11) – they follow another car or season
+  // and arrive once the sets are loaded; what was typed stays
+  const chosenVehicleId = customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle.id : undefined
+  const { data: setsOfVehicle } = useVehicleTireSets(chosenVehicleId)
+  const mountingSuggestion = useMemo(() => mountingProposal(chosenVehicleId ? (setsOfVehicle ?? []) : [], form.season), [chosenVehicleId, setsOfVehicle, form.season])
+  const lastProposal = useRef(NO_MOUNTING)
+  useEffect(() => {
+    setForm((current) => withMountingProposal(current, lastProposal.current, mountingSuggestion))
+    lastProposal.current = mountingSuggestion
+  }, [mountingSuggestion])
 
   /** Once the vehicle is decided, on to the set – like the task wizard (one click less per customer). */
   function chooseCustomer(next: CustomerStepValue) {

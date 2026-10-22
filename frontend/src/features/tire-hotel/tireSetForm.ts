@@ -11,6 +11,7 @@ export interface TireSetForm {
   kind: TireSetKind | ''
   rims: RimKind | ''
   hubCaps: boolean
+  /** "Radschrauben beachten" (FB-17): special bolts – look for the matching ones in the car */
   wheelBolts: boolean
   brand: string
   model: string
@@ -18,6 +19,11 @@ export interface TireSetForm {
   /** year of manufacture from the DOT code, e.g. "2022" */
   year: string
   remark: string
+  /** FB-11: torque of the wheel bolts in Nm, e.g. "120" */
+  torque: string
+  /** FB-11: tyre pressure in bar, "2,5" or "2.5" */
+  pressureFront: string
+  pressureRear: string
   /** "Alle vier gleich": one field for all wheels – a new set usually has the same depth everywhere */
   sameDepth: boolean
   /** in mm, "6,5" or "6.5" */
@@ -41,6 +47,9 @@ export function emptyForm(today: string): TireSetForm {
     dimension: '',
     year: '',
     remark: '',
+    torque: '',
+    pressureFront: '',
+    pressureRear: '',
     sameDepth: true,
     depths: { frontLeft: '', frontRight: '', rearLeft: '', rearRight: '' },
   }
@@ -82,9 +91,27 @@ export function withKind(form: TireSetForm, kind: TireSetKind | ''): TireSetForm
   return { ...form, kind, rims: kind === 'WHEELS' ? form.rims : '' }
 }
 
-export type TireSetErrors = Partial<Record<'season' | 'kind' | 'year' | Wheel, string>>
+export type TireSetErrors = Partial<Record<'season' | 'kind' | 'year' | 'torque' | 'pressureFront' | 'pressureRear' | Wheel, string>>
 
 const YEAR_MIN = 1990
+const TORQUE_MIN = 10
+const TORQUE_MAX = 999
+const PRESSURE_MIN = 0.5
+const PRESSURE_MAX = 9.99
+
+/** "120" → 120, "" → null; anything else → NaN */
+export function parseTorque(text: string): number | null {
+  const trimmed = text.trim()
+  if (!trimmed) return null
+  return /^\d{1,3}$/.test(trimmed) ? Number(trimmed) : NaN
+}
+
+/** "2,5" → 2.5, "" → null; more than two decimals or anything else → NaN */
+export function parsePressure(text: string): number | null {
+  const trimmed = text.trim().replace(',', '.')
+  if (!trimmed) return null
+  return /^\d(\.\d{1,2})?$/.test(trimmed) ? Number(trimmed) : NaN
+}
 
 export function tireSetErrors(form: TireSetForm, today: string): TireSetErrors {
   const errors: TireSetErrors = {}
@@ -95,6 +122,12 @@ export function tireSetErrors(form: TireSetForm, today: string): TireSetErrors {
     if (!/^\d{4}$/.test(form.year.trim()) || year < YEAR_MIN || year > Number(today.slice(0, 4))) {
       errors.year = `Jahrgang zwischen ${YEAR_MIN} und heute, z. B. 2022`
     }
+  }
+  const torque = parseTorque(form.torque)
+  if (Number.isNaN(torque) || (torque !== null && (torque < TORQUE_MIN || torque > TORQUE_MAX))) errors.torque = 'in Nm, z. B. 120'
+  for (const field of ['pressureFront', 'pressureRear'] as const) {
+    const pressure = parsePressure(form[field])
+    if (Number.isNaN(pressure) || (pressure !== null && (pressure < PRESSURE_MIN || pressure > PRESSURE_MAX))) errors[field] = 'in bar, z. B. 2,5'
   }
   for (const { key } of WHEELS) {
     const depth = parseDepth(form.depths[key])
@@ -126,12 +159,54 @@ export function toTireSetRequest(step1: CustomerStepValue, form: TireSetForm, ve
     dimension: text(form.dimension),
     year: form.year.trim() ? Number(form.year.trim()) : undefined,
     remark: text(form.remark),
+    ...mountingOf(form),
     depths: version === undefined ? depthsOf(form) : undefined,
     version,
   }
 }
 
-const depthText = (depth: number | null | undefined) => (depth === null || depth === undefined ? '' : String(depth).replace('.', ','))
+/** The typed torque and pressures to send – empty ones are left out */
+export function mountingOf(form: TireSetForm) {
+  return {
+    torque: parseTorque(form.torque) ?? undefined,
+    pressureFront: parsePressure(form.pressureFront) ?? undefined,
+    pressureRear: parsePressure(form.pressureRear) ?? undefined,
+  }
+}
+
+export type Mounting = Pick<TireSetForm, 'torque' | 'pressureFront' | 'pressureRear'>
+
+export const NO_MOUNTING: Mounting = { torque: '', pressureFront: '', pressureRear: '' }
+
+/** 2.5 → "2,5", empty → '' – a number back into a field */
+const numberText = (value: number | null | undefined) => (value === null || value === undefined ? '' : String(value).replace('.', ','))
+
+const mountingOfSet = (set: TireSet): Mounting => ({
+  torque: numberText(set.torque),
+  pressureFront: numberText(set.pressureFront),
+  pressureRear: numberText(set.pressureRear),
+})
+
+/**
+ * Torque and pressures rarely change for a car (FB-11): proposed from its newest set that has them –
+ * one of the same season first (summer and winter wheels may differ). Empty when none has them.
+ */
+export function mountingProposal(setsOfVehicle: TireSet[], season: Season | ''): Mounting {
+  const known = setsOfVehicle
+    .filter((s) => s.torque != null || s.pressureFront != null || s.pressureRear != null)
+    .sort((a, b) => b.storedOn.localeCompare(a.storedOn))
+  const best = known.find((s) => s.season === season) ?? known[0]
+  return best ? mountingOfSet(best) : NO_MOUNTING
+}
+
+/**
+ * Another proposal (other car, other season, the car's sets just loaded): it replaces the values as
+ * long as they are still the old proposal (or empty) – what was typed stays.
+ */
+export function withMountingProposal(form: TireSetForm, before: Mounting, after: Mounting): TireSetForm {
+  const same = (a: Mounting, b: Mounting) => a.torque === b.torque && a.pressureFront === b.pressureFront && a.pressureRear === b.pressureRear
+  return same(form, before) || same(form, NO_MOUNTING) ? { ...form, ...after } : form
+}
 
 /** A saved set back into the form – for editing its data. */
 export function formFromSet(set: TireSet): TireSetForm {
@@ -147,7 +222,8 @@ export function formFromSet(set: TireSet): TireSetForm {
     dimension: set.dimension ?? '',
     year: set.year?.toString() ?? '',
     remark: set.remark ?? '',
+    ...mountingOfSet(set),
     sameDepth: d.frontLeft === d.frontRight && d.frontLeft === d.rearLeft && d.frontLeft === d.rearRight,
-    depths: { frontLeft: depthText(d.frontLeft), frontRight: depthText(d.frontRight), rearLeft: depthText(d.rearLeft), rearRight: depthText(d.rearRight) },
+    depths: { frontLeft: numberText(d.frontLeft), frontRight: numberText(d.frontRight), rearLeft: numberText(d.rearLeft), rearRight: numberText(d.rearRight) },
   }
 }

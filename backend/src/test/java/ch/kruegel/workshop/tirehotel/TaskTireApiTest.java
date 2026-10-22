@@ -83,7 +83,8 @@ class TaskTireApiTest {
 
         MvcTestResult booked = send("POST", "/api/tasks/" + task + "/tires", """
                 { "mounted": { "setId": "%s", "depths": { "frontLeft": 5.5, "frontRight": 5.5 } },
-                  "removed": { "season": "SUMMER", "kind": "WHEELS", "rims": "ALU", "brand": "Sommer",
+                  "removed": { "season": "SUMMER", "kind": "WHEELS", "rims": "ALU", "brand": "Sommer", "wheelBolts": true,
+                               "torque": 110, "pressureFront": 2.4, "pressureRear": 2.6,
                                "depths": { "frontLeft": 3.5 }, "placeId": "%s" } }""".formatted(winter, place1));
         assertThat(booked).hasStatusOk();
         assertThat(booked).bodyJson().extractingPath("$.mounted.id").isEqualTo(winter);
@@ -93,6 +94,13 @@ class TaskTireApiTest {
         assertThat(booked).bodyJson().extractingPath("$.removed.place").isEqualTo("OG-A1-1");
         assertThat(booked).bodyJson().extractingPath("$.removed.vehicle.licensePlate").isEqualTo("ZH 123456");
         assertThat(booked).bodyJson().extractingPath("$.removed.depths.frontLeft").isEqualTo(3.5);
+        // FB-11, FB-17: what to mount the new set with
+        assertThat(booked).bodyJson().extractingPath("$.removed.torque").isEqualTo(110);
+        assertThat(booked).bodyJson().extractingPath("$.removed.pressureRear").isEqualTo(2.6);
+        assertThat(booked).bodyJson().extractingPath("$.removed.wheelBolts").isEqualTo(true);
+        // both sets of the car, wherever they are – newest first
+        assertThat(mvc.get().uri("/api/vehicles/" + golf.getId() + "/tire-sets").exchange()).bodyJson().extractingPath("$[*].brand").asArray()
+                .containsExactly("Sommer", "Muster");
 
         assertThat(mvc.get().uri("/api/tire-sets/" + winter + "/history").exchange()).bodyJson().extractingPath("$[*].kind").asArray()
                 .containsExactly("STORED", "MEASURED", "RETRIEVED");

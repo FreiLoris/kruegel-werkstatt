@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button'
 import { Checkbox } from '../../components/ui/Fields'
 import { formatDate } from '../../lib/format'
 import { useCompany, type Company } from '../company/companyApi'
+import { mountingSummary } from './taskTires'
 import { KINDS, RIMS, SEASONS, useTireSet, useTreadLimits, type TireSet, type TreadLimits } from './tireHotelApi'
 import styles from './TireReceiptPage.module.css'
 import { formatDepth, STATUS_TEXT, treadStatus, wheelsToAdvise, WHEELS } from './tread'
@@ -64,7 +65,8 @@ function Receipt({ set, company, limits, advise }: { set: TireSet; company: Comp
   const companyLine = [company.street, [company.postalCode, company.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const companyContact = [company.phone && `Tel. ${company.phone}`, company.email, company.website].filter(Boolean).join(' · ')
   const tyres = [set.brand, set.model, set.dimension].filter(Boolean).join(' ')
-  const extras = [set.rims && `${RIMS[set.rims]}felgen`, set.hubCaps && 'Radkappen', set.wheelBolts && 'Radschrauben'].filter(Boolean).join(', ')
+  const extras = [set.rims && `${RIMS[set.rims]}felgen`, set.hubCaps && 'Radkappen'].filter(Boolean).join(', ')
+  const mounting = mountingSummary(set)
 
   return (
     <article className={styles.sheet} aria-label="Einlagerungsschein">
@@ -105,6 +107,18 @@ function Receipt({ set, company, limits, advise }: { set: TireSet; company: Comp
             <div>
               <dt>Reifen</dt>
               <dd>{tyres}</dd>
+            </div>
+          )}
+          {set.wheelBolts && (
+            <div>
+              <dt>Radschrauben</dt>
+              <dd>beachten – spezielle Schrauben, sie bleiben im Fahrzeug</dd>
+            </div>
+          )}
+          {mounting && (
+            <div>
+              <dt>Montage</dt>
+              <dd>{mounting}</dd>
             </div>
           )}
           {set.year && (

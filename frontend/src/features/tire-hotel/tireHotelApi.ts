@@ -36,6 +36,16 @@ export function useTireSets(inHotel: boolean) {
   })
 }
 
+/** All sets of a vehicle, in the hotel or not (newest first) – to propose torque and pressure (FB-11) */
+export function useVehicleTireSets(vehicleId: string | undefined) {
+  return useQuery({
+    queryKey: [TOPIC, 'vehicle', vehicleId],
+    queryFn: async ({ signal }) =>
+      dataOrThrow(await api.GET('/api/vehicles/{vehicleId}/tire-sets', { params: { path: { vehicleId: vehicleId! } }, signal })),
+    enabled: !!vehicleId,
+  })
+}
+
 export function useTireSet(id: string | undefined) {
   return useQuery({
     queryKey: [TOPIC, 'one', id],
