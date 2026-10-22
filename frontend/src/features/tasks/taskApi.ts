@@ -34,6 +34,14 @@ export const TASK_STATUS: Record<TaskStatus, string> = {
   DONE: 'Fertig',
 }
 
+export type VehicleLocation = Task['vehicleLocation']
+
+/** Where the vehicle is (FB-16) */
+export const VEHICLE_LOCATION: Record<VehicleLocation, string> = {
+  AT_CUSTOMER: 'Beim Kunden',
+  AT_WORKSHOP: 'Bei uns',
+}
+
 /** Radwechsel-Art – wording of the old app */
 export const TIRE_CHANGE_KINDS: Record<TireChangeKind, string> = {
   WHEELS_STORED: 'Räder eingelagert',
@@ -149,6 +157,16 @@ export function useUpdateTask() {
   return useMutation({
     mutationFn: async ({ id, request }: { id: string; request: TaskRequest }) =>
       dataOrThrow(await api.PUT('/api/tasks/{id}', { params: { path: { id } }, body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** The car came in or went back (FB-16) – no version, like the status. */
+export function useMoveVehicle() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, location }: { id: string; location: VehicleLocation }) =>
+      dataOrThrow(await api.PUT('/api/tasks/{id}/vehicle-location', { params: { path: { id } }, body: { location } })),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

@@ -1,7 +1,7 @@
 import { previousWorkingDay } from '../../../lib/calendar'
 import { addDays, addMinutes, formatDate, minutesBetween } from '../../../lib/format'
 import type { Schedule } from '../day/timeGrid'
-import type { AnyTask, TaskRequest, TireChangeKind } from '../taskApi'
+import type { AnyTask, TaskRequest, TireChangeKind, VehicleLocation } from '../taskApi'
 import type { CustomerStepValue } from './wizardState'
 
 /**
@@ -29,6 +29,8 @@ export interface AppointmentForm {
   readyByDate: string
   readyByTime: string
   waitingCustomer: boolean
+  /** where the vehicle is (FB-16) – a new task: with the customer */
+  vehicleLocation: VehicleLocation
   /** '' = still open */
   mechanicId: string
   /** '' = still open */
@@ -90,6 +92,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   readyByDate: '',
   readyByTime: READY_BY_TIME,
   waitingCustomer: false,
+  vehicleLocation: 'AT_CUSTOMER',
   mechanicId: '',
   liftId: '',
   tireChange: false,
@@ -319,6 +322,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     arrivesEarlier: planned && form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
     readyBy: planned && form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
     waitingCustomer: planned && form.waitingCustomer,
+    vehicleLocation: form.vehicleLocation,
     mechanicId: form.mechanicId || undefined,
     liftId: planned ? form.liftId || undefined : undefined,
     tireChange: form.tireChange,
@@ -367,6 +371,7 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     readyByDate,
     readyByTime: readyByTime || READY_BY_TIME,
     waitingCustomer: task.waitingCustomer,
+    vehicleLocation: task.vehicleLocation,
     mechanicId: task.mechanicId ?? '',
     liftId: task.liftId ?? '',
     tireChange: task.tireChange,

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,6 +111,16 @@ class TaskController {
     @PutMapping("/{id}")
     TaskDto update(@PathVariable UUID id, @Valid @RequestBody TaskRequest request) {
         return service.update(id, request);
+    }
+
+    /** Where the vehicle is now */
+    record VehicleLocationRequest(@NotNull VehicleLocation location) {
+    }
+
+    @Operation(summary = "Where the vehicle is", description = "Bei uns / beim Kunden (FB-16). No version needed, like the status.")
+    @PutMapping("/{id}/vehicle-location")
+    TaskDto moveVehicle(@PathVariable UUID id, @Valid @RequestBody VehicleLocationRequest request) {
+        return service.moveVehicle(id, request.location());
     }
 
     @Operation(summary = "Change status", description = "No version needed – the status is changed on its own.")

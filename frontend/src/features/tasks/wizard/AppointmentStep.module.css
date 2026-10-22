@@ -92,3 +92,12 @@
   font-size: var(--font-size-sm);
 }
 
+
+/* "Fahrzeug: Beim Kunden | Bei uns" (FB-16) */
+.vehicleLocation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}

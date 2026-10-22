@@ -291,6 +291,26 @@ class TaskApiTest {
     }
 
     @Test
+    void theVehicleIsWithTheCustomerUntilItComesIn() {
+        String id = idOf(create(null));
+        assertThat(mvc.get().uri("/api/tasks/" + id).exchange()).bodyJson().extractingPath("$.vehicleLocation").isEqualTo("AT_CUSTOMER");
+
+        // one tap, no version
+        MvcTestResult moved = send("PUT", "/api/tasks/" + id + "/vehicle-location", "{ \"location\": \"AT_WORKSHOP\" }");
+        assertThat(moved).bodyJson().extractingPath("$.vehicleLocation").isEqualTo("AT_WORKSHOP");
+        // editing without it leaves it; with it, it is taken
+        MvcTestResult edited = send("PUT", "/api/tasks/" + id, body("\"version\": " + versionOf(moved)));
+        assertThat(edited).bodyJson().extractingPath("$.vehicleLocation").isEqualTo("AT_WORKSHOP");
+        assertThat(send("PUT", "/api/tasks/" + id, body("\"version\": " + versionOf(edited) + ", \"vehicleLocation\": \"AT_CUSTOMER\""))).bodyJson()
+                .extractingPath("$.vehicleLocation").isEqualTo("AT_CUSTOMER");
+        assertFieldError(send("PUT", "/api/tasks/" + id + "/vehicle-location", "{ \"location\": null }"), "location");
+
+        // work started: the car is here
+        assertThat(send("PUT", "/api/tasks/" + id + "/status", "{ \"status\": \"IN_PROGRESS\" }"))
+                .bodyJson().extractingPath("$.vehicleLocation").isEqualTo("AT_WORKSHOP");
+    }
+
+    @Test
     void waitingForPartsAfterItsDayIsListedUntilPlannedAgain() {
         String task = "{ \"customerId\": \"%s\", \"acceptedById\": \"%s\", \"date\": \"%s\", \"time\": \"08:00\" }";
         String past = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), LocalDate.now().minusDays(3))));
@@ -631,8 +651,16 @@ class TaskApiTest {
     }
 
     private static String idOf(MvcTestResult response) {
+        return (String) jsonPath(response, "$.id");
+    }
+
+    private static String versionOf(MvcTestResult response) {
+        return String.valueOf(jsonPath(response, "$.version"));
+    }
+
+    private static Object jsonPath(MvcTestResult response, String path) {
         try {
-            return JsonPath.read(response.getResponse().getContentAsString(), "$.id");
+            return JsonPath.read(response.getResponse().getContentAsString(), path);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }

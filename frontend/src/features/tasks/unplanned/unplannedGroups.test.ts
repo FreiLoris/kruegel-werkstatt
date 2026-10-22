@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AnyTask } from '../taskApi'
 import type { ShoppingItem } from '../../shopping/shoppingApi'
-import { partsByTask, unplannedCount, unplannedGroups } from './unplannedGroups'
+import { byLocation, callInNow, locationFilterOf, partsByTask, unplannedCount, unplannedGroups } from './unplannedGroups'
 
 // fictitious
 const task = (id: string, more: Partial<AnyTask> = {}) =>
@@ -52,5 +52,26 @@ describe('unplannedCount', () => {
     expect(unplannedCount(groups)).toBe('2 ohne Termin · 1 wartet auf Material')
     expect(unplannedCount(unplannedGroups([task('a')], []))).toBe('1 ohne Termin')
     expect(unplannedCount(unplannedGroups([], []))).toBe('')
+  })
+})
+
+describe('where the vehicle is (FB-16)', () => {
+  it('filters both groups; call in now only with the car at the customer and nothing missing', () => {
+    const atCustomer = task('c', { vehicleLocation: 'AT_CUSTOMER' })
+    const here = task('h', { vehicleLocation: 'AT_WORKSHOP' })
+    const waitingThere = task('w', { status: 'WAITING_FOR_PARTS', date: '2026-10-02', vehicleLocation: 'AT_CUSTOMER' })
+    const groups = unplannedGroups([atCustomer, here], [waitingThere])
+
+    expect(byLocation(groups, 'customer').withoutAppointment.map((t) => t.id)).toEqual(['c'])
+    expect(byLocation(groups, 'workshop').waitingForParts).toEqual([])
+
+    // only once its parts arrived – not every car with the customer
+    expect(callInNow(atCustomer, new Map())).toBe(false)
+    expect(callInNow(waitingThere, new Map())).toBe(false)
+    expect(callInNow(waitingThere, new Map([['w', { missing: [], arrived: true }]]))).toBe(true)
+    expect(callInNow(here, new Map([['h', { missing: [], arrived: true }]]))).toBe(false)
+    expect(callInNow(atCustomer, new Map([['c', { missing: ['Ölfilter'], arrived: false }]]))).toBe(false)
+    expect(locationFilterOf('customer')).toBe('customer')
+    expect(locationFilterOf('anything')).toBe('all')
   })
 })

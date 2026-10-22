@@ -1700,6 +1700,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/{id}/vehicle-location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Where the vehicle is
+         * @description Bei uns / beim Kunden (FB-16). No version needed, like the status.
+         */
+        put: operations["moveVehicle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tire-hotel-settings": {
         parameters: {
             query?: never;
@@ -3226,6 +3246,11 @@ export interface components {
             updatedBy: string | null;
             /** @description Still open if empty */
             vehicle: components["schemas"]["VehicleDto"] | null;
+            /**
+             * @description Where the vehicle is (FB-16)
+             * @enum {string}
+             */
+            vehicleLocation: "AT_WORKSHOP" | "AT_CUSTOMER";
             /** Format: int64 */
             version: number;
             /** @description Customer waits on site – a flag, not a status */
@@ -3333,6 +3358,11 @@ export interface components {
             tireChangeKind?: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT";
             /** Format: uuid */
             vehicleId?: string;
+            /**
+             * @description Where the vehicle is (FB-16); missing = with the customer when new, unchanged when editing
+             * @enum {string}
+             */
+            vehicleLocation?: "AT_WORKSHOP" | "AT_CUSTOMER";
             /**
              * Format: int64
              * @description Only needed when editing
@@ -3760,6 +3790,10 @@ export interface components {
             /** Format: int64 */
             version: number;
             vin: string | null;
+        };
+        VehicleLocationRequest: {
+            /** @enum {string} */
+            location: "AT_WORKSHOP" | "AT_CUSTOMER";
         };
         VehicleRequest: {
             color?: string;
@@ -11997,6 +12031,77 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskTiresDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    moveVehicle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleLocationRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskDto"];
                 };
             };
             /** @description Bad Request */

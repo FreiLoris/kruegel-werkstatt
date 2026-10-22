@@ -160,6 +160,9 @@ public class TaskService {
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
         task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
+        if (request.vehicleLocation() != null) {
+            task.moveVehicle(request.vehicleLocation());
+        }
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
         return saved(repository.save(task));
@@ -182,6 +185,9 @@ public class TaskService {
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
         task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
+        if (request.vehicleLocation() != null) {
+            task.moveVehicle(request.vehicleLocation());
+        }
         return saved(task);
     }
 
@@ -192,6 +198,13 @@ public class TaskService {
     public TaskDto changeStatus(UUID id, TaskStatus status) {
         Task task = find(id);
         task.changeStatus(status);
+        return saved(task);
+    }
+
+    /** The car came in or went back (FB-16) – one tap in "Ohne Termin", no version needed, like the status. */
+    public TaskDto moveVehicle(UUID id, VehicleLocation location) {
+        Task task = find(id);
+        task.moveVehicle(location);
         return saved(task);
     }
 

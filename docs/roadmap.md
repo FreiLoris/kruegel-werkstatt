@@ -667,8 +667,13 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   they were, a supplier of the list linked by name, any other as a note). "Ohne Termin" says what
   is missing from the positions; the task sheet prints them with the work; the task search finds
   a task by its parts.
-- [ ] **14e – Where the vehicle is** (FB-16): "Bei uns" / "Beim Kunden", "Ohne Termin" grouped,
-  phone to call
+- [x] **14e – Where the vehicle is** (FB-16)
+  Done: a task says where its vehicle is – "Beim Kunden" (new ones) or "Bei uns" (V44: tasks in work
+  or waiting for parts are here). One tap in the wizard, on the task and in "Ohne Termin" (no
+  version, like the status). "Ohne Termin" filters "Beim Kunden – aufbieten | Bei uns" with counts;
+  with the customer the phone numbers are links to tap; "Jetzt aufbieten" marks a car with the
+  customer whose parts are all here (FB-15); "In Arbeit" moves the car here. No call log yet (optional in FB-16, also wished in
+  FB-21 – one for both later).
 - [ ] **14f – Unfinished tasks carried over** (FB-14): shown in "Ohne Lift" on the following
   working days with "verlängert seit …" – computed, the appointment itself stays
 - [ ] **14g – Week view in the wizard** (FB-13)

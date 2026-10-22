@@ -9801,6 +9801,95 @@
         "tags" : [ "Tyre hotel" ]
       }
     },
+    "/api/tasks/{id}/vehicle-location" : {
+      "put" : {
+        "description" : "Bei uns / beim Kunden (FB-16). No version needed, like the status.",
+        "operationId" : "moveVehicle",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VehicleLocationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Where the vehicle is",
+        "tags" : [ "Tasks" ]
+      }
+    },
     "/api/tire-hotel-settings" : {
       "get" : {
         "operationId" : "settings",
@@ -14518,6 +14607,11 @@
               "type" : "null"
             } ]
           },
+          "vehicleLocation" : {
+            "type" : "string",
+            "description" : "Where the vehicle is (FB-16)",
+            "enum" : [ "AT_WORKSHOP", "AT_CUSTOMER" ]
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
@@ -14531,7 +14625,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "vehicleLocation", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -14687,6 +14781,11 @@
           "vehicleId" : {
             "type" : "string",
             "format" : "uuid"
+          },
+          "vehicleLocation" : {
+            "type" : "string",
+            "description" : "Where the vehicle is (FB-16); missing = with the customer when new, unchanged when editing",
+            "enum" : [ "AT_WORKSHOP", "AT_CUSTOMER" ]
           },
           "version" : {
             "type" : "integer",
@@ -15472,6 +15571,16 @@
           }
         },
         "required" : [ "active", "color", "customerId", "description", "editable", "firstRegistration", "fuel", "id", "lastMfk", "licensePlate", "make", "mileageKm", "model", "modelYear", "nextMfk", "source", "swissgarageNumber", "updatedAt", "updatedBy", "version", "vin" ]
+      },
+      "VehicleLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "location" : {
+            "type" : "string",
+            "enum" : [ "AT_WORKSHOP", "AT_CUSTOMER" ]
+          }
+        },
+        "required" : [ "location" ]
       },
       "VehicleRequest" : {
         "type" : "object",
