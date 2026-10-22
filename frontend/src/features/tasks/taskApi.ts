@@ -177,6 +177,17 @@ export function useTasksWithoutAppointment() {
   })
 }
 
+/**
+ * Orders waiting for parts whose day is over – shown with "Ohne Termin" (FB-15). `today` only in
+ * the key: the TV loads again after midnight (bug #15) – the server decides with its own clock.
+ */
+export function useTasksWaitingForParts(today: string) {
+  return useQuery({
+    queryKey: [TOPIC, 'waiting-for-parts', today],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/tasks/waiting-for-parts', { signal })),
+  })
+}
+
 /** Take a planned task out of the plan: day, time and lift become free, the order stays. */
 export function useRemoveAppointment() {
   const queryClient = useQueryClient()

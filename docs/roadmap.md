@@ -641,7 +641,12 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   same season first) – when storing and when booking a tyre change. The check box is now
   "Radschrauben beachten": on the task sheet a framed warning with the set's remark, on the
   receipt a line; "Radschrauben" is no longer listed as stored.
-- [ ] **14b – "Wartet auf Material" in "Ohne Termin"** (FB-15)
+- [x] **14b – "Wartet auf Material" in "Ohne Termin"** (FB-15)
+  Done: "Ohne Termin" has a group "Wartet auf Material" on top – orders waiting without a day and
+  those whose day is over (they went under on that day; `GET /api/tasks/waiting-for-parts`). Planned
+  again for a day from today on, or another status = gone from the group. Each says what is missing
+  (the parts text until 14c/14d) and when its day was; parts arrived = first, "jetzt einplanen".
+  Dashboard and the button count both: "2 ohne Termin · 1 wartet auf Material".
 - [ ] **14c – Shopping list rebuilt** (FB-20): positions of their own (description, number,
   quantity, status, recorded by, to be ordered by), a to-do for the one who orders, details with
   notes and status history; existing shopping to-dos and "Material bestellen" texts taken over

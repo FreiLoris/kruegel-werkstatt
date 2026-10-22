@@ -1,6 +1,7 @@
 import { CalendarOff } from 'lucide-react'
 import { Link } from 'react-router'
-import { useTasksWithoutAppointment } from '../tasks/taskApi'
+import { unplannedCount } from '../tasks/unplanned/unplannedGroups'
+import { useUnplanned } from '../tasks/unplanned/useUnplanned'
 import styles from './WithoutAppointment.module.css'
 
 /**
@@ -9,17 +10,19 @@ import styles from './WithoutAppointment.module.css'
  * workshop would see them (feedback: "suscht vergisst mers"). Nothing when everything is planned.
  */
 export function WithoutAppointment() {
-  const { data: tasks } = useTasksWithoutAppointment()
-  if (!tasks || tasks.length === 0) return null
+  const { data: groups } = useUnplanned()
+  if (!groups) return null
+  const count = unplannedCount(groups)
+  if (!count) return null
 
-  // the oldest first, as in the list; the line is cut off with "…" when the screen is too narrow
-  const names = tasks.map((task) => task.customer.displayName).join(' · ')
+  // as in the list: waiting for parts, then the others; the line is cut off with "…" when too narrow
+  const names = [...groups.waitingForParts, ...groups.withoutAppointment].map((task) => task.customer.displayName).join(' · ')
   return (
     <Link to="/tasks?view=unplanned" className={styles.line} title={`Ohne Termin: ${names}`}>
       <CalendarOff aria-hidden />
-      {/* one line of text, cut off at the end: "2 ohne Termin · Huber Peter · …" */}
+      {/* one line of text, cut off at the end: "2 ohne Termin · 1 wartet auf Material · Huber Peter · …" (FB-15) */}
       <span className={styles.text}>
-        <strong>{tasks.length} ohne Termin</strong> · {names}
+        <strong>{count}</strong> · {names}
       </span>
     </Link>
   )

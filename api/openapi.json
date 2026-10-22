@@ -8231,6 +8231,79 @@
         "tags" : [ "Tasks" ]
       }
     },
+    "/api/tasks/waiting-for-parts" : {
+      "get" : {
+        "description" : "Shown together with the orders without appointment (FB-15) – the ones without a day are in that list already. Planned again (a day from today on) = no longer listed. The longest waiting first.",
+        "operationId" : "waitingForParts",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TaskDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Orders waiting for parts whose appointment is over",
+        "tags" : [ "Tasks" ]
+      }
+    },
     "/api/tasks/with-courtesy-car" : {
       "post" : {
         "description" : "Both or neither: if the car is taken (409, names the booking in the way) or a field is wrong (car fields as `courtesyCar.*`), the task is not saved either.",

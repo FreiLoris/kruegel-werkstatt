@@ -10,9 +10,10 @@ import styles from './AppointmentsPage.module.css'
 import { DayView } from './day/DayView'
 import { TaskListView } from './list/TaskListView'
 import { TaskSearch } from './TaskSearch'
-import { useTasksWithoutAppointment } from './taskApi'
 import { TaskStatusLegend } from './TaskStatusBadge'
 import { UnplannedView } from './unplanned/UnplannedView'
+import { unplannedTotal } from './unplanned/unplannedGroups'
+import { useUnplanned } from './unplanned/useUnplanned'
 import { WeekView } from './week/WeekView'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -40,7 +41,8 @@ export function AppointmentsPage() {
   const monday = mondayOf(date)
   const { data: holidays } = usePublicHolidays(date, date)
   // the number on the button – orders without appointment must not be forgotten
-  const { data: unplanned } = useTasksWithoutAppointment()
+  const { data: unplannedGroups } = useUnplanned()
+  const unplanned = unplannedGroups ? unplannedTotal(unplannedGroups) : 0
 
   function show(nextView: View, nextDate: string) {
     const next: Record<string, string> = {}
@@ -107,7 +109,7 @@ export function AppointmentsPage() {
           </Button>
           <Button variant={view === 'unplanned' ? 'primary' : 'secondary'} aria-pressed={view === 'unplanned'} onClick={() => show('unplanned', date)}>
             Ohne Termin
-            {unplanned && unplanned.length > 0 && <span className={styles.count}>{unplanned.length}</span>}
+            {unplanned > 0 && <span className={styles.count}>{unplanned}</span>}
           </Button>
         </div>
         {/* the list has its own period filters, orders without appointment have no day */}
