@@ -19,12 +19,15 @@ export function MfkEntry({
   oneLine = false,
   className,
   style,
+  onOpen,
 }: {
   slot: MfkSlot
   driver: Employee | undefined
   oneLine?: boolean
   className?: string
   style?: CSSProperties
+  /** instead of opening the task (the wizard's week opens the day, FB-13) */
+  onOpen?: () => void
 }) {
   const { task } = slot
   const { data: stations } = useInspectionStations()
@@ -40,6 +43,13 @@ export function MfkEntry({
       className={[styles.entry, oneLine && styles.oneLine, className].filter(Boolean).join(' ')}
       style={style}
       title={title}
+      onClick={
+        onOpen &&
+        ((e) => {
+          e.preventDefault()
+          onOpen()
+        })
+      }
     >
       <span className={styles.badge}>
         <ClipboardCheck aria-hidden /> MFK
