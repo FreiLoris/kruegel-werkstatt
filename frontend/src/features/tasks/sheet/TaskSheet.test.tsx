@@ -123,7 +123,7 @@ describe('TaskSheet', () => {
       pressureRear: 2.7,
     }
     const summer = { id: 's', season: 'SUMMER', kind: 'WHEELS', rims: null, brand: 'Sommer', model: null, dimension: null, year: null, depths, place: null }
-    const tires = { mounted: null, removed: null, inHotel: [winter], retrieved: [summer] } as never
+    const tires = { mounted: null, removed: null, inHotel: [winter], outside: [summer] } as never
     render(<TaskSheet task={task} company={company} lookups={{ serviceItemNames: new Map(), tires }} />)
 
     expect(screen.getByText(/Winter · Kompletträder Alu · Muster Snow · 205\/55 R16 · 2022/)).toBeTruthy()

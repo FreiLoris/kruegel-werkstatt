@@ -1,4 +1,4 @@
-import { KINDS, RIMS, SEASONS, type Season, type TaskTireBookingRequest, type TaskTires, type TireSet } from './tireHotelApi'
+import { KINDS, RIMS, SEASONS, type NewTireSet, type Season, type TaskTireBookingRequest, type TaskTires, type TireSet } from './tireHotelApi'
 import {
   depthsOf,
   emptyForm,
@@ -12,8 +12,9 @@ import {
 import { WHEELS } from './tread'
 
 /**
- * The tyre change of a task in the tyre hotel (13q): what the task sheet prints, and booking it
- * once the wheels are changed. Pure functions, tested.
+ * The tyre change of a task (13q, FB-12): what the task sheet prints, and booking it once the wheels
+ * are changed – from the hotel or not: tyres the customer brings or takes home are recorded too.
+ * Pure functions, tested.
  */
 
 /** "Winter · Kompletträder Alu · Michelin Alpin 6 · 205/55 R16 91H · 2022" – a set in one line */
@@ -46,16 +47,23 @@ export interface SheetTires {
   takeOff?: TireSet
 }
 
-/** @param fromHotel the task mounts wheels/tyres from the hotel (not brought by the customer) */
+/**
+ * @param fromHotel the task mounts wheels/tyres from the hotel – else the customer brings them: a set
+ *                  known to be with them (FB-12)
+ */
 export function sheetTires(tires: TaskTires, fromHotel: boolean): SheetTires {
-  const mount = tires.mounted ?? (fromHotel ? tires.inHotel[0] : undefined)
+  const mount = tires.mounted ?? (fromHotel ? tires.inHotel[0] : tires.outside.find((s) => s.state === 'WITH_CUSTOMER'))
   const takeOff = tires.removed ?? probablyOnTheCar(tires, mount)
   return { mount, moreInHotel: fromHotel ? tires.inHotel.filter((s) => s.id !== mount?.id) : [], takeOff }
 }
 
-/** The set retrieved last – the one put on half a year ago; not one of the season going on */
+/** The set on the car (FB-12) – else the one out of the hotel last, not one of the season going on */
 function probablyOnTheCar(tires: TaskTires, mount: TireSet | undefined): TireSet | undefined {
-  return tires.retrieved.find((s) => s.id !== mount?.id && (!mount || mount.season === 'ALL_SEASON' || s.season !== mount.season))
+  const others = tires.outside.filter((s) => s.id !== mount?.id)
+  return (
+    others.find((s) => s.state === 'MOUNTED') ??
+    others.find((s) => !mount || mount.season === 'ALL_SEASON' || s.season !== mount.season)
+  )
 }
 
 /** All sets of the task's car the hotel knows */
@@ -63,43 +71,53 @@ export const setsOf = (tires: TaskTires): TireSet[] => [
   ...(tires.mounted ? [tires.mounted] : []),
   ...(tires.removed ? [tires.removed] : []),
   ...tires.inHotel,
-  ...tires.retrieved,
+  ...tires.outside,
 ]
 
-/** The new set taken off changed – another season brings the car's values of that season (FB-11) */
-export function withRemoved(form: BookingForm, removed: TireSetForm, tires: TaskTires): BookingForm {
+/** A set's data changed – another season of a new set brings the car's values of that season (FB-11) */
+export function withSet(form: BookingForm, which: 'mounted' | 'removed', set: TireSetForm, tires: TaskTires): BookingForm {
+  const before = form[which]
   const next =
-    removed.season === form.removed.season
-      ? removed
-      : withMountingProposal(removed, mountingProposal(setsOf(tires), form.removed.season), mountingProposal(setsOf(tires), removed.season))
-  return { ...form, removed: next }
+    set.season === before.season
+      ? set
+      : withMountingProposal(set, mountingProposal(setsOf(tires), before.season), mountingProposal(setsOf(tires), set.season))
+  return { ...form, [which]: next }
 }
 
-/** Booked = something went out of or into the hotel */
+/** Booked = the change was recorded */
 export const isBooked = (tires: TaskTires) => !!tires.mounted || !!tires.removed
 
-/** "Abmontiert": not stored, a new set, or the id of a set retrieved earlier – stored again */
-export type RemovedChoice = 'none' | 'new' | string
+/** A set of the vehicle (its id), a new one, or nothing recorded */
+export type SetChoice = 'none' | 'new' | string
+
+/** Where the set taken off goes (FB-12) */
+export type RemovedTo = 'hotel' | 'customer'
 
 export interface BookingForm {
-  /** the set from the hotel now on the car; null = none from the hotel */
-  mountedId: string | null
-  /** only its depths are used */
+  /** "Montiert": a set from the hotel or brought by the customer, a new one they brought, or none */
+  mountedChoice: SetChoice
+  /** its depths – and its data when new */
   mounted: TireSetForm
-  removedChoice: RemovedChoice
+  /** "Abmontiert": a set of the vehicle not in the hotel (the one on the car), a new one, or none */
+  removedChoice: SetChoice
+  removedTo: RemovedTo
   removed: TireSetForm
 }
 
-/** What is most likely: the set of the hotel goes on, the one retrieved last comes off and goes in. */
+/**
+ * What is most likely: the set of the hotel – or the one the customer has – goes on, the one on the
+ * car comes off and goes into the hotel (from the hotel) or home with the customer (brought).
+ */
 export function initialBooking(tires: TaskTires, fromHotel: boolean, today: string): BookingForm {
   const { mount, takeOff } = sheetTires(tires, fromHotel)
   const empty = emptyForm(today)
   const otherSeason = mount && OTHER_SEASON[mount.season]
   const removedSeason = otherSeason ?? empty.season
   return {
-    mountedId: tires.mounted ? null : (mount?.id ?? null),
+    mountedChoice: tires.mounted ? 'none' : (mount?.id ?? (fromHotel ? 'none' : 'new')),
     mounted: { ...empty, season: mount?.season ?? empty.season },
     removedChoice: tires.removed ? 'none' : (takeOff?.id ?? 'new'),
+    removedTo: fromHotel ? 'hotel' : 'customer',
     removed: { ...empty, season: removedSeason, ...mountingProposal(setsOf(tires), removedSeason) },
   }
 }
@@ -113,49 +131,70 @@ export interface BookingErrors {
 export function bookingErrors(form: BookingForm, today: string): BookingErrors {
   const depthErrors = (errors: TireSetErrors) =>
     Object.fromEntries(WHEELS.filter((w) => errors[w.key]).map((w) => [w.key, errors[w.key]])) as TireSetErrors
-  const removed = tireSetErrors(form.removed, today)
-  return {
-    mounted: form.mountedId ? depthErrors(tireSetErrors(form.mounted, today)) : {},
-    removed: form.removedChoice === 'none' ? {} : form.removedChoice === 'new' ? removed : depthErrors(removed),
+  const errorsOf = (choice: SetChoice, set: TireSetForm) => {
+    const errors = tireSetErrors(set, today)
+    return choice === 'none' ? {} : choice === 'new' ? errors : depthErrors(errors)
   }
+  return { mounted: errorsOf(form.mountedChoice, form.mounted), removed: errorsOf(form.removedChoice, form.removed) }
 }
 
 export const hasErrors = (errors: BookingErrors) => Object.keys(errors.mounted).length + Object.keys(errors.removed).length > 0
 
 /** Something to book at all */
-export const isEmpty = (form: BookingForm) => !form.mountedId && form.removedChoice === 'none'
+export const isEmpty = (form: BookingForm) => form.mountedChoice === 'none' && form.removedChoice === 'none'
+
+/** A new set's data as entered */
+function newSetOf(set: TireSetForm): NewTireSet {
+  const text = (value: string) => value.trim() || undefined
+  return {
+    season: set.season || undefined,
+    kind: set.kind || undefined,
+    rims: set.kind === 'WHEELS' && set.rims ? set.rims : undefined,
+    hubCaps: set.hubCaps,
+    wheelBolts: set.wheelBolts,
+    brand: text(set.brand),
+    model: text(set.model),
+    dimension: text(set.dimension),
+    year: set.year.trim() ? Number(set.year.trim()) : undefined,
+    remark: text(set.remark),
+    ...mountingOf(set),
+  }
+}
+
+/**
+ * Another set chosen. A set already with the customer cannot be taken home again – it goes into the
+ * hotel (FB-12). A known set brings its season along (the data of a new one stays as typed).
+ */
+export function withChoice(form: BookingForm, which: 'mounted' | 'removed', choice: SetChoice, set?: TireSet): BookingForm {
+  if (which === 'mounted') {
+    return { ...form, mountedChoice: choice, mounted: set ? { ...form.mounted, season: set.season } : form.mounted }
+  }
+  return {
+    ...form,
+    removedChoice: choice,
+    removed: set ? { ...form.removed, season: set.season } : form.removed,
+    removedTo: set?.state === 'WITH_CUSTOMER' ? 'hotel' : form.removedTo,
+  }
+}
+
+/** A known set or a new one, with the depths */
+function setOf(choice: SetChoice, set: TireSetForm) {
+  return choice === 'new' ? { newSet: newSetOf(set), depths: depthsOf(set) } : { setId: choice, depths: depthsOf(set) }
+}
 
 /** Form → JSON for POST /api/tasks/{id}/tires */
 export function toBookingRequest(form: BookingForm, placeId: string | null): TaskTireBookingRequest {
-  const r = form.removed
-  const text = (value: string) => value.trim() || undefined
-  const removed =
-    form.removedChoice === 'none'
-      ? undefined
-      : form.removedChoice === 'new'
-        ? {
-            season: r.season || undefined,
-            kind: r.kind || undefined,
-            rims: r.kind === 'WHEELS' && r.rims ? r.rims : undefined,
-            hubCaps: r.hubCaps,
-            wheelBolts: r.wheelBolts,
-            brand: text(r.brand),
-            model: text(r.model),
-            dimension: text(r.dimension),
-            year: r.year.trim() ? Number(r.year.trim()) : undefined,
-            remark: text(r.remark),
-            ...mountingOf(r),
-            depths: depthsOf(r),
-            placeId: placeId ?? undefined,
-          }
-        : { setId: form.removedChoice, depths: depthsOf(r), placeId: placeId ?? undefined }
+  const store = form.removedTo === 'hotel'
   return {
-    mounted: form.mountedId ? { setId: form.mountedId, depths: depthsOf(form.mounted) } : undefined,
-    removed,
+    mounted: form.mountedChoice === 'none' ? undefined : setOf(form.mountedChoice, form.mounted),
+    removed:
+      form.removedChoice === 'none'
+        ? undefined
+        : { ...setOf(form.removedChoice, form.removed), store, placeId: store ? (placeId ?? undefined) : undefined },
   }
 }
 
 /** A swap: the set taken off goes where the mounted one lay – else none (the hotel proposes the next free place) */
 export function swapPlace(form: BookingForm, tires: TaskTires): string | null {
-  return tires.inHotel.find((s) => s.id === form.mountedId)?.placeId ?? null
+  return tires.inHotel.find((s) => s.id === form.mountedChoice)?.placeId ?? null
 }

@@ -11,6 +11,8 @@ export type TreadDepths = components['schemas']['TreadDepths']
 export type DepthsRequest = components['schemas']['DepthsRequest']
 export type TreadLimits = components['schemas']['TireHotelSettingsDto']
 export type Season = TireSet['season']
+export type TireSetState = TireSet['state']
+export type NewTireSet = NonNullable<NonNullable<TaskTireBookingRequest['removed']>['newSet']>
 export type TireSetKind = TireSet['kind']
 export type RimKind = NonNullable<TireSet['rims']>
 export type TireLocation = components['schemas']['TireLocationDto']
@@ -22,6 +24,9 @@ export type TireLocationKind = TireLocation['kind']
 const TOPIC = 'tire-sets'
 const SETTINGS_TOPIC = 'tire-hotel-settings'
 const LOCATIONS_TOPIC = 'tire-locations'
+
+/** Where a set is (FB-12) */
+export const SET_STATES: Record<TireSetState, string> = { IN_HOTEL: 'Im Pneuhotel', MOUNTED: 'Montiert', WITH_CUSTOMER: 'Beim Kunden' }
 
 export const SEASONS: Record<Season, string> = { WINTER: 'Winter', SUMMER: 'Sommer', ALL_SEASON: 'Ganzjahr' }
 export const KINDS: Record<TireSetKind, string> = { WHEELS: 'Kompletträder', TIRES: 'Nur Reifen' }

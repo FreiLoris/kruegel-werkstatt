@@ -219,7 +219,7 @@ function TireSetRow({
         {/* the lowest wheel counts – the one to talk about */}
         <span className={styles.nowrap}>{formatDepth(lowest)}</span> {limits && <TreadChip status={worstStatus(set.depths, set.season, limits)} />}
       </td>
-      <td className={`${styles.nowrap} ${styles.day}`}>{formatDate(retrieved && set.retrievedOn ? set.retrievedOn : set.storedOn)}</td>
+      <td className={`${styles.nowrap} ${styles.day}`}>{formatDate(retrieved && set.retrievedOn ? set.retrievedOn : set.storedOn!)}</td>
     </tr>
   )
 }

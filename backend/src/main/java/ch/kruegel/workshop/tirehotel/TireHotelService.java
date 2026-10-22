@@ -188,14 +188,14 @@ public class TireHotelService {
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    /** A day of a measurement, move or retrieval: not in the future, not before the set was stored or its latest step. */
+    /** A day of a measurement, move or retrieval: not in the future, not before the set was stored (if ever) or its latest step. */
     private LocalDate day(LocalDate wanted, TireSet set, String field) {
         LocalDate today = LocalDate.now(clock);
         LocalDate day = wanted == null ? today : wanted;
         if (day.isAfter(today)) {
             throw new InvalidInputException(field, "darf nicht in der Zukunft liegen");
         }
-        if (day.isBefore(set.getStoredOn())) {
+        if (set.getStoredOn() != null && day.isBefore(set.getStoredOn())) {
             throw new InvalidInputException(field, "liegt vor der Einlagerung");
         }
         // decision of the workshop: before the latest step the history would contradict the current state

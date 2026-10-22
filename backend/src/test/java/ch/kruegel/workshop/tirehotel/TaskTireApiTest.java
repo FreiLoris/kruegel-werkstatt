@@ -83,12 +83,13 @@ class TaskTireApiTest {
 
         MvcTestResult booked = send("POST", "/api/tasks/" + task + "/tires", """
                 { "mounted": { "setId": "%s", "depths": { "frontLeft": 5.5, "frontRight": 5.5 } },
-                  "removed": { "season": "SUMMER", "kind": "WHEELS", "rims": "ALU", "brand": "Sommer", "wheelBolts": true,
-                               "torque": 110, "pressureFront": 2.4, "pressureRear": 2.6,
+                  "removed": { "newSet": { "season": "SUMMER", "kind": "WHEELS", "rims": "ALU", "brand": "Sommer", "wheelBolts": true,
+                                           "torque": 110, "pressureFront": 2.4, "pressureRear": 2.6 },
                                "depths": { "frontLeft": 3.5 }, "placeId": "%s" } }""".formatted(winter, place1));
         assertThat(booked).hasStatusOk();
         assertThat(booked).bodyJson().extractingPath("$.mounted.id").isEqualTo(winter);
         assertThat(booked).bodyJson().extractingPath("$.mounted.retrievedOn").isEqualTo(LocalDate.now().toString());
+        assertThat(booked).bodyJson().extractingPath("$.mounted.state").isEqualTo("MOUNTED");
         assertThat(booked).bodyJson().extractingPath("$.mounted.depths.frontLeft").isEqualTo(5.5);
         // the wheels swap places
         assertThat(booked).bodyJson().extractingPath("$.removed.place").isEqualTo("OG-A1-1");
@@ -106,7 +107,7 @@ class TaskTireApiTest {
                 .containsExactly("STORED", "MEASURED", "RETRIEVED");
         // once per task
         assertThat(send("POST", "/api/tasks/" + task + "/tires", """
-                { "removed": { "season": "SUMMER", "kind": "TIRES" } }""")).hasStatus(HttpStatus.CONFLICT);
+                { "removed": { "newSet": { "season": "SUMMER", "kind": "TIRES" } } }""")).hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -117,7 +118,7 @@ class TaskTireApiTest {
         send("POST", "/api/tire-sets/" + summer + "/retrieve", "{}");
         String task = idOf(send("POST", "/api/tasks", task(true)));
 
-        assertThat(mvc.get().uri("/api/tasks/" + task + "/tires").exchange()).bodyJson().extractingPath("$.retrieved[*].id").asArray()
+        assertThat(mvc.get().uri("/api/tasks/" + task + "/tires").exchange()).bodyJson().extractingPath("$.outside[*].id").asArray()
                 .containsExactly(summer);
 
         MvcTestResult booked = send("POST", "/api/tasks/" + task + "/tires", """
@@ -137,19 +138,112 @@ class TaskTireApiTest {
                 .formatted(customers.save(CustomerTestData.local("Meier")).getId(), place2)));
         String withoutTireChange = idOf(send("POST", "/api/tasks", task(false)));
         assertThat(send("POST", "/api/tasks/" + withoutTireChange + "/tires", """
-                { "removed": { "season": "SUMMER", "kind": "TIRES" } }""")).hasStatus(HttpStatus.CONFLICT);
+                { "removed": { "newSet": { "season": "SUMMER", "kind": "TIRES" } } }""")).hasStatus(HttpStatus.CONFLICT);
 
         String task = idOf(send("POST", "/api/tasks", task(true)));
         assertFieldError(send("POST", "/api/tasks/" + task + "/tires", "{}"), "mounted");
         assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
                 { "mounted": { "setId": "%s" } }""".formatted(other)), "mounted.setId");
         assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
-                { "removed": { "kind": "TIRES" } }"""), "removed.season");
+                { "removed": { "newSet": { "kind": "TIRES" } } }"""), "removed.newSet.season");
+        // neither a set nor a new one
+        assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
+                { "removed": { "depths": { "frontLeft": 4 } } }"""), "removed");
         // Meier's set lies there
         assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
-                { "removed": { "season": "SUMMER", "kind": "TIRES", "placeId": "%s" } }""".formatted(place2)), "placeId");
+                { "removed": { "newSet": { "season": "SUMMER", "kind": "TIRES" }, "placeId": "%s" } }""".formatted(place2)), "placeId");
+        // a place only when stored
+        assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
+                { "removed": { "newSet": { "season": "SUMMER", "kind": "TIRES" }, "store": false, "placeId": "%s" } }""".formatted(place1)),
+                "removed.placeId");
         // nothing was booked by the refused requests
         assertThat(mvc.get().uri("/api/tasks/" + task + "/tires").exchange()).bodyJson().extractingPath("$.removed").isNull();
+    }
+
+    @Test
+    void tyresTheCustomerBringsAndTakesHomeAreKeptWithTheirDepths() {
+        // first change: the customer brings winter tyres and takes the summer ones home – nothing in the hotel
+        String first = idOf(send("POST", "/api/tasks", task(true)));
+        MvcTestResult booked = send("POST", "/api/tasks/" + first + "/tires", """
+                { "mounted": { "newSet": { "season": "WINTER", "kind": "TIRES", "brand": "Muster", "year": 2021 },
+                               "depths": { "frontLeft": 7, "frontRight": 7, "rearLeft": 7, "rearRight": 7 } },
+                  "removed": { "newSet": { "season": "SUMMER", "kind": "TIRES", "brand": "Sommer" },
+                               "depths": { "frontLeft": 3.2 }, "store": false } }""");
+        assertThat(booked).hasStatusOk();
+        assertThat(booked).bodyJson().extractingPath("$.mounted.state").isEqualTo("MOUNTED");
+        assertThat(booked).bodyJson().extractingPath("$.mounted.storedOn").isNull();
+        assertThat(booked).bodyJson().extractingPath("$.removed.state").isEqualTo("WITH_CUSTOMER");
+        assertThat(booked).bodyJson().extractingPath("$.removed.place").isNull();
+        String summer = read(booked, "$.removed.id");
+        String winter = read(booked, "$.mounted.id");
+        // not in the hotel – but the car's tyres know them
+        assertThat(mvc.get().uri("/api/tire-sets?inHotel=true").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri("/api/vehicles/" + golf.getId() + "/tire-sets").exchange()).bodyJson().extractingPath("$[*].state").asArray()
+                .containsExactlyInAnyOrder("MOUNTED", "WITH_CUSTOMER");
+
+        // next season: the summer tyres brought along again, the winter ones stored this time
+        String second = idOf(send("POST", "/api/tasks", task(true)));
+        MvcTestResult tires = mvc.get().uri("/api/tasks/" + second + "/tires").exchange();
+        // the one on the car first
+        assertThat(tires).bodyJson().extractingPath("$.outside[*].id").asArray().containsExactly(winter, summer);
+        MvcTestResult again = send("POST", "/api/tasks/" + second + "/tires", """
+                { "mounted": { "setId": "%s", "depths": { "frontLeft": 3.0 } },
+                  "removed": { "setId": "%s", "depths": { "frontLeft": 6.5 }, "placeId": "%s" } }""".formatted(summer, winter, place1));
+        assertThat(again).hasStatusOk();
+        assertThat(again).bodyJson().extractingPath("$.mounted.state").isEqualTo("MOUNTED");
+        assertThat(again).bodyJson().extractingPath("$.removed.state").isEqualTo("IN_HOTEL");
+        assertThat(again).bodyJson().extractingPath("$.removed.place").isEqualTo("OG-A1-1");
+        assertThat(mvc.get().uri("/api/tire-sets/" + summer + "/history").exchange()).bodyJson().extractingPath("$[*].kind").asArray()
+                .containsExactly("RECORDED", "TAKEN_HOME", "MEASURED", "MOUNTED");
+
+        // what each task booked – also once the sets moved on
+        assertThat(mvc.get().uri("/api/tasks/" + first + "/tires").exchange()).bodyJson().extractingPath("$.removedAs").isEqualTo("TAKEN_HOME");
+        assertThat(again).bodyJson().extractingPath("$.mountedAs").isEqualTo("MOUNTED");
+        assertThat(again).bodyJson().extractingPath("$.removedAs").isEqualTo("STORED");
+
+        // already on the car: not put on again
+        String third = idOf(send("POST", "/api/tasks", task(true)));
+        assertFieldError(send("POST", "/api/tasks/" + third + "/tires", """
+                { "mounted": { "setId": "%s" } }""".formatted(summer)), "mounted.setId");
+    }
+
+    @Test
+    void fromTheHotelOnTheOneOnTheCarHomeAndNotTwiceInOneTask() {
+        String winter = idOf(send("POST", "/api/tire-sets", """
+                { "customerId": "%s", "vehicleId": "%s", "season": "WINTER", "kind": "WHEELS", "placeId": "%s" }"""
+                .formatted(huber.getId(), golf.getId(), place1)));
+        String summer = idOf(send("POST", "/api/tire-sets", """
+                { "customerId": "%s", "vehicleId": "%s", "season": "SUMMER", "kind": "WHEELS", "placeId": "%s" }"""
+                .formatted(huber.getId(), golf.getId(), place2)));
+        send("POST", "/api/tire-sets/" + summer + "/retrieve", "{}");
+        String task = idOf(send("POST", "/api/tasks", task(true)));
+
+        // winter from the hotel on, the summer set on the car home with the customer
+        MvcTestResult booked = send("POST", "/api/tasks/" + task + "/tires", """
+                { "mounted": { "setId": "%s" }, "removed": { "setId": "%s", "store": false } }""".formatted(winter, summer));
+        assertThat(booked).hasStatusOk();
+        assertThat(booked).bodyJson().extractingPath("$.mountedAs").isEqualTo("RETRIEVED");
+        assertThat(booked).bodyJson().extractingPath("$.removed.state").isEqualTo("WITH_CUSTOMER");
+        // a set already with the customer is not taken home again
+        String second = idOf(send("POST", "/api/tasks", task(true)));
+        assertFieldError(send("POST", "/api/tasks/" + second + "/tires", """
+                { "removed": { "setId": "%s", "store": false } }""".formatted(summer)), "removed.setId");
+    }
+
+    @Test
+    void theSetJustPutOnIsNotTakenOffAgainAndOnlyOneIsPutOn() {
+        String winter = idOf(send("POST", "/api/tire-sets", """
+                { "customerId": "%s", "vehicleId": "%s", "season": "WINTER", "kind": "WHEELS", "placeId": "%s" }"""
+                .formatted(huber.getId(), golf.getId(), place1)));
+        String task = idOf(send("POST", "/api/tasks", task(true)));
+        send("POST", "/api/tasks/" + task + "/tires", "{ \"mounted\": { \"setId\": \"%s\" } }".formatted(winter));
+
+        // later, in the same task: not the one just put on
+        assertFieldError(send("POST", "/api/tasks/" + task + "/tires", """
+                { "removed": { "setId": "%s", "store": false } }""".formatted(winter)), "removed.setId");
+        // and no second one put on – also not a brought one
+        assertThat(send("POST", "/api/tasks/" + task + "/tires", """
+                { "mounted": { "newSet": { "season": "SUMMER", "kind": "TIRES" } } }""")).hasStatus(HttpStatus.CONFLICT);
     }
 
     private String task(boolean tireChange) {

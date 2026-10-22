@@ -194,7 +194,7 @@ const mountingOfSet = (set: TireSet): Mounting => ({
 export function mountingProposal(setsOfVehicle: TireSet[], season: Season | ''): Mounting {
   const known = setsOfVehicle
     .filter((s) => s.torque != null || s.pressureFront != null || s.pressureRear != null)
-    .sort((a, b) => b.storedOn.localeCompare(a.storedOn))
+    .sort((a, b) => (b.storedOn ?? b.updatedAt).localeCompare(a.storedOn ?? a.updatedAt))
   const best = known.find((s) => s.season === season) ?? known[0]
   return best ? mountingOfSet(best) : NO_MOUNTING
 }

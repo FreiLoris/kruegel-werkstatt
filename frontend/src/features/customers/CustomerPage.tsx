@@ -116,7 +116,7 @@ function CustomerView({ customer }: { customer: Customer }) {
                   </Link>
                   <span className="muted">
                     {' '}
-                    · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn)}
+                    · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn!)}
                   </span>
                 </li>
               ))}

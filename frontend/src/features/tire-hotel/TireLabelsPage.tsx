@@ -154,7 +154,7 @@ function Sheet({
             </span>
             <span className={styles.line}>
               {/* short – it must fit on the small labels (38 mm) */}
-              {SEASONS[set.season]} · {formatDate(set.storedOn)}
+              {SEASONS[set.season]}{set.storedOn && ` · ${formatDate(set.storedOn)}`}
             </span>
           </section>
         )

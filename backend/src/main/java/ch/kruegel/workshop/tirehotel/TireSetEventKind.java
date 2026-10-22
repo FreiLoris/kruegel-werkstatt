@@ -6,5 +6,11 @@ public enum TireSetEventKind {
     MEASURED,
     /** onto another place – also the first place of a set stored without one */
     MOVED,
-    RETRIEVED
+    RETRIEVED,
+    /** recorded without the hotel (FB-12): brought by the customer, or taken home – with its depths */
+    RECORDED,
+    /** put on the car from the customer (FB-12) – brought along again */
+    MOUNTED,
+    /** taken off, the customer takes it home (FB-12) */
+    TAKEN_HOME
 }

@@ -690,8 +690,17 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   lift, customer, plate and status, absences. A day opens its time grid right away – lift and time
   are taken there as before; the form stays as it is. No load indicator, no "next free slot"
   (as decided by the workshop).
-- [ ] **14h – Tyres without the hotel** (FB-12): a set has a status (in the hotel / on the car /
-  with the customer), overview per vehicle with traffic lights for tread and age
+- [x] **14h – Tyres without the hotel** (FB-12, part 1)
+  Done: a set belongs to its vehicle and has a state – in the hotel (with its place), mounted, or with
+  the customer (V45; a set never stored has no day stored). "Radwechsel buchen" records every change,
+  hotel or not: put on – from the hotel, the customer's own set brought along again, or a new one they
+  brought ("Reifendaten erfassen", same fields as storing, FB-11 values too); taken off – the one on
+  the car or a new one, "Ins Pneuhotel" or "Nimmt der Kunde mit"; each with the depths from the sheet.
+  New history steps: recorded, mounted (brought), taken home. The hotel's lists stay the hotel's
+  (in the hotel / retrieved from it); the set page says where a set is.
+- [ ] **14h-2 – Tyres of a vehicle** (FB-12, part 2): overview per vehicle (both seasons, where, last
+  depth with its day, year) with traffic lights for tread and age (from 8 years orange, from 10 red),
+  DOT optional (the year from it), shown when entering a task for the vehicle
 - [ ] **14i – "Termin abmachen" from the tyre hotel** (FB-18)
 - [ ] **14j – Season change overview** (FB-21): changed / planned / open (forgotten after the
   deadline) / acknowledged / not collected for a season; deadlines 1 June and 1 December
