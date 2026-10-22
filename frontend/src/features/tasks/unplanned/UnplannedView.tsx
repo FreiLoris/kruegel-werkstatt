@@ -1,4 +1,4 @@
-import { CalendarPlus, Phone } from 'lucide-react'
+import { CalendarPlus } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { useCanEdit } from '../../../app/person/useDevicePerson'
@@ -15,6 +15,7 @@ import { workSummary } from '../workSummary'
 import { byLocation, callInNow, locationFilterOf, unplannedTotal, type LocationFilter, type TaskParts } from './unplannedGroups'
 import { useUnplanned } from './useUnplanned'
 import styles from './UnplannedView.module.css'
+import { PhoneLinks } from '../../../components/ui/PhoneLinks'
 
 /**
  * "Ohne Termin" (12d-3): orders that are taken but not planned – new ones without a day, and
@@ -91,8 +92,6 @@ function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string
         const work = workSummary(task, names)
         const ofTask = parts.get(task.id)
         const atCustomer = task.vehicleLocation === 'AT_CUSTOMER'
-        // the same number twice (mobile = phone) only once
-        const phones = atCustomer ? [...new Set([task.customer.mobile, task.customer.phone].filter((n): n is string => !!n))] : []
         const callIn = callInNow(task, parts)
         return (
           <li key={task.id} className={callIn ? `${styles.item} ${styles.callIn}` : styles.item}>
@@ -118,11 +117,7 @@ function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string
             <div className={styles.foot}>
               <TaskVehicleLocation task={task} canEdit={canEdit} />
               {/* those to call in: the number right there, a tap on the tablet (FB-16) */}
-              {phones.map((number) => (
-                <a key={number} href={`tel:${number.replace(/\s/g, '')}`} className={styles.phone}>
-                  <Phone aria-hidden /> {number}
-                </a>
-              ))}
+              {atCustomer && <PhoneLinks mobile={task.customer.mobile} phone={task.customer.phone} />}
               {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} />}
               {task.date ? (
                 <span className="muted">Termin war {formatDate(task.date)}</span>

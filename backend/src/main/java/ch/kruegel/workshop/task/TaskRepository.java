@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -106,6 +107,18 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     /** Several tasks with customer and vehicle in one query – for the search hits. */
     @EntityGraph(attributePaths = {"customer", "vehicle"})
     List<Task> findByIdIn(Collection<UUID> ids);
+
+    /**
+     * The open tyre changes with a vehicle from that day on – "Termin geplant" of the season change
+     * (FB-21); without appointment: taken from then on. One left open from an earlier season does not count.
+     */
+    @EntityGraph(attributePaths = {"vehicle"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.tireChange = true AND t.status <> ch.kruegel.workshop.task.TaskStatus.DONE AND t.vehicle IS NOT NULL
+              AND (t.appointment.date >= :from OR (t.appointment.date IS NULL AND t.createdAt >= :takenFrom))
+            ORDER BY t.appointment.date NULLS LAST, t.createdAt""")
+    List<Task> openTireChangesFrom(LocalDate from, Instant takenFrom);
 
     /**
      * The last 10 tasks of a customer, newest first – history in the wizard.

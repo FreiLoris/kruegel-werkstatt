@@ -711,8 +711,17 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   tyre change ticked – "eingelagert" from the hotel, "mitgebracht" when it lies at the customer's,
   open for a set on the car. Under "Radwechsel" a hint lists open tyre changes of the vehicle on
   other days (wizard and edit page), the links open in a new tab.
-- [ ] **14j – Season change overview** (FB-21): changed / planned / open (forgotten after the
-  deadline) / acknowledged / not collected for a season; deadlines 1 June and 1 December
+- [x] **14j – Season change overview** (FB-21)
+  Done: tab "Saisonwechsel" in the tyre hotel, computed by the backend (`GET /api/tire-season`).
+  The season shown is the one whose deadline (1 June summer, 1 December winter – changeable in the
+  settings, `tire_season_settings`, V46) is nearest: so the winter change is shown from September and
+  still about three months after 1 December, when "Offen" becomes "Vergessen". A change counts from
+  the other season's deadline on (the old set stored / taken home, or the new one retrieved /
+  mounted). Per set: Offen (phone to tap, "Termin abmachen"), Termin geplant (open task with tyre
+  change), Länger nicht abgeholt (in the hotel through a deadline of its own season), Quittiert
+  (`tire_season_ack`: reason, who, when – for that deadline only, undoable), Gewechselt (folded).
+  Counters at the top, "Beide Sätze eingelagert – prüfen", all-season sets left out, the hotel's
+  search narrows it. Not built: the call log ("angerufen am … / Rückruf").
 
 ---
 

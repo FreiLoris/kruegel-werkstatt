@@ -9974,7 +9974,7 @@
     },
     "/api/tire-hotel-settings" : {
       "get" : {
-        "operationId" : "settings",
+        "operationId" : "settings_1",
         "responses" : {
           "200" : {
             "content" : {
@@ -10042,7 +10042,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "updateSettings",
+        "operationId" : "updateSettings_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -10497,6 +10497,383 @@
           }
         },
         "summary" : "All places, by location and position",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-season" : {
+      "get" : {
+        "description" : "The season whose deadline is nearest to the day: per set changed, planned, open, acknowledged or stored for longer. All-season sets are left out.",
+        "operationId" : "overview",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "day",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeasonChangeDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The season change overview",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-season-settings" : {
+      "get" : {
+        "operationId" : "settings",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireSeasonSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Deadlines of the season change",
+        "tags" : [ "Tyre hotel" ]
+      },
+      "put" : {
+        "description" : "Needs the loaded `version`.",
+        "operationId" : "updateSettings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TireSeasonSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TireSeasonSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Change the deadlines",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-season/acks" : {
+      "post" : {
+        "description" : "Not changed on purpose; 409 if already done.",
+        "operationId" : "acknowledge",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TireSeasonAckRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SeasonAckDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Acknowledge a set for the current season",
+        "tags" : [ "Tyre hotel" ]
+      }
+    },
+    "/api/tire-season/acks/{id}" : {
+      "delete" : {
+        "operationId" : "undoAcknowledge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Undo an acknowledgement",
         "tags" : [ "Tyre hotel" ]
       }
     },
@@ -13961,6 +14338,114 @@
           }
         }
       },
+      "SeasonAckDto" : {
+        "type" : "object",
+        "properties" : {
+          "at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "by" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "reason" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "at", "by", "id", "reason" ]
+      },
+      "SeasonChangeDto" : {
+        "type" : "object",
+        "properties" : {
+          "deadline" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "By then the change should be done"
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeasonChangeEntryDto"
+            }
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Changes from this day on count for this season"
+          },
+          "overdue" : {
+            "type" : "boolean",
+            "description" : "The deadline is over – who is still open forgot"
+          },
+          "season" : {
+            "type" : "string",
+            "description" : "The tyres going on now – SUMMER or WINTER",
+            "enum" : [ "SUMMER", "WINTER", "ALL_SEASON" ]
+          }
+        },
+        "required" : [ "deadline", "entries", "from", "overdue", "season" ]
+      },
+      "SeasonChangeEntryDto" : {
+        "type" : "object",
+        "properties" : {
+          "ack" : {
+            "description" : "ACKNOWLEDGED: by whom, when, why",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SeasonAckDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "bothStored" : {
+            "type" : "boolean",
+            "description" : "Summer and winter of the vehicle are both in the hotel – check"
+          },
+          "changedOn" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "CHANGED: the day of the change"
+          },
+          "group" : {
+            "type" : "string",
+            "enum" : [ "CHANGED", "PLANNED", "OPEN", "ACKNOWLEDGED", "LONG_STORED" ]
+          },
+          "planned" : {
+            "description" : "PLANNED: the task",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SeasonPlannedTaskDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "set" : {
+            "$ref" : "#/components/schemas/TireSetDto"
+          }
+        },
+        "required" : [ "ack", "bothStored", "changedOn", "group", "planned", "set" ]
+      },
+      "SeasonPlannedTaskDto" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Empty = no appointment yet"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "taskNumber" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "date", "id", "taskNumber" ]
+      },
       "ServiceItemDto" : {
         "type" : "object",
         "properties" : {
@@ -15209,6 +15694,67 @@
           }
         },
         "required" : [ "a", "active", "address", "b", "c", "id", "locationId" ]
+      },
+      "TireSeasonAckRequest" : {
+        "type" : "object",
+        "properties" : {
+          "deadline" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The deadline of the season shown – it is acknowledged for that one"
+          },
+          "reason" : {
+            "type" : [ "string", "null" ],
+            "example" : "Fährt Reifen herunter",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "tireSetId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "deadline", "tireSetId" ]
+      },
+      "TireSeasonSettingsDto" : {
+        "type" : "object",
+        "properties" : {
+          "summerDeadline" : {
+            "type" : "string",
+            "description" : "Summer tyres on by then",
+            "example" : "06-01"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "winterDeadline" : {
+            "type" : "string",
+            "description" : "Winter tyres on by then",
+            "example" : "12-01"
+          }
+        },
+        "required" : [ "summerDeadline", "version", "winterDeadline" ]
+      },
+      "TireSeasonSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "summerDeadline" : {
+            "type" : "string",
+            "example" : "06-01",
+            "pattern" : "\\d{2}-\\d{2}"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "winterDeadline" : {
+            "type" : "string",
+            "example" : "12-01",
+            "pattern" : "\\d{2}-\\d{2}"
+          }
+        },
+        "required" : [ "summerDeadline", "version", "winterDeadline" ]
       },
       "TireSetDto" : {
         "type" : "object",

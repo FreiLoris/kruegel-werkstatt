@@ -1748,12 +1748,12 @@ export interface paths {
             cookie?: never;
         };
         /** Tread limits of the tyre hotel */
-        get: operations["settings"];
+        get: operations["settings_1"];
         /**
          * Change the tread limits
          * @description Needs the loaded `version`.
          */
-        put: operations["updateSettings"];
+        put: operations["updateSettings_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1818,6 +1818,84 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-season": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The season change overview
+         * @description The season whose deadline is nearest to the day: per set changed, planned, open, acknowledged or stored for longer. All-season sets are left out.
+         */
+        get: operations["overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-season-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Deadlines of the season change */
+        get: operations["settings"];
+        /**
+         * Change the deadlines
+         * @description Needs the loaded `version`.
+         */
+        put: operations["updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-season/acks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge a set for the current season
+         * @description Not changed on purpose; 409 if already done.
+         */
+        post: operations["acknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tire-season/acks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Undo an acknowledgement */
+        delete: operations["undoAcknowledge"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2884,6 +2962,61 @@ export interface components {
              */
             returnedAt?: string | null;
         };
+        SeasonAckDto: {
+            /** Format: date-time */
+            at: string;
+            /** Format: uuid */
+            by: string | null;
+            /** Format: uuid */
+            id: string;
+            reason: string | null;
+        };
+        SeasonChangeDto: {
+            /**
+             * Format: date
+             * @description By then the change should be done
+             */
+            deadline: string;
+            entries: components["schemas"]["SeasonChangeEntryDto"][];
+            /**
+             * Format: date
+             * @description Changes from this day on count for this season
+             */
+            from: string;
+            /** @description The deadline is over – who is still open forgot */
+            overdue: boolean;
+            /**
+             * @description The tyres going on now – SUMMER or WINTER
+             * @enum {string}
+             */
+            season: "SUMMER" | "WINTER" | "ALL_SEASON";
+        };
+        SeasonChangeEntryDto: {
+            /** @description ACKNOWLEDGED: by whom, when, why */
+            ack: components["schemas"]["SeasonAckDto"] | null;
+            /** @description Summer and winter of the vehicle are both in the hotel – check */
+            bothStored: boolean;
+            /**
+             * Format: date
+             * @description CHANGED: the day of the change
+             */
+            changedOn: string | null;
+            /** @enum {string} */
+            group: "CHANGED" | "PLANNED" | "OPEN" | "ACKNOWLEDGED" | "LONG_STORED";
+            /** @description PLANNED: the task */
+            planned: components["schemas"]["SeasonPlannedTaskDto"] | null;
+            set: components["schemas"]["TireSetDto"];
+        };
+        SeasonPlannedTaskDto: {
+            /**
+             * Format: date
+             * @description Empty = no appointment yet
+             */
+            date: string | null;
+            /** Format: uuid */
+            id: string;
+            taskNumber: string | null;
+        };
         ServiceItemDto: {
             active: boolean;
             /** Format: uuid */
@@ -3565,6 +3698,39 @@ export interface components {
             id: string;
             /** Format: uuid */
             locationId: string;
+        };
+        TireSeasonAckRequest: {
+            /**
+             * Format: date
+             * @description The deadline of the season shown – it is acknowledged for that one
+             */
+            deadline: string;
+            /** @example Fährt Reifen herunter */
+            reason?: string | null;
+            /** Format: uuid */
+            tireSetId: string;
+        };
+        TireSeasonSettingsDto: {
+            /**
+             * @description Summer tyres on by then
+             * @example 06-01
+             */
+            summerDeadline: string;
+            /** Format: int64 */
+            version: number;
+            /**
+             * @description Winter tyres on by then
+             * @example 12-01
+             */
+            winterDeadline: string;
+        };
+        TireSeasonSettingsRequest: {
+            /** @example 06-01 */
+            summerDeadline: string;
+            /** Format: int64 */
+            version: number;
+            /** @example 12-01 */
+            winterDeadline: string;
         };
         TireSetDto: {
             brand: string | null;
@@ -12272,7 +12438,7 @@ export interface operations {
             };
         };
     };
-    settings: {
+    settings_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -12337,7 +12503,7 @@ export interface operations {
             };
         };
     };
-    updateSettings: {
+    updateSettings_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -12693,6 +12859,341 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["TirePlaceDto"][];
                 };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    overview: {
+        parameters: {
+            query?: {
+                day?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SeasonChangeDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSeasonSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    updateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireSeasonSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TireSeasonSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    acknowledge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TireSeasonAckRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SeasonAckDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    undoAcknowledge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad Request */
             400: {
