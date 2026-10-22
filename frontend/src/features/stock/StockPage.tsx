@@ -1,7 +1,7 @@
 import { ArrowDownWideNarrow, Pencil, Plus, Printer, ShoppingCart } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import { useCanEdit } from '../../app/person/useDevicePerson'
+import { useCanEdit, useMyEmployeeId } from '../../app/person/useDevicePerson'
 import { reasonOf } from '../../api/errors'
 import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
@@ -9,7 +9,7 @@ import { formatDate } from '../../lib/format'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
 import { useSuppliers } from '../suppliers/supplierApi'
-import { useSaveTodo, useTodos } from '../todos/todoApi'
+import { useSaveShoppingItem, useShoppingItems } from '../shopping/shoppingApi'
 import { MaterialTabs } from './MaterialTabs'
 import { CATEGORY_LABEL, useStockItems, type StockCategory, type StockItem } from './stockApi'
 import { placesWithin, placeTree } from './placeTree'
@@ -44,15 +44,25 @@ export function StockPage() {
   const today = useToday()
   const toast = useToast()
   const navigate = useNavigate()
-  const { data: shoppingList } = useTodos({ shopping: true })
-  const addToList = useSaveTodo()
-  // articles with an open entry on the shopping list
-  const onList = useMemo(() => new Set(shoppingList?.map((t) => t.stockItemId).filter(Boolean)), [shoppingList])
+  const me = useMyEmployeeId()
+  const { data: shoppingList } = useShoppingItems()
+  const addToList = useSaveShoppingItem()
+  // articles with an open position on the shopping list
+  const onList = useMemo(() => new Set(shoppingList?.map((s) => s.stockItemId).filter(Boolean)), [shoppingList])
 
-  /** FB-08 nice to have: one tap – with the main supplier (FB-09) */
+  /** FB-08 nice to have: one tap – with the main supplier (FB-09), recorded by the person of the device */
   function putOnList(item: StockItem) {
+    if (!me) return
     addToList.mutate(
-      { request: { text: item.name, shopping: true, stockItemId: item.id, supplierId: item.suppliers[0]?.supplierId } },
+      {
+        request: {
+          description: item.name,
+          partNumber: item.suppliers[0]?.articleNumber ?? item.articleNumber ?? undefined,
+          recordedById: me,
+          stockItemId: item.id,
+          supplierId: item.suppliers[0]?.supplierId,
+        },
+      },
       {
         onSuccess: () => toast.success(`${item.name} steht auf der Einkaufsliste`),
         onError: (error) => toast.error(`${item.name} nicht auf die Einkaufsliste gesetzt: ${reasonOf(error)}`),

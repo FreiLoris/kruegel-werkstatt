@@ -21,7 +21,7 @@ export interface paths {
          * Enter absence
          * @description Not overlapping another absence of the person (to the half day).
          */
-        post: operations["create_18"];
+        post: operations["create_19"];
         delete?: never;
         options?: never;
         head?: never;
@@ -60,10 +60,10 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_16"];
+        put: operations["update_17"];
         post?: never;
         /** Delete absence */
-        delete: operations["delete_7"];
+        delete: operations["delete_8"];
         options?: never;
         head?: never;
         patch?: never;
@@ -77,12 +77,12 @@ export interface paths {
             cookie?: never;
         };
         /** Company profile */
-        get: operations["get_6"];
+        get: operations["get_7"];
         /**
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_15"];
+        put: operations["update_16"];
         post?: never;
         delete?: never;
         options?: never;
@@ -123,7 +123,7 @@ export interface paths {
          * Book a courtesy car
          * @description 409 with a message naming the booking in the way.
          */
-        post: operations["create_17"];
+        post: operations["create_18"];
         delete?: never;
         options?: never;
         head?: never;
@@ -179,7 +179,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_14"];
+        put: operations["update_15"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -217,10 +217,10 @@ export interface paths {
             cookie?: never;
         };
         /** All courtesy cars in fixed order (default: only active ones) */
-        get: operations["list_13"];
+        get: operations["list_14"];
         put?: never;
         /** Create courtesy car (put at the end) */
-        post: operations["create_16"];
+        post: operations["create_17"];
         delete?: never;
         options?: never;
         head?: never;
@@ -256,7 +256,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         delete?: never;
         options?: never;
@@ -328,7 +328,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create local customer (walk-in) */
-        post: operations["create_15"];
+        post: operations["create_16"];
         delete?: never;
         options?: never;
         head?: never;
@@ -363,12 +363,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single customer */
-        get: operations["get_5"];
+        get: operations["get_6"];
         /**
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         delete?: never;
         options?: never;
@@ -418,10 +418,10 @@ export interface paths {
             cookie?: never;
         };
         /** All employees in fixed order */
-        get: operations["list_12"];
+        get: operations["list_13"];
         put?: never;
         /** Create employee (put at the end of the order) */
-        post: operations["create_14"];
+        post: operations["create_15"];
         delete?: never;
         options?: never;
         head?: never;
@@ -453,12 +453,12 @@ export interface paths {
             cookie?: never;
         };
         /** Single employee */
-        get: operations["get_4"];
+        get: operations["get_5"];
         /**
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_11"];
+        put: operations["update_12"];
         post?: never;
         delete?: never;
         options?: never;
@@ -508,10 +508,10 @@ export interface paths {
             cookie?: never;
         };
         /** All inspection stations, the standard first, then by name – also the deactivated ones */
-        get: operations["list_11"];
+        get: operations["list_12"];
         put?: never;
         /** Add an inspection station */
-        post: operations["create_13"];
+        post: operations["create_14"];
         delete?: never;
         options?: never;
         head?: never;
@@ -530,7 +530,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         delete?: never;
         options?: never;
@@ -597,10 +597,10 @@ export interface paths {
             cookie?: never;
         };
         /** All insurances by name, also the deactivated ones */
-        get: operations["list_10"];
+        get: operations["list_11"];
         put?: never;
         /** Add an insurance */
-        post: operations["create_12"];
+        post: operations["create_13"];
         delete?: never;
         options?: never;
         head?: never;
@@ -619,7 +619,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_9"];
+        put: operations["update_10"];
         post?: never;
         delete?: never;
         options?: never;
@@ -669,13 +669,13 @@ export interface paths {
             cookie?: never;
         };
         /** The label sheet formats, in their order */
-        get: operations["list_9"];
+        get: operations["list_10"];
         put?: never;
         /**
          * Add a label sheet format
          * @description The labels must fit on A4.
          */
-        post: operations["create_11"];
+        post: operations["create_12"];
         delete?: never;
         options?: never;
         head?: never;
@@ -694,10 +694,10 @@ export interface paths {
          * Edit a label sheet format
          * @description Needs the loaded `version`.
          */
-        put: operations["update_8"];
+        put: operations["update_9"];
         post?: never;
         /** Delete a label sheet format */
-        delete: operations["delete_6"];
+        delete: operations["delete_7"];
         options?: never;
         head?: never;
         patch?: never;
@@ -711,10 +711,10 @@ export interface paths {
             cookie?: never;
         };
         /** All lifts in fixed order (default: only active ones) */
-        get: operations["list_8"];
+        get: operations["list_9"];
         put?: never;
         /** Create lift (put at the end) */
-        post: operations["create_10"];
+        post: operations["create_11"];
         delete?: never;
         options?: never;
         head?: never;
@@ -823,13 +823,13 @@ export interface paths {
          * Notes
          * @description On the board (default), newest first – filters person / nobody / task. `archived=true`: the archive, latest 200, searchable with `q` (text and info).
          */
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         /**
          * Create note
          * @description The author is the person of the device.
          */
-        post: operations["create_9"];
+        post: operations["create_10"];
         delete?: never;
         options?: never;
         head?: never;
@@ -844,18 +844,18 @@ export interface paths {
             cookie?: never;
         };
         /** Single note */
-        get: operations["get_3"];
+        get: operations["get_4"];
         /**
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_7"];
+        put: operations["update_8"];
         post?: never;
         /**
          * Delete note
          * @description With its sub-tasks. Normally a note is archived instead.
          */
-        delete: operations["delete_5"];
+        delete: operations["delete_6"];
         options?: never;
         head?: never;
         patch?: never;
@@ -946,10 +946,10 @@ export interface paths {
             cookie?: never;
         };
         /** All service items in fixed order (default: only active ones) */
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
         /** Create service item (put at the end) */
-        post: operations["create_8"];
+        post: operations["create_9"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1021,6 +1021,99 @@ export interface paths {
         put?: never;
         /** No longer offer (instead of delete) */
         post: operations["deactivate_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shopping-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Positions of the shopping list
+         * @description Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state.
+         */
+        get: operations["list_6"];
+        put?: never;
+        /**
+         * Put on the list
+         * @description "Bestellen durch" gets a to-do.
+         */
+        post: operations["create_8"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shopping-items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One position */
+        get: operations["get_3"];
+        /**
+         * Edit a position
+         * @description Needs the loaded `version` (409 if someone else changed it).
+         */
+        put: operations["update_7"];
+        post?: never;
+        /**
+         * Delete a position
+         * @description Its to-do goes with it.
+         */
+        delete: operations["delete_5"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shopping-items/{id}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Its history
+         * @description Notes and changes of state, oldest first.
+         */
+        get: operations["entries"];
+        put?: never;
+        /**
+         * Add a note
+         * @description E.g. what the supplier said – with who and when.
+         */
+        post: operations["addNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shopping-items/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change the state
+         * @description No version needed. The to-do of "Bestellen durch" is done once ordered.
+         */
+        put: operations["changeStatus_1"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1234,7 +1327,7 @@ export interface paths {
             cookie?: never;
         };
         /** Last 20 imports and the latest of every kind, newest first */
-        get: operations["list_14"];
+        get: operations["list_15"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2828,6 +2921,112 @@ export interface components {
              */
             version?: number;
         };
+        ShoppingEntryDto: {
+            /** Format: date-time */
+            at: string;
+            /** Format: uuid */
+            by: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "NOTE" | "STATUS";
+            /**
+             * @description Only a change of state: the new one
+             * @enum {string|null}
+             */
+            status: "TO_ORDER" | "ORDERED" | "ARRIVED" | null;
+            /** @description Only a note */
+            text: string | null;
+        };
+        ShoppingItemDto: {
+            /** Format: date */
+            arrivedOn: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            createdBy: string | null;
+            description: string;
+            /** Format: date */
+            expectedOn: string | null;
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Bestellen durch; empty = not assigned
+             */
+            orderById: string | null;
+            /** Format: date */
+            orderedOn: string | null;
+            partNumber: string | null;
+            /** Format: int32 */
+            quantity: number;
+            /**
+             * Format: uuid
+             * @description Erfasst von; empty only for old positions
+             */
+            recordedById: string | null;
+            /** @enum {string} */
+            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            /** Format: uuid */
+            stockItemId: string | null;
+            /** Format: uuid */
+            supplierId: string | null;
+            /** @description The task it is for – enough to name it and open it */
+            task: components["schemas"]["TaskRefDto"] | null;
+            /** Format: int64 */
+            version: number;
+        };
+        ShoppingItemRequest: {
+            /** @example Bremsscheiben vorne */
+            description: string;
+            /** Format: date */
+            expectedOn?: string | null;
+            /** Format: uuid */
+            orderById?: string | null;
+            /**
+             * Format: date
+             * @description Empty = the day it is set to ordered
+             */
+            orderedOn?: string | null;
+            /** @example 0986479S27 */
+            partNumber?: string | null;
+            /**
+             * Format: int32
+             * @description Missing = 1
+             */
+            quantity?: number;
+            /**
+             * Format: uuid
+             * @description Erfasst von – whom to ask
+             */
+            recordedById: string;
+            /**
+             * @description Missing = to order when new, unchanged when editing
+             * @enum {string}
+             */
+            status?: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            /** Format: uuid */
+            stockItemId?: string | null;
+            /** Format: uuid */
+            supplierId?: string | null;
+            /**
+             * Format: uuid
+             * @description The task it is for; empty = for the workshop
+             */
+            taskId?: string | null;
+            /**
+             * Format: int64
+             * @description Only needed when editing
+             */
+            version?: number;
+        };
+        ShoppingNoteRequest: {
+            text: string;
+        };
+        ShoppingStatusRequest: {
+            /** @enum {string} */
+            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+        };
         StockItemDto: {
             articleNumber: string | null;
             /** @enum {string} */
@@ -3108,6 +3307,8 @@ export interface components {
             date: string | null;
             /** Format: uuid */
             id: string;
+            /** @description Of its vehicle (FB-19) */
+            licensePlate: string | null;
             taskNumber: string | null;
             /**
              * Format: time-local
@@ -3536,17 +3737,11 @@ export interface components {
              * @description The note it is a sub-task of (pinboard)
              */
             noteId: string | null;
-            shopping: boolean;
             /**
              * Format: uuid
-             * @description Shopping list: the article in stock
+             * @description The position of the shopping list it orders (FB-20)
              */
-            stockItemId: string | null;
-            /**
-             * Format: uuid
-             * @description Shopping list: where to order it
-             */
-            supplierId: string | null;
+            shoppingItemId: string | null;
             /** @description The task it is about – enough to name it and open it */
             task: components["schemas"]["TaskRefDto"] | null;
             text: string;
@@ -3558,18 +3753,6 @@ export interface components {
             assigneeId?: string | null;
             /** Format: date */
             dueDate?: string | null;
-            /** @description Missing = false */
-            shopping?: boolean;
-            /**
-             * Format: uuid
-             * @description Shopping list only
-             */
-            stockItemId?: string | null;
-            /**
-             * Format: uuid
-             * @description Shopping list only
-             */
-            supplierId?: string | null;
             /** Format: uuid */
             taskId?: string | null;
             text: string;
@@ -3743,7 +3926,7 @@ export interface operations {
             };
         };
     };
-    create_18: {
+    create_19: {
         parameters: {
             query?: never;
             header?: never;
@@ -3879,7 +4062,7 @@ export interface operations {
             };
         };
     };
-    update_16: {
+    update_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -3950,7 +4133,7 @@ export interface operations {
             };
         };
     };
-    delete_7: {
+    delete_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -4015,7 +4198,7 @@ export interface operations {
             };
         };
     };
-    get_6: {
+    get_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -4080,7 +4263,7 @@ export interface operations {
             };
         };
     };
-    update_15: {
+    update_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -4419,7 +4602,7 @@ export interface operations {
             };
         };
     };
-    create_17: {
+    create_18: {
         parameters: {
             query?: never;
             header?: never;
@@ -4624,7 +4807,7 @@ export interface operations {
             };
         };
     };
-    update_14: {
+    update_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -4898,7 +5081,7 @@ export interface operations {
             };
         };
     };
-    list_13: {
+    list_14: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -4965,7 +5148,7 @@ export interface operations {
             };
         };
     };
-    create_16: {
+    create_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -5103,7 +5286,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -5376,7 +5559,7 @@ export interface operations {
             };
         };
     };
-    create_15: {
+    create_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -5510,7 +5693,7 @@ export interface operations {
             };
         };
     };
-    get_5: {
+    get_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -5577,7 +5760,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -5782,7 +5965,7 @@ export interface operations {
             };
         };
     };
-    list_12: {
+    list_13: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -5849,7 +6032,7 @@ export interface operations {
             };
         };
     };
-    create_14: {
+    create_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -5987,7 +6170,7 @@ export interface operations {
             };
         };
     };
-    get_4: {
+    get_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -6054,7 +6237,7 @@ export interface operations {
             };
         };
     };
-    update_11: {
+    update_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -6259,7 +6442,7 @@ export interface operations {
             };
         };
     };
-    list_11: {
+    list_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -6324,7 +6507,7 @@ export interface operations {
             };
         };
     };
-    create_13: {
+    create_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -6393,7 +6576,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -6665,7 +6848,7 @@ export interface operations {
             };
         };
     };
-    list_10: {
+    list_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -6730,7 +6913,7 @@ export interface operations {
             };
         };
     };
-    create_12: {
+    create_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -6799,7 +6982,7 @@ export interface operations {
             };
         };
     };
-    update_9: {
+    update_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -7004,7 +7187,7 @@ export interface operations {
             };
         };
     };
-    list_9: {
+    list_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -7069,7 +7252,7 @@ export interface operations {
             };
         };
     };
-    create_11: {
+    create_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -7138,7 +7321,7 @@ export interface operations {
             };
         };
     };
-    update_8: {
+    update_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -7209,7 +7392,7 @@ export interface operations {
             };
         };
     };
-    delete_6: {
+    delete_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -7274,7 +7457,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_9: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -7341,7 +7524,7 @@ export interface operations {
             };
         };
     };
-    create_10: {
+    create_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -7749,7 +7932,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: {
                 archived?: boolean;
@@ -7820,7 +8003,7 @@ export interface operations {
             };
         };
     };
-    create_9: {
+    create_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -7889,7 +8072,7 @@ export interface operations {
             };
         };
     };
-    get_3: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -7956,7 +8139,7 @@ export interface operations {
             };
         };
     };
-    update_7: {
+    update_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -8027,7 +8210,7 @@ export interface operations {
             };
         };
     };
-    delete_5: {
+    delete_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -8373,7 +8556,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: {
                 includeInactive?: boolean;
@@ -8440,7 +8623,7 @@ export interface operations {
             };
         };
     };
-    create_8: {
+    create_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -8734,6 +8917,555 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ServiceItemDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    list_6: {
+        parameters: {
+            query?: {
+                arrived?: boolean;
+                taskId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingItemDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_8: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShoppingItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingItemDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    get_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingItemDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_7: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShoppingItemRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingItemDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    delete_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    entries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingEntryDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    addNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShoppingNoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingEntryDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    changeStatus_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShoppingStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShoppingItemDto"];
                 };
             };
             /** @description Bad Request */
@@ -9804,7 +10536,7 @@ export interface operations {
             };
         };
     };
-    list_14: {
+    list_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -12613,7 +13345,6 @@ export interface operations {
                 done?: boolean;
                 assigneeId?: string;
                 unassigned?: boolean;
-                shopping?: boolean;
                 taskId?: string;
                 noteId?: string;
             };

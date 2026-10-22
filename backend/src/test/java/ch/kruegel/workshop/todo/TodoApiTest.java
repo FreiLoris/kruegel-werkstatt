@@ -81,7 +81,6 @@ class TodoApiTest {
         assertThat(response).hasStatus(HttpStatus.CREATED);
         assertThat(response).bodyJson().extractingPath("$.text").isEqualTo("Bremsscheiben bestellen");
         assertThat(response).bodyJson().extractingPath("$.assigneeId").isEqualTo(reto.getId().toString());
-        assertThat(response).bodyJson().extractingPath("$.shopping").isEqualTo(false);
         // the task by reference – with what is needed to name it (bug #14: the old app copied the number text)
         assertThat(response).bodyJson().extractingPath("$.task.customerName").isEqualTo("Huber Test");
         assertThat(response).bodyJson().extractingPath("$.task.taskNumber").isEqualTo("A-17");
@@ -107,7 +106,7 @@ class TodoApiTest {
     void openOnesByDeadlineWithoutDeadlineLastAndFilters() {
         create("{ \"text\": \"ohne Frist\" }");
         create("{ \"text\": \"später\", \"dueDate\": \"2026-10-20\", \"assigneeId\": \"%s\" }".formatted(reto.getId()));
-        create("{ \"text\": \"Kaffee\", \"dueDate\": \"2026-10-10\", \"shopping\": true }");
+        create("{ \"text\": \"Kaffee\", \"dueDate\": \"2026-10-10\" }");
         create("{ \"text\": \"zum Auftrag\", \"dueDate\": \"2026-10-12\", \"taskId\": \"%s\" }".formatted(task.getId()));
 
         assertThat(mvc.get().uri("/api/todos").exchange()).bodyJson().extractingPath("$[*].text").asArray()
@@ -116,9 +115,6 @@ class TodoApiTest {
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("später");
         assertThat(mvc.get().uri("/api/todos?unassigned=true").exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Kaffee", "zum Auftrag", "ohne Frist");
-        assertThat(mvc.get().uri("/api/todos?shopping=true").exchange())
-                .bodyJson().extractingPath("$[*].text").asArray().containsExactly("Kaffee");
-        assertThat(mvc.get().uri("/api/todos?shopping=false").exchange()).bodyJson().extractingPath("$").asArray().hasSize(3);
         assertThat(mvc.get().uri("/api/todos?taskId=" + task.getId()).exchange())
                 .bodyJson().extractingPath("$[*].text").asArray().containsExactly("zum Auftrag");
     }

@@ -647,10 +647,20 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   again for a day from today on, or another status = gone from the group. Each says what is missing
   (the parts text until 14c/14d) and when its day was; parts arrived = first, "jetzt einplanen".
   Dashboard and the button count both: "2 ohne Termin · 1 wartet auf Material".
-- [ ] **14c – Shopping list rebuilt** (FB-20): positions of their own (description, number,
-  quantity, status, recorded by, to be ordered by), a to-do for the one who orders, details with
-  notes and status history; existing shopping to-dos and "Material bestellen" texts taken over
-- [ ] **14d – Parts block on the task** (FB-19): quick entry with the same 6 fields, inline editing
+- [x] **14c – Shopping list rebuilt** (FB-20)
+  Done: the shopping list has positions of their own (`/api/shopping-items`, V42) instead of to-dos
+  with a flag: description, number, quantity, state (to order / ordered / arrived), recorded by, to
+  be ordered by – the quick entry above the list has exactly these six, Enter saves. ONE list, not
+  by person; filter with/without task, "Liste | Nach Lieferant" (FB-09 with "Bestellung kopieren")
+  and "Offen | Erledigt" (= arrived). Each position has a page (`/shopping/:id`) with article,
+  supplier, ordered and expected on, and its history: notes with who and when, and every change of
+  state. "Bestellen durch" gets a to-do linked to the position ("Bestellen: 2× …"): done once
+  ordered and back; ticking it off or giving it to someone else changes the position too. The old
+  shopping to-dos were taken over (open with a person: their to-do stays, linked; ticked off =
+  arrived); to-dos have no shopping flag any more. The material written into tasks follows in 14d.
+- [ ] **14d – Parts block on the task** (FB-19): quick entry with the same 6 fields, inline editing;
+  the text "Material bestellen" of tasks taken over into positions, the field and "Material für
+  Aufträge" on the shopping list go
 - [ ] **14e – Where the vehicle is** (FB-16): "Bei uns" / "Beim Kunden", "Ohne Termin" grouped,
   phone to call
 - [ ] **14f – Unfinished tasks carried over** (FB-14): shown in "Ohne Lift" on the following

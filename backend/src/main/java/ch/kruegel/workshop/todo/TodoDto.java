@@ -14,21 +14,19 @@ public record TodoDto(
         String text,
         @Schema(types = {"string", "null"}, format = "uuid") UUID assigneeId,
         @Schema(types = {"string", "null"}, format = "date") LocalDate dueDate,
-        boolean shopping,
         @Schema(types = {"object", "null"}, description = "The task it is about – enough to name it and open it") TaskRefDto task,
         @Schema(types = {"string", "null"}, format = "uuid", description = "The note it is a sub-task of (pinboard)") UUID noteId,
         @Schema(types = {"string", "null"}, description = "Empty = open") Instant doneAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID doneBy,
-        @Schema(types = {"string", "null"}, format = "uuid", description = "Shopping list: the article in stock") UUID stockItemId,
-        @Schema(types = {"string", "null"}, format = "uuid", description = "Shopping list: where to order it") UUID supplierId,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "The position of the shopping list it orders (FB-20)") UUID shoppingItemId,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy) {
 
     static TodoDto of(Todo todo) {
         // getId() on a LAZY reference does not load it
         UUID assigneeId = todo.getAssignee() == null ? null : todo.getAssignee().getId();
-        return new TodoDto(todo.getId(), todo.getVersion(), todo.getText(), assigneeId, todo.getDueDate(), todo.isShopping(),
+        return new TodoDto(todo.getId(), todo.getVersion(), todo.getText(), assigneeId, todo.getDueDate(),
                 TaskRefDto.of(todo.getTask()), todo.getNoteId(), todo.getDoneAt(), todo.getDoneBy(),
-                todo.getStockItemId(), todo.getSupplierId(), todo.getCreatedAt(), todo.getCreatedBy());
+                todo.getShoppingItemId(), todo.getCreatedAt(), todo.getCreatedBy());
     }
 }

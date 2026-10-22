@@ -7,8 +7,8 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 /**
- * A task as a link from somewhere else (to-do, note): enough to name it – "Huber Peter, 15.10. 08:00
- * (A-17)" – and to open it. By ID, never by its number (bug #14).
+ * A task as a link from somewhere else (to-do, note, shopping list): enough to name it – "Huber Peter,
+ * ZH 123456, 15.10. 08:00 (A-17)" – and to open it. By ID, never by its number (bug #14).
  */
 public record TaskRefDto(
         UUID id,
@@ -16,7 +16,8 @@ public record TaskRefDto(
         @Schema(types = {"string", "null"}, example = "08:00:00") LocalTime time,
         @Schema(description = "Zeit offen – show no clock time") boolean timeOpen,
         String customerName,
-        @Schema(types = {"string", "null"}) String taskNumber) {
+        @Schema(types = {"string", "null"}) String taskNumber,
+        @Schema(types = {"string", "null"}, description = "Of its vehicle (FB-19)") String licensePlate) {
 
     /** The task as a link; empty stays empty. Needs the customer loaded (or a session open). */
     public static TaskRefDto of(Task task) {
@@ -24,6 +25,7 @@ public record TaskRefDto(
             return null;
         }
         return new TaskRefDto(task.getId(), task.getAppointment().date(), task.getAppointment().time(), task.getAppointment().timeOpen(),
-                task.getCustomer().getDetails().displayName(), task.getTaskNumber());
+                task.getCustomer().getDetails().displayName(), task.getTaskNumber(),
+                task.getVehicle() == null ? null : task.getVehicle().getDetails().licensePlate());
     }
 }

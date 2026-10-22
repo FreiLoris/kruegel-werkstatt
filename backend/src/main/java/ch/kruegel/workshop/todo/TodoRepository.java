@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,30 +18,31 @@ import java.util.UUID;
 public interface TodoRepository extends JpaRepository<Todo, UUID> {
 
     /** Open to-dos: the next deadline first, without deadline at the end, then oldest first. */
-    @EntityGraph(attributePaths = {"task", "task.customer"})
+    @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})
     @Query("""
             SELECT t FROM Todo t LEFT JOIN t.assignee a LEFT JOIN t.task k
             WHERE t.doneAt IS NULL
               AND (:assigneeId IS NULL OR a.id = :assigneeId)
               AND (:unassigned = false OR a.id IS NULL)
-              AND (:shopping IS NULL OR t.shopping = :shopping)
               AND (:taskId IS NULL OR k.id = :taskId)
               AND (:noteId IS NULL OR t.noteId = :noteId)
             ORDER BY CASE WHEN t.dueDate IS NULL THEN 1 ELSE 0 END, t.dueDate, t.createdAt""")
-    List<Todo> open(UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId, UUID noteId);
+    List<Todo> open(UUID assigneeId, boolean unassigned, UUID taskId, UUID noteId);
 
     /** Done to-dos: the latest first – limited, the list grows forever. */
-    @EntityGraph(attributePaths = {"task", "task.customer"})
+    @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})
     @Query("""
             SELECT t FROM Todo t LEFT JOIN t.assignee a LEFT JOIN t.task k
             WHERE t.doneAt IS NOT NULL
               AND (:assigneeId IS NULL OR a.id = :assigneeId)
               AND (:unassigned = false OR a.id IS NULL)
-              AND (:shopping IS NULL OR t.shopping = :shopping)
               AND (:taskId IS NULL OR k.id = :taskId)
               AND (:noteId IS NULL OR t.noteId = :noteId)
             ORDER BY t.doneAt DESC""")
-    List<Todo> done(UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId, UUID noteId, Limit limit);
+    List<Todo> done(UUID assigneeId, boolean unassigned, UUID taskId, UUID noteId, Limit limit);
+
+    /** The to-do ordering a position of the shopping list (FB-20) – at most one */
+    Optional<Todo> findByShoppingItemId(UUID shoppingItemId);
 
     /** The open sub-tasks of a note – ticked off when the note is archived. */
     List<Todo> findByNoteIdAndDoneAtIsNull(UUID noteId);

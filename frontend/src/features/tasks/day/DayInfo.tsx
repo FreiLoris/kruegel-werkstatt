@@ -62,7 +62,7 @@ export function DayInfo({ date }: { date: string }) {
       {due.length > 0 && (
         <ul className={styles.todos} aria-label="To-dos an diesem Tag">
           {due.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} canEdit={canEdit} showTask withShopping />
+            <TodoItem key={todo.id} todo={todo} canEdit={canEdit} showTask />
           ))}
         </ul>
       )}

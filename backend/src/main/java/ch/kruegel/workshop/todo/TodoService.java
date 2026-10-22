@@ -2,12 +2,11 @@ package ch.kruegel.workshop.todo;
 
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.person.CurrentPerson;
+import ch.kruegel.workshop.common.web.BusinessRuleException;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
-import ch.kruegel.workshop.stock.StockItemRepository;
-import ch.kruegel.workshop.supplier.SupplierRepository;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,18 +42,13 @@ public class TodoService {
     private final TodoRepository repository;
     private final EmployeeRepository employees;
     private final TaskRepository tasks;
-    private final StockItemRepository stockItems;
-    private final SupplierRepository suppliers;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    TodoService(TodoRepository repository, EmployeeRepository employees, TaskRepository tasks, StockItemRepository stockItems,
-                SupplierRepository suppliers, ApplicationEventPublisher events, Clock clock) {
+    TodoService(TodoRepository repository, EmployeeRepository employees, TaskRepository tasks, ApplicationEventPublisher events, Clock clock) {
         this.repository = repository;
         this.employees = employees;
         this.tasks = tasks;
-        this.stockItems = stockItems;
-        this.suppliers = suppliers;
         this.events = events;
         this.clock = clock;
     }
@@ -63,22 +57,19 @@ public class TodoService {
      * @param done       false = open ones by deadline; true = the latest done ones
      * @param assigneeId only this person's; empty = everyone's
      * @param unassigned only those nobody takes care of yet
-     * @param shopping   only the shopping list (true) or only the rest (false); empty = both
      * @param taskId     only those of this task; empty = all
      * @param noteId     only the sub-tasks of this note; empty = all
      */
     @Transactional(readOnly = true)
-    public List<TodoDto> list(boolean done, UUID assigneeId, boolean unassigned, Boolean shopping, UUID taskId, UUID noteId) {
+    public List<TodoDto> list(boolean done, UUID assigneeId, boolean unassigned, UUID taskId, UUID noteId) {
         List<Todo> found = done
-                ? repository.done(assigneeId, unassigned, shopping, taskId, noteId, Limit.of(DONE_LIMIT))
-                : repository.open(assigneeId, unassigned, shopping, taskId, noteId);
+                ? repository.done(assigneeId, unassigned, taskId, noteId, Limit.of(DONE_LIMIT))
+                : repository.open(assigneeId, unassigned, taskId, noteId);
         return found.stream().map(TodoDto::of).toList();
     }
 
     public TodoDto create(TodoRequest request) {
-        Todo todo = new Todo(details(request, null));
-        purchase(todo, request);
-        return saved(repository.save(todo));
+        return saved(repository.save(new Todo(details(request, null))));
     }
 
     /**
@@ -86,11 +77,8 @@ public class TodoService {
      * Without task of its own: the note has the task.
      */
     public TodoDto createForNote(UUID noteId, TodoRequest request) {
-        TodoRequest withoutTask = new TodoRequest(request.text(), request.assigneeId(), request.dueDate(), request.shopping(), null,
-                request.stockItemId(), request.supplierId(), null);
-        Todo todo = new Todo(details(withoutTask, null), noteId);
-        purchase(todo, withoutTask);
-        return saved(repository.save(todo));
+        TodoRequest withoutTask = new TodoRequest(request.text(), request.assigneeId(), request.dueDate(), null, null);
+        return saved(repository.save(new Todo(details(withoutTask, null), noteId)));
     }
 
     public TodoDto update(UUID id, TodoRequest request) {
@@ -98,9 +86,9 @@ public class TodoService {
             throw new InvalidInputException("version", "muss beim Bearbeiten angegeben werden");
         }
         Todo todo = find(id);
+        notOfShoppingList(todo);
         todo.checkVersion(request.version());
         todo.update(details(request, todo));
-        purchase(todo, request);
         return saved(todo);
     }
 
@@ -115,6 +103,7 @@ public class TodoService {
         } else if (!done) {
             todo.reopen();
         }
+        shoppingTodoChanged(todo);
         return saved(todo);
     }
 
@@ -124,38 +113,45 @@ public class TodoService {
      */
     public TodoDto reassign(UUID id, UUID assigneeId) {
         Todo todo = find(id);
+        if (todo.getShoppingItemId() != null && assigneeId == null) {
+            // without someone who orders there is no to-do – that is cleared on the position
+            throw new BusinessRuleException("Wer bestellt, wird auf der Einkaufsliste geleert – dort «Bestellen durch» ändern.");
+        }
         todo.reassign(assignee(assigneeId, todo.getAssignee()));
+        shoppingTodoChanged(todo);
         return saved(todo);
     }
 
     public void delete(UUID id) {
         Todo todo = find(id);
+        notOfShoppingList(todo);
         repository.delete(todo);
         repository.flush();
         changed(todo);
     }
 
-    /** Article and supplier of a shopping list entry – both must exist (13g); any other to-do has neither */
-    private void purchase(Todo todo, TodoRequest request) {
-        if (!request.shopping()) {
-            todo.purchase(null, null);
-            return;
+    /**
+     * The to-do ordering a position of the shopping list says what the position says (FB-20) – text and
+     * existence follow the position; only ticking off and giving it to someone else work from here.
+     */
+    private static void notOfShoppingList(Todo todo) {
+        if (todo.getShoppingItemId() != null) {
+            throw new BusinessRuleException("Dieses To-do gehört zu einer Position der Einkaufsliste – dort ändern oder löschen.");
         }
-        if (request.stockItemId() != null && !request.stockItemId().equals(todo.getStockItemId())
-                && !stockItems.existsById(request.stockItemId())) {
-            throw new InvalidInputException("stockItemId", "Diesen Artikel gibt es nicht");
+    }
+
+    /** The to-do of a shopping list position ticked or given to someone else – the position follows (FB-20). */
+    private void shoppingTodoChanged(Todo todo) {
+        if (todo.getShoppingItemId() != null) {
+            UUID assigneeId = todo.getAssignee() == null ? null : todo.getAssignee().getId();
+            events.publishEvent(new ShoppingTodoChanged(todo.getShoppingItemId(), todo.isDone(), assigneeId));
         }
-        if (request.supplierId() != null && !request.supplierId().equals(todo.getSupplierId())
-                && !suppliers.existsById(request.supplierId())) {
-            throw new InvalidInputException("supplierId", "Diesen Lieferanten gibt es nicht");
-        }
-        todo.purchase(request.stockItemId(), request.supplierId());
     }
 
     private TodoDetails details(TodoRequest request, Todo current) {
         Employee assignee = assignee(request.assigneeId(), current == null ? null : current.getAssignee());
         Task task = task(request.taskId(), current == null ? null : current.getTask());
-        return new TodoDetails(request.text(), assignee, request.dueDate(), request.shopping(), task);
+        return new TodoDetails(request.text(), assignee, request.dueDate(), task);
     }
 
     private Employee assignee(UUID id, Employee current) {

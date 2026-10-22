@@ -2,12 +2,11 @@ import { Plus, Save } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
-import { Checkbox, Select, TextField } from '../../components/ui/Fields'
+import { Select, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
 import { useAddNoteTodo } from '../notes/noteApi'
-import { PurchaseFields } from './PurchaseFields'
 import { useSaveTodo, type Todo } from './todoApi'
 import styles from './TodoForm.module.css'
 
@@ -18,20 +17,17 @@ interface TodoFormProps {
   taskId?: string
   /** new to-do: a sub-task of this note (pinboard) */
   noteId?: string
-  /** new to-do: start values from the current filter (person, shopping list tab) */
-  defaults?: { assigneeId?: string; shopping?: boolean }
-  /** show the "Einkaufsliste" tick (not needed in a task) */
-  withShopping?: boolean
+  /** new to-do: start values from the current filter (person) */
+  defaults?: { assigneeId?: string }
   onSaved?: () => void
   onCancel?: () => void
 }
 
 /**
- * New or changed to-do: text, who, until when (and shopping list – there also article and supplier,
- * 13g). A person who is not selectable any more stays in the list while it is on the to-do – the
+ * New or changed to-do: text, who, until when. The shopping list has its own entry (FB-20). A person who is not selectable any more stays in the list while it is on the to-do – the
  * server accepts it unchanged.
  */
-export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false, onSaved, onCancel }: TodoFormProps) {
+export function TodoForm({ todo, taskId, noteId, defaults, onSaved, onCancel }: TodoFormProps) {
   const saveTodo = useSaveTodo()
   const addToNote = useAddNoteTodo()
   const pending = saveTodo.isPending || addToNote.isPending
@@ -42,9 +38,6 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
     text: todo?.text ?? '',
     assigneeId: todo?.assigneeId ?? defaults?.assigneeId ?? '',
     dueDate: todo?.dueDate ?? '',
-    shopping: todo?.shopping ?? defaults?.shopping ?? false,
-    stockItemId: todo?.stockItemId ?? '',
-    supplierId: todo?.supplierId ?? '',
   }
   const [draft, setDraft] = useState(initial)
   // the version from when the form was opened (conventions: never the live one)
@@ -62,15 +55,12 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
       text: draft.text.trim(),
       assigneeId: draft.assigneeId || undefined,
       dueDate: draft.dueDate || undefined,
-      shopping: draft.shopping,
       taskId: todo ? (todo.task?.id ?? undefined) : taskId,
-      stockItemId: (draft.shopping && draft.stockItemId) || undefined,
-      supplierId: (draft.shopping && draft.supplierId) || undefined,
       version: openedVersion,
     }
     const callbacks = {
       onSuccess: () => {
-        if (!todo) setDraft({ ...initial, text: '', dueDate: '', stockItemId: '', supplierId: '' })
+        if (!todo) setDraft({ ...initial, text: '', dueDate: '' })
         onSaved?.()
       },
       onError: (error: Error) => toast.error(`To-do nicht gespeichert: ${reasonOf(error)}`),
@@ -100,15 +90,6 @@ export function TodoForm({ todo, taskId, noteId, defaults, withShopping = false,
         ))}
       </Select>
       <TextField label="Bis" type="date" value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} />
-      {withShopping && (
-        <Checkbox label="Einkaufsliste" checked={draft.shopping} onChange={(e) => setDraft({ ...draft, shopping: e.target.checked })} />
-      )}
-      {withShopping && draft.shopping && (
-        <PurchaseFields
-          value={{ stockItemId: draft.stockItemId, supplierId: draft.supplierId, text: draft.text }}
-          onChange={(purchase) => setDraft({ ...draft, ...purchase })}
-        />
-      )}
       <div className={styles.actions}>
         {onCancel && (
           <Button onClick={onCancel} disabled={pending}>

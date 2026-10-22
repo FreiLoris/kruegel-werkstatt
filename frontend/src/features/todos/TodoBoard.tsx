@@ -150,7 +150,7 @@ function DraggableTodo({ todo, column, canEdit }: { todo: Todo; column: TodoColu
       todo={todo}
       canEdit={canEdit}
       showTask
-      withShopping
+     
       // in the first column: the name of someone who left; nothing for "not assigned" (the title says it)
       showAssignee={column.employee === null && todo.assigneeId !== null}
       style={{ opacity: isDragging ? 0.35 : undefined }}
