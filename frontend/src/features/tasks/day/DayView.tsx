@@ -8,12 +8,14 @@ import { useAllEmployees } from '../../employees/employeeApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
 import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
-import { tasksOfDayKey, useMfkSlots, useTasksBetween, useTasksOfDay } from '../taskApi'
+import { tasksOfDayKey, useCarriedOver, useMfkSlots, useTasksBetween, useTasksOfDay } from '../taskApi'
 import { newTaskUrl } from '../wizard/appointmentForm'
 import { DayGrid } from './DayGrid'
 import { DayInfo } from './DayInfo'
 import styles from './DayView.module.css'
 import { startLabel } from '../taskTime'
+import { useToday } from '../../../lib/clock'
+import { showsCarriedOver } from '../carriedOver'
 
 /** Pixels per minute in the day view – one hour = 90 px, enough for customer, vehicle and work */
 const SCALE = 1.5
@@ -25,6 +27,9 @@ const SCALE = 1.5
 export function DayView({ date, onGo }: { date: string; onGo: (date: string) => void }) {
   const tasks = useTasksOfDay(date)
   const { data: mfkSlots } = useMfkSlots(date, date)
+  const today = useToday()
+  // a future day does not know yet what will be finished (FB-14) – the query stays off, nothing shown
+  const { data: carriedOver } = useCarriedOver(date, showsCarriedOver(date, today))
   const { data: lifts } = useAllLifts()
   const { data: employees } = useAllEmployees()
   const { data: serviceItems } = useAllServiceItems()
@@ -40,7 +45,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   return (
     <>
       <DayInfo date={date} />
-      {tasks.data.length === 0 && !mfkSlots?.length && <NextAppointment after={date} onGo={onGo} />}
+      {tasks.data.length === 0 && !mfkSlots?.length && !carriedOver?.length && <NextAppointment after={date} onGo={onGo} />}
       <DayGrid
         date={date}
         tasks={tasks.data}
@@ -54,6 +59,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
         serviceItemNames={serviceItemNames}
         courtesyCars={courtesyCars}
         mfkSlots={mfkSlots}
+        carriedOver={carriedOver}
       />
       {canEdit && <p className={styles.hint}>Im leeren Raster ziehen (oder tippen) legt dort einen neuen Auftrag an.</p>}
     </>

@@ -291,6 +291,34 @@ class TaskApiTest {
     }
 
     @Test
+    void unfinishedTasksAreCarriedOverToTheNextDays() {
+        String task = "{ \"customerId\": \"%s\", \"acceptedById\": \"%s\", \"date\": \"%s\", \"time\": \"08:00\" }";
+        LocalDate today = LocalDate.now();
+        String yesterday = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), today.minusDays(1))));
+        String inWork = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), today.minusDays(3))));
+        String done = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), today.minusDays(2))));
+        String waiting = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), today.minusDays(2))));
+        idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), today)));
+        send("PUT", "/api/tasks/" + inWork + "/status", "{ \"status\": \"IN_PROGRESS\" }");
+        send("PUT", "/api/tasks/" + done + "/status", "{ \"status\": \"DONE\" }");
+        send("PUT", "/api/tasks/" + waiting + "/status", "{ \"status\": \"WAITING_FOR_PARTS\" }");
+
+        // today: those over before today and not finished – the longest carried first; today's own is not carried
+        assertThat(mvc.get().uri("/api/tasks/carried-over?day=" + today).exchange()).bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactly(inWork, yesterday);
+        // the day after the one three days ago: only that one
+        assertThat(mvc.get().uri("/api/tasks/carried-over?day=" + today.minusDays(2)).exchange()).bodyJson().extractingPath("$[*].id")
+                .asArray().containsExactly(inWork);
+
+        // until 24:00: over at the start of the next day – carried over to it right away
+        String untilMidnight = idOf(send("POST", "/api/tasks", """
+                { "customerId": "%s", "acceptedById": "%s", "date": "%s", "time": "16:00", "endAt": "%sT00:00" }"""
+                .formatted(huber.getId(), reto.getId(), today.minusDays(5), today.minusDays(4))));
+        assertThat(mvc.get().uri("/api/tasks/carried-over?day=" + today.minusDays(4)).exchange()).bodyJson().extractingPath("$[*].id")
+                .asArray().containsExactly(untilMidnight);
+    }
+
+    @Test
     void theVehicleIsWithTheCustomerUntilItComesIn() {
         String id = idOf(create(null));
         assertThat(mvc.get().uri("/api/tasks/" + id).exchange()).bodyJson().extractingPath("$.vehicleLocation").isEqualTo("AT_CUSTOMER");

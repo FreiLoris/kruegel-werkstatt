@@ -30,10 +30,11 @@ import { absencesOn, type AbsenceOnDay } from '../../absences/absenceDays'
 import { useCourtesyCarsByTask } from '../../bookings/useCourtesyCarsByTask'
 import { MfkEntry } from '../mfk/MfkEntry'
 import { mfkSlotsOn } from '../mfk/mfkSlots'
-import { tasksBetweenKey, useMfkSlots, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
+import { tasksBetweenKey, useCarriedOver, useMfkSlots, useScheduleTask, useTasksBetween, type Task } from '../taskApi'
 import { WeekCard } from './WeekCard'
 import { weekDays } from './weekDays'
 import styles from './WeekView.module.css'
+import { CarriedOver } from '../day/CarriedOver'
 
 const dayLabel = (date: string) => `${WEEKDAYS_SHORT[weekdayOf(date)]} ${formatDate(date)}`
 
@@ -74,10 +75,16 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
   )
 
   const shown = dropped && dropped.basedOn === tasks.data ? dropped.tasks : tasks.data
-  // a day with only an MFK appointment is shown too (a Saturday inspection is rare, but possible)
-  const days = useMemo(() => weekDays(monday, shown ?? [], mfkSlots?.map((s) => s.date)), [monday, shown, mfkSlots])
-  const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
   const today = useToday()
+  // not finished on their day (FB-14): with today – this week only
+  const { data: carriedOver } = useCarriedOver(today, today >= monday && today <= sunday)
+  // a day with only an MFK appointment is shown too (a Saturday inspection is rare, but possible),
+  // and one with only carried tasks (today on a weekend)
+  const days = useMemo(
+    () => weekDays(monday, shown ?? [], [...(mfkSlots?.map((s) => s.date) ?? []), ...(carriedOver?.length ? [today] : [])]),
+    [monday, shown, mfkSlots, carriedOver, today],
+  )
+  const holidayOf = new Map((holidays ?? []).map((h) => [h.date, h.name]))
 
   if (tasks.error) return <p className="muted">Termine konnten nicht geladen werden: {tasks.error.message}</p>
   if (!tasks.data || !lifts || !employees) return <p className="muted">Lade Termine …</p>
@@ -139,6 +146,7 @@ export function WeekView({ monday, onOpenDay }: { monday: string; onOpenDay: (da
             today={day.date === today}
             onOpen={() => onOpenDay(day.date)}
           >
+            {day.date === today && <CarriedOver tasks={carriedOver ?? []} />}
             {/* the MFK appointments first: hints, they cannot be dragged – they move in the task */}
             {mfkSlotsOn(mfkSlots ?? [], day.date).map((slot) => (
               <MfkEntry key={`mfk-${slot.task.id}`} slot={slot} driver={employees.find((e) => e.id === slot.task.mfkDriverId)} />

@@ -29,6 +29,7 @@ const task = (id: string, liftId: string, date: string, time: string, name: stri
 let today: ReturnType<typeof task>[] = []
 let mfk: unknown[] = []
 let todayError: Error | null = null
+let carried: unknown[] = []
 const ahead = [task('n', '1', '2099-03-02', '08:00:00', 'Huber Peter')]
 
 vi.mock('../tasks/taskApi', async (importOriginal) => ({
@@ -36,6 +37,7 @@ vi.mock('../tasks/taskApi', async (importOriginal) => ({
   useTasksOfDay: () => ({ data: today, error: todayError }),
   useTasksBetween: () => ({ data: ahead, error: null }),
   useMfkSlots: () => ({ data: mfk }),
+  useCarriedOver: () => ({ data: carried }),
 }))
 vi.mock('../lifts/liftApi', () => ({ useAllLifts: () => ({ data: lifts }) }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [] }) }))
@@ -91,5 +93,15 @@ describe('TodayByLift', () => {
     expect(screen.getByText('Muster Anna')).toBeTruthy()
     expect(screen.queryByText(/konnten nicht geladen werden/)).toBeNull()
     todayError = null
+  })
+
+  it('a task not finished yesterday stands in "Ohne Lift" with since when (FB-14)', () => {
+    carried = [{ ...task('c', '1', '2099-03-01', '08:00:00', 'Meier Anna'), endAt: '2026-10-12T17:00:00' }]
+    renderToday()
+
+    const noLift = screen.getByRole('region', { name: 'Ohne Lift' })
+    expect(noLift.textContent).toContain('Meier Anna')
+    expect(noLift.textContent).toContain('verlängert seit Mo 12.10.')
+    carried = []
   })
 })

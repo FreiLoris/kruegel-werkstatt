@@ -674,8 +674,16 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   with the customer the phone numbers are links to tap; "Jetzt aufbieten" marks a car with the
   customer whose parts are all here (FB-15); "In Arbeit" moves the car here. No call log yet (optional in FB-16, also wished in
   FB-21 – one for both later).
-- [ ] **14f – Unfinished tasks carried over** (FB-14): shown in "Ohne Lift" on the following
-  working days with "verlängert seit …" – computed, the appointment itself stays
+- [x] **14f – Unfinished tasks carried over** (FB-14)
+  Done: a task received or in work whose appointment is over is carried over to the following days
+  – computed, not moved (`GET /api/tasks/carried-over?day=`): no nightly job, the appointment stays
+  as it was and says since when ("verlängert seit Mo 12.10."), so no history entry is needed. Shown
+  in "Ohne Lift" without time and duration – in the day view a row above its time grid, on the
+  dashboard/TV, and in the week with today; up to today only. It leaves when it is "Fertig" or
+  planned again (open it, "Einplanen / Bearbeiten"). Waiting for parts is not carried (14b shows
+  those). Not done: dragging it from there onto a lift – open it and plan it instead. As specified
+  by the workshop "Eingang" counts too – also a car that never came: such a task is set "Fertig"
+  or planned again. Computed means a past day shows today's state (finished ones are gone there too).
 - [ ] **14g – Week view in the wizard** (FB-13)
 - [ ] **14h – Tyres without the hotel** (FB-12): a set has a status (in the hotel / on the car /
   with the customer), overview per vehicle with traffic lights for tread and age
