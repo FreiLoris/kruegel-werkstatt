@@ -9,7 +9,7 @@ import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
 import { useTask, type AnyTask } from '../tasks/taskApi'
 import { PlaceMap } from './PlaceMap'
-import { bookingErrors, hasErrors, initialBooking, isEmpty, setSummary, swapPlace, toBookingRequest, type BookingForm } from './taskTires'
+import { bookingErrors, hasErrors, initialBooking, isEmpty, setSummary, swapPlace, toBookingRequest, withRemoved, type BookingForm } from './taskTires'
 import { useBookTaskTires, useTaskTires, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TaskTires } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
@@ -157,7 +157,12 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
             />
           </div>
           {form.removedChoice === 'new' && (
-            <TireSetFields form={form.removed} onChange={(removed) => setForm({ ...form, removed })} errors={errors.removed} showRequired={showRequired} />
+            <TireSetFields
+              form={form.removed}
+              onChange={(removed) => setForm(withRemoved(form, removed, tires))}
+              errors={errors.removed}
+              showRequired={showRequired}
+            />
           )}
           {form.removedChoice !== 'none' && (
             <>

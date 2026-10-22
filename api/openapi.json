@@ -11518,6 +11518,87 @@
         "summary" : "Deactivate local vehicle (instead of delete)",
         "tags" : [ "Vehicles" ]
       }
+    },
+    "/api/vehicles/{vehicleId}/tire-sets" : {
+      "get" : {
+        "operationId" : "ofVehicle",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "vehicleId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TireSetDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "All sets of a vehicle, in the hotel or not (newest first)",
+        "tags" : [ "Tyre hotel" ]
+      }
     }
   },
   "components" : {
@@ -13093,6 +13174,18 @@
             "format" : "uuid",
             "description" : "Empty = assigned later"
           },
+          "pressureFront" : {
+            "type" : "number",
+            "description" : "Only for a new set: pressure front in bar",
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
+          "pressureRear" : {
+            "type" : "number",
+            "description" : "Only for a new set: pressure rear in bar",
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
           "remark" : {
             "type" : "string",
             "maxLength" : 500,
@@ -13112,6 +13205,13 @@
             "type" : "string",
             "format" : "uuid",
             "description" : "A retrieved set of the customer – empty = a new set"
+          },
+          "torque" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Only for a new set: torque in Nm",
+            "maximum" : 999,
+            "minimum" : 10
           },
           "wheelBolts" : {
             "type" : "boolean",
@@ -14235,6 +14335,14 @@
             "format" : "uuid",
             "description" : "Where it lies; empty = not assigned (or retrieved)"
           },
+          "pressureFront" : {
+            "type" : [ "number", "null" ],
+            "description" : "Tyre pressure front in bar"
+          },
+          "pressureRear" : {
+            "type" : [ "number", "null" ],
+            "description" : "Tyre pressure rear in bar"
+          },
           "remark" : {
             "type" : [ "string", "null" ]
           },
@@ -14254,6 +14362,11 @@
           "storedOn" : {
             "type" : "string",
             "format" : "date"
+          },
+          "torque" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Torque of the wheel bolts in Nm"
           },
           "updatedAt" : {
             "type" : "string",
@@ -14277,7 +14390,8 @@
             "format" : "int64"
           },
           "wheelBolts" : {
-            "type" : "boolean"
+            "type" : "boolean",
+            "description" : "Radschrauben beachten (FB-17)"
           },
           "year" : {
             "type" : [ "integer", "null" ],
@@ -14285,7 +14399,7 @@
             "description" : "Year of manufacture (DOT)"
           }
         },
-        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "remark", "retrievedOn", "rims", "season", "storedOn", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
+        "required" : [ "brand", "customer", "depths", "dimension", "hubCaps", "id", "kind", "model", "place", "placeId", "pressureFront", "pressureRear", "remark", "retrievedOn", "rims", "season", "storedOn", "torque", "updatedAt", "updatedBy", "vehicle", "version", "wheelBolts", "year" ]
       },
       "TireSetEventDto" : {
         "type" : "object",
@@ -14366,6 +14480,20 @@
             "format" : "uuid",
             "description" : "Only when storing: the place; empty = assigned later (then by moving)"
           },
+          "pressureFront" : {
+            "type" : "number",
+            "description" : "Tyre pressure front in bar",
+            "example" : 2.5,
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
+          "pressureRear" : {
+            "type" : "number",
+            "description" : "Tyre pressure rear in bar",
+            "example" : 2.7,
+            "maximum" : 9.99,
+            "minimum" : 0.5
+          },
           "remark" : {
             "type" : "string",
             "maxLength" : 500,
@@ -14385,6 +14513,14 @@
             "format" : "date",
             "description" : "Only when storing: the day; empty = today"
           },
+          "torque" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Torque of the wheel bolts in Nm",
+            "example" : 120,
+            "maximum" : 999,
+            "minimum" : 10
+          },
           "vehicleId" : {
             "type" : "string",
             "format" : "uuid",
@@ -14397,7 +14533,7 @@
           },
           "wheelBolts" : {
             "type" : "boolean",
-            "description" : "Missing = false"
+            "description" : "Radschrauben beachten (FB-17); missing = false"
           },
           "year" : {
             "type" : "integer",

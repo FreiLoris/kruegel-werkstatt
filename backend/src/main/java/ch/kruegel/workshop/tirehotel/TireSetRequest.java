@@ -2,11 +2,15 @@ package ch.kruegel.workshop.tirehotel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -23,12 +27,15 @@ public record TireSetRequest(
         @NotNull TireSetKind kind,
         @Schema(description = "Only with complete wheels; may be unknown") RimKind rims,
         @Schema(description = "Missing = false") Boolean hubCaps,
-        @Schema(description = "Missing = false") Boolean wheelBolts,
+        @Schema(description = "Radschrauben beachten (FB-17); missing = false") Boolean wheelBolts,
         @Size(max = TireSetDetails.NAME_MAX) String brand,
         @Size(max = TireSetDetails.NAME_MAX) String model,
         @Size(max = TireSetDetails.DIMENSION_MAX) @Schema(example = "205/55 R16 91H") String dimension,
         @Min(TireSetDetails.YEAR_MIN) @Max(TireSetDetails.YEAR_MAX) @Schema(description = "Year of manufacture (DOT)", example = "2022") Integer year,
         @Size(max = TireSetDetails.REMARK_MAX) String remark,
+        @Min(TireSetDetails.TORQUE_MIN) @Max(TireSetDetails.TORQUE_MAX) @Schema(description = "Torque of the wheel bolts in Nm", example = "120") Integer torque,
+        @DecimalMin(TireSetDetails.PRESSURE_MIN) @DecimalMax(TireSetDetails.PRESSURE_MAX) @Digits(integer = 1, fraction = 2) @Schema(description = "Tyre pressure front in bar", example = "2.5") BigDecimal pressureFront,
+        @DecimalMin(TireSetDetails.PRESSURE_MIN) @DecimalMax(TireSetDetails.PRESSURE_MAX) @Digits(integer = 1, fraction = 2) @Schema(description = "Tyre pressure rear in bar", example = "2.7") BigDecimal pressureRear,
         @Valid @Schema(description = "Only when storing: the depths measured then") DepthsRequest depths,
         @Schema(description = "Only when storing: the day; empty = today") LocalDate storedOn,
         @Schema(description = "Only when storing: the place; empty = assigned later (then by moving)") UUID placeId,

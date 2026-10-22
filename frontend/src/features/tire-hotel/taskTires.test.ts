@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TaskTires, TireSet } from './tireHotelApi'
-import { bookingErrors, hasErrors, initialBooking, setSummary, sheetTires, swapPlace, toBookingRequest } from './taskTires'
+import { bookingErrors, hasErrors, initialBooking, mountingSummary, setSummary, sheetTires, swapPlace, toBookingRequest, withRemoved } from './taskTires'
 
 // fictitious
 function set(id: string, more: Partial<TireSet> = {}): TireSet {
@@ -16,6 +16,7 @@ function set(id: string, more: Partial<TireSet> = {}): TireSet {
     depths: { frontLeft: null, frontRight: null, rearLeft: null, rearRight: null },
     placeId: null,
     place: null,
+    storedOn: '2025-10-01',
     retrievedOn: null,
     ...more,
   } as TireSet
@@ -29,6 +30,14 @@ describe('setSummary', () => {
   it('a set in one line, without what is unknown', () => {
     expect(setSummary(winter)).toBe('Winter · Kompletträder Alu · Muster Snow 2 · 205/55 R16 · 2022')
     expect(setSummary(summer)).toBe('Sommer · Nur Reifen')
+  })
+})
+
+describe('mountingSummary', () => {
+  it('torque and pressure as far as known (FB-11)', () => {
+    expect(mountingSummary(set('x', { torque: 120, pressureFront: 2.5, pressureRear: 2.7 }))).toBe('120 Nm · Luftdruck v 2,5 / h 2,7 bar')
+    expect(mountingSummary(set('x', { pressureRear: 2.7 }))).toBe('Luftdruck v ? / h 2,7 bar')
+    expect(mountingSummary(winter)).toBe('')
   })
 })
 
@@ -73,6 +82,22 @@ describe('booking', () => {
     // a new set needs its kind
     expect(bookingErrors(form, today).removed.kind).toBeTruthy()
     expect(hasErrors(bookingErrors({ ...form, removed: { ...form.removed, kind: 'TIRES' } }, today))).toBe(false)
+  })
+
+  it('a new set gets torque and pressure of the car proposed (FB-11)', () => {
+    const known = { ...winter, torque: 120, pressureFront: 2.5, pressureRear: 2.7 }
+    const form = initialBooking(tires({ inHotel: [known], retrieved: [] }), true, today)
+    expect(form.removed).toMatchObject({ torque: '120', pressureFront: '2,5', pressureRear: '2,7' })
+    expect(toBookingRequest({ ...form, removed: { ...form.removed, kind: 'TIRES' } }, null).removed).toMatchObject({ torque: 120, pressureFront: 2.5 })
+  })
+
+  it('another season for the new set: the values of that season follow', () => {
+    const knownWinter = { ...winter, torque: 120, pressureFront: 2.5, pressureRear: 2.7 }
+    const knownSummer = set('s2', { season: 'SUMMER', torque: 110, pressureFront: 2.2, pressureRear: 2.2, retrievedOn: '2026-04-02' })
+    const both = tires({ inHotel: [knownWinter], retrieved: [knownSummer] })
+    const form = { ...initialBooking(both, true, today), removedChoice: 'new' }
+    expect(form.removed).toMatchObject({ season: 'SUMMER', torque: '110' })
+    expect(withRemoved(form, { ...form.removed, season: 'WINTER' }, both).removed).toMatchObject({ torque: '120', pressureFront: '2,5' })
   })
 
   it('a set stored again needs only valid depths', () => {

@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +56,9 @@ public class TireSet extends BaseEntity {
     private String dimension;
     private Integer year;
     private String remark;
+    private Integer torque;
+    private BigDecimal pressureFront;
+    private BigDecimal pressureRear;
 
     /** As last measured */
     @Embedded
@@ -216,10 +220,14 @@ public class TireSet extends BaseEntity {
         this.dimension = details.dimension();
         this.year = details.year();
         this.remark = details.remark();
+        this.torque = details.torque();
+        this.pressureFront = details.pressureFront();
+        this.pressureRear = details.pressureRear();
     }
 
     public TireSetDetails getDetails() {
-        return new TireSetDetails(customer, vehicle, season, kind, rims, hubCaps, wheelBolts, brand, model, dimension, year, remark);
+        return new TireSetDetails(customer, vehicle, season, kind, rims, hubCaps, wheelBolts, brand, model, dimension, year, remark,
+                torque, pressureFront, pressureRear);
     }
 
     public Customer getCustomer() {

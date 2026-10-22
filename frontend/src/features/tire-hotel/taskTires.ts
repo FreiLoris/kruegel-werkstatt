@@ -1,5 +1,14 @@
 import { KINDS, RIMS, SEASONS, type Season, type TaskTireBookingRequest, type TaskTires, type TireSet } from './tireHotelApi'
-import { depthsOf, emptyForm, tireSetErrors, type TireSetErrors, type TireSetForm } from './tireSetForm'
+import {
+  depthsOf,
+  emptyForm,
+  mountingOf,
+  mountingProposal,
+  tireSetErrors,
+  withMountingProposal,
+  type TireSetErrors,
+  type TireSetForm,
+} from './tireSetForm'
 import { WHEELS } from './tread'
 
 /**
@@ -12,6 +21,17 @@ export function setSummary(set: TireSet): string {
   const kind = set.kind === 'WHEELS' && set.rims ? `${KINDS.WHEELS} ${RIMS[set.rims]}` : KINDS[set.kind]
   const tyre = [set.brand, set.model].filter(Boolean).join(' ')
   return [SEASONS[set.season], kind, tyre, set.dimension, set.year?.toString()].filter(Boolean).join(' · ')
+}
+
+/** "120 Nm · Luftdruck v 2,5 / h 2,7 bar" – what is known to mount the set (FB-11); '' when nothing */
+export function mountingSummary(set: TireSet): string {
+  return [set.torque != null && `${set.torque} Nm`, pressureSummary(set)].filter(Boolean).join(' · ')
+}
+
+/** "Luftdruck v 2,5 / h 2,7 bar" – '' when neither is known */
+export function pressureSummary(set: TireSet): string {
+  const bar = (value: number | null | undefined) => (value == null ? '?' : String(value).replace('.', ','))
+  return set.pressureFront != null || set.pressureRear != null ? `Luftdruck v ${bar(set.pressureFront)} / h ${bar(set.pressureRear)} bar` : ''
 }
 
 /** Winter ↔ summer: what comes off when the other season goes on */
@@ -38,6 +58,23 @@ function probablyOnTheCar(tires: TaskTires, mount: TireSet | undefined): TireSet
   return tires.retrieved.find((s) => s.id !== mount?.id && (!mount || mount.season === 'ALL_SEASON' || s.season !== mount.season))
 }
 
+/** All sets of the task's car the hotel knows */
+export const setsOf = (tires: TaskTires): TireSet[] => [
+  ...(tires.mounted ? [tires.mounted] : []),
+  ...(tires.removed ? [tires.removed] : []),
+  ...tires.inHotel,
+  ...tires.retrieved,
+]
+
+/** The new set taken off changed – another season brings the car's values of that season (FB-11) */
+export function withRemoved(form: BookingForm, removed: TireSetForm, tires: TaskTires): BookingForm {
+  const next =
+    removed.season === form.removed.season
+      ? removed
+      : withMountingProposal(removed, mountingProposal(setsOf(tires), form.removed.season), mountingProposal(setsOf(tires), removed.season))
+  return { ...form, removed: next }
+}
+
 /** Booked = something went out of or into the hotel */
 export const isBooked = (tires: TaskTires) => !!tires.mounted || !!tires.removed
 
@@ -58,11 +95,12 @@ export function initialBooking(tires: TaskTires, fromHotel: boolean, today: stri
   const { mount, takeOff } = sheetTires(tires, fromHotel)
   const empty = emptyForm(today)
   const otherSeason = mount && OTHER_SEASON[mount.season]
+  const removedSeason = otherSeason ?? empty.season
   return {
     mountedId: tires.mounted ? null : (mount?.id ?? null),
     mounted: { ...empty, season: mount?.season ?? empty.season },
     removedChoice: tires.removed ? 'none' : (takeOff?.id ?? 'new'),
-    removed: { ...empty, season: otherSeason ?? empty.season },
+    removed: { ...empty, season: removedSeason, ...mountingProposal(setsOf(tires), removedSeason) },
   }
 }
 
@@ -106,6 +144,7 @@ export function toBookingRequest(form: BookingForm, placeId: string | null): Tas
             dimension: text(r.dimension),
             year: r.year.trim() ? Number(r.year.trim()) : undefined,
             remark: text(r.remark),
+            ...mountingOf(r),
             depths: depthsOf(r),
             placeId: placeId ?? undefined,
           }

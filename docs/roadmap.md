@@ -27,6 +27,8 @@ Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) 
 | 10 | Dashboard (TV) | Kiosk view for the workshop TV |
 | 11 | Go-live | Backup, NAS, go-live checklist (no data migration – decided 2026-10-07) |
 | 12 | Feedback from the workshop | Wishes after the first days in use (10/2026) |
+| 13 | Second test round | FB-01 … FB-10, tyre hotel (10/2026) |
+| 14 | Third test round | FB-11 … FB-21: shopping list, planning, tyres (10/2026) |
 
 ---
 
@@ -610,6 +612,50 @@ Answers of the workshop (2026-10-14):
 Decided: FB-05 times for everything except vacation (Loris 2026-10-14). Still open:
 DOT per wheel (feedback) or only the year (UI concept) – assumed: the newer concept; the mockups
 the concept mentions are not in the folder.
+
+---
+
+## Phase 14 – Third test round of the workshop (10/2026)
+
+Eleven tickets FB-11 … FB-21 (rounds 2 and 3, 2026-10-19/20). Plan per ticket and questions on
+2026-10-21; the workshop's answers (2026-10-22) are binding:
+
+1. The to-do of "Bestellen durch" is done when the part is **ordered**.
+2. Everything goes on one shopping list (also without a task); "Bestellen durch" may stay empty
+   (no to-do, "nicht zugewiesen").
+3. The block "Ersatzteilbestellungen" replaces the text field "Material bestellen" – existing texts
+   are kept (as positions or notes).
+4. "Radschrauben beachten" replaces "Radschrauben dabei": the bolts stay in the car, special ones
+   must be looked for. The old meaning is dropped (also on the receipt).
+5. Torque and pressure are kept **per set** – summer and winter wheels may differ.
+6. Age of the tyres: green below 8 years, orange from 8, red from 10; the year is enough, a DOT
+   code is optional (the year is derived from it). Independent of the tread traffic light.
+7. No "eilt" (FB-16).
+
+Order: small ones first, then the P1 shopping list, planning, tyres.
+
+- [x] **14a – Torque, pressure, "Radschrauben beachten"** (FB-11, FB-17)
+  Done: a set keeps the torque of the wheel bolts (Nm) and the pressure front/rear (bar, comma or
+  point) – all optional, shown on the set, the receipt and the task sheet (printed when known,
+  else lines to fill in). A new set gets them proposed from the newest set of the same car (the
+  same season first) – when storing and when booking a tyre change. The check box is now
+  "Radschrauben beachten": on the task sheet a framed warning with the set's remark, on the
+  receipt a line; "Radschrauben" is no longer listed as stored.
+- [ ] **14b – "Wartet auf Material" in "Ohne Termin"** (FB-15)
+- [ ] **14c – Shopping list rebuilt** (FB-20): positions of their own (description, number,
+  quantity, status, recorded by, to be ordered by), a to-do for the one who orders, details with
+  notes and status history; existing shopping to-dos and "Material bestellen" texts taken over
+- [ ] **14d – Parts block on the task** (FB-19): quick entry with the same 6 fields, inline editing
+- [ ] **14e – Where the vehicle is** (FB-16): "Bei uns" / "Beim Kunden", "Ohne Termin" grouped,
+  phone to call
+- [ ] **14f – Unfinished tasks carried over** (FB-14): shown in "Ohne Lift" on the following
+  working days with "verlängert seit …" – computed, the appointment itself stays
+- [ ] **14g – Week view in the wizard** (FB-13)
+- [ ] **14h – Tyres without the hotel** (FB-12): a set has a status (in the hotel / on the car /
+  with the customer), overview per vehicle with traffic lights for tread and age
+- [ ] **14i – "Termin abmachen" from the tyre hotel** (FB-18)
+- [ ] **14j – Season change overview** (FB-21): changed / planned / open (forgotten after the
+  deadline) / acknowledged / not collected for a season; deadlines 1 June and 1 December
 
 ---
 

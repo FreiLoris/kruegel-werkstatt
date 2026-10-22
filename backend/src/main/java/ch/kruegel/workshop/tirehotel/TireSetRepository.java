@@ -31,6 +31,10 @@ public interface TireSetRepository extends JpaRepository<TireSet, UUID> {
     @Query("SELECT s FROM TireSet s WHERE s.customer.id = :customerId ORDER BY s.storedOn DESC, s.createdAt DESC")
     List<TireSet> ofCustomer(UUID customerId);
 
+    /** All sets of a vehicle, in the hotel or not – newest first */
+    @Query("SELECT s FROM TireSet s WHERE s.vehicle.id = :vehicleId ORDER BY s.storedOn DESC, s.createdAt DESC")
+    List<TireSet> ofVehicle(UUID vehicleId);
+
     /** The set a task mounted (RETRIEVED) or stored (STORED), if it did. */
     @EntityGraph(attributePaths = {"customer", "vehicle", "place"})
     @Query("SELECT s FROM TireSet s JOIN s.events e WHERE e.task.id = :taskId AND e.kind = :kind")

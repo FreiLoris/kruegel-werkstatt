@@ -273,6 +273,14 @@
   margin: 1mm 0 0;
 }
 
+/* "Radschrauben beachten" (FB-17): the mechanic must not miss it */
+.block .tireWarning {
+  margin: 1mm 0 0;
+  padding: 0.5mm 2mm;
+  border: 0.5mm solid var(--color-paper-text);
+  font-weight: 700;
+}
+
 .tireQuestion .box,
 .tireCheck .box {
   margin-top: 0;

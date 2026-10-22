@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import type { Customer, Vehicle } from '../customers/customerSearchApi'
 import type { TireSet } from './tireHotelApi'
-import { depthWarning, emptyForm, formFromSet, parseDepth, tireSetErrors, toTireSetRequest, withDepth, withKind, withSameDepth, type TireSetForm } from './tireSetForm'
+import {
+  depthWarning,
+  emptyForm,
+  formFromSet,
+  mountingProposal,
+  parseDepth,
+  parsePressure,
+  parseTorque,
+  tireSetErrors,
+  toTireSetRequest,
+  withDepth,
+  withKind,
+  withMountingProposal,
+  withSameDepth,
+  type TireSetForm,
+} from './tireSetForm'
 
 const customer = { id: 'c1' } as Customer
 const vehicle = { id: 'v1' } as Vehicle
@@ -82,6 +97,52 @@ describe('toTireSetRequest', () => {
     } as TireSet
     expect(formFromSet(set)).toMatchObject({ season: 'WINTER', rims: '', hubCaps: true, year: '2021', sameDepth: true })
     expect(formFromSet(set).depths.frontLeft).toBe('5,5')
+  })
+})
+
+describe('torque and pressure (FB-11)', () => {
+  it('optional; Nm a whole number, bar with comma or point', () => {
+    expect(parseTorque('')).toBeNull()
+    expect(parseTorque(' 120 ')).toBe(120)
+    expect(parseTorque('12a')).toBeNaN()
+    expect(parsePressure('2,5')).toBe(2.5)
+    expect(parsePressure('2.75')).toBe(2.75)
+    expect(parsePressure('2,555')).toBeNaN()
+  })
+
+  it('a typo is an error at its field – nothing is corrected silently', () => {
+    const errors = tireSetErrors({ ...withKind(emptyForm(TODAY), 'TIRES'), torque: '5', pressureFront: '25', pressureRear: '2,7' }, TODAY)
+    expect(errors).toEqual({ torque: 'in Nm, z. B. 120', pressureFront: 'in bar, z. B. 2,5' })
+  })
+
+  it('sent with the set', () => {
+    const form = { ...withKind(emptyForm(TODAY), 'TIRES'), torque: '120', pressureFront: '2,5', pressureRear: '' }
+    expect(toTireSetRequest({ customer, vehicle: null }, form)).toMatchObject({ torque: 120, pressureFront: 2.5, pressureRear: undefined })
+  })
+
+  it('proposed from the newest set of the car, one of the same season first', () => {
+    // fictitious sets of one car
+    const set = (season: string, storedOn: string, torque: number | null, pressureFront: number | null = null) =>
+      ({ season, storedOn, torque, pressureFront, pressureRear: null }) as TireSet
+    const sets = [set('SUMMER', '2025-10-01', 110, 2.4), set('WINTER', '2025-04-01', 120, 2.6), set('WINTER', '2026-04-01', null)]
+    expect(mountingProposal(sets, 'WINTER')).toEqual({ torque: '120', pressureFront: '2,6', pressureRear: '' })
+    expect(mountingProposal(sets, 'ALL_SEASON')).toEqual({ torque: '110', pressureFront: '2,4', pressureRear: '' })
+    expect(mountingProposal([], 'WINTER')).toEqual({ torque: '', pressureFront: '', pressureRear: '' })
+  })
+
+  it('another car or season: the proposal follows as long as nothing was typed', () => {
+    const empty = { torque: '', pressureFront: '', pressureRear: '' }
+    const carA = { torque: '120', pressureFront: '2,5', pressureRear: '2,7' }
+    const carB = { torque: '140', pressureFront: '2,3', pressureRear: '2,3' }
+    const form = withKind(emptyForm(TODAY), 'TIRES')
+    const proposed = withMountingProposal(form, empty, carA)
+    expect(proposed).toMatchObject(carA)
+    // car A chosen by mistake, then car B: B's values, not A's
+    expect(withMountingProposal(proposed, carA, carB)).toMatchObject(carB)
+    // typed by hand: stays
+    expect(withMountingProposal({ ...proposed, torque: '130' }, carA, carB)).toMatchObject({ torque: '130', pressureFront: '2,5' })
+    // no car any more: the proposal goes again
+    expect(withMountingProposal(proposed, carA, empty)).toMatchObject(empty)
   })
 })
 

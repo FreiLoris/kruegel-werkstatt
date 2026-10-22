@@ -4,6 +4,7 @@ import ch.kruegel.workshop.customer.CustomerDto;
 import ch.kruegel.workshop.vehicle.VehicleDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -18,12 +19,15 @@ public record TireSetDto(
         TireSetKind kind,
         @Schema(types = {"string", "null"}) RimKind rims,
         boolean hubCaps,
-        boolean wheelBolts,
+        @Schema(description = "Radschrauben beachten (FB-17)") boolean wheelBolts,
         @Schema(types = {"string", "null"}) String brand,
         @Schema(types = {"string", "null"}) String model,
         @Schema(types = {"string", "null"}) String dimension,
         @Schema(types = {"integer", "null"}, description = "Year of manufacture (DOT)") Integer year,
         @Schema(types = {"string", "null"}) String remark,
+        @Schema(types = {"integer", "null"}, description = "Torque of the wheel bolts in Nm") Integer torque,
+        @Schema(types = {"number", "null"}, description = "Tyre pressure front in bar") BigDecimal pressureFront,
+        @Schema(types = {"number", "null"}, description = "Tyre pressure rear in bar") BigDecimal pressureRear,
         @Schema(description = "As last measured") TreadDepths depths,
         LocalDate storedOn,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = in the hotel") LocalDate retrievedOn,
@@ -36,6 +40,7 @@ public record TireSetDto(
         TireSetDetails d = s.getDetails();
         return new TireSetDto(s.getId(), s.getVersion(), CustomerDto.of(d.customer()), d.vehicle() == null ? null : VehicleDto.of(d.vehicle()),
                 d.season(), d.kind(), d.rims(), d.hubCaps(), d.wheelBolts(), d.brand(), d.model(), d.dimension(), d.year(), d.remark(),
+                d.torque(), d.pressureFront(), d.pressureRear(),
                 s.getDepths(), s.getStoredOn(), s.getRetrievedOn(), s.getPlace() == null ? null : s.getPlace().getId(),
                 s.getPlace() == null ? null : s.getPlace().getAddress(), s.getUpdatedAt(), s.getUpdatedBy());
     }

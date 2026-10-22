@@ -1,4 +1,4 @@
-import { setSummary, sheetTires } from '../../tire-hotel/taskTires'
+import { pressureSummary, setSummary, sheetTires } from '../../tire-hotel/taskTires'
 import type { TaskTires } from '../../tire-hotel/tireHotelApi'
 import { formatDepth, WHEELS } from '../../tire-hotel/tread'
 import { Block, Box, WriteIn } from './SheetParts'
@@ -9,7 +9,8 @@ import styles from './TaskSheet.module.css'
  * Tire change (FB-06, 13q), compact: one line per set – printed from the tire hotel, else to fill
  * in – with the storage place big, then ONE table with the tread depths of both sets: the set's
  * data are the same for all four wheels, only the depths differ. They go into the tire hotel when
- * the change is booked on the task.
+ * the change is booked on the task. Below: what to mount the set with (FB-11) – printed when known,
+ * else to fill in – and "Radschrauben beachten" as a warning (FB-17).
  *
  * @param tires from the tire hotel; missing = unknown, all to fill in
  */
@@ -18,6 +19,7 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
   const tires = hotel && sheetTires(hotel, block.stored)
   const mount = tires?.mount
   const takeOff = tires?.takeOff
+  const pressure = mount ? pressureSummary(mount) : ''
 
   return (
     <Block title="Radwechsel">
@@ -81,8 +83,31 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
         </tbody>
       </table>
 
+      {mount?.wheelBolts && (
+        <p className={styles.tireWarning}>
+          ⚠ Radschrauben beachten – passende Schrauben im Auto suchen{mount.remark && ` (${mount.remark})`}
+        </p>
+      )}
       <p className={styles.tireCheck}>
-        <Box /> Radschrauben mit Drehmoment angezogen
+        <Box />
+        <span>
+          Radschrauben mit{' '}
+          {mount?.torque != null ? (
+            <strong>{mount.torque} Nm</strong>
+          ) : (
+            <>
+              <span className={styles.writeLineShort} aria-hidden /> Nm
+            </>
+          )}{' '}
+          angezogen ·{' '}
+          {pressure ? (
+            <strong>{pressure}</strong>
+          ) : (
+            <>
+              Luftdruck v <span className={styles.writeLineShort} aria-hidden /> h <span className={styles.writeLineShort} aria-hidden /> bar
+            </>
+          )}
+        </span>
       </p>
     </Block>
   )
