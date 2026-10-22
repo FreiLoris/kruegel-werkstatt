@@ -314,6 +314,25 @@ class TaskApiTest {
     }
 
     @Test
+    void waitingForPartsAfterItsDayIsListedUntilPlannedAgain() {
+        String task = "{ \"customerId\": \"%s\", \"acceptedById\": \"%s\", \"date\": \"%s\", \"time\": \"08:00\" }";
+        String past = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), LocalDate.now().minusDays(3))));
+        String future = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), LocalDate.now().plusDays(3))));
+        String today = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), LocalDate.now())));
+        String inProgress = idOf(send("POST", "/api/tasks", task.formatted(huber.getId(), reto.getId(), LocalDate.now().minusDays(1))));
+        send("PUT", "/api/tasks/" + past + "/status", "{ \"status\": \"WAITING_FOR_PARTS\" }");
+        send("PUT", "/api/tasks/" + future + "/status", "{ \"status\": \"WAITING_FOR_PARTS\" }");
+        send("PUT", "/api/tasks/" + today + "/status", "{ \"status\": \"WAITING_FOR_PARTS\" }");
+        send("PUT", "/api/tasks/" + inProgress + "/status", "{ \"status\": \"IN_PROGRESS\" }");
+
+        // only the one whose day is over – today and later = planned (again)
+        assertThat(mvc.get().uri("/api/tasks/waiting-for-parts").exchange()).bodyJson().extractingPath("$[*].id").asArray().containsExactly(past);
+
+        send("PUT", "/api/tasks/" + past + "/status", "{ \"status\": \"IN_PROGRESS\" }");
+        assertThat(mvc.get().uri("/api/tasks/waiting-for-parts").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
+
+    @Test
     void aPlannedOrderCanBeTakenOutOfThePlanAndItsLiftIsFree() {
         String id = idOf(create(liftJson(lift1) + ", \"readyBy\": \"2026-10-15T16:30\", \"waitingCustomer\": true, \"mechanicId\": \"%s\""
                 .formatted(reto.getId())));

@@ -83,6 +83,14 @@ class TaskController {
         return service.withoutAppointment();
     }
 
+    @Operation(summary = "Orders waiting for parts whose appointment is over",
+            description = "Shown together with the orders without appointment (FB-15) – the ones without a day are in that list already. "
+                    + "Planned again (a day from today on) = no longer listed. The longest waiting first.")
+    @GetMapping("/waiting-for-parts")
+    List<TaskDto> waitingForParts() {
+        return service.waitingForParts();
+    }
+
     @Operation(summary = "Tasks whose parts are still to be ordered", description = "The next appointment first – shown on the shopping list.")
     @GetMapping("/parts-to-order")
     List<TaskDto> withPartsToOrder() {

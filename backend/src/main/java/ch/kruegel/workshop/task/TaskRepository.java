@@ -30,6 +30,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("SELECT t FROM Task t WHERE t.appointment.date IS NULL AND t.status <> ch.kruegel.workshop.task.TaskStatus.DONE ORDER BY t.createdAt")
     List<Task> withoutAppointment();
 
+    /**
+     * Waiting for parts with an appointment that is over (FB-15) – they would go under on their old
+     * day. One planned again (a day from today on) is no longer listed. The longest waiting first.
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.status = ch.kruegel.workshop.task.TaskStatus.WAITING_FOR_PARTS AND t.appointment.date < :today
+            ORDER BY t.appointment.date, t.appointment.time""")
+    List<Task> waitingForPartsSince(LocalDate today);
+
     /** Tasks whose parts are still to be ordered – the next appointment first (shopping list, 12c). */
     @EntityGraph(attributePaths = {"customer", "vehicle", "serviceItems"})
     @Query("""

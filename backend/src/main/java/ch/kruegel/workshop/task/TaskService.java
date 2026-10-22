@@ -137,6 +137,12 @@ public class TaskService {
         return repository.withoutAppointment().stream().map(TaskDto::of).toList();
     }
 
+    /** Waiting for parts, their appointment over – shown with "Ohne Termin" (FB-15). */
+    @Transactional(readOnly = true)
+    public List<TaskDto> waitingForParts() {
+        return repository.waitingForPartsSince(LocalDate.now(clock)).stream().map(TaskDto::of).toList();
+    }
+
     /** Tasks whose parts are still to be ordered – they appear on the shopping list (12c). */
     @Transactional(readOnly = true)
     public List<TaskDto> withPartsToOrder() {
