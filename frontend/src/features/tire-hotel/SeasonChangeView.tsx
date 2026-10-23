@@ -215,7 +215,7 @@ function AcknowledgeDialog({ entry, deadline, onClose }: { entry: SeasonEntry; d
         </>
       }
     >
-      <form id={formId} className={styles.section} onSubmit={submit}>
+      <form id={formId} className={styles.dialogBody} onSubmit={submit}>
         <p>
           {entry.set.customer.displayName} · {SEASONS[entry.set.season]}: wird in dieser Saison nicht gewechselt. Nächste Saison erscheint der
           Satz wieder.

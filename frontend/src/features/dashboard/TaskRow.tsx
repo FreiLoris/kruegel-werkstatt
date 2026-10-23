@@ -12,9 +12,11 @@ import styles from './TaskRow.module.css'
  * One appointment on the dashboard, compact: time, customer, mechanic – the status as the colored
  * bar plus its sign (UX M-12). Below: vehicle and what is done (UX G-20). A click opens the task.
  *
- * `oneLine` (the week): only the start, customer and the mechanic's initials – a TV cannot scroll,
- * so a busy day must still fit. The customer may take two lines rather than be cut off. The whole
- * period is in the tooltip.
+ * Every card has the same lines, so all are equally high (a calm board): time and mechanic on top,
+ * the customer below, then vehicle and work. A long text ends in "…" – the tooltip has it all.
+ *
+ * `compact` (the week): one line – start, customer, the mechanic's initials. A TV cannot scroll, so
+ * a busy day must still fit. The whole period is in the tooltip.
  *
  * @param work what is done, e.g. "Radwechsel · Service" (workSummary)
  */
@@ -23,60 +25,42 @@ export function TaskRow({
   mechanic,
   liftName,
   work,
-  oneLine = false,
+  compact = false,
   mine = false,
 }: {
   task: Task
   mechanic: Employee | undefined
   liftName?: string
   work?: string
-  oneLine?: boolean
+  compact?: boolean
   /** the mechanic is the person of this device – framed, so "my work" is found at a glance (UX M-13) */
   mine?: boolean
 }) {
   const period = periodLabel(task)
-  const customer = (
-    <span className={styles.customer}>
-      {task.waitingCustomer && <Hourglass aria-label="Wartekunde" className={styles.waiting} />}
-      {task.customer.displayName}
-    </span>
-  )
-  if (oneLine) {
-    return (
-      <Link
-        to={`/tasks/${task.id}`}
-        className={[styles.task, styles.oneLine, statusAccentClass(task.status), mine && styles.mine].filter(Boolean).join(' ')}
-        title={`${period} · ${TASK_STATUS[task.status]}`}
-      >
-        <span className={styles.time}>
-          <StatusIcon status={task.status} className={styles.status} />
-          {startLabel(task, 'offen')}
-        </span>
-        {customer}
-        {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} short />}
-        <span className="visually-hidden">
-          {period}, Status: {TASK_STATUS[task.status]}
-          {mine && ', dein Auftrag'}
-        </span>
-      </Link>
-    )
-  }
   const vehicle = [task.vehicle?.licensePlate, task.vehicle?.description].filter(Boolean).join(' · ')
   const second = [vehicle, work].filter(Boolean).join(' – ')
   return (
-    <Link to={`/tasks/${task.id}`} className={[styles.task, statusAccentClass(task.status), mine && styles.mine].filter(Boolean).join(' ')} title={TASK_STATUS[task.status]}>
+    <Link
+      to={`/tasks/${task.id}`}
+      className={[styles.task, compact && styles.compact, statusAccentClass(task.status), mine && styles.mine].filter(Boolean).join(' ')}
+      title={`${task.customer.displayName} · ${period} · ${TASK_STATUS[task.status]}`}
+    >
       <span className={styles.head}>
         <span className={styles.time}>
           <StatusIcon status={task.status} className={styles.status} />
-          {period}
+          {compact ? startLabel(task, 'offen') : period}
         </span>
         {liftName && <span className={styles.lift}>{liftName}</span>}
         {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} short />}
       </span>
-      {customer}
-      {second && <span className={styles.second}>{second}</span>}
+      <span className={styles.customer}>
+        {task.waitingCustomer && <Hourglass aria-label="Wartekunde" className={styles.waiting} />}
+        {task.customer.displayName}
+      </span>
+      {/* always there, also empty – every card of a column equally high */}
+      {!compact && <span className={styles.second}>{second || ' '}</span>}
       <span className="visually-hidden">
-        Status: {TASK_STATUS[task.status]}
+        {compact && `${period}, `}Status: {TASK_STATUS[task.status]}
         {mine && ', dein Auftrag'}
       </span>
     </Link>

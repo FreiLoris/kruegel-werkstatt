@@ -4,6 +4,13 @@
   overflow-x: auto;
 }
 
+/* the TV: the columns as high as the row below the week */
+:global([data-kiosk]) .columns {
+  grid-auto-rows: minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
 .column {
   display: flex;
   flex-direction: column;
@@ -29,9 +36,10 @@
   color: var(--color-accent);
 }
 
-.notes,
-.todos {
+.items {
   display: grid;
+  flex: 1;
+  align-content: start;
   gap: var(--space-1);
   margin: 0;
   padding: 0;
@@ -64,7 +72,26 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+/* the TV: one line each – progress and due date at its end – so a few of them fit below the week */
+:global([data-kiosk]) .text {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+:global([data-kiosk]) .note,
+:global([data-kiosk]) .todo {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+}
+
+:global([data-kiosk]) .progress,
+:global([data-kiosk]) .due {
+  grid-column: 3;
+  grid-row: 1;
+  white-space: nowrap;
 }
 
 .progress,
@@ -90,12 +117,4 @@
 .today {
   color: var(--color-warning);
   font-weight: 600;
-}
-
-.more {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }

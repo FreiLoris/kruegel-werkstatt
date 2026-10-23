@@ -1,16 +1,26 @@
 /* columns side by side like the pinboard; on narrow screens the board scrolls sideways */
+/* a column per person side by side; on a tablet three per row – six were too narrow to read */
 .board {
   display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(9rem, 1fr));
   gap: var(--space-3);
   overflow-x: auto;
   padding-bottom: var(--space-2);
   align-items: start;
 }
 
+@media (max-width: 72rem) {
+  .board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .column {
   display: grid;
+  /* as wide as its track – long texts wrap inside instead of pushing over the next person */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
-  min-width: 13rem;
+  min-width: 0;
   padding: var(--space-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

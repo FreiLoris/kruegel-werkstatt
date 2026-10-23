@@ -103,6 +103,20 @@
   }
 }
 
+/*
+ * Narrow blocks – many lifts on a tablet: the time a size smaller, so "07:30–08:30" stays whole
+ * instead of being cut at the card's edge.
+ */
+@container (max-width: 10rem) {
+  .card {
+    padding-inline: var(--space-2);
+  }
+
+  .time {
+    font-size: var(--font-size-md);
+  }
+}
+
 /* Full text color – the old card's work line was hardly readable (UI review) */
 .work {
   font-size: var(--font-size-sm);

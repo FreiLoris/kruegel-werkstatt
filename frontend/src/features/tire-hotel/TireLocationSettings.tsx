@@ -200,7 +200,7 @@ function LocationDialog({ location, onClose }: { location?: TireLocation; onClos
         </>
       }
     >
-      <form id={formId} className={styles.section} onSubmit={submit}>
+      <form id={formId} className={styles.dialogBody} onSubmit={submit}>
         <div className={styles.row}>
           <TextField
             label="Kürzel"

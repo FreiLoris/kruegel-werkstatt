@@ -66,10 +66,10 @@ export function MeasureDialog({ set, onClose }: { set: TireSet; onClose: () => v
         </>
       }
     >
-      <form id={formId} className={styles.section} onSubmit={submit}>
+      <form id={formId} className={styles.dialogBody} onSubmit={submit}>
         <TreadDepthsInput form={form} onChange={setForm} errors={errors} limits={limits} />
         {/* a partial measurement keeps the other wheels (E7) – say so before saving */}
-        <p className={styles.hint}>
+        <p className={styles.note}>
           Nur gemessene Räder eintragen – leere behalten ihren letzten Wert (
           {WHEELS.map((w) => `${w.short} ${formatDepth(set.depths[w.key])}`).join(', ')}).
         </p>

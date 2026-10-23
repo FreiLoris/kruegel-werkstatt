@@ -63,12 +63,12 @@ export function MoveDialog({ set, onClose }: { set: TireSet; onClose: () => void
         </>
       }
     >
-      <div className={styles.section}>
+      <div className={styles.dialogBody}>
         {!locations || !places || !sets ? (
           <p className="muted">Lade Plätze …</p>
         ) : locations.length === 0 ? (
           <p className="muted">
-            Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.
+            Noch keine Standorte – in den <Link to="/settings#pneuhotel-standorte">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.
           </p>
         ) : (
           <PlaceMap

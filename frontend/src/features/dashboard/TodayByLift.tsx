@@ -13,6 +13,7 @@ import styles from './TodayByLift.module.css'
 import { liftColumns, nextAppointment, NO_LIFT } from './todayColumns'
 import { startLabel } from '../tasks/taskTime'
 import { CarriedOver } from '../tasks/day/CarriedOver'
+import { FittingList } from '../../components/ui/FittingList'
 
 /** How far ahead "nächster Termin" looks when today is empty */
 const LOOK_AHEAD_DAYS = 60
@@ -69,7 +70,7 @@ export function TodayByLift() {
           {column.tasks.length === 0 && column.id !== NO_LIFT ? (
             <p className={styles.free}>frei</p>
           ) : (
-            <ul className={styles.tasks}>
+            <FittingList className={styles.tasks} moreTo="/tasks">
               {column.id === NO_LIFT && carriedOver.length > 0 && (
                 <li>
                   <CarriedOver tasks={carriedOver} />
@@ -91,7 +92,7 @@ export function TodayByLift() {
                   />
                 </li>
               ))}
-            </ul>
+            </FittingList>
           )}
         </section>
       ))}

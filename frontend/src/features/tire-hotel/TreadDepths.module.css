@@ -55,7 +55,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   /* "unter gesetzlichem Minimum" wraps in a narrow column instead of running out of it */
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .ok {

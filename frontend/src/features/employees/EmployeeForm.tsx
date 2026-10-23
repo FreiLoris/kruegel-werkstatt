@@ -7,6 +7,7 @@ import { ROLES, type Role } from './employeeApi'
 import styles from './EmployeeForm.module.css'
 import { MAX_VACATION_DAYS, type FormValues } from './formValues'
 import { NameBadge } from './NameBadge'
+import { initialsOf } from './initials'
 
 interface EmployeeFormProps {
   /** So a button outside (in the modal footer) can submit the form: `<button form={id}>` */
@@ -93,7 +94,12 @@ export function EmployeeForm({ id, values, onChange, onSubmit, error, takenColor
                   onChange={() => set('color', suggestion.value)}
                   aria-label={owner ? `${suggestion.name} (hat bereits ${owner})` : suggestion.name}
                 />
-                {owner && <span className={styles.taken} aria-hidden />}
+                {/* who has it already – their initials, readable at a glance (a dot looked like a dent) */}
+                {owner && (
+                  <span className={styles.taken} aria-hidden>
+                    {initialsOf(owner)}
+                  </span>
+                )}
               </label>
             )
           })}

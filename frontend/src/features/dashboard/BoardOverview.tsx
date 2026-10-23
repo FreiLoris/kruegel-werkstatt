@@ -1,6 +1,4 @@
-import { ChevronRight, StickyNote } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { StickyNote } from 'lucide-react'
 import { useToday } from '../../lib/clock'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
@@ -9,6 +7,7 @@ import { pinboardColumns } from '../notes/pinboard'
 import { BOARD_TODOS, useTodos, type Todo } from '../todos/todoApi'
 import { byUrgency, dueLabel, dueState } from '../todos/todoDue'
 import styles from './BoardOverview.module.css'
+import { FittingList } from '../../components/ui/FittingList'
 
 /** Per column at most this many – nobody scrolls on the TV; the rest is "+ n weitere" */
 const MAX_NOTES = 3
@@ -45,52 +44,29 @@ export function BoardOverview() {
           {column.notes.length + column.todos.length === 0 ? (
             <p className="muted">nichts offen</p>
           ) : (
-            <>
-              <Limited items={column.notes} max={MAX_NOTES} to="/pinboard" className={styles.notes} render={(note) => <NoteLine note={note} />} />
-              <Limited
-                items={byUrgency(column.todos)}
-                max={MAX_TODOS}
-                to={column.employee ? `/todos?person=${column.employee.id}` : '/todos'}
-                className={styles.todos}
-                render={(todo) => <TodoLine todo={todo} today={today} />}
-              />
-            </>
+            // notes first, then the to-dos by urgency – as many as fit the column (the TV cannot scroll)
+            <FittingList
+              className={styles.items}
+              moreTo={column.todos.length > 0 ? (column.employee ? `/todos?person=${column.employee.id}` : '/todos') : '/pinboard'}
+              alsoHidden={Math.max(column.notes.length - MAX_NOTES, 0) + Math.max(column.todos.length - MAX_TODOS, 0)}
+            >
+              {column.notes.slice(0, MAX_NOTES).map((note) => (
+                <li key={note.id}>
+                  <NoteLine note={note} />
+                </li>
+              ))}
+              {byUrgency(column.todos)
+                .slice(0, MAX_TODOS)
+                .map((todo) => (
+                  <li key={todo.id}>
+                    <TodoLine todo={todo} today={today} />
+                  </li>
+                ))}
+            </FittingList>
           )}
         </section>
       ))}
     </div>
-  )
-}
-
-/** The first `max` items and "+ n weitere" – linking to the page where all are (`to`) */
-function Limited<T extends { id: string }>({
-  items,
-  max,
-  to,
-  className,
-  render,
-}: {
-  items: T[]
-  max: number
-  to: string
-  className: string
-  render: (item: T) => ReactNode
-}) {
-  if (items.length === 0) return null
-  const rest = items.length - max
-  return (
-    <ul className={className}>
-      {items.slice(0, max).map((item) => (
-        <li key={item.id}>{render(item)}</li>
-      ))}
-      {rest > 0 && (
-        <li>
-          <Link to={to} className={styles.more}>
-            + {rest} weitere <ChevronRight size={14} aria-hidden />
-          </Link>
-        </li>
-      )}
-    </ul>
   )
 }
 

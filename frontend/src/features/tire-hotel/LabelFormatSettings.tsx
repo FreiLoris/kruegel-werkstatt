@@ -161,7 +161,7 @@ function FormatDialog({ format, onClose }: { format?: LabelFormat; onClose: () =
         </>
       }
     >
-      <form id={formId} className={styles.section} onSubmit={submit}>
+      <form id={formId} className={styles.dialogBody} onSubmit={submit}>
         <TextField
           label="Name"
           required

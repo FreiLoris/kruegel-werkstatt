@@ -36,13 +36,17 @@ export function CourtesyCarPanel({ task, canEdit }: { task: AnyTask; canEdit: bo
           }
         : { courtesyCarId: editing.courtesyCarId, pickupAt: minutesOf(editing.pickupAt), returnAt: minutesOf(editing.returnAt) }
     return (
-      <BookingEditor
-        booking={editing === 'new' ? undefined : editing}
-        taskId={task.id}
-        initial={initial}
-        onSaved={() => setEditing(null)}
-        onCancel={() => setEditing(null)}
-      />
+      // data-wide-card: the task page gives the card the whole width while booking – the form with
+      // times and cars does not fit a third of it
+      <div data-wide-card>
+        <BookingEditor
+          booking={editing === 'new' ? undefined : editing}
+          taskId={task.id}
+          initial={initial}
+          onSaved={() => setEditing(null)}
+          onCancel={() => setEditing(null)}
+        />
+      </div>
     )
   }
 

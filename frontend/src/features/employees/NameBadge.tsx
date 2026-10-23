@@ -11,7 +11,7 @@ import styles from './NameBadge.module.css'
 export function NameBadge({ name, color, short = false }: { name: string; color: string; short?: boolean }) {
   return (
     <span
-      className={`${styles.badge} ${styles[textOn(color)]}`}
+      className={[styles.badge, styles[textOn(color)], short && styles.short].filter(Boolean).join(' ')}
       style={{ backgroundColor: color }}
       title={short ? name : undefined}
       aria-label={short ? name : undefined}

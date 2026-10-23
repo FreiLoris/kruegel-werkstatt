@@ -3,6 +3,23 @@
   gap: var(--space-3);
 }
 
+/* the TV: exactly the screen, nothing to scroll – the week and the row below share the height, their
+   lists show what fits (FittingList) */
+:global([data-kiosk]) .page {
+  height: 100%;
+  grid-template-rows: auto auto minmax(0, 4fr) minmax(0, 6fr);
+}
+
+:global([data-kiosk]) .below {
+  grid-template-rows: minmax(0, 4fr) minmax(0, 3fr);
+  min-height: 0;
+}
+
+:global([data-kiosk]) .area {
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
 /* the heading on the left, the orders without appointment on the right */
 .titleRow {
   display: flex;
@@ -26,24 +43,26 @@
   color: var(--color-text-muted);
 }
 
-/* Today and the pinboard stacked on a tablet; side by side on a wide screen – the pinboard has
-   more columns, so it gets more room (nobody scrolls sideways on the TV) */
+/* Today and the pinboard one above the other, each the whole width – a column per lift and per
+   person needs the room: side by side they were too narrow for time, mechanic and customer */
 .below {
   display: grid;
-  gap: var(--space-4);
-  align-items: start;
-}
-
-@media (min-width: 64rem) {
-  .below {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  }
+  gap: var(--space-3);
 }
 
 .area {
   display: grid;
   gap: var(--space-2);
   min-width: 0;
+}
+
+/* the heading on the left, the status legend on the right */
+.areaHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
 }
 
 .areaTitle {

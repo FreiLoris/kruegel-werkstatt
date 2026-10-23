@@ -5,6 +5,12 @@
   overflow-x: auto;
 }
 
+/* the TV: the days as high as the row the page gives the week */
+:global([data-kiosk]) .week {
+  grid-auto-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+
 .day {
   display: flex;
   flex-direction: column;
@@ -72,24 +78,26 @@
   font-weight: 600;
 }
 
+/* short ones side by side ("Mora · Kurs", "Erich · Krank") – the TV keeps its lines for appointments */
 .absences {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   padding: var(--space-2) var(--space-2) 0;
 }
 
+.absences > * {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
 .tasks {
   display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: var(--space-1);
   margin: 0;
   padding: var(--space-2);
   list-style: none;
-}
-
-.more {
-  display: block;
-  padding: 0 var(--space-2);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }

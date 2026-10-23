@@ -14,7 +14,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { ClipboardList, ListChecks, Plus, StickyNote } from 'lucide-react'
-import { useMemo, useState, type FormEvent, type HTMLAttributes, type ReactNode, type Ref } from 'react'
+import { useMemo, useState, type CSSProperties, type FormEvent, type HTMLAttributes, type ReactNode, type Ref } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 import { reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
@@ -187,7 +187,7 @@ function Board({
         },
       }}
     >
-      <div className={styles.board} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(14rem, 1fr))` }}>
+      <div className={styles.board} style={{ '--columns': columns.length } as CSSProperties}>
         {columns.map((column) => (
           <Column key={column.id} column={column} canEdit={canEdit}>
             {column.notes.map((note) => (

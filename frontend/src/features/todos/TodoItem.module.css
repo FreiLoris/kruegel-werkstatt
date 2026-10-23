@@ -1,7 +1,7 @@
 /* checkbox, text, then who/when/task/actions below – wraps on narrow cards */
 .item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-2) 0;
@@ -28,7 +28,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .meta {
@@ -113,7 +113,7 @@
 
 /* in columns: grip, checkbox, text */
 .draggable {
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto auto minmax(0, 1fr);
 }
 
 .draggable .meta {

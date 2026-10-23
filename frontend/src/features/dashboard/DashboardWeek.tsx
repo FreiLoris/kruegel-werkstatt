@@ -14,9 +14,13 @@ import { useMfkSlots, useTasksBetween } from '../tasks/taskApi'
 import { weekDays } from '../tasks/week/weekDays'
 import styles from './DashboardWeek.module.css'
 import { TaskRow } from './TaskRow'
+import { FittingList } from '../../components/ui/FittingList'
 
-/** Appointments per day – a TV cannot scroll; the rest is "+ n weitere" (the day view has all) */
-const MAX_ROWS = 6
+/**
+ * Appointments per day at most – on the TV fewer if they do not fit (FittingList); the rest is
+ * "+ n weitere" (the day view has all)
+ */
+const MAX_ROWS = 5
 
 /**
  * The week on the dashboard (10a): every day with a clear head (UI review: the old grid had none),
@@ -71,7 +75,7 @@ export function DashboardWeek({ monday }: { monday: string }) {
                 })}
               </div>
             )}
-            <ul className={styles.tasks}>
+            <FittingList className={styles.tasks} moreTo={`/tasks?date=${day.date}`} alsoHidden={Math.max(day.tasks.length - rows, 0)}>
               {mfk.map((slot) => (
                 <li key={`mfk-${slot.task.id}`}>
                   <MfkEntry slot={slot} driver={employeeOf(slot.task.mfkDriverId)} oneLine />
@@ -79,17 +83,10 @@ export function DashboardWeek({ monday }: { monday: string }) {
               ))}
               {day.tasks.slice(0, rows).map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} oneLine mine={me !== undefined && task.mechanicId === me} />
+                  <TaskRow task={task} mechanic={employeeOf(task.mechanicId)} compact mine={me !== undefined && task.mechanicId === me} />
                 </li>
               ))}
-              {day.tasks.length > rows && (
-                <li>
-                  <Link to={`/tasks?date=${day.date}`} className={styles.more}>
-                    + {day.tasks.length - rows} weitere
-                  </Link>
-                </li>
-              )}
-            </ul>
+            </FittingList>
           </section>
         )
       })}

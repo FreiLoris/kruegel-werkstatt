@@ -60,6 +60,8 @@
 
 /* On narrow devices the table scrolls sideways */
 .tableWrapper {
+  /* hidden texts (screen readers) stay inside – otherwise the whole page scrolled sideways */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -79,6 +81,8 @@
 }
 
 .table th {
+  /* the sortable headings are buttons with touch height – the plain ones in line with them */
+  vertical-align: middle;
   border-bottom: 1px solid var(--color-border);
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -124,11 +128,16 @@
   white-space: nowrap;
 }
 
+/* under the date – the column stays narrow */
 .time {
+  display: block;
   font-weight: 700;
 }
 
 .customer {
+  /* "Muster Transport AG" in two lines at most, not three */
+  display: inline-block;
+  min-width: 9rem;
   color: inherit;
   font-weight: 600;
 }
@@ -146,7 +155,7 @@
 
 /* F1: the complete work, readable */
 .work {
-  min-width: 14rem;
+  min-width: 11rem;
   font-size: var(--font-size-sm);
 }
 

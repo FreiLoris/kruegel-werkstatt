@@ -2,7 +2,9 @@
 .task {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
+  min-width: 0;
   padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   border-radius: var(--radius);
   background: var(--color-surface-raised);
@@ -10,11 +12,26 @@
   text-decoration: none;
 }
 
-/* time | customer | mechanic in one line */
-.oneLine {
+/* the week: everything in one line – the head's parts left and right, the customer between them */
+.compact {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: var(--space-2);
+}
+
+.compact .head {
+  display: contents;
+}
+
+.compact .head > :last-child:not(:first-child) {
+  grid-column: 3;
+  grid-row: 1;
+  margin-left: 0;
+}
+
+.compact .customer {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .mine {
@@ -34,8 +51,15 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  min-width: 0;
+  overflow: hidden;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* the mechanic always whole – a long period ("10:00 – Sa 24.10. 12:00") gives way, not the initials */
+.head > :last-child:not(:first-child) {
+  flex-shrink: 0;
 }
 
 .status {
@@ -45,22 +69,20 @@
   color: var(--status);
 }
 
-/* two lines rather than "…" – the name is what people look for (UX G-20) */
+/* one line of its own, the whole width of the card – the name is what people look for (UX G-20) */
 .customer {
-  display: -webkit-box;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-/* time, lift and mechanic above the customer */
+/* time, lift and mechanic above the customer – one line, the mechanic on the right */
 .head {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-2);
+  min-width: 0;
 }
 
 .head > :last-child:not(:first-child) {
@@ -84,6 +106,9 @@
 }
 
 .lift {
+  overflow: hidden;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

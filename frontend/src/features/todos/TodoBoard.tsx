@@ -14,7 +14,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { GripVertical, ListTodo } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { reasonOf } from '../../api/errors'
 import { useToast } from '../../components/ui/toastContext'
 import type { Employee } from '../employees/employeeApi'
@@ -103,7 +103,7 @@ export function TodoBoard({ todos: loaded, people, canEdit }: { todos: Todo[]; p
         },
       }}
     >
-      <div className={styles.board} style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(14rem, 1fr))` }}>
+      <div className={styles.board} style={{ '--columns': columns.length } as CSSProperties}>
         {columns.map((column) => (
           <Column key={column.id} column={column}>
             {column.todos.map((todo) => (

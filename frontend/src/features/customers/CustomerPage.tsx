@@ -73,60 +73,69 @@ function CustomerView({ customer }: { customer: Customer }) {
       </div>
 
       <div className={styles.columns}>
-        <section aria-labelledby="contact-heading">
-          <h2 id="contact-heading">Kontakt</h2>
-          <Facts
-            rows={[
-              ['Firma', customer.company],
-              ['Zusatz', customer.addition],
-              ['Adresse', address],
-              ['Handy', tel(customer.mobile)],
-              ['Telefon', tel(customer.phone)],
-              ['E-Mail', customer.email && <a key="email" href={`mailto:${customer.email}`}>{customer.email}</a>],
-              ['Herkunft', customer.source === 'SWISSGARAGE' ? `SwissGarage${customer.swissgarageNumber ? ` (Nr. ${customer.swissgarageNumber})` : ''}` : 'Laufkunde (in der App erfasst)'],
-            ]}
-          />
-          {!customer.editable && <p className="muted">Änderungen an Stammkunden werden in SwissGarage gemacht.</p>}
+        {/* contact, vehicles and tyres as cards of their own – the page reads in blocks, like a task */}
+        <div className={styles.stack}>
+          <section aria-labelledby="contact-heading" className={styles.card}>
+            <h2 id="contact-heading">Kontakt</h2>
+            <Facts
+              rows={[
+                ['Firma', customer.company],
+                ['Zusatz', customer.addition],
+                ['Adresse', address],
+                ['Handy', tel(customer.mobile)],
+                ['Telefon', tel(customer.phone)],
+                ['E-Mail', customer.email && <a key="email" href={`mailto:${customer.email}`}>{customer.email}</a>],
+                ['Herkunft', customer.source === 'SWISSGARAGE' ? `SwissGarage${customer.swissgarageNumber ? ` (Nr. ${customer.swissgarageNumber})` : ''}` : 'Laufkunde (in der App erfasst)'],
+              ]}
+            />
+            {!customer.editable && <p className="muted">Änderungen an Stammkunden werden in SwissGarage gemacht.</p>}
+          </section>
 
-          <h2>Fahrzeuge</h2>
-          {vehicles.data === undefined ? (
-            <p className="muted">{vehicles.error ? `Konnte nicht geladen werden: ${vehicles.error.message}` : 'Lade …'}</p>
-          ) : vehicles.data.length === 0 ? (
-            <p className="muted">Keine Fahrzeuge erfasst.</p>
-          ) : (
-            <ul className={styles.list}>
-              {vehicles.data.map((vehicle) => (
-                <li key={vehicle.id} className={vehicle.active ? undefined : styles.inactive}>
-                  {vehicle.licensePlate ? <LicensePlate text={vehicle.licensePlate} size="sm" /> : <span className="muted">ohne Kennzeichen</span>}{' '}
-                  {vehicle.description}
-                  {!vehicle.active && <span className="muted"> (nicht mehr verwendet)</span>}
-                  {/* FB-12: its tyres – in the hotel, on the car or with the customer */}
-                  <VehicleTires vehicleId={vehicle.id} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <section aria-labelledby="vehicles-heading" className={styles.card}>
+            <h2 id="vehicles-heading">Fahrzeuge</h2>
+            {vehicles.data === undefined ? (
+              <p className="muted">{vehicles.error ? `Konnte nicht geladen werden: ${vehicles.error.message}` : 'Lade …'}</p>
+            ) : vehicles.data.length === 0 ? (
+              <p className="muted">Keine Fahrzeuge erfasst.</p>
+            ) : (
+              <ul className={styles.list}>
+                {vehicles.data.map((vehicle) => (
+                  <li key={vehicle.id} className={vehicle.active ? undefined : styles.inactive}>
+                    {vehicle.licensePlate ? <LicensePlate text={vehicle.licensePlate} size="sm" /> : <span className="muted">ohne Kennzeichen</span>}{' '}
+                    {vehicle.description}
+                    {!vehicle.active && <span className="muted"> (nicht mehr verwendet)</span>}
+                    {/* FB-12: its tyres – in the hotel, on the car or with the customer */}
+                    <VehicleTires vehicleId={vehicle.id} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-          <h2>Im Pneuhotel</h2>
-          {sets.length === 0 ? (
-            <p className="muted">{inHotel ? 'Keine Sätze eingelagert.' : 'Lade …'}</p>
-          ) : (
-            <ul className={styles.list}>
-              {sets.map((set) => (
-                <li key={set.id}>
-                  <Link to={`/tires/${set.id}`}>
-                    {SEASONS[set.season]}satz{set.vehicle?.licensePlate ? ` ${set.vehicle.licensePlate}` : ''}
-                  </Link>
-                  <span className="muted">
-                    {' '}
-                    · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn!)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <CustomerHistory customerId={customer.id} linked />
+          <section aria-labelledby="hotel-heading" className={styles.card}>
+            <h2 id="hotel-heading">Im Pneuhotel</h2>
+            {sets.length === 0 ? (
+              <p className="muted">{inHotel ? 'Keine Sätze eingelagert.' : 'Lade …'}</p>
+            ) : (
+              <ul className={styles.list}>
+                {sets.map((set) => (
+                  <li key={set.id}>
+                    <Link to={`/tires/${set.id}`}>
+                      {SEASONS[set.season]}satz{set.vehicle?.licensePlate ? ` ${set.vehicle.licensePlate}` : ''}
+                    </Link>
+                    <span className="muted">
+                      {' '}
+                      · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn!)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+        <div className={styles.card}>
+          <CustomerHistory customerId={customer.id} linked />
+        </div>
       </div>
 
       {editing && <CustomerDialog customer={customer} onSaved={() => setEditing(false)} onClose={() => setEditing(false)} />}

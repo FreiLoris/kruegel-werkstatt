@@ -37,13 +37,15 @@ export function DashboardPage() {
       </div>
       <PresentToday />
       <DashboardWeek monday={monday} />
-      {/* what bar color and sign mean (UX M-12) */}
-      <TaskStatusLegend />
       <div className={styles.below}>
         <section className={styles.area} aria-labelledby="today-heading">
-          <h2 id="today-heading" className={styles.areaTitle}>
-            Heute, {WEEKDAYS_SHORT[weekdayOf(today)]} {formatDate(today).slice(0, 6)} – nach Lift
-          </h2>
+          <div className={styles.areaHead}>
+            <h2 id="today-heading" className={styles.areaTitle}>
+              Heute, {WEEKDAYS_SHORT[weekdayOf(today)]} {formatDate(today).slice(0, 6)} – nach Lift
+            </h2>
+            {/* what bar color and sign mean (UX M-12) – next to the heading, the TV needs the line */}
+            <TaskStatusLegend />
+          </div>
           <TodayByLift />
         </section>
         <section className={styles.area} aria-labelledby="board-heading">
