@@ -87,7 +87,7 @@ export function TireLabelsPage() {
         <p className={styles.message}>Lade …</p>
       ) : !format ? (
         <p className={styles.message}>
-          Noch kein Etikettenformat – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Etiketten» anlegen.
+          Noch kein Etikettenformat – in den <Link to="/settings#etiketten">Einstellungen</Link> unter «Pneuhotel – Etiketten» anlegen.
         </p>
       ) : (
         <Sheet set={set.data} format={format} start={from} starts={starts} onPickStart={setStart} />

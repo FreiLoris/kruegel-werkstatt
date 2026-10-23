@@ -167,7 +167,7 @@ export function TireStorePage() {
             <h2 id="place-title">Lagerplatz: {place ? place.address : 'später zuweisen'}</h2>
             {locations && locations.length === 0 ? (
               <p className="muted">
-                Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> anlegen. Bis dann: später zuweisen.
+                Noch keine Standorte – in den <Link to="/settings#pneuhotel-standorte">Einstellungen</Link> anlegen. Bis dann: später zuweisen.
               </p>
             ) : (
               locations &&

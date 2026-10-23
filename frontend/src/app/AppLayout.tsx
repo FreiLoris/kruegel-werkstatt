@@ -1,5 +1,5 @@
 import { Wrench } from 'lucide-react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { useEffect } from 'react'
 import { useCompany } from '../features/company/companyApi'
 import { useActiveEmployees } from '../features/employees/employeeApi'
@@ -86,6 +86,9 @@ export function AppLayout() {
         {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>
       <UnsavedChangesGuard />
+      {/* a new page starts at its top (or at #section), back returns to where one was – by path:
+          a filter or a search typed into the address must not jump to the top */}
+      <ScrollRestoration getKey={(location) => location.pathname} />
     </>
   )
 }

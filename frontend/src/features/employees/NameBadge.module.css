@@ -9,6 +9,11 @@
   white-space: nowrap;
 }
 
+/* the initials need less room – the customer next to them more */
+.short {
+  padding: var(--space-1) var(--space-2);
+}
+
 .light {
   color: var(--color-text);
 }

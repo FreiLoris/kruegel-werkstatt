@@ -1,0 +1,14 @@
+/* what does not fit is hidden by FittingList – nothing sticks out of the column */
+.list {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

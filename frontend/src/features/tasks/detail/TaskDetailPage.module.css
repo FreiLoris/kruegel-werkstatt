@@ -87,12 +87,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
   gap: var(--space-4);
-  align-items: start;
+  /* the cards of a row equally high – a calm page instead of steps */
+  align-items: stretch;
   max-width: 80rem;
 }
 
 .card {
   display: grid;
+  /* its content as wide as the card, never wider */
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
   gap: var(--space-2);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
@@ -100,8 +104,9 @@
   background: var(--color-surface);
 }
 
-/* a card over the whole width – a table (FB-19) */
-.wide {
+/* a card over the whole width – a table (FB-19), or a form opened inside it (courtesy car) */
+.wide,
+.card:has([data-wide-card]) {
   grid-column: 1 / -1;
 }
 

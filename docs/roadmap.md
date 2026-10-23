@@ -345,6 +345,15 @@ dropped, and so is the parallel operation in 11e.
   Checklist: own DB password in `.env`, SwissGarage import of both Excel files, create Reto
   (Geschäftsführung) and the team, set up the TV as "Nur ansehen", first backup checked,
   switch off the old app.
+- [ ] **11f – Release and dev packages** (wish of the user, 2026-10-23)
+  Two channels of the images instead of one `latest` after every merge:
+  - **dev**: every merge to `main` (as today) – Reto's local Docker instance in his office pulls
+    it (the user sets it up there himself), so new work can be tried before it goes live.
+  - **release**: a version tag (e.g. `v1.2.0`, GitHub release) builds the release images, tagged
+    with the version and `latest` – the NAS instance pulls `latest` automatically (e.g. a scheduled
+    `docker compose pull && up -d`, or Watchtower), so the workshop only gets released versions.
+  To decide: how the NAS updates itself (schedule vs. Watchtower), one compose file per instance
+  (`deploy/nas/` release, `deploy/dev/` dev), release notes from the merged PRs.
 
 ## Phase 12 – Feedback from the workshop (10/2026)
 
@@ -722,6 +731,20 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   (`tire_season_ack`: reason, who, when – for that deadline only, undoable), Gewechselt (folded).
   Counters at the top, "Beide Sätze eingelagert – prüfen", all-season sets left out, the hotel's
   search narrows it. Not built: the call log ("angerufen am … / Rückruf").
+- [x] **14k – UX pass on laptop, tablet and TV** (wish of the user, 2026-10-23)
+  Done: every page and dialog checked at 1366×768, 1024×768 and 1920×1080 (TV).
+  - TV dashboard fills the screen without scrolling: the lists show what fits (`FittingList`, "+ n
+    weitere"), week rows one line each, today per lift and the pinboard one above the other,
+    the status legend next to the heading.
+  - Termine: all lifts without scrolling sideways (narrower minimum, the whole width), the time of
+    a narrow block a size smaller; week days never wider than their column; the list fits a laptop.
+  - Equal heights: the cards of a row on the task page, the tyre set page; dashboard cards with
+    the same lines. Names no longer broken in the middle of a word (`overflow-wrap: break-word`).
+  - Pinboard and to-dos: six columns on a laptop, three per row on a tablet.
+  - Navigation wraps on a tablet instead of hiding "Einstellungen"; a new page starts at its top
+    (`ScrollRestoration`), links into the settings jump to their section.
+  - Dialogs: one scrollbar, no box inside the dialog; the courtesy car form gets the whole width;
+    "Drucken" menu on the set page; taken colours show the person's initials; customer page in cards.
 
 ---
 

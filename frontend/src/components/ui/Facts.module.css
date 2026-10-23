@@ -4,9 +4,10 @@
   margin: 0;
 }
 
-.facts div {
+.facts > div {
   display: grid;
-  grid-template-columns: 9rem 1fr;
+  /* a long value wraps inside the card instead of sticking out */
+  grid-template-columns: 9rem minmax(0, 1fr);
   gap: var(--space-2);
 }
 

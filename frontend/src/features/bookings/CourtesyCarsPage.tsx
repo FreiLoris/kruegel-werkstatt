@@ -98,7 +98,7 @@ export function CourtesyCarsPage() {
             {cars.length === 1 ? '1 Fahrzeug' : `${cars.length} Fahrzeuge`} · {out} unterwegs · {cars.length - out} frei
           </p>
         </div>
-        <Button icon={Settings} onClick={() => navigate('/settings')}>
+        <Button icon={Settings} onClick={() => navigate('/settings#ersatzwagen')}>
           Fahrzeuge verwalten
         </Button>
       </div>

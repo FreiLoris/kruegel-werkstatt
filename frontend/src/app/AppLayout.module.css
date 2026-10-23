@@ -59,8 +59,15 @@
   .nav {
     order: 1;
     flex-basis: 100%;
+    flex-wrap: wrap;
     padding-bottom: var(--space-2);
-    overflow-x: auto;
+  }
+}
+
+/* a tablet: closer together, so they still fit on one line where possible */
+@media (max-width: 72rem) {
+  .link {
+    padding: 0 var(--space-2);
   }
 }
 

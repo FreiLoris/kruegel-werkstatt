@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarPlus, FileText, LogOut, MapPin, Pencil, Ruler, Tag } from 'lucide-react'
+import { ArrowLeft, CalendarPlus, FileText, LogOut, MapPin, Pencil, Printer, Ruler, Tag } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, reasonOf } from '../../api/errors'
@@ -6,6 +6,7 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { LicensePlate } from '../../components/licenseplate/LicensePlate'
 import { Button } from '../../components/ui/Button'
 import { LoadFailed } from '../../components/ui/LoadFailed'
+import { Menu, MenuItem } from '../../components/ui/Menu'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { Facts } from '../../components/ui/Facts'
 import { useToast } from '../../components/ui/toastContext'
@@ -134,15 +135,16 @@ function TireSetDetail({ set }: { set: TireSet }) {
         </div>
         {canEdit && (
           <div className={styles.actions}>
+            {/* the two print-outs in one menu – the actions fit in one line */}
             {inHotel && (
-              <>
-                <Button icon={Tag} onClick={() => navigate(`/tires/${set.id}/labels`)}>
+              <Menu label="Drucken" icon={Printer}>
+                <MenuItem icon={Tag} onClick={() => navigate(`/tires/${set.id}/labels`)}>
                   Etiketten
-                </Button>
-                <Button icon={FileText} onClick={() => navigate(`/tires/${set.id}/receipt`)}>
+                </MenuItem>
+                <MenuItem icon={FileText} onClick={() => navigate(`/tires/${set.id}/receipt`)}>
                   Einlagerungsschein
-                </Button>
-              </>
+                </MenuItem>
+              </Menu>
             )}
             {/* FB-18: the customer calls about the change – the wizard with all that is known */}
             <Button icon={CalendarPlus} onClick={() => navigate(tireAppointmentUrl(set.id))}>

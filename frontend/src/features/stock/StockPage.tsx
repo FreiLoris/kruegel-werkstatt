@@ -179,7 +179,7 @@ export function StockPage() {
           {locations.length === 0 && (
             <>
               {' '}
-              Lagerorte (Regal, Fach, …) werden in den <Link to="/settings">Einstellungen</Link> erfasst.
+              Lagerorte (Regal, Fach, …) werden in den <Link to="/settings#lagerorte">Einstellungen</Link> erfasst.
             </>
           )}
         </p>

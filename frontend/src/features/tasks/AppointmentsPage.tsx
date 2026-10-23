@@ -142,7 +142,8 @@ export function AppointmentsPage() {
         )}
       </div>
 
-      <div className={styles.content}>
+      {/* the calendar and the list use the whole screen width (AppLayout: data-wide) */}
+      <div className={styles.content} data-wide={view === 'unplanned' ? undefined : ''}>
         {view === 'list' ? (
           <TaskListView />
         ) : view === 'unplanned' ? (

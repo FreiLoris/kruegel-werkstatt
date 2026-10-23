@@ -123,7 +123,7 @@ export function TireHotelPage() {
           <p className="muted">{placesFailed ? `Konnte nicht geladen werden: ${placesFailed.message}` : 'Lade …'}</p>
         ) : locations.length === 0 ? (
           <p className={styles.empty}>
-            Noch keine Standorte – in den <Link to="/settings">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.
+            Noch keine Standorte – in den <Link to="/settings#pneuhotel-standorte">Einstellungen</Link> unter «Pneuhotel – Standorte» anlegen.
           </p>
         ) : (
           <PlaceMap locations={locations} places={places} sets={sets.data} limits={limits} mode="view" />

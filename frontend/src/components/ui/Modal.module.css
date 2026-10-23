@@ -7,6 +7,8 @@
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow);
+  /* the body scrolls – the dialog itself never (two scrollbars side by side) */
+  overflow: hidden;
 }
 
 .dialog::backdrop {
@@ -21,7 +23,8 @@
 .frame {
   display: flex;
   flex-direction: column;
-  max-height: inherit;
+  /* inside the dialog's border */
+  max-height: calc(100dvh - 2 * var(--space-6) - 2px);
 }
 
 .header {

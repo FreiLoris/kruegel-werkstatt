@@ -1,7 +1,10 @@
 .card {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
+  /* a plate wider than a narrow day (tablet) ends at the card's edge, not on the next day */
+  overflow: hidden;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius);
   background: var(--color-surface-raised);
@@ -23,9 +26,10 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  /* start–end and the badge side by side; the badge goes below in a narrow column */
-  flex-wrap: wrap;
+  /* start–end and the lift in one line – in a narrow column the lift is shortened, the cards of a
+     day stay alike instead of some getting an extra line */
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .time {
@@ -35,8 +39,11 @@
 }
 
 .lift {
+  min-width: 0;
+  overflow: hidden;
   color: var(--color-text-muted);
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .customer {

@@ -263,7 +263,7 @@ function Row({
     <tr className={styles.row} onClick={onOpen}>
       <td className={styles.nowrap}>
         {WEEKDAYS_SHORT[weekdayOf(task.date)]} {formatDate(task.date)}
-        <span className={styles.time}> {periodLabel(task)}</span>
+        <span className={styles.time}>{periodLabel(task)}</span>
       </td>
       <td>
         <Link to={`/tasks/${task.id}`} onClick={(e) => e.stopPropagation()} className={styles.customer}>
