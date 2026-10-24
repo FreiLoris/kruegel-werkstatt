@@ -1,11 +1,15 @@
-# Workshop app on the Synology NAS (Container Manager project) – see docs/deployment-nas.md.
+# The workshop app as an installed instance – see docs/deployment-nas.md.
 #
 # Unlike the compose.yaml in the project root nothing is built here: the images come ready-made
-# from the GitHub Container Registry (CI pushes them after every merge to main). Keep the
-# services in step with the root compose.yaml.
+# from the GitHub Container Registry. Keep the services in step with the root compose.yaml.
 #
-# Needs a .env next to this file (template: .env.example) – without a database password and a
-# backup folder it refuses to start instead of running with a default password.
+# One file for every instance, the channel comes from the .env next to it:
+#   release.env.example  the NAS in the workshop – only released versions ("latest")
+#   dev.env.example      Reto's and Loris' computers – every merge to main ("dev")
+# Watchtower looks for a newer image of the channel and restarts the app with it by itself.
+#
+# Without a database password and a backup folder in .env it refuses to start instead of running
+# with a default password.
 
 services:
   db:
@@ -26,10 +30,12 @@ services:
     mem_limit: 256m
 
   backend:
-    image: ghcr.io/freiloris/kruegel-werkstatt-backend:${APP_VERSION:-latest}
-    # "Erstellen"/"up" fetches the newest image – an update needs nothing else
+    image: ghcr.io/freiloris/kruegel-werkstatt-backend:${APP_VERSION:?APP_VERSION fehlt in .env}
+    # "Erstellen"/"up" fetches the newest image of the channel
     pull_policy: always
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     depends_on:
       db:
         condition: service_healthy
@@ -49,9 +55,11 @@ services:
     mem_limit: 512m
 
   frontend:
-    image: ghcr.io/freiloris/kruegel-werkstatt-frontend:${APP_VERSION:-latest}
+    image: ghcr.io/freiloris/kruegel-werkstatt-frontend:${APP_VERSION:?APP_VERSION fehlt in .env}
     pull_policy: always
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     depends_on:
       backend:
         condition: service_healthy
@@ -60,9 +68,11 @@ services:
     mem_limit: 64m
 
   backup:
-    image: ghcr.io/freiloris/kruegel-werkstatt-backup:${APP_VERSION:-latest}
+    image: ghcr.io/freiloris/kruegel-werkstatt-backup:${APP_VERSION:?APP_VERSION fehlt in .env}
     pull_policy: always
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     depends_on:
       db:
         condition: service_healthy
@@ -77,6 +87,22 @@ services:
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
     volumes:
       - ${BACKUP_DIR:?BACKUP_DIR fehlt in .env}:/dumps
+    mem_limit: 64m
+
+  # Updates backend, frontend and backup (only containers with the label above – not the database,
+  # a new PostgreSQL is a deliberate step). Database changes the backend applies itself when it
+  # starts (Flyway). The maintained fork of Watchtower – the original (containrrr) is archived.
+  watchtower:
+    image: nickfedor/watchtower:1.23.0
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TZ: Europe/Zurich
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_SCHEDULE: ${UPDATE_SCHEDULE:-0 */5 * * * *}
+      # old images are deleted – the NAS disk does not fill up; going back pulls the version again
+      WATCHTOWER_CLEANUP: "true"
     mem_limit: 64m
 
 volumes:

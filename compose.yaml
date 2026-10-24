@@ -10,8 +10,9 @@
 #
 # Memory limits: the target NAS has 2 GB RAM, DSM itself needs a large part of it.
 #
-# The image names are those in the GitHub Container Registry: CI builds and pushes them after
-# every merge, the NAS only pulls them (deploy/nas/compose.yaml – keep both files in step).
+# The image names are those in the GitHub Container Registry: CI builds and pushes them as "dev"
+# after every merge, the installed instances only pull them (deploy/compose.yaml – keep both files
+# in step).
 
 services:
   db:
@@ -36,7 +37,7 @@ services:
 
   backend:
     build: ./backend
-    image: ghcr.io/freiloris/kruegel-werkstatt-backend:latest
+    image: ghcr.io/freiloris/kruegel-werkstatt-backend:dev
     restart: unless-stopped
     depends_on:
       db:
@@ -62,7 +63,7 @@ services:
 
   frontend:
     build: ./frontend
-    image: ghcr.io/freiloris/kruegel-werkstatt-frontend:latest
+    image: ghcr.io/freiloris/kruegel-werkstatt-frontend:dev
     restart: unless-stopped
     depends_on:
       backend:
@@ -75,7 +76,7 @@ services:
   # BACKUP_KEEP_DAYS. Restore: docs/operations.md
   backup:
     build: ./backup
-    image: ghcr.io/freiloris/kruegel-werkstatt-backup:latest
+    image: ghcr.io/freiloris/kruegel-werkstatt-backup:dev
     restart: unless-stopped
     depends_on:
       db:
