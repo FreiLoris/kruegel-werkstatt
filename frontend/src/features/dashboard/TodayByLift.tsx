@@ -12,7 +12,7 @@ import { TaskRow } from './TaskRow'
 import styles from './TodayByLift.module.css'
 import { liftColumns, nextAppointment, NO_LIFT } from './todayColumns'
 import { startLabel } from '../tasks/taskTime'
-import { CarriedOver } from '../tasks/day/CarriedOver'
+import { CarriedOverItem } from '../tasks/day/CarriedOver'
 import { FittingList } from '../../components/ui/FittingList'
 
 /** How far ahead "nächster Termin" looks when today is empty */
@@ -71,11 +71,6 @@ export function TodayByLift() {
             <p className={styles.free}>frei</p>
           ) : (
             <FittingList className={styles.tasks} moreTo="/tasks">
-              {column.id === NO_LIFT && carriedOver.length > 0 && (
-                <li>
-                  <CarriedOver tasks={carriedOver} />
-                </li>
-              )}
               {column.id === NO_LIFT &&
                 mfkSlots.map((slot) => (
                   <li key={`mfk-${slot.task.id}`}>
@@ -92,6 +87,13 @@ export function TodayByLift() {
                   />
                 </li>
               ))}
+              {/* after today's work – one item each, so "+ n weitere" counts tasks */}
+              {column.id === NO_LIFT &&
+                carriedOver.map((task) => (
+                  <li key={`carried-${task.id}`}>
+                    <CarriedOverItem task={task} />
+                  </li>
+                ))}
             </FittingList>
           )}
         </section>

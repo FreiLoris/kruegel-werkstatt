@@ -3,7 +3,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 2px;
-  /* a plate wider than a narrow day (tablet) ends at the card's edge, not on the next day */
+  /* the plate fits its width (LicensePlate "fit"); anything else too wide ends at the card's edge,
+     not on the next day */
+  container: week-card / inline-size;
   overflow: hidden;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius);

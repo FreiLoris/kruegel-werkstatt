@@ -22,6 +22,12 @@
   font-size: var(--font-size-sm);
 }
 
+/* A plate is about 9.4 em wide: 9.6 % of the container's width per em keeps it at about 90 % of the
+   card. Never larger than "sm"; below 0.6rem unreadable – then it is cut at the card's edge again. */
+.fit {
+  font-size: clamp(0.6rem, 9.6cqi, var(--font-size-sm));
+}
+
 .md {
   font-size: var(--font-size-lg);
 }

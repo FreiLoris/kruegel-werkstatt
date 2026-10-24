@@ -24,27 +24,38 @@ export function CarriedOver({
     <ul className={styles.list} aria-label={label}>
       {tasks.map((task) => (
         <li key={task.id}>
-          <Link
-            to={`/tasks/${task.id}`}
-            className={styles.item}
-            title="Nicht fertig geworden – öffnen, um neu einzuplanen"
-            onClick={
-              onOpen &&
-              ((e) => {
-                e.preventDefault()
-                onOpen()
-              })
-            }
-          >
-            <CornerDownRight aria-hidden className={styles.icon} />
-            <span className={styles.text}>
-              <strong>{task.customer.displayName}</strong>
-              {task.vehicle?.licensePlate && <LicensePlate text={task.vehicle.licensePlate} size="sm" />}
-              <span className={styles.since}>{carriedLabel(task)}</span>
-            </span>
-          </Link>
+          <CarriedOverItem task={task} onOpen={onOpen} />
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * One carried-over task – also on its own: the TV's "Ohne Lift" puts each one in its list, so that
+ * "+ n weitere" counts the tasks, not the block (one item of 40 tasks said "+ 1 weitere")
+ */
+export function CarriedOverItem({ task, onOpen }: { task: Task; onOpen?: () => void }) {
+  return (
+    <Link
+      to={`/tasks/${task.id}`}
+      className={styles.item}
+      title="Nicht fertig geworden – öffnen, um neu einzuplanen"
+      onClick={
+        onOpen &&
+        ((e) => {
+          e.preventDefault()
+          onOpen()
+        })
+      }
+    >
+      <CornerDownRight aria-hidden className={styles.icon} />
+      <span className={styles.text}>
+        <span className="visually-hidden">Übertrag:</span>
+        <strong>{task.customer.displayName}</strong>
+        {task.vehicle?.licensePlate && <LicensePlate text={task.vehicle.licensePlate} size="sm" />}
+        <span className={styles.since}>{carriedLabel(task)}</span>
+      </span>
+    </Link>
   )
 }

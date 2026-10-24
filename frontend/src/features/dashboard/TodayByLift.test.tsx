@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { todayIso } from '../../lib/format'
@@ -102,6 +102,18 @@ describe('TodayByLift', () => {
     const noLift = screen.getByRole('region', { name: 'Ohne Lift' })
     expect(noLift.textContent).toContain('Meier Anna')
     expect(noLift.textContent).toContain('verlängert seit Mo 12.10.')
+    carried = []
+  })
+
+  it('every carried-over task is an item of its own – "+ n weitere" on the TV counts tasks, not the block', () => {
+    carried = [
+      { ...task('c1', '1', '2099-03-01', '08:00:00', 'Meier Anna'), endAt: '2026-10-12T17:00:00' },
+      { ...task('c2', '1', '2099-03-01', '09:00:00', 'Huber Beat'), endAt: '2026-10-12T17:00:00' },
+    ]
+    renderToday()
+
+    const items = within(screen.getByRole('region', { name: 'Ohne Lift' })).getAllByRole('listitem')
+    expect(items.map((item) => item.textContent)).toEqual([expect.stringContaining('Meier Anna'), expect.stringContaining('Huber Beat')])
     carried = []
   })
 })

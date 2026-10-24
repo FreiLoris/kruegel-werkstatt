@@ -26,16 +26,19 @@ export function DashboardPage() {
   return (
     // uses the whole screen width (AppLayout: data-wide)
     <div data-wide className={styles.page}>
-      <div className={styles.titleRow}>
-        <h1 className={styles.title}>
-          {nextWeek ? 'Nächste Woche' : 'Diese Woche'}
-          <span className={styles.week}>
-            KW {isoWeek(monday)} · {formatDate(monday).slice(0, 6)} – {formatDate(addDays(monday, 4))}
-          </span>
-        </h1>
-        <WithoutAppointment />
+      {/* one block: "Heute da" is missing on a weekend and while loading – the TV's rows below must not move */}
+      <div className={styles.head}>
+        <div className={styles.titleRow}>
+          <h1 className={styles.title}>
+            {nextWeek ? 'Nächste Woche' : 'Diese Woche'}
+            <span className={styles.week}>
+              KW {isoWeek(monday)} · {formatDate(monday).slice(0, 6)} – {formatDate(addDays(monday, 4))}
+            </span>
+          </h1>
+          <WithoutAppointment />
+        </div>
+        <PresentToday />
       </div>
-      <PresentToday />
       <DashboardWeek monday={monday} />
       <div className={styles.below}>
         <section className={styles.area} aria-labelledby="today-heading">
