@@ -51,6 +51,7 @@ export function CarriedOverItem({ task, onOpen }: { task: Task; onOpen?: () => v
     >
       <CornerDownRight aria-hidden className={styles.icon} />
       <span className={styles.text}>
+        <span className="visually-hidden">Übertrag:</span>
         <strong>{task.customer.displayName}</strong>
         {task.vehicle?.licensePlate && <LicensePlate text={task.vehicle.licensePlate} size="sm" />}
         <span className={styles.since}>{carriedLabel(task)}</span>

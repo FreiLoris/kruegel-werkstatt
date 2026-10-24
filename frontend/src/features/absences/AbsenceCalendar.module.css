@@ -158,23 +158,27 @@
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
   gap: var(--space-1);
   /* for the short bars below */
-  container-type: inline-size;
+  container: absence-bar / inline-size;
 }
 
+/* never wider than the bar – half a day on a tablet is narrower than the symbol */
 .barIcon {
   flex-shrink: 0;
-  width: 0.95rem;
-  height: 0.95rem;
+  width: min(0.95rem, 100cqi);
+  height: auto;
+  aspect-ratio: 1;
 }
 
-/* a day or half a day: only the symbol, in the middle – "K…" said nothing (the tooltip has all) */
-@container (max-width: 3.5rem) {
+/* a day or less: no padding (it took all the room of half a day), the symbol in the middle */
+.short {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* too short for the text: only the symbol – "K…" said nothing (the tooltip has all) */
+@container absence-bar (max-width: 3.5rem) {
   .barText {
     display: none;
-  }
-
-  .barIcon {
-    margin-inline: auto;
   }
 }
 

@@ -176,7 +176,14 @@ export function AbsenceCalendar({ employees, absences, days, today, holidays, ca
                   <button
                     key={bar.absence.id}
                     type="button"
-                    className={[styles.bar, CATEGORY_CLASS[bar.absence.category], bar.continuesBefore && styles.before, bar.continuesAfter && styles.after]
+                    className={[
+                      styles.bar,
+                      CATEGORY_CLASS[bar.absence.category],
+                      // in half days: a whole day or less
+                      bar.end - bar.start <= 2 && styles.short,
+                      bar.continuesBefore && styles.before,
+                      bar.continuesAfter && styles.after,
+                    ]
                       .filter(Boolean)
                       .join(' ')}
                     style={{ left: pct(bar.start), width: pct(bar.end - bar.start) }}

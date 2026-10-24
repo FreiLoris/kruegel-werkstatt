@@ -35,7 +35,7 @@ export function DashboardPage() {
               KW {isoWeek(monday)} · {formatDate(monday).slice(0, 6)} – {formatDate(addDays(monday, 4))}
             </span>
           </h1>
-        <WithoutAppointment />
+          <WithoutAppointment />
         </div>
         <PresentToday />
       </div>

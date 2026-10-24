@@ -71,13 +71,6 @@ export function TodayByLift() {
             <p className={styles.free}>frei</p>
           ) : (
             <FittingList className={styles.tasks} moreTo="/tasks">
-              {/* one item each – "+ n weitere" counts tasks */}
-              {column.id === NO_LIFT &&
-                carriedOver.map((task) => (
-                  <li key={`carried-${task.id}`}>
-                    <CarriedOverItem task={task} />
-                  </li>
-                ))}
               {column.id === NO_LIFT &&
                 mfkSlots.map((slot) => (
                   <li key={`mfk-${slot.task.id}`}>
@@ -94,6 +87,13 @@ export function TodayByLift() {
                   />
                 </li>
               ))}
+              {/* after today's work – one item each, so "+ n weitere" counts tasks */}
+              {column.id === NO_LIFT &&
+                carriedOver.map((task) => (
+                  <li key={`carried-${task.id}`}>
+                    <CarriedOverItem task={task} />
+                  </li>
+                ))}
             </FittingList>
           )}
         </section>

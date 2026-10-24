@@ -14,8 +14,8 @@ const ARMS: Record<string, string> = Object.fromEntries(
  *
  * Accessible: screen readers hear "Kennzeichen SG 197052" instead of single parts.
  *
- * `fit`: like `sm`, but smaller as a whole when its container (`container-type: inline-size`) is
- * too narrow – a narrow day on the tablet shows the whole plate instead of cutting off the arms.
+ * `fit`: like `sm`, but smaller as a whole when its container (the nearest element with
+ * `container-type: inline-size`) is too narrow – a narrow day on the tablet shows the whole plate instead of cutting off the arms.
  */
 export function LicensePlate({ text, size = 'md' }: { text: string; size?: 'sm' | 'fit' | 'md' | 'lg' }) {
   const plate = parsePlate(text)

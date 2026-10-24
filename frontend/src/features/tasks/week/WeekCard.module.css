@@ -5,7 +5,7 @@
   gap: 2px;
   /* the plate fits its width (LicensePlate "fit"); anything else too wide ends at the card's edge,
      not on the next day */
-  container-type: inline-size;
+  container: week-card / inline-size;
   overflow: hidden;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius);
