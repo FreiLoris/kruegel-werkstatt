@@ -8,6 +8,9 @@ import { addDays } from './format'
 /** Short weekday names, Monday first (index = {@link weekdayOf}). */
 export const WEEKDAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as const
 
+/** The weekday names, Monday first */
+export const WEEKDAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'] as const
+
 function utc(isoDate: string): Date {
   const [year, month, day] = isoDate.split('-').map(Number)
   return new Date(Date.UTC(year, month - 1, day))
@@ -50,4 +53,9 @@ export function nextWorkingDay(isoDate: string, holidays: ReadonlySet<string>): 
     day = addDays(day, 1)
   }
   return day
+}
+
+/** Whole days from `from` to `to` – negative if `to` is earlier */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((utc(to).getTime() - utc(from).getTime()) / 86_400_000)
 }

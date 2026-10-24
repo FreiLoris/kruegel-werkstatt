@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isoWeek, mondayOf, nextWorkingDay, previousWorkingDay, weekdayOf } from './calendar'
+import { daysBetween, isoWeek, mondayOf, nextWorkingDay, previousWorkingDay, weekdayOf } from './calendar'
 
 describe('calendar', () => {
   it('weekday with Monday = 0', () => {
@@ -29,5 +29,13 @@ describe('calendar', () => {
   it('next working day', () => {
     expect(nextWorkingDay('2026-10-17', new Set())).toBe('2026-10-19')
     expect(nextWorkingDay('2026-10-15', new Set())).toBe('2026-10-15')
+  })
+})
+
+describe('daysBetween', () => {
+  it('whole days, also across the change to winter time', () => {
+    expect(daysBetween('2026-10-25', '2026-11-02')).toBe(8)
+    expect(daysBetween('2026-10-24', '2026-10-26')).toBe(2)
+    expect(daysBetween('2026-10-26', '2026-10-24')).toBe(-2)
   })
 })

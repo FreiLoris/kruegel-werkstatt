@@ -29,6 +29,7 @@ Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) 
 | 12 | Feedback from the workshop | Wishes after the first days in use (10/2026) |
 | 13 | Second test round | FB-01 … FB-10, tyre hotel (10/2026) |
 | 14 | Third test round | FB-11 … FB-21: shopping list, planning, tyres (10/2026) |
+| 15 | Extras | Wishes beyond the daily work (10/2026) |
 
 ---
 
@@ -762,6 +763,22 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
     (`LicensePlate size="fit"`, container query) instead of losing its coat of arms at the edge.
   - Employee calendar: every bar has its category's symbol (`CategoryIcon`, also in the legend); a
     bar of one day shows only the symbol instead of "K…".
+
+---
+
+## Phase 15 – Extras (10/2026)
+
+- [x] **15a – Statistics page** (wish of the user, 2026-10-25: "alle möglichen Statistiken, egal ob
+  funny oder informativ")
+  - New page "Statistik" in the main navigation; `GET /api/statistics` counts everything on the server
+    (plain SQL, `StatisticsRepository`), read only, no new table.
+  - Sections tasks, vehicles, customers, tyre hotel, team, material: big numbers, rankings (bars),
+    charts by month, weekday and hour, shares (status, season, fuel …), a jump bar at the top.
+  - "Schon gewusst?": fun facts built from the numbers – kilometres around the earth and to the moon,
+    the queue of all vehicles, the tower of tyres, the record day, the oldest vehicle … – only those
+    the data allows.
+  - Absences only as a team total – nobody's sick days on a page for everyone. Free text (make,
+    colour, city) is counted case-insensitively.
 
 ---
 

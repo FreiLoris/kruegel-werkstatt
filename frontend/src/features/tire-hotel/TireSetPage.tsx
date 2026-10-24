@@ -16,6 +16,7 @@ import { tireAppointmentUrl } from '../tasks/wizard/tireAppointment'
 import { MeasureDialog } from './MeasureDialog'
 import { MoveDialog } from './MoveDialog'
 import {
+  EVENT_TEXT,
   KINDS,
   RIMS,
   SEASONS,
@@ -32,16 +33,6 @@ import styles from './TireHotel.module.css'
 import { formatDepth, olderDepths, WHEELS } from './tread'
 import { AdviseBanner, TreadDepthsView } from './TreadDepthsView'
 import { mountingSummary } from './taskTires'
-
-const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
-  STORED: 'Eingelagert',
-  MEASURED: 'Nachgemessen',
-  MOVED: 'Umgelagert',
-  RETRIEVED: 'Ausgelagert',
-  RECORDED: 'Erfasst (nicht eingelagert)',
-  MOUNTED: 'Vom Kunden mitgebracht, montiert',
-  TAKEN_HOME: 'Abmontiert, nimmt der Kunde mit',
-}
 
 /** "auf OG-B3-1", "nach OG-B3-2", "von OG-B3-2" – the place of a step in words */
 function placeOf(event: TireSetEvent): string | null {

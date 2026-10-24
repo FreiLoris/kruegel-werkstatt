@@ -33,6 +33,17 @@ export const KINDS: Record<TireSetKind, string> = { WHEELS: 'Kompletträder', TI
 export const RIMS: Record<RimKind, string> = { ALU: 'Alu', STEEL: 'Stahl' }
 export const LOCATION_KINDS: Record<TireLocationKind, string> = { FLOOR: 'Bodenraster', SHELVES: 'Regale' }
 
+/** What happened to a set – the history of a set and the statistics */
+export const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
+  STORED: 'Eingelagert',
+  MEASURED: 'Nachgemessen',
+  MOVED: 'Umgelagert',
+  RETRIEVED: 'Ausgelagert',
+  RECORDED: 'Erfasst (nicht eingelagert)',
+  MOUNTED: 'Vom Kunden mitgebracht, montiert',
+  TAKEN_HOME: 'Abmontiert, nimmt der Kunde mit',
+}
+
 /** The sets in the hotel (newest first) – or the retrieved ones. Searched in the browser: a few hundred sets. */
 export function useTireSets(inHotel: boolean) {
   return useQuery({

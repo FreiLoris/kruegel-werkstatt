@@ -1,0 +1,315 @@
+.intro {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+/* jump to a section – the page is long */
+.jump {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-2) 0;
+  background: var(--color-background);
+}
+
+.jump a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.jump a:hover {
+  border-color: var(--color-accent);
+}
+
+.jump svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-accent);
+}
+
+.section {
+  margin-bottom: var(--space-8);
+  /* the sticky jump bar must not cover the heading */
+  scroll-margin-top: calc(var(--header-height) + 4.5rem);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-title);
+}
+
+.sectionTitle svg {
+  color: var(--color-accent);
+}
+
+/* big numbers first, as many side by side as fit */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.tile {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.tileIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-accent);
+}
+
+/* "24’512’836 km" still fits a tile on a tablet */
+.tileValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tileLabel {
+  font-weight: 600;
+}
+
+.tileHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* a chart over time needs the width */
+.wide {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.empty {
+  margin: 0;
+}
+
+/* ── Ranking ───────────────────────────────────────────── */
+.barList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.barLabel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  block-size: 0.75rem;
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  block-size: 100%;
+  min-inline-size: 0.25rem;
+  border-radius: inherit;
+  background: var(--color-accent);
+}
+
+.barCount {
+  min-width: 2.5ch;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Columns ───────────────────────────────────────────── */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  gap: var(--space-1);
+  block-size: 11rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.column {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--space-1);
+  min-width: 0;
+  text-align: center;
+}
+
+.columnCount {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.columnTrack {
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--color-surface-raised);
+}
+
+.columnFill {
+  inline-size: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-accent) 55%, var(--color-surface));
+}
+
+/* the record of the chart in the full accent colour */
+.columnTop {
+  background: var(--color-accent);
+}
+
+.columnLabel {
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+/* ── Share ─────────────────────────────────────────────── */
+.share {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.shareBar {
+  display: flex;
+  gap: 2px;
+  block-size: 1rem;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.shareBar span {
+  min-inline-size: 4px;
+}
+
+.legend {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  flex-shrink: 0;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 3px;
+}
+
+.legendCount {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Fun facts ─────────────────────────────────────────── */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-8);
+  padding: 0;
+  list-style: none;
+}
+
+.fact {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+}
+
+.factTopic {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fact p {
+  margin: 0;
+}
+
+/* a single highlight number inside a card */
+.highlight {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.highlight strong {
+  font-size: var(--font-size-title);
+}
