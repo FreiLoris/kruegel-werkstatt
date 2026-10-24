@@ -1,0 +1,75 @@
+# Releases a version to the NAS in the workshop.
+#
+# GitHub → Actions → "Release" → "Run workflow", version e.g. 1.2.0 (or:
+# gh workflow run release.yml -f version=1.2.0). The newest main becomes the release:
+# - its images – the very ones CI built and tested after the merge ("dev") – also get the tags
+#   "v1.2.0" and "latest"; Watchtower on the NAS sees the new "latest" and updates the app
+# - a GitHub release "v1.2.0" with the merged PRs since the last release as release notes
+#
+# Nothing is built again: what the workshop gets is exactly what ran on the test instances.
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version without "v", e.g. 1.2.0'
+        required: true
+
+# Two releases at the same time would fight over "latest".
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Release v${{ inputs.version }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Main, version valid and new?
+        run: |
+          [[ "$GITHUB_REF" == refs/heads/main ]] || {
+            echo "::error::Only main is released – choose \"Branch: main\" when starting."
+            exit 1
+          }
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "::error::Version must look like 1.2.0 (without \"v\"), not \"$VERSION\"."
+            exit 1
+          }
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::v$VERSION exists already – take the next number."
+            exit 1
+          fi
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      # CI pushes the images of a merge under the commit tag – until then there is nothing to release.
+      - name: Images of this commit there?
+        run: |
+          for name in backend frontend backup; do
+            docker buildx imagetools inspect "ghcr.io/freiloris/kruegel-werkstatt-${name}:${GITHUB_SHA::7}" >/dev/null || {
+              echo "::error::No ${name} image for ${GITHUB_SHA::7} yet – wait until CI on main is green, then start again."
+              exit 1
+            }
+          done
+
+      - name: Tag images v${{ inputs.version }} and latest
+        run: |
+          for name in backend frontend backup; do
+            image="ghcr.io/freiloris/kruegel-werkstatt-${name}"
+            docker buildx imagetools create -t "${image}:v${VERSION}" -t "${image}:latest" "${image}:${GITHUB_SHA::7}"
+          done
+
+      - name: GitHub release with release notes
+        run: gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --generate-notes

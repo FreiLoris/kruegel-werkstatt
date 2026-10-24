@@ -335,7 +335,8 @@ dropped, and so is the parallel operation in 11e.
   Container Manager, images (via GitHub Container Registry), `.env` with its own password,
   check memory limits.
   Code part: CI pushes `backend`, `frontend` and `backup` images to ghcr.io after every merge
-  (`latest` + commit tag); `deploy/nas/compose.yaml` only pulls them (no default password, no
+  (`latest` + commit tag; since 11f `dev`); `deploy/nas/compose.yaml` (since 11f
+  `deploy/compose.yaml`) only pulls them (no default password, no
   open DB port, `pull_policy: always`); the backup scripts are in their own image. Guide for the
   NAS steps: [`deployment-nas.md`](deployment-nas.md). NAS: DS224+ (Intel), 2 GB RAM.
   Done 2026-10-07: project `kruegel-werkstatt` in Container Manager, all four containers running,
@@ -346,15 +347,20 @@ dropped, and so is the parallel operation in 11e.
   Checklist: own DB password in `.env`, SwissGarage import of both Excel files, create Reto
   (Geschäftsführung) and the team, set up the TV as "Nur ansehen", first backup checked,
   switch off the old app.
-- [ ] **11f – Release and dev packages** (wish of the user, 2026-10-23)
+- [x] **11f – Release and dev packages** (wish of the user, 2026-10-23)
   Two channels of the images instead of one `latest` after every merge:
   - **dev**: every merge to `main` (as today) – Reto's local Docker instance in his office pulls
     it (the user sets it up there himself), so new work can be tried before it goes live.
   - **release**: a version tag (e.g. `v1.2.0`, GitHub release) builds the release images, tagged
     with the version and `latest` – the NAS instance pulls `latest` automatically (e.g. a scheduled
     `docker compose pull && up -d`, or Watchtower), so the workshop only gets released versions.
-  To decide: how the NAS updates itself (schedule vs. Watchtower), one compose file per instance
-  (`deploy/nas/` release, `deploy/dev/` dev), release notes from the merged PRs.
+  Decided 2026-10-24 (user): Watchtower, on the NAS and on the test instances (Reto, Loris).
+  Done: CI pushes `dev` + commit tag after every merge (no more `latest`); `release.yml` (*Actions →
+  Release → Run workflow*, version) gives these very images `v…` and `latest` and creates the
+  GitHub release with generated notes. One `deploy/compose.yaml` for every instance with a
+  `watchtower` service (maintained fork `nickfedor/watchtower`, only labelled containers – never
+  the database, `UPDATE_SCHEDULE`), the channel from the `.env`: `release.env.example` /
+  `dev.env.example`. Guide: [`deployment-nas.md`](deployment-nas.md) (Releases, test instances).
 
 ## Phase 12 – Feedback from the workshop (10/2026)
 
