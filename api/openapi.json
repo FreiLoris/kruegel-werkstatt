@@ -6730,6 +6730,76 @@
         "tags" : [ "Shopping list" ]
       }
     },
+    "/api/statistics" : {
+      "get" : {
+        "description" : "Tasks, vehicles, customers, tyre hotel, team and material, counted today. Read only.",
+        "operationId" : "all",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatisticsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "All statistics",
+        "tags" : [ "Statistics" ]
+      }
+    },
     "/api/stock-items" : {
       "get" : {
         "description" : "Search, filters and sorting happen on the page.",
@@ -12905,6 +12975,23 @@
         },
         "required" : [ "available", "conflicts", "courtesyCarId", "licensePlate", "model", "name", "overdue" ]
       },
+      "BirthdayDto" : {
+        "type" : "object",
+        "properties" : {
+          "age" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "age", "date", "name" ]
+      },
       "BookingDto" : {
         "type" : "object",
         "properties" : {
@@ -13114,6 +13201,20 @@
           }
         },
         "required" : [ "assignments", "company", "days", "employeeIds" ]
+      },
+      "CountDto" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "A name, a fixed value (e.g. a status), a month \"2026-10\", an hour \"07\" or a date"
+          }
+        },
+        "required" : [ "count", "label" ]
       },
       "CourtesyCarChoice" : {
         "type" : "object",
@@ -13423,6 +13524,53 @@
           }
         },
         "required" : [ "hits", "more" ]
+      },
+      "CustomerStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "cities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "companies" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Customers with a company name"
+          },
+          "firstNames" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "newThisYear" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Entered this year"
+          },
+          "sources" : {
+            "type" : "array",
+            "description" : "Label = SWISSGARAGE or LOCAL",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "withEmail" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "withMobile" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "cities", "companies", "firstNames", "newThisYear", "sources", "total", "withEmail", "withMobile" ]
       },
       "DataChanged" : {
         "type" : "object",
@@ -13948,6 +14096,65 @@
           }
         },
         "required" : [ "name" ]
+      },
+      "MaterialStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "averageDeliveryDays" : {
+            "type" : [ "number", "null" ],
+            "format" : "double",
+            "description" : "Average days from ordered to arrived, null if none arrived"
+          },
+          "courtesyBookings" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "courtesyCars" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "courtesyDays" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Days all courtesy cars were out together"
+          },
+          "shoppingItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "shoppingStatus" : {
+            "type" : "array",
+            "description" : "Label = TO_ORDER, ORDERED or ARRIVED",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "stockCategories" : {
+            "type" : "array",
+            "description" : "Label = SPARE_PART, CONSUMABLE or TOOL",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "stockItems" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "stockQuantity" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "All pieces in stock added up"
+          },
+          "suppliers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          }
+        },
+        "required" : [ "averageDeliveryDays", "courtesyBookings", "courtesyCars", "courtesyDays", "shoppingItems", "shoppingStatus", "stockCategories", "stockItems", "stockQuantity", "suppliers" ]
       },
       "MeasurementRequest" : {
         "type" : "object",
@@ -14701,6 +14908,34 @@
         },
         "required" : [ "status" ]
       },
+      "StatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "customers" : {
+            "$ref" : "#/components/schemas/CustomerStatisticsDto"
+          },
+          "material" : {
+            "$ref" : "#/components/schemas/MaterialStatisticsDto"
+          },
+          "tasks" : {
+            "$ref" : "#/components/schemas/TaskStatisticsDto"
+          },
+          "team" : {
+            "$ref" : "#/components/schemas/TeamStatisticsDto"
+          },
+          "tires" : {
+            "$ref" : "#/components/schemas/TireStatisticsDto"
+          },
+          "today" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "vehicles" : {
+            "$ref" : "#/components/schemas/VehicleStatisticsDto"
+          }
+        },
+        "required" : [ "customers", "material", "tasks", "team", "tires", "today", "vehicles" ]
+      },
       "StockItemDto" : {
         "type" : "object",
         "properties" : {
@@ -15428,6 +15663,115 @@
         },
         "required" : [ "hits", "more" ]
       },
+      "TaskStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "acceptedBy" : {
+            "type" : "array",
+            "description" : "Who took the task on (\"angenommen von\")",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "averageMinutes" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64",
+            "description" : "Average planned length in minutes (start to \"fertig bis\"), null if none known"
+          },
+          "busiestDay" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CountDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "byStatus" : {
+            "type" : "array",
+            "description" : "Label = the status (RECEIVED, IN_PROGRESS, WAITING_FOR_PARTS, DONE)",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "done" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "firstAppointment" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Date of the first appointment – since when there are numbers"
+          },
+          "lifts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "mechanics" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "mfk" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "perHour" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "perMonth" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "perWeekday" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "regulars" : {
+            "type" : "array",
+            "description" : "Customers with the most tasks",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "serviceItems" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "thisMonth" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "thisYear" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tireChange" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "waitingCustomer" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "acceptedBy", "averageMinutes", "busiestDay", "byStatus", "done", "firstAppointment", "lifts", "mechanics", "mfk", "perHour", "perMonth", "perWeekday", "regulars", "serviceItems", "thisMonth", "thisYear", "tireChange", "total", "waitingCustomer" ]
+      },
       "TaskStatusRequest" : {
         "type" : "object",
         "properties" : {
@@ -15518,6 +15862,60 @@
           }
         },
         "required" : [ "courtesyCar", "task" ]
+      },
+      "TeamStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "employees" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "externalWorkDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "nextBirthday" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/BirthdayDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "notes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sickDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "todoChampion" : {
+            "description" : "Who ticked off the most to-dos",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CountDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "todosDone" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "todosOpen" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "trainingDays" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "vacationDays" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "Working days this year, half days as 0.5"
+          }
+        },
+        "required" : [ "employees", "externalWorkDays", "nextBirthday", "notes", "sickDays", "todoChampion", "todosDone", "todosOpen", "trainingDays", "vacationDays" ]
       },
       "TireHotelSettingsDto" : {
         "type" : "object",
@@ -16017,6 +16415,66 @@
         },
         "required" : [ "customerId", "kind", "season" ]
       },
+      "TireStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "averageDepthMm" : {
+            "type" : [ "number", "null" ],
+            "format" : "double",
+            "description" : "Average tread of the sets in the hotel in mm, null if none measured"
+          },
+          "brands" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "dimensions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "eventsThisYear" : {
+            "type" : "array",
+            "description" : "Stored, retrieved, measured … this year; label = the event kind",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "kinds" : {
+            "type" : "array",
+            "description" : "Sets in the hotel; label = WHEELS or TIRES",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "oldestYear" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "Production year of the oldest set in the hotel"
+          },
+          "seasons" : {
+            "type" : "array",
+            "description" : "Sets in the hotel; label = SUMMER, WINTER or ALL_SEASON",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "sets" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "states" : {
+            "type" : "array",
+            "description" : "Label = IN_HOTEL, MOUNTED or WITH_CUSTOMER",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          }
+        },
+        "required" : [ "averageDepthMm", "brands", "dimensions", "eventsThisYear", "kinds", "oldestYear", "seasons", "sets", "states" ]
+      },
       "TodoAssigneeRequest" : {
         "type" : "object",
         "properties" : {
@@ -16238,6 +16696,26 @@
         },
         "required" : [ "active", "color", "customerId", "description", "editable", "firstRegistration", "fuel", "id", "lastMfk", "licensePlate", "make", "mileageKm", "model", "modelYear", "nextMfk", "source", "swissgarageNumber", "updatedAt", "updatedBy", "version", "vin" ]
       },
+      "VehicleFactDto" : {
+        "type" : "object",
+        "properties" : {
+          "make" : {
+            "type" : [ "string", "null" ]
+          },
+          "mileageKm" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "model" : {
+            "type" : [ "string", "null" ]
+          },
+          "year" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        },
+        "required" : [ "make", "mileageKm", "model", "year" ]
+      },
       "VehicleLocationRequest" : {
         "type" : "object",
         "properties" : {
@@ -16310,6 +16788,77 @@
             "minLength" : 0
           }
         }
+      },
+      "VehicleStatisticsDto" : {
+        "type" : "object",
+        "properties" : {
+          "averageAgeYears" : {
+            "type" : [ "number", "null" ],
+            "format" : "double",
+            "description" : "Average age in years by first registration, null if none known"
+          },
+          "cantons" : {
+            "type" : "array",
+            "description" : "Label = the canton letters of the plate, e.g. \"ZH\"",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "colors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "fuels" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "makes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "models" : {
+            "type" : "array",
+            "description" : "Label = make and model, e.g. \"VW Golf\"",
+            "items" : {
+              "$ref" : "#/components/schemas/CountDto"
+            }
+          },
+          "mostKm" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/VehicleFactDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "oldest" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/VehicleFactDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalKm" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "All known mileages added up"
+          },
+          "withMileage" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "How many vehicles have a mileage"
+          }
+        },
+        "required" : [ "averageAgeYears", "cantons", "colors", "fuels", "makes", "models", "mostKm", "oldest", "total", "totalKm", "withMileage" ]
       }
     }
   }

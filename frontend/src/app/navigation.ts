@@ -28,6 +28,7 @@ export const navigation: NavEntry[] = [
   // "Material" alone read like the shopping list only – stock and suppliers are behind it too (UX M-15)
   { path: '/shopping', title: 'Material & Lager', pages: materialPages },
   { path: '/employees', title: 'Mitarbeiter' },
+  { path: '/statistics', title: 'Statistik' },
   // "System" is for the one who looks after the app – a tile in the settings, not a main entry
   {
     path: '/settings',

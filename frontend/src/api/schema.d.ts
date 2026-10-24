@@ -1120,6 +1120,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * All statistics
+         * @description Tasks, vehicles, customers, tyre hotel, team and material, counted today. Read only.
+         */
+        get: operations["all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stock-items": {
         parameters: {
             query?: never;
@@ -2298,6 +2318,13 @@ export interface components {
             /** @description The car is not back although it should be – it may still be late for the asked period. A warning, not a conflict: the period is free as planned. */
             overdue: components["schemas"]["BookingDto"] | null;
         };
+        BirthdayDto: {
+            /** Format: int32 */
+            age: number;
+            /** Format: date */
+            date: string;
+            name: string;
+        };
         BookingDto: {
             /**
              * Format: date-time
@@ -2405,6 +2432,12 @@ export interface components {
             /** Format: double */
             days: number;
             employeeIds: string[];
+        };
+        CountDto: {
+            /** Format: int64 */
+            count: number;
+            /** @description A name, a fixed value (e.g. a status), a month "2026-10", an hour "07" or a date */
+            label: string;
         };
         CourtesyCarChoice: {
             /** Format: uuid */
@@ -2534,6 +2567,28 @@ export interface components {
             hits: components["schemas"]["CustomerSearchHitDto"][];
             /** @description True if there are more hits than delivered – the user should type more */
             more: boolean;
+        };
+        CustomerStatisticsDto: {
+            cities: components["schemas"]["CountDto"][];
+            /**
+             * Format: int64
+             * @description Customers with a company name
+             */
+            companies: number;
+            firstNames: components["schemas"]["CountDto"][];
+            /**
+             * Format: int64
+             * @description Entered this year
+             */
+            newThisYear: number;
+            /** @description Label = SWISSGARAGE or LOCAL */
+            sources: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            withEmail: number;
+            /** Format: int64 */
+            withMobile: number;
         };
         DataChanged: {
             /** @example employees */
@@ -2764,6 +2819,35 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
+        };
+        MaterialStatisticsDto: {
+            /**
+             * Format: double
+             * @description Average days from ordered to arrived, null if none arrived
+             */
+            averageDeliveryDays: number | null;
+            /** Format: int64 */
+            courtesyBookings: number;
+            courtesyCars: components["schemas"]["CountDto"][];
+            /**
+             * Format: int64
+             * @description Days all courtesy cars were out together
+             */
+            courtesyDays: number;
+            /** Format: int64 */
+            shoppingItems: number;
+            /** @description Label = TO_ORDER, ORDERED or ARRIVED */
+            shoppingStatus: components["schemas"]["CountDto"][];
+            /** @description Label = SPARE_PART, CONSUMABLE or TOOL */
+            stockCategories: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            stockItems: number;
+            /**
+             * Format: int64
+             * @description All pieces in stock added up
+             */
+            stockQuantity: number;
+            suppliers: components["schemas"]["CountDto"][];
         };
         MeasurementRequest: {
             depths: components["schemas"]["DepthsRequest"];
@@ -3150,6 +3234,16 @@ export interface components {
         ShoppingStatusRequest: {
             /** @enum {string} */
             status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+        };
+        StatisticsDto: {
+            customers: components["schemas"]["CustomerStatisticsDto"];
+            material: components["schemas"]["MaterialStatisticsDto"];
+            tasks: components["schemas"]["TaskStatisticsDto"];
+            team: components["schemas"]["TeamStatisticsDto"];
+            tires: components["schemas"]["TireStatisticsDto"];
+            /** Format: date */
+            today: string;
+            vehicles: components["schemas"]["VehicleStatisticsDto"];
         };
         StockItemDto: {
             articleNumber: string | null;
@@ -3555,6 +3649,45 @@ export interface components {
             /** @description True if there are more hits than delivered */
             more: boolean;
         };
+        TaskStatisticsDto: {
+            /** @description Who took the task on ("angenommen von") */
+            acceptedBy: components["schemas"]["CountDto"][];
+            /**
+             * Format: int64
+             * @description Average planned length in minutes (start to "fertig bis"), null if none known
+             */
+            averageMinutes: number | null;
+            busiestDay: components["schemas"]["CountDto"] | null;
+            /** @description Label = the status (RECEIVED, IN_PROGRESS, WAITING_FOR_PARTS, DONE) */
+            byStatus: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            done: number;
+            /**
+             * Format: date
+             * @description Date of the first appointment – since when there are numbers
+             */
+            firstAppointment: string | null;
+            lifts: components["schemas"]["CountDto"][];
+            mechanics: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            mfk: number;
+            perHour: components["schemas"]["CountDto"][];
+            perMonth: components["schemas"]["CountDto"][];
+            perWeekday: number[];
+            /** @description Customers with the most tasks */
+            regulars: components["schemas"]["CountDto"][];
+            serviceItems: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            thisMonth: number;
+            /** Format: int64 */
+            thisYear: number;
+            /** Format: int64 */
+            tireChange: number;
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            waitingCustomer: number;
+        };
         TaskStatusRequest: {
             /** @enum {string} */
             status: "RECEIVED" | "IN_PROGRESS" | "WAITING_FOR_PARTS" | "DONE";
@@ -3590,6 +3723,30 @@ export interface components {
         TaskWithBookingRequest: {
             courtesyCar: components["schemas"]["CourtesyCarChoice"];
             task: components["schemas"]["TaskRequest"];
+        };
+        TeamStatisticsDto: {
+            /** Format: int64 */
+            employees: number;
+            /** Format: double */
+            externalWorkDays: number;
+            nextBirthday: components["schemas"]["BirthdayDto"] | null;
+            /** Format: int64 */
+            notes: number;
+            /** Format: double */
+            sickDays: number;
+            /** @description Who ticked off the most to-dos */
+            todoChampion: components["schemas"]["CountDto"] | null;
+            /** Format: int64 */
+            todosDone: number;
+            /** Format: int64 */
+            todosOpen: number;
+            /** Format: double */
+            trainingDays: number;
+            /**
+             * Format: double
+             * @description Working days this year, half days as 0.5
+             */
+            vacationDays: number;
         };
         TireHotelSettingsDto: {
             /**
@@ -3893,6 +4050,30 @@ export interface components {
              */
             year?: number;
         };
+        TireStatisticsDto: {
+            /**
+             * Format: double
+             * @description Average tread of the sets in the hotel in mm, null if none measured
+             */
+            averageDepthMm: number | null;
+            brands: components["schemas"]["CountDto"][];
+            dimensions: components["schemas"]["CountDto"][];
+            /** @description Stored, retrieved, measured … this year; label = the event kind */
+            eventsThisYear: components["schemas"]["CountDto"][];
+            /** @description Sets in the hotel; label = WHEELS or TIRES */
+            kinds: components["schemas"]["CountDto"][];
+            /**
+             * Format: int32
+             * @description Production year of the oldest set in the hotel
+             */
+            oldestYear: number | null;
+            /** @description Sets in the hotel; label = SUMMER, WINTER or ALL_SEASON */
+            seasons: components["schemas"]["CountDto"][];
+            /** Format: int64 */
+            sets: number;
+            /** @description Label = IN_HOTEL, MOUNTED or WITH_CUSTOMER */
+            states: components["schemas"]["CountDto"][];
+        };
         TodoAssigneeRequest: {
             /** Format: uuid */
             assigneeId?: string | null;
@@ -4011,6 +4192,14 @@ export interface components {
             version: number;
             vin: string | null;
         };
+        VehicleFactDto: {
+            make: string | null;
+            /** Format: int32 */
+            mileageKm: number | null;
+            model: string | null;
+            /** Format: int32 */
+            year: number | null;
+        };
         VehicleLocationRequest: {
             /** @enum {string} */
             location: "AT_WORKSHOP" | "AT_CUSTOMER";
@@ -4037,6 +4226,34 @@ export interface components {
              */
             version?: number;
             vin?: string;
+        };
+        VehicleStatisticsDto: {
+            /**
+             * Format: double
+             * @description Average age in years by first registration, null if none known
+             */
+            averageAgeYears: number | null;
+            /** @description Label = the canton letters of the plate, e.g. "ZH" */
+            cantons: components["schemas"]["CountDto"][];
+            colors: components["schemas"]["CountDto"][];
+            fuels: components["schemas"]["CountDto"][];
+            makes: components["schemas"]["CountDto"][];
+            /** @description Label = make and model, e.g. "VW Golf" */
+            models: components["schemas"]["CountDto"][];
+            mostKm: components["schemas"]["VehicleFactDto"] | null;
+            oldest: components["schemas"]["VehicleFactDto"] | null;
+            /** Format: int64 */
+            total: number;
+            /**
+             * Format: int64
+             * @description All known mileages added up
+             */
+            totalKm: number;
+            /**
+             * Format: int64
+             * @description How many vehicles have a mileage
+             */
+            withMileage: number;
         };
     };
     responses: never;
@@ -9657,6 +9874,71 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ShoppingItemDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StatisticsDto"];
                 };
             };
             /** @description Bad Request */

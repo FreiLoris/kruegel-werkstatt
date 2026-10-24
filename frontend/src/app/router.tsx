@@ -10,6 +10,7 @@ import { ShoppingItemPage } from '../features/shopping/ShoppingItemPage'
 import { ShoppingListPage } from '../features/shopping/ShoppingListPage'
 import { TodosPage } from '../features/todos/TodosPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
+import { StatisticsPage } from '../features/statistics/StatisticsPage'
 import { SwissGarageImportPage } from '../features/swissgarage/SwissGarageImportPage'
 import { AppointmentsPage } from '../features/tasks/AppointmentsPage'
 import { TaskDetailPage } from '../features/tasks/detail/TaskDetailPage'
@@ -71,6 +72,8 @@ export const router = createBrowserRouter([
           { path: 'tires/new', element: <TireStorePage /> },
           { path: 'tires/:id', element: <TireSetPage /> },
           { path: 'tires/:id/edit', element: <TireSetEditPage /> },
+          // 15a: numbers and fun facts about the whole workshop
+          { path: 'statistics', element: <StatisticsPage /> },
           { path: 'system', element: <SystemPage /> },
           { path: 'system/components', element: <ComponentsPage /> },
           { path: '*', element: <NotFoundPage /> },

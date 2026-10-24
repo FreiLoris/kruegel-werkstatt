@@ -9,6 +9,9 @@
  *   Month      "2026-03-15"            → "03.2026"
  *   Local      "2026-10-14T18:00:00"   → "14.10.2026, 18:00"  (business date-time, no time zone)
  *   Duration   90 (minutes)            → "1 Std. 30 Min."
+ *   Decimal    12345.67                → "12’345,7"
+ *   Percent    1 of 3                  → "33 %"
+ *   Month name "2026-03"               → "Mär" / "Mär 2026"
  *
  * Rule: nowhere else in the frontend format date values yourself.
  */
@@ -161,4 +164,36 @@ export function formatDuration(minutes: number): string {
     rest > 0 ? `${rest} Min.` : '',
   ]
   return parts.filter(Boolean).join(' ') || '0 Min.'
+}
+
+/** One decimal with a comma and thousands separators: 12345.67 → "12’345,7", 3 → "3" (no ",0") */
+export function formatDecimal(value: number): string {
+  const [whole, decimals] = (Math.round(value * 10) / 10).toFixed(1).split('.')
+  const text = formatCount(Number(whole))
+  return decimals === '0' ? text : `${text},${decimals}`
+}
+
+/** "33 %" – a part that is not nothing but below 1 % says "< 1 %" instead of "0 %" */
+export function formatPercent(part: number, total: number): string {
+  if (total === 0) return '0 %'
+  const value = (part / total) * 100
+  return value > 0 && value < 1 ? '< 1 %' : `${Math.round(value)} %`
+}
+
+/**
+ * A number with its noun, singular for exactly one: "1 Tag", "2,5 Tage". Decided on the number as
+ * shown – 1.04 is shown as "1" and says "Tag" too.
+ */
+export function formatQuantity(count: number, one: string, many: string): string {
+  const shown = formatDecimal(count)
+  return `${shown} ${shown === '1' ? one : many}`
+}
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+
+/** The short name of a month "2026-03" → "Mär", with the year "Mär 2026" */
+export function formatMonthName(yearMonth: string, withYear = false): string {
+  const [year, month] = yearMonth.split('-')
+  const name = MONTH_NAMES[Number(month) - 1] ?? yearMonth
+  return withYear ? `${name} ${year}` : name
 }

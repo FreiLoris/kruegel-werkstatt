@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, addMinutes, formatCount, formatDuration, formatDate, formatLocalDateTime, formatMonth, formatTime, formatTimestamp, minutesBetween, nowTimeIso, todayIso } from './format'
+import {
+  addDays,
+  addMinutes,
+  formatCount,
+  formatDate,
+  formatDecimal,
+  formatDuration,
+  formatLocalDateTime,
+  formatMonth,
+  formatMonthName,
+  formatPercent,
+  formatQuantity,
+  formatTime,
+  formatTimestamp,
+  minutesBetween,
+  nowTimeIso,
+  todayIso,
+} from './format'
 
 describe('formatDate', () => {
   it('formats an ISO date in Swiss format', () => {
@@ -107,5 +124,31 @@ describe('nowTimeIso', () => {
   it('is Swiss time, also in summer and just after midnight', () => {
     expect(nowTimeIso(new Date('2026-10-15T06:05:00Z'))).toBe('08:05')
     expect(nowTimeIso(new Date('2026-12-31T23:30:00Z'))).toBe('00:30')
+  })
+})
+
+describe('decimals, percent and quantities', () => {
+  it('one decimal with a comma, whole numbers without', () => {
+    expect(formatDecimal(9.24)).toBe('9,2')
+    expect(formatDecimal(3)).toBe('3')
+    expect(formatDecimal(12345.67)).toBe('12’345,7')
+  })
+
+  it('percent: rounded, a tiny part not "0 %"', () => {
+    expect(formatPercent(1, 3)).toBe('33 %')
+    expect(formatPercent(1, 1000)).toBe('< 1 %')
+    expect(formatPercent(0, 0)).toBe('0 %')
+  })
+
+  it('singular for one – also for a number shown as one', () => {
+    expect(formatQuantity(1, 'Tag', 'Tage')).toBe('1 Tag')
+    expect(formatQuantity(1.04, 'Tag', 'Tage')).toBe('1 Tag')
+    expect(formatQuantity(2.5, 'Tag', 'Tage')).toBe('2,5 Tage')
+    expect(formatQuantity(0, 'Tag', 'Tage')).toBe('0 Tage')
+  })
+
+  it('month names', () => {
+    expect(formatMonthName('2026-03')).toBe('Mär')
+    expect(formatMonthName('2026-03', true)).toBe('Mär 2026')
   })
 })
