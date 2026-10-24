@@ -8,10 +8,11 @@ on:
   push:
     branches: [main]
 
-# A new push to the same branch cancels the old run that is still going.
+# A new push to a pull request cancels the old run that is still going. Not on main: a cancelled
+# push would leave "dev" half new, half old.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -97,6 +98,12 @@ jobs:
       - name: Build images
         run: docker compose build
 
+      # The instance file must stay valid with both channels (it is not used anywhere else in CI)
+      - name: Instance compose file valid?
+        run: |
+          docker compose -f deploy/compose.yaml --env-file deploy/release.env.example config --quiet
+          docker compose -f deploy/compose.yaml --env-file deploy/dev.env.example config --quiet
+
       # Only after a merge to main: "dev" for the test instances (deploy/dev.env.example), plus the
       # commit as a tag – to go back to an exact version. "latest" for the NAS only comes with a
       # release (release.yml), which tags these very images.
@@ -113,9 +120,3 @@ jobs:
             docker tag "${image}:dev" "${image}:${GITHUB_SHA::7}"
             docker push "${image}:${GITHUB_SHA::7}"
           done
-
-      # The instance file must stay valid with both channels (it is not used anywhere else in CI)
-      - name: Instance compose file valid?
-        run: |
-          docker compose -f deploy/compose.yaml --env-file deploy/release.env.example config --quiet
-          docker compose -f deploy/compose.yaml --env-file deploy/dev.env.example config --quiet

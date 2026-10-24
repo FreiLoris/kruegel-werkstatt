@@ -28,7 +28,7 @@ folder `docker`.
 - in `kruegeldata/Datensicherung`: new folder `werkstatt`
 
 ### 3. Access to the images
-The repository is private, so its images are too. Either:
+Images of a private repository are private as well. Either:
 
 - **A – images public** (simplest, nothing to renew): on GitHub *Your profile → Packages →*
   each of `kruegel-werkstatt-backend`, `-frontend`, `-backup` *→ Package settings → Change
@@ -36,7 +36,10 @@ The repository is private, so its images are too. Either:
 - **B – images private**: create a token on GitHub (*Settings → Developer settings → Personal
   access tokens (classic)*, only the scope `read:packages`, with an expiry date – note it in the
   calendar). On the NAS once via SSH: `sudo docker login ghcr.io -u FreiLoris` and paste the
-  token as password. When it expires, updates fail until a new token is entered.
+  token as password. When it expires, updates fail until a new token is entered. Watchtower
+  does not see this login: it needs `REPO_USER`/`REPO_PASS` in its environment as well.
+
+Today the images are public (A).
 
 ### 4. Configuration
 On the PC: copy `deploy/release.env.example` to a file named `.env` and set **`DB_PASSWORD`** to
@@ -107,7 +110,9 @@ sign in*):
 
 1. A folder, e.g. `C:\kruegel-werkstatt`, with `deploy/compose.yaml` as `compose.yaml` and
    `deploy/dev.env.example` as `.env` – set `DB_PASSWORD`.
-2. In that folder: `docker compose -p kruegel-werkstatt up -d`
+2. In that folder: `docker compose -p werkstatt-dev up -d` (own project name: on a developer
+   computer it never mixes with the stack built from the repository – stop that one first with
+   `docker compose down` in the repository, both want port 8090)
 3. `http://localhost:8090`
 
 From then on Watchtower fetches every merge by itself (within 5 minutes after CI on `main` is

@@ -46,8 +46,10 @@ jobs:
             echo "::error::Version must look like 1.2.0 (without \"v\"), not \"$VERSION\"."
             exit 1
           }
-          if gh release view "v$VERSION" >/dev/null 2>&1; then
-            echo "::error::v$VERSION exists already – take the next number."
+          last=$(gh release list --limit 1 --exclude-drafts --json tagName --jq '.[0].tagName // ""')
+          last=${last#v}
+          if [[ -n "$last" ]] && [[ "$(printf '%s\n' "$last" "$VERSION" | sort -V | tail -1)" != "$VERSION" || "$last" == "$VERSION" ]]; then
+            echo "::error::v$VERSION is not newer than the last release v$last – take a higher number."
             exit 1
           fi
 
@@ -64,12 +66,21 @@ jobs:
             }
           done
 
-      - name: Tag images v${{ inputs.version }} and latest
+      - name: Tag images v${{ inputs.version }}
         run: |
           for name in backend frontend backup; do
             image="ghcr.io/freiloris/kruegel-werkstatt-${name}"
-            docker buildx imagetools create -t "${image}:v${VERSION}" -t "${image}:latest" "${image}:${GITHUB_SHA::7}"
+            docker buildx imagetools create -t "${image}:v${VERSION}" "${image}:${GITHUB_SHA::7}"
           done
 
       - name: GitHub release with release notes
         run: gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --generate-notes
+
+      # Only now the NAS sees it. Starting again after a failure is safe: the tags are overwritten.
+      - name: Tag images latest
+        run: |
+          for name in backend frontend backup; do
+            image="ghcr.io/freiloris/kruegel-werkstatt-${name}"
+            docker buildx imagetools create -t "${image}:latest" "${image}:v${VERSION}"
+          done
+          echo "v$VERSION = commit ${GITHUB_SHA::7} ($(git log -1 --format=%s))" >> "$GITHUB_STEP_SUMMARY"
