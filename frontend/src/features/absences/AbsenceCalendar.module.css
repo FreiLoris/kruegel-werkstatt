@@ -156,6 +156,26 @@
   text-align: left;
   cursor: pointer;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  gap: var(--space-1);
+  /* for the short bars below */
+  container-type: inline-size;
+}
+
+.barIcon {
+  flex-shrink: 0;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* a day or half a day: only the symbol, in the middle – "K…" said nothing (the tooltip has all) */
+@container (max-width: 3.5rem) {
+  .barText {
+    display: none;
+  }
+
+  .barIcon {
+    margin-inline: auto;
+  }
 }
 
 .bar:hover {
@@ -168,6 +188,7 @@
 }
 
 .barText {
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

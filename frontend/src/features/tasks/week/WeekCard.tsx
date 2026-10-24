@@ -53,7 +53,7 @@ export function WeekCard({ task, mechanic, liftName, dragging = false, courtesyC
       </p>
       <div className={styles.bottom}>
         {task.vehicle?.licensePlate ? (
-          <LicensePlate text={task.vehicle.licensePlate} size="sm" />
+          <LicensePlate text={task.vehicle.licensePlate} size="fit" />
         ) : (
           <span className="muted">{task.vehicle ? task.vehicle.description : 'Fahrzeug offen'}</span>
         )}

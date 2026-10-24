@@ -12,6 +12,7 @@ import styles from './AbsenceCalendarView.module.css'
 import { daysOfMonth, isMonth, monthOf, monthTitle, shiftMonth } from './absenceMonth'
 import { AbsenceDialog, type NewAbsence } from './AbsenceDialog'
 import { CATEGORY_CLASS } from './categoryColors'
+import { CategoryIcon } from './CategoryIcon'
 
 type Dialog = { kind: 'new'; fresh?: NewAbsence } | { kind: 'open'; absence: Absence } | null
 
@@ -66,7 +67,9 @@ export function AbsenceCalendarView() {
         <ul className={styles.legend} aria-label="Legende">
           {(Object.keys(ABSENCE_CATEGORY) as AbsenceCategory[]).map((category) => (
             <li key={category} className={CATEGORY_CLASS[category]}>
-              <span className={styles.swatch} aria-hidden />
+              <span className={styles.swatch} aria-hidden>
+                <CategoryIcon category={category} />
+              </span>
               {ABSENCE_CATEGORY[category]}
             </li>
           ))}

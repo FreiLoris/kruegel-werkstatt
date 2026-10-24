@@ -752,6 +752,16 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
     (`ScrollRestoration`), links into the settings jump to their section.
   - Dialogs: one scrollbar, no box inside the dialog; the courtesy car form gets the whole width;
     "Drucken" menu on the set page; taken colours show the person's initials; customer page in cards.
+- [x] **14l – UX leftovers of 14k** (wish of the user, 2026-10-24)
+  - TV dashboard on a weekend, a holiday or while loading: "Heute da" is missing then, and every
+    area moved up one grid row – the week took its whole height, today and the pinboard were
+    squeezed to a strip. Title and "Heute da" are one block now, the rows stay.
+  - "Ohne Lift" on the TV: the carried-over tasks were one item – "+ 1 weitere" for 40 tasks. Each
+    task is an item now (`CarriedOverItem`), "+ n weitere" counts tasks.
+  - Week view on a tablet with six or seven days: the plate shrinks with its card
+    (`LicensePlate size="fit"`, container query) instead of losing its coat of arms at the edge.
+  - Employee calendar: every bar has its category's symbol (`CategoryIcon`, also in the legend); a
+    bar of one day shows only the symbol instead of "K…".
 
 ---
 

@@ -22,6 +22,11 @@
   font-size: var(--font-size-sm);
 }
 
+/* about 10 em wide: a tenth of the container's width at most (cqi), never larger than "sm" */
+.fit {
+  font-size: min(var(--font-size-sm), 9.6cqi);
+}
+
 .md {
   font-size: var(--font-size-lg);
 }

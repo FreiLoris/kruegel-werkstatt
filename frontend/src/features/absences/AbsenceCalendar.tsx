@@ -8,6 +8,7 @@ import { ABSENCE_CATEGORY, type Absence } from './absenceApi'
 import styles from './AbsenceCalendar.module.css'
 import { barsOf, isBirthday, overlapsAny, selectedDays, type AbsenceBar } from './absenceMonth'
 import { CATEGORY_CLASS } from './categoryColors'
+import { CategoryIcon } from './CategoryIcon'
 
 /** Finger: hold this long before a drag starts (moving earlier = scrolling), as in the other calendars */
 const HOLD_MS = 350
@@ -183,6 +184,7 @@ export function AbsenceCalendar({ employees, absences, days, today, holidays, ca
                     aria-label={describe(employee.name, bar.absence)}
                     onClick={() => onOpen(bar.absence)}
                   >
+                    <CategoryIcon category={bar.absence.category} className={styles.barIcon} />
                     <span className={styles.barText}>{labelOf(bar.absence)}</span>
                   </button>
                 ))}

@@ -13,8 +13,11 @@ const ARMS: Record<string, string> = Object.fromEntries(
  * (reference: real Swiss plate). Foreign plates show the country code, other texts as they are.
  *
  * Accessible: screen readers hear "Kennzeichen SG 197052" instead of single parts.
+ *
+ * `fit`: like `sm`, but smaller as a whole when its container (`container-type: inline-size`) is
+ * too narrow – a narrow day on the tablet shows the whole plate instead of cutting off the arms.
  */
-export function LicensePlate({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' | 'lg' }) {
+export function LicensePlate({ text, size = 'md' }: { text: string; size?: 'sm' | 'fit' | 'md' | 'lg' }) {
   const plate = parsePlate(text)
   const classes = `${styles.plate} ${styles[size]}`
 
