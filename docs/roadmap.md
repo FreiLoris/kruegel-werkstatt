@@ -341,7 +341,8 @@ dropped, and so is the parallel operation in 11e.
   Done 2026-10-07: project `kruegel-werkstatt` in Container Manager, all four containers running,
   app answers on port 8090. Lesson: Container Manager shows no error text – the first start
   failed with `manifest unknown` because of a typo in `APP_VERSION` in `.env`.
-- [ ] **11e – Go-live**
+- [x] **11e – Go-live**
+  Done: the workshop works with the app on the NAS (confirmed by the user 2026-10-24).
   Checklist: own DB password in `.env`, SwissGarage import of both Excel files, create Reto
   (Geschäftsführung) and the team, set up the TV as "Nur ansehen", first backup checked,
   switch off the old app.
