@@ -17,7 +17,22 @@ export const EMPTY_RETURN: ReturnDetails = { rmaNumber: '', documentNumber: '', 
 
 const postalLine = (a: Pick<SupplierAddress, 'postalCode' | 'city'>) => [a.postalCode, a.city].filter(Boolean).join(' ')
 
-const hasPlace = (a: SupplierAddress | null | undefined): a is SupplierAddress => !!a && !!(a.street || a.postalCode || a.city)
+/** An address one can send to: a street, a postal code or a city – a name alone is none */
+export const hasPlace = (a: SupplierAddress | null | undefined): a is SupplierAddress => !!a && !!(a.street || a.postalCode || a.city)
+
+/** "Industriestrasse 1, 6000 Luzern" – '' without */
+export const addressLine = (a: SupplierAddress) => [a.street, postalLine(a)].filter(Boolean).join(', ')
+
+/**
+ * The text size of a label on a sheet, in mm – so that sender, three address lines and the details
+ * fit; small labels (under 30 mm high) leave out captions and details (see {@link isSmallLabel}).
+ */
+export function labelFontSize(heightMm: number, widthMm: number): number {
+  const lines = isSmallLabel(heightMm) ? 6 : 12
+  return Math.max(Math.min((heightMm - 3) / lines, widthMm / 22, 3.4), 1.8)
+}
+
+export const isSmallLabel = (heightMm: number) => heightMm < 30
 
 /**
  * Who gets the parcel: the return address if the supplier has one, else its own address – always

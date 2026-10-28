@@ -35,6 +35,29 @@ describe('SupplierDialog', () => {
     expect(toast.error).toHaveBeenCalledWith('Speichern fehlgeschlagen: Die Änderung passt nicht zu den vorhandenen Daten.')
   })
 
+  it('a return address needs somewhere to go; without the tick none is sent (FB-31)', () => {
+    save.mockClear()
+    render(
+      <ToastContext value={{ success: vi.fn(), error: vi.fn(), info: vi.fn() }}>
+        <ConfirmContext value={() => Promise.resolve(true)}>
+          <SupplierDialog articleCount={0} onClose={vi.fn()} />
+        </ConfirmContext>
+      </ToastContext>,
+    )
+    fireEvent.change(screen.getByLabelText(/Firma/), { target: { value: 'Muster Teile AG' } })
+    fireEvent.change(screen.getAllByLabelText('Ort')[0], { target: { value: 'Luzern' } })
+    fireEvent.click(screen.getByLabelText(/Rücksendungen an eine andere Adresse/))
+    fireEvent.change(screen.getByLabelText('Empfänger'), { target: { value: 'Zentrallager' } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+    expect(save).not.toHaveBeenCalled()
+    expect(screen.getByText('Strasse, PLZ oder Ort angeben – oder das Häkchen entfernen')).toBeTruthy()
+
+    fireEvent.click(screen.getByLabelText(/Rücksendungen an eine andere Adresse/))
+    fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+    expect(save.mock.lastCall?.[0].request).toMatchObject({ address: { city: 'Luzern', street: null }, returnAddress: null })
+  })
+
   it('several contacts and ways of delivery – empty rows are not sent (FB-30)', () => {
     render(
       <ToastContext value={{ success: vi.fn(), error: vi.fn(), info: vi.fn() }}>

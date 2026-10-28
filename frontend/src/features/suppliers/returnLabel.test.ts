@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Company } from '../company/companyApi'
-import { detailLines, EMPTY_RETURN, hasRecipientAddress, recipientLines, senderLines } from './returnLabel'
+import { addressLine, detailLines, EMPTY_RETURN, hasRecipientAddress, isSmallLabel, labelFontSize, recipientLines, senderLines } from './returnLabel'
 import type { Supplier } from './supplierApi'
 
 // fictitious
@@ -16,6 +16,20 @@ describe('returnLabel (FB-31)', () => {
     expect(recipientLines(supplier)).toEqual(['Muster Teile AG', 'Industriestrasse 1', '6000 Luzern'])
     const withReturns = { ...supplier, returnAddress: { name: 'Zentrallager Retouren', street: 'Lagerweg 5', postalCode: '6030', city: 'Ebikon' } }
     expect(recipientLines(withReturns)).toEqual(['Muster Teile AG', 'Zentrallager Retouren', 'Lagerweg 5', '6030 Ebikon'])
+  })
+
+  it('a return address with only a name is none – the label goes to the own address', () => {
+    const nameOnly = { ...supplier, returnAddress: { name: 'Zentrallager', street: null, postalCode: null, city: null } }
+    expect(recipientLines(nameOnly)).toEqual(['Muster Teile AG', 'Industriestrasse 1', '6000 Luzern'])
+    expect(addressLine(supplier.address)).toBe('Industriestrasse 1, 6000 Luzern')
+  })
+
+  it('the text fits the label: smaller on small labels, never tiny', () => {
+    expect(isSmallLabel(21)).toBe(true)
+    expect(labelFontSize(21, 70)).toBe(3)
+    expect(labelFontSize(37, 70)).toBeCloseTo(2.83, 2)
+    expect(labelFontSize(297, 210)).toBe(3.4)
+    expect(labelFontSize(10, 30)).toBe(1.8)
   })
 
   it('says when there is no address to send it to', () => {

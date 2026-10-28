@@ -112,6 +112,12 @@ class SupplierApiTest {
         assertThat(response).bodyJson().extractingPath("$.address.name").isNull();
         assertThat(response).bodyJson().extractingPath("$.returnAddress.name").isEqualTo("Zentrallager Retouren");
 
+        // returns go to the address again: the return address is gone
+        MvcTestResult cleared = send("PUT", "/api/suppliers/" + idOf(response), """
+                { "name": "Muster Teile AG", "version": 0, "address": { "street": "Industriestrasse 1", "postalCode": "6000", "city": "Luzern" } }""");
+        assertThat(cleared).bodyJson().extractingPath("$.returnAddress").isNull();
+        assertThat(cleared).bodyJson().extractingPath("$.address.city").isEqualTo("Luzern");
+
         MvcTestResult without = send("POST", "/api/suppliers", "{ \"name\": \"Ohne Adresse AG\" }");
         assertThat(without).bodyJson().extractingPath("$.address.street").isNull();
         assertThat(without).bodyJson().extractingPath("$.returnAddress").isNull();

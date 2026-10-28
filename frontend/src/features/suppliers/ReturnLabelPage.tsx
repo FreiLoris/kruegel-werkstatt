@@ -7,12 +7,38 @@ import { useCompany, type Company } from '../company/companyApi'
 import { useShoppingItem } from '../shopping/shoppingApi'
 import { spots, spotsFrom, startPositions } from '../tire-hotel/labelSheet'
 import { useLabelFormats, type LabelFormat } from '../tire-hotel/tireHotelApi'
-import { detailLines, EMPTY_RETURN, hasRecipientAddress, recipientLines, RETURN_REASONS, senderLines, type ReturnDetails } from './returnLabel'
+import {
+  detailLines,
+  EMPTY_RETURN,
+  hasRecipientAddress,
+  isSmallLabel,
+  labelFontSize,
+  recipientLines,
+  RETURN_REASONS,
+  senderLines,
+  type ReturnDetails,
+} from './returnLabel'
 import styles from './ReturnLabelPage.module.css'
 import { useSuppliers, type Supplier } from './supplierApi'
 
-/** A whole sheet for the parcel – or one label of a sheet from the settings */
-type Paper = 'A5' | 'A4' | string
+/** A whole page for the parcel – or one label of a sheet from the settings */
+type Paper = { kind: 'page'; size: 'A5' | 'A4' } | { kind: 'sheet'; formatId: string }
+
+/** The device remembers its paper – the same pack lies next to the printer */
+const PAPER_KEY = 'returnLabel.paper'
+
+function rememberedPaper(): Paper {
+  try {
+    const value = localStorage.getItem(PAPER_KEY)
+    if (value === 'A4' || value === 'A5') return { kind: 'page', size: value }
+    if (value) return { kind: 'sheet', formatId: value }
+  } catch {
+    // private window
+  }
+  return { kind: 'page', size: 'A5' }
+}
+
+const paperValue = (paper: Paper) => (paper.kind === 'page' ? paper.size : paper.formatId)
 
 /**
  * A return label for a supplier (FB-31): to its return address (else its own), from us with our
@@ -31,7 +57,7 @@ export function ReturnLabelPage() {
   const item = useShoppingItem(search.get('item') ?? undefined)
   const supplier = suppliers.data?.find((s) => s.id === id)
 
-  const [paper, setPaper] = useState<Paper>('A5')
+  const [paper, setPaper] = useState<Paper>(rememberedPaper)
   const [start, setStart] = useState(1)
   // the article of the position as a suggestion – typed over freely
   const [typed, setTyped] = useState<Partial<ReturnDetails>>({})
@@ -43,7 +69,9 @@ export function ReturnLabelPage() {
   }
   const set = (field: keyof ReturnDetails, value: string) => setTyped({ ...typed, [field]: value })
 
-  const format = formats.data?.find((f) => f.id === paper)
+  // a sheet deleted in the settings: back to the A5 page
+  const format = paper.kind === 'sheet' ? formats.data?.find((f) => f.id === paper.formatId) : undefined
+  const pageSize = paper.kind === 'page' ? paper.size : 'A5'
   const starts = format ? startPositions(format, 1) : []
   const back = item.data ? `/shopping/${item.data.id}` : '/suppliers'
 
@@ -55,10 +83,17 @@ export function ReturnLabelPage() {
         </Button>
         <Select
           label="Papier"
-          value={paper}
+          value={format ? format.id : pageSize}
           onChange={(e) => {
-            setPaper(e.target.value)
+            const value = e.target.value
+            const next: Paper = value === 'A5' || value === 'A4' ? { kind: 'page', size: value } : { kind: 'sheet', formatId: value }
+            setPaper(next)
             setStart(1)
+            try {
+              localStorage.setItem(PAPER_KEY, paperValue(next))
+            } catch {
+              // private window: chosen again next time
+            }
           }}
         >
           <option value="A5">A5 ganze Seite (Paket)</option>
@@ -112,10 +147,10 @@ export function ReturnLabelPage() {
           )}
           {format ? (
             <LabelSheet format={format} start={start} onPickStart={setStart}>
-              <Label supplier={supplier} company={company.data} details={details} />
+              <Label supplier={supplier} company={company.data} details={details} small={isSmallLabel(Number(format.heightMm))} />
             </LabelSheet>
           ) : (
-            <article className={paper === 'A4' ? styles.a4 : styles.a5} aria-label="Rücksende-Etikett">
+            <article className={pageSize === 'A4' ? styles.a4 : styles.a5} aria-label="Rücksende-Etikett">
               <Label supplier={supplier} company={company.data} details={details} />
             </article>
           )}
@@ -125,26 +160,29 @@ export function ReturnLabelPage() {
   )
 }
 
-/** Recipient big, sender small above it, the details below – the same on a page and on a label */
-function Label({ supplier, company, details }: { supplier: Supplier; company: Company; details: ReturnDetails }) {
-  const lines = detailLines(details)
+/**
+ * Recipient big, sender small above it, the details below – the same on a page and on a label. A
+ * small label has room for sender and recipient only (no captions, no details).
+ */
+function Label({ supplier, company, details, small = false }: { supplier: Supplier; company: Company; details: ReturnDetails; small?: boolean }) {
+  const lines = small ? [] : detailLines(details)
   return (
     <div className={styles.label}>
       <p className={styles.sender}>
-        <span className={styles.caption}>Absender</span>
+        {!small && <span className={styles.caption}>Absender</span>}
         {senderLines(company, supplier.customerNumber).join(' · ')}
       </p>
       <p className={styles.recipient}>
-        <span className={styles.caption}>Empfänger</span>
-        {recipientLines(supplier).map((line) => (
-          <span key={line}>{line}</span>
+        {!small && <span className={styles.caption}>Empfänger</span>}
+        {recipientLines(supplier).map((line, i) => (
+          <span key={i}>{line}</span>
         ))}
       </p>
       {lines.length > 0 && (
         <p className={styles.details}>
           <span className={styles.caption}>Rücksendung</span>
-          {lines.map((line) => (
-            <span key={line}>{line}</span>
+          {lines.map((line, i) => (
+            <span key={i}>{line}</span>
           ))}
         </p>
       )}
@@ -162,7 +200,7 @@ function LabelSheet({ format, start, onPickStart, children }: { format: LabelFor
   })
   const [spot] = spotsFrom(format, start, 1)
   return (
-    <article className={styles.sheet} aria-label="Etikettenbogen">
+    <article className={styles.sheet} aria-label="Etikettenbogen" style={{ fontSize: `${labelFontSize(Number(format.heightMm), Number(format.widthMm))}mm` }}>
       {spots(format)
         .filter((s) => s.position !== start)
         .map((s) => (

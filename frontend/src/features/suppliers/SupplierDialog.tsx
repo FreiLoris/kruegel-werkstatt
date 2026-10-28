@@ -23,6 +23,7 @@ import {
   type DeliveryForm,
   type DeliveryProblems,
 } from './supplierForm'
+import { hasPlace } from './returnLabel'
 import { AddressFields, ContactsEditor, DeliveriesEditor } from './SupplierLists'
 import { ORDER_CHANNEL_LABEL, useDeleteSupplier, useSaveSupplier, type OrderChannel, type Supplier, type SupplierRequest } from './supplierApi'
 
@@ -73,6 +74,8 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     address: addressForm(supplier?.address),
     returnAddress: supplier?.returnAddress ? addressForm(supplier.returnAddress) : null,
   }))
+  // FB-31: a return address with only a name has nowhere to go
+  const [returnProblem, setReturnProblem] = useState<string | undefined>()
   // checked before sending (FB-30): a way of delivery without kind, a postage that is no amount
   const [problems, setProblems] = useState<Map<number, DeliveryProblems>>(new Map())
 
@@ -103,7 +106,9 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     setDeliveries(sentDeliveries)
     const found = deliveryProblems(sentDeliveries)
     setProblems(found)
-    if (found.size > 0) return
+    const returnWithoutPlace = addresses.returnAddress !== null && !hasPlace(toAddress(addresses.returnAddress))
+    setReturnProblem(returnWithoutPlace ? 'Strasse, PLZ oder Ort angeben – oder das Häkchen entfernen' : undefined)
+    if (found.size > 0 || returnWithoutPlace) return
     once((done) =>
       save.mutate(
         { id: supplier?.id, request: toRequest(values, sentContacts, sentDeliveries, addresses, supplier?.version) },
@@ -187,7 +192,15 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
             onChange={(e) => setAddresses({ ...addresses, returnAddress: e.target.checked ? addressForm(null) : null })}
           />
           {addresses.returnAddress && (
-            <AddressFields address={addresses.returnAddress} withName onChange={(returnAddress) => setAddresses({ ...addresses, returnAddress })} />
+            <AddressFields
+              address={addresses.returnAddress}
+              withName
+              error={returnProblem}
+              onChange={(returnAddress) => {
+                setAddresses({ ...addresses, returnAddress })
+                setReturnProblem(undefined)
+              }}
+            />
           )}
         </fieldset>
         <div className={styles.row}>

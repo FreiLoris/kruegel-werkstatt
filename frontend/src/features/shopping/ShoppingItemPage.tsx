@@ -212,8 +212,8 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
             ))}
           </Select>
         </div>
-        {/* FB-31: wrong or broken – back to the supplier, with this part on the label */}
-        {item.supplierId && (
+        {/* FB-31: wrong or broken – back to the supplier, with this part on the label (the saved supplier only) */}
+        {item.supplierId && form.supplierId === item.supplierId && (
           <p>
             <Link to={`/suppliers/${item.supplierId}/return-label?item=${item.id}`}>Rücksende-Etikett drucken</Link>
           </p>

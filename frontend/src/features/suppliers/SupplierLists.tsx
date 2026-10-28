@@ -11,17 +11,20 @@ export function AddressFields({
   address,
   onChange,
   withName = false,
+  error,
 }: {
   address: AddressForm
   onChange: (address: AddressForm) => void
   withName?: boolean
+  /** shown at the street – the address as a whole */
+  error?: string
 }) {
   const set = (field: keyof AddressForm, value: string) => onChange({ ...address, [field]: value })
   return (
     <>
       {withName && <TextField label="Empfänger" maxLength={100} placeholder="z. B. Zentrallager Retouren" value={address.name} onChange={(e) => set('name', e.target.value)} />}
       <div className={styles.address}>
-        <TextField label="Strasse" maxLength={100} autoComplete="off" value={address.street} onChange={(e) => set('street', e.target.value)} />
+        <TextField label="Strasse" maxLength={100} autoComplete="off" value={address.street} onChange={(e) => set('street', e.target.value)} error={error} />
         <TextField label="PLZ" maxLength={10} autoComplete="off" value={address.postalCode} onChange={(e) => set('postalCode', e.target.value)} />
         <TextField label="Ort" maxLength={100} autoComplete="off" value={address.city} onChange={(e) => set('city', e.target.value)} />
       </div>
