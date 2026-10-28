@@ -26,6 +26,7 @@ public record CustomerDto(
         @Schema(types = {"string", "null"}) String email,
         @Schema(description = "False for SwissGarage customers – they are changed in SwissGarage") boolean editable,
         boolean active,
+        @Schema(description = "FB-27: blocked or former in SwissGarage, kept as the holder of a vehicle – shown greyed") boolean former,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last (empty: import/sample data)") UUID updatedBy) {
 
@@ -33,7 +34,7 @@ public record CustomerDto(
         CustomerDetails d = c.getDetails();
         return new CustomerDto(c.getId(), c.getVersion(), c.getSource(), c.getSwissgarageNumber(), d.displayName(),
                 d.salutation(), d.firstName(), d.lastName(), d.company(), d.addition(), d.street(), d.postalCode(),
-                d.city(), d.phone(), d.mobile(), d.email(), !c.isFromSwissGarage(), c.isActive(),
+                d.city(), d.phone(), d.mobile(), d.email(), !c.isFromSwissGarage(), c.isActive(), c.isFormer(),
                 c.getUpdatedAt(), c.getUpdatedBy());
     }
 }

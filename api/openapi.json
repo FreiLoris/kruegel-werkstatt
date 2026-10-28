@@ -14237,6 +14237,10 @@
           "firstName" : {
             "type" : [ "string", "null" ]
           },
+          "former" : {
+            "type" : "boolean",
+            "description" : "FB-27: blocked or former in SwissGarage, kept as the holder of a vehicle – shown greyed"
+          },
           "id" : {
             "type" : "string",
             "format" : "uuid"
@@ -14281,7 +14285,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "active", "addition", "city", "company", "displayName", "editable", "email", "firstName", "id", "lastName", "mobile", "phone", "postalCode", "salutation", "source", "street", "swissgarageNumber", "updatedAt", "updatedBy", "version" ]
+        "required" : [ "active", "addition", "city", "company", "displayName", "editable", "email", "firstName", "former", "id", "lastName", "mobile", "phone", "postalCode", "salutation", "source", "street", "swissgarageNumber", "updatedAt", "updatedBy", "version" ]
       },
       "CustomerRequest" : {
         "type" : "object",

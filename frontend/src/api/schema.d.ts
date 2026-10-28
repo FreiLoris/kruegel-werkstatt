@@ -2724,6 +2724,8 @@ export interface components {
             editable: boolean;
             email: string | null;
             firstName: string | null;
+            /** @description FB-27: blocked or former in SwissGarage, kept as the holder of a vehicle – shown greyed */
+            former: boolean;
             /** Format: uuid */
             id: string;
             lastName: string | null;

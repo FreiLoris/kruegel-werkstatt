@@ -1,5 +1,6 @@
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
 import type { Customer, CustomerSearchHit, Vehicle } from '../../customers/customerSearchApi'
+import { FormerBadge } from '../../customers/FormerBadge'
 import styles from './CustomerHitList.module.css'
 
 interface CustomerHitListProps {
@@ -23,7 +24,10 @@ export function CustomerHitList({ hits, onCustomer, onVehicle, onVehicleWithoutH
           <li key={c?.id ?? hit.vehicles[0]?.id} className={styles.hit}>
             {c ? (
               <button type="button" className={styles.customer} onClick={() => onCustomer(c)}>
-                <span className={styles.name}>{c.displayName}</span>
+                <span className={c.former ? `${styles.name} muted` : styles.name}>
+                  {c.displayName}
+                  <FormerBadge customer={c} />
+                </span>
                 <span className={styles.sub}>
                   {[c.street, [c.postalCode, c.city].filter(Boolean).join(' '), c.mobile ?? c.phone].filter(Boolean).join(' · ')}
                 </span>

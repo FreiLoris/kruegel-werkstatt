@@ -10,6 +10,7 @@ import { MIN_SEARCH_LENGTH, useCustomerSearch, type Customer, type Vehicle } fro
 import { CustomerHistory } from './CustomerHistory'
 import { CustomerHitList } from './CustomerHitList'
 import styles from './CustomerStep.module.css'
+import { FormerBadge } from '../../customers/FormerBadge'
 import { VehiclePicker } from './VehiclePicker'
 import type { CustomerStepValue } from './wizardState'
 
@@ -50,7 +51,10 @@ export function CustomerStep({ value, onChange }: { value: CustomerStepValue; on
           <section className={styles.card} aria-label="Gewählter Kunde">
             <div className={styles.cardHeader}>
               <div>
-                <h2 className={styles.customerName}>{customer.displayName}</h2>
+                <h2 className={styles.customerName}>
+                  {customer.displayName}
+                  <FormerBadge customer={customer} />
+                </h2>
                 <p className="muted">
                   {customer.source === 'SWISSGARAGE' ? `SwissGarage Nr. ${customer.swissgarageNumber}` : 'Laufkundschaft (nur in der App)'}
                 </p>

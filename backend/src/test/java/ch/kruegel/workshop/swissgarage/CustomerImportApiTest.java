@@ -159,9 +159,35 @@ class CustomerImportApiTest {
         assertThat(response).bodyJson().extractingPath("$.deactivated").isEqualTo(0);
         assertThat(customers.findById(empty.getId()).orElseThrow().getDetails().city()).isEqualTo("Neftenbach");
         assertThat(customers.findById(blocked.getId()).orElseThrow().isActive()).isTrue();
+        // FB-27: blocked or former – kept and marked; a supplier with a car or an empty kind is no former customer
+        assertThat(customers.findById(blocked.getId()).orElseThrow().isFormer()).isTrue();
+        assertThat(customers.findById(empty.getId()).orElseThrow().isFormer()).isFalse();
+        assertThat(customers.findById(supplier.getId()).orElseThrow().isFormer()).isFalse();
         assertThat(customers.findById(notInTheFile.getId()).orElseThrow().isActive()).isTrue();
         assertThat(customers.findById(supplier.getId()).orElseThrow().isActive()).isTrue();
         assertThat(customers.findBySwissgarageNumber("3001")).isEmpty();
+    }
+
+    @Test
+    void aFormerHolderIsMarkedOnceAndUnmarkedWhenAGarageCustomerAgain() {
+        Customer holder = customers.save(CustomerTestData.swissGarage("2002", "Alt"));
+        vehicles.save(Vehicle.fromSwissGarage("v2002", holder,
+                new VehicleDetails("SH 2002", "VW", null, null, null, null, null, null, null, null)));
+        byte[] blocked = TestExcel.with(HEADERS)
+                .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
+                .row("Garage-Kunde gesperrt/ehemalig", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .bytes();
+
+        assertThat(upload(blocked, "a.xlsx")).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        // the same file again: nothing changed
+        assertThat(upload(blocked, "a.xlsx")).bodyJson().extractingPath("$.unchanged").isEqualTo(2);
+
+        MvcTestResult again = upload(TestExcel.with(HEADERS)
+                .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
+                .row("Garage-Kunde", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .bytes(), "b.xlsx");
+        assertThat(again).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        assertThat(customers.findById(holder.getId()).orElseThrow().isFormer()).isFalse();
     }
 
     @Test

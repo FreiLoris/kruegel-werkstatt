@@ -30,13 +30,13 @@ class CustomerSearchRepository {
         this.jdbc = jdbc;
     }
 
-    /** Active customers that match all words, sorted by name. */
+    /** Active customers that match all words, sorted by name – former ones (FB-27) after the others. */
     List<UUID> customers(List<String> words, int limit) {
         return jdbc.sql("""
                         SELECT c.id
                         FROM customer c JOIN customer_search s ON s.id = c.id
                         WHERE %s
-                        ORDER BY coalesce(c.last_name, c.company), c.first_name, c.id
+                        ORDER BY c.former, coalesce(c.last_name, c.company), c.first_name, c.id
                         LIMIT :limit""".formatted(ALL_WORDS_MATCH))
                 .param("words", words.toArray(String[]::new))
                 .param("limit", limit)
