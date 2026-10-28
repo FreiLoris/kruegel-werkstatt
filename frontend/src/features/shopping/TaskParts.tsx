@@ -1,4 +1,4 @@
-import { useTaskShoppingItems } from './shoppingApi'
+import { isClosed, useTaskShoppingItems } from './shoppingApi'
 import { ShoppingEntryForm } from './ShoppingEntryForm'
 import { ShoppingTable } from './ShoppingTable'
 import styles from './Shopping.module.css'
@@ -14,7 +14,8 @@ export function TaskParts({ taskId, canEdit }: { taskId: string; canEdit: boolea
   if (error) return <p className="muted">Teile konnten nicht geladen werden: {error.message}</p>
   if (!items) return <p className="muted">Lade …</p>
 
-  const allArrived = items.length > 0 && items.every((i) => i.status === 'ARRIVED')
+  // a cancelled part is not waited for
+  const allArrived = items.some((i) => i.status === 'ARRIVED') && items.every((i) => isClosed(i.status))
   return (
     <>
       {items.length === 0 ? (

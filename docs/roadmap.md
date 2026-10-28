@@ -803,6 +803,17 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   window's – the card "Auftrag gespeichert" is narrow on a wide screen, the fields ran out of it.
   Narrow: description, number, quantity in one row, the three selects in the next; with room all
   six in one row; very narrow one per line. The card keeps a wide child inside its frame.
+- [x] **16c – More states of an order** (FB-28)
+  Done: zu bestellen, Offerte angefragt, Rückfrage – wir liefern Infos, Offerte erhalten – entscheiden,
+  bestellt, geliefert, storniert (V47; the old ones keep their state). Each line says who is up – "wir
+  sind dran" or "wartet auf Lieferant" – the open list counts both; a Rückfrage nobody orders stands
+  out. Cancelled goes to "Erledigt", struck through, keeps its day of order and is not missing on
+  the task. A change of state on the position's page takes a short note for the history.
+  The to-do of "Bestellen durch" is open exactly while we are up and says what to do ("Bestellen: …",
+  "Infos an Lieferant liefern: …", "Offerte prüfen: …"); while the supplier is up it is done – a
+  deliberate change to the wish "bleibt offen bzw. wartet": the to-do list shows only what someone
+  has to do. Ticking off a Rückfrage gives it back to the supplier (Offerte angefragt), any other
+  orders it.
 
 ---
 

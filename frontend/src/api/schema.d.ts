@@ -1036,7 +1036,7 @@ export interface paths {
         };
         /**
          * Positions of the shopping list
-         * @description Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks ("Ohne Termin").
+         * @description Open (default): not ordered yet first, then ordered – each oldest first; `arrived=true`: the latest 200 done ones (arrived or cancelled). `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks ("Ohne Termin").
          */
         get: operations["list_6"];
         put?: never;
@@ -3142,7 +3142,7 @@ export interface components {
              * @description Only a change of state: the new one
              * @enum {string|null}
              */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED" | null;
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED" | null;
             /** @description Only a note */
             text: string | null;
         };
@@ -3174,7 +3174,7 @@ export interface components {
              */
             recordedById: string | null;
             /** @enum {string} */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
             /** Format: uuid */
             stockItemId: string | null;
             /** Format: uuid */
@@ -3212,7 +3212,7 @@ export interface components {
              * @description Missing = to order when new, unchanged when editing
              * @enum {string}
              */
-            status?: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status?: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
             /** Format: uuid */
             stockItemId?: string | null;
             /** Format: uuid */
@@ -3232,8 +3232,10 @@ export interface components {
             text: string;
         };
         ShoppingStatusRequest: {
+            /** @description Optional note for the history, e.g. "Offerte per Mail angefragt" */
+            note?: string | null;
             /** @enum {string} */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
         };
         StatisticsDto: {
             customers: components["schemas"]["CustomerStatisticsDto"];

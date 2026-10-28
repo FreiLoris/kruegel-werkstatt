@@ -1,6 +1,7 @@
 package ch.kruegel.workshop.shopping;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,14 +37,17 @@ class ShoppingController {
         this.service = service;
     }
 
-    record ShoppingStatusRequest(@NotNull ShoppingStatus status) {
+    record ShoppingStatusRequest(
+            @NotNull ShoppingStatus status,
+            @Schema(types = {"string", "null"}, description = "Optional note for the history, e.g. \"Offerte per Mail angefragt\"")
+            @Size(max = ShoppingEntry.TEXT_MAX) String note) {
     }
 
     record ShoppingNoteRequest(@NotBlank @Size(max = ShoppingEntry.TEXT_MAX) String text) {
     }
 
-    @Operation(summary = "Positions of the shopping list", description = "Not arrived yet (default): to order first, then ordered – "
-            + "each oldest first; `arrived=true`: the latest " + ShoppingService.ARRIVED_LIMIT + " arrived ones. "
+    @Operation(summary = "Positions of the shopping list", description = "Open (default): not ordered yet first, then ordered – "
+            + "each oldest first; `arrived=true`: the latest " + ShoppingService.ARRIVED_LIMIT + " done ones (arrived or cancelled). "
             + "`taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").")
     @GetMapping
     List<ShoppingItemDto> list(@RequestParam(defaultValue = "false") boolean arrived, @RequestParam(required = false) UUID taskId,
@@ -80,7 +84,7 @@ class ShoppingController {
     @Operation(summary = "Change the state", description = "No version needed. The to-do of \"Bestellen durch\" is done once ordered.")
     @PutMapping("/{id}/status")
     ShoppingItemDto changeStatus(@PathVariable UUID id, @Valid @RequestBody ShoppingStatusRequest request) {
-        return service.changeStatus(id, request.status());
+        return service.changeStatus(id, request.status(), request.note());
     }
 
     @Operation(summary = "Add a note", description = "E.g. what the supplier said – with who and when.")

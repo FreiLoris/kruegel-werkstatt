@@ -7,7 +7,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { useToast } from '../../components/ui/toastContext'
 import { useAllEmployees } from '../employees/employeeApi'
 import { NameBadge } from '../employees/NameBadge'
-import { SHOPPING_STATUS, useChangeShoppingStatus, useDeleteShoppingItem, type ShoppingItem, type ShoppingStatus } from './shoppingApi'
+import { isClosed, SHOPPING_STATUS, turnOf, useChangeShoppingStatus, useDeleteShoppingItem, type ShoppingItem, type ShoppingStatus } from './shoppingApi'
 import { ShoppingEntryForm } from './ShoppingEntryForm'
 import { taskLabel } from './shoppingText'
 import styles from './Shopping.module.css'
@@ -20,6 +20,20 @@ interface ShoppingTableProps {
   label: string
   /** shown in place of extra info under the description, e.g. the supplier's article number */
   detailOf?: (item: ShoppingItem) => string | null
+}
+
+/**
+ * Who is up (FB-28). A Rückfrage nobody answers – no one orders, so no to-do – stands out.
+ */
+function Turn({ item }: { item: ShoppingItem }) {
+  const turn = turnOf(item.status)
+  if (!turn) return null
+  const unanswered = item.status === 'INFO_NEEDED' && !item.orderById
+  return (
+    <span className={[styles.turn, styles[turn], unanswered && styles.unanswered].filter(Boolean).join(' ')}>
+      {unanswered ? 'Rückfrage – niemand zugewiesen' : turn === 'us' ? 'wir sind dran' : 'wartet auf Lieferant'}
+    </span>
+  )
 }
 
 /**
@@ -78,7 +92,7 @@ export function ShoppingTable({ items, canEdit, showTask = false, label, detailO
           const orderer = person(item.orderById)
           const detail = detailOf?.(item)
           return (
-            <tr key={item.id} className={item.status === 'ARRIVED' ? styles.arrived : undefined}>
+            <tr key={item.id} className={[isClosed(item.status) && styles.arrived, item.status === 'CANCELLED' && styles.cancelled].filter(Boolean).join(' ') || undefined}>
               <td>
                 <Link to={`/shopping/${item.id}`} className={styles.itemLink}>
                   {item.description}
@@ -111,6 +125,7 @@ export function ShoppingTable({ items, canEdit, showTask = false, label, detailO
                 ) : (
                   <span className={[styles.status, styles[item.status]].join(' ')}>{SHOPPING_STATUS[item.status]}</span>
                 )}
+                <Turn item={item} />
               </td>
               <td>
                 <span className={styles.people}>

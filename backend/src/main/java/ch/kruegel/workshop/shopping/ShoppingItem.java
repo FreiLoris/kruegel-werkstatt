@@ -81,7 +81,7 @@ public class ShoppingItem extends BaseEntity {
         if (newStatus != null) {
             changeStatus(newStatus, today);
         }
-        if (status == ShoppingStatus.TO_ORDER) {
+        if (status.isBeforeOrder()) {
             orderedOn = null;
         } else if (details.orderedOn() != null) {
             orderedOn = details.orderedOn();
@@ -89,8 +89,8 @@ public class ShoppingItem extends BaseEntity {
     }
 
     /**
-     * Ordered, arrived – or back. Ordered remembers the day (unless one is entered); back to "to
-     * order" forgets it. Kept in the history.
+     * Ordered, arrived – or back. Ordered remembers the day (unless one is entered); back to a state
+     * before the order forgets it, cancelled keeps it. Kept in the history.
      *
      * @return false when it already was in that state
      */
@@ -100,7 +100,7 @@ public class ShoppingItem extends BaseEntity {
             return false;
         }
         switch (newStatus) {
-            case TO_ORDER -> {
+            case TO_ORDER, QUOTE_REQUESTED, INFO_NEEDED, QUOTE_RECEIVED -> {
                 orderedOn = null;
                 arrivedOn = null;
             }
@@ -109,6 +109,7 @@ public class ShoppingItem extends BaseEntity {
                 arrivedOn = null;
             }
             case ARRIVED -> arrivedOn = today;
+            case CANCELLED -> arrivedOn = null;
         }
         status = newStatus;
         entries.add(ShoppingEntry.status(this, newStatus));

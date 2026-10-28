@@ -11,11 +11,36 @@ export type ShoppingStatus = ShoppingItem['status']
 /** Topic for query keys and live updates – same text as in the backend (ShoppingService.TOPIC). */
 const TOPIC = 'shopping-items'
 
+/** In their usual order (FB-28) – the selects show them like this */
 export const SHOPPING_STATUS: Record<ShoppingStatus, string> = {
   TO_ORDER: 'zu bestellen',
+  QUOTE_REQUESTED: 'Offerte angefragt',
+  INFO_NEEDED: 'Rückfrage – wir liefern Infos',
+  QUOTE_RECEIVED: 'Offerte erhalten – entscheiden',
   ORDERED: 'bestellt',
   ARRIVED: 'geliefert',
+  CANCELLED: 'storniert',
 }
+
+/** Who is up (FB-28): we – to order, give information, decide on the quote – or the supplier */
+export type Turn = 'us' | 'supplier'
+
+export function turnOf(status: ShoppingStatus): Turn | null {
+  switch (status) {
+    case 'TO_ORDER':
+    case 'INFO_NEEDED':
+    case 'QUOTE_RECEIVED':
+      return 'us'
+    case 'QUOTE_REQUESTED':
+    case 'ORDERED':
+      return 'supplier'
+    default:
+      return null
+  }
+}
+
+/** Nothing more to happen: arrived or cancelled – on the list "Erledigt" */
+export const isClosed = (status: ShoppingStatus) => status === 'ARRIVED' || status === 'CANCELLED'
 
 /** After a change: the list – and the to-dos, the one who orders has one (FB-20) */
 function refresh(queryClient: QueryClient) {
@@ -78,12 +103,12 @@ export function useSaveShoppingItem() {
   })
 }
 
-/** Ordered, arrived or back – no version, like ticking off a to-do. */
+/** Another state – no version, like ticking off a to-do; with a note for the history if given (FB-28). */
 export function useChangeShoppingStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: ShoppingStatus }) =>
-      dataOrThrow(await api.PUT('/api/shopping-items/{id}/status', { params: { path: { id } }, body: { status } })),
+    mutationFn: async ({ id, status, note }: { id: string; status: ShoppingStatus; note?: string }) =>
+      dataOrThrow(await api.PUT('/api/shopping-items/{id}/status', { params: { path: { id } }, body: { status, note: note ?? null } })),
     onSettled: () => refresh(queryClient),
   })
 }

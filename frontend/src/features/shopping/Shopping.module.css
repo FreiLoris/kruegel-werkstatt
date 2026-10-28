@@ -180,16 +180,54 @@ span.status {
   align-items: center;
 }
 
+/* colours of the states (FB-28, as proposed by the workshop) */
 .TO_ORDER {
+  border-left-color: var(--color-text-muted);
+}
+
+.QUOTE_REQUESTED {
+  border-left-color: var(--color-info);
+}
+
+.INFO_NEEDED {
   border-left-color: var(--color-warning);
 }
 
+.QUOTE_RECEIVED {
+  border-left-color: var(--color-accent);
+}
+
 .ORDERED {
-  border-left-color: var(--color-info);
+  border-left-color: #a78bfa;
 }
 
 .ARRIVED {
   border-left-color: var(--color-success);
+}
+
+.CANCELLED {
+  border-left-color: var(--color-border-strong);
+}
+
+/* who is up, under the state */
+.turn {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.us {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.unanswered {
+  color: var(--color-warning);
+}
+
+.cancelled td:first-child a {
+  text-decoration: line-through;
 }
 
 .people {

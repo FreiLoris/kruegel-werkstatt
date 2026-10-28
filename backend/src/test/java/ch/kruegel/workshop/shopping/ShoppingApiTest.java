@@ -203,6 +203,57 @@ class ShoppingApiTest {
     }
 
     @Test
+    void theTodoIsOpenWhileWeAreUpAndSaysWhatToDo() {
+        // FB-28: quote asked → the supplier is up; Rückfrage / quote received → we are
+        String item = idOf(create("\"description\": \"Werkzeugkiste\", \"orderById\": \"%s\"".formatted(erich)));
+
+        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"QUOTE_REQUESTED\", \"note\": \"Offerte per Mail angefragt\" }");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNotNull();
+        assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isNull();
+
+        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"INFO_NEEDED\" }");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNull();
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].text").isEqualTo("Infos an Lieferant liefern: Werkzeugkiste");
+
+        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"QUOTE_RECEIVED\" }");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].text").isEqualTo("Offerte prüfen: Werkzeugkiste");
+
+        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"ORDERED\" }");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNotNull();
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].text").isEqualTo("Bestellen: Werkzeugkiste");
+
+        // the note right after its state in the history
+        MvcTestResult history = mvc.get().uri("/api/shopping-items/" + item + "/entries").exchange();
+        assertThat(history).bodyJson().extractingPath("$[0].status").isEqualTo("QUOTE_REQUESTED");
+        assertThat(history).bodyJson().extractingPath("$[1].text").isEqualTo("Offerte per Mail angefragt");
+    }
+
+    @Test
+    void tickingOffTheRueckfrageGivesItBackToTheSupplier() {
+        String item = idOf(create("\"description\": \"Werkzeugkiste\", \"status\": \"INFO_NEEDED\", \"orderById\": \"%s\"".formatted(erich)));
+        String todo = read(todoOf(erich), "$[0].id");
+
+        send("PUT", "/api/todos/" + todo + "/done", "{ \"done\": true }");
+
+        assertThat(get(item)).bodyJson().extractingPath("$.status").isEqualTo("QUOTE_REQUESTED");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNotNull();
+    }
+
+    @Test
+    void cancelledIsDoneKeepsTheDayOfOrderAndIsListedWithTheArrivedOnes() {
+        String item = idOf(create("\"description\": \"Felgen\", \"status\": \"ORDERED\", \"orderedOn\": \"2026-10-20\", \"orderById\": \"%s\""
+                .formatted(erich)));
+
+        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"CANCELLED\" }");
+
+        assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isEqualTo("2026-10-20");
+        assertThat(get(item)).bodyJson().extractingPath("$.arrivedOn").isNull();
+        assertThat(mvc.get().uri("/api/shopping-items").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri("/api/shopping-items?arrived=true").exchange()).bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactly(item);
+    }
+
+    @Test
     void theTaskIsFoundByItsParts() {
         create("\"description\": \"Kupplungssatz\", \"taskId\": \"%s\"".formatted(task));
 

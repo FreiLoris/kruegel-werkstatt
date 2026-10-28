@@ -1,4 +1,4 @@
-import type { ShoppingItem } from '../../shopping/shoppingApi'
+import { isClosed, type ShoppingItem } from '../../shopping/shoppingApi'
 import { quantityText } from '../../shopping/shoppingText'
 import type { AnyTask } from '../taskApi'
 
@@ -27,7 +27,7 @@ export function partsByTask(items: ShoppingItem[]): Map<string, TaskParts> {
   for (const item of items) {
     if (!item.task) continue
     const task = parts.get(item.task.id) ?? parts.set(item.task.id, { missing: [], arrived: true }).get(item.task.id)!
-    if (item.status !== 'ARRIVED') {
+    if (!isClosed(item.status)) {
       task.missing.push(quantityText(item))
       task.arrived = false
     }
