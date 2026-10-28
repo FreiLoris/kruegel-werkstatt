@@ -870,8 +870,7 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   tyres on as a new set (season of the ones they replace) and proposes to dispose of the old ones:
   a new state "Entsorgt" (kept with its history, never offered again, never the car's current set).
   Open (FB-25b): "nur 2 Reifen" with the axle, data per wheel; the hint "Reifen noch nicht geliefert";
-  disposing of worn tyres of a set lying in the hotel (only a set on the car can be disposed of now);
-  a change of dimension or count after the first save is not carried over to the order position.
+  disposing of worn tyres of a set lying in the hotel (only a set on the car can be disposed of now).
 - [x] **16j – Test page for the whiteboard** (FB-22, first step)
   Done: `/board-test.html`, a plain page in old JavaScript (ES5, no build) that the Flip's Tizen
   browser shows even if the app would not start there: viewport, pixel ratio, touch points, the
@@ -890,6 +889,12 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   the day view says "Reifen fehlen" and the task "Reifen noch nicht geliefert" above the tyre change
   (until it is booked). Only tasks of the day with new tyres ask the shopping list; a done task shows
   nothing any more, carried-over ones show no flags.
+- [x] **16m – The order follows the task** (FB-25)
+  Done: dimension or count of the new tyres changed on the task – the position on the shopping list
+  follows while it is still to order and as the task left it (no number or article chosen, not
+  renamed; noted "Vom Auftrag übernommen"). Otherwise – changed by hand, asked for, ordered, arrived –
+  it keeps what it says and gets the note "Auftrag geändert auf … – bitte prüfen"; a renamed one is
+  never ordered twice. Known limit: the position is recognised by its text "Reifen …".
 
 ---
 

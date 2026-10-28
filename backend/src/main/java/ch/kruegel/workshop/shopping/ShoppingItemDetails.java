@@ -38,6 +38,12 @@ public record ShoppingItemDetails(
     static final int PART_NUMBER_MAX = 60;
     static final int QUANTITY_MAX = 9999;
 
+    /** The same position with another description and quantity */
+    ShoppingItemDetails withOrder(String newDescription, int newQuantity) {
+        return new ShoppingItemDetails(newDescription, partNumber, newQuantity, recordedBy, orderBy, task, stockItemId, supplierId, orderedOn,
+                expectedOn);
+    }
+
     public ShoppingItemDetails {
         description = Texts.checkMaxLength(Texts.emptyToNull(description), DESCRIPTION_MAX, "Description");
         if (description == null) {
