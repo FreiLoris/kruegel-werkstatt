@@ -1,0 +1,23 @@
+/* The whole screen – the page underneath is not readable, not even blurred: it may be someone else's */
+.lock {
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  max-height: none;
+  margin: 0;
+  padding: var(--space-8) var(--space-4);
+  border: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.lock::backdrop {
+  background: var(--color-background);
+}
+
+.lock > * {
+  max-width: 48rem;
+  margin-inline: auto;
+}

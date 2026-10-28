@@ -14,6 +14,7 @@ vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
 vi.mock('./CustomerQuickSearch', () => ({ CustomerQuickSearch: () => null }))
 vi.mock('../features/employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../features/company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Testgarage', logoUrl: null } }) }))
+vi.mock('../features/screenlock/screenLockApi', () => ({ useScreenLockSettings: () => ({ data: { version: 0, lockMinutes: 5 } }) }))
 
 function renderAt(path: string) {
   const router = createMemoryRouter(
@@ -126,5 +127,36 @@ describe('AppLayout', () => {
     const nav = screen.getByRole('navigation', { name: 'Hauptnavigation' })
     const active = [...nav.querySelectorAll('a')].filter((link) => link.className.includes('active'))
     expect(active.map((link) => link.textContent)).toEqual([title])
+  })
+
+  it('after five minutes without use a person is asked who is at the device – the TV never (FB-29)', () => {
+    vi.useFakeTimers()
+    device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
+    renderAt('/tasks')
+
+    act(() => vi.advanceTimersByTime(4 * 60_000))
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
+    act(() => vi.advanceTimersByTime(60_000 + 5_000))
+    expect(screen.getByText('Wer ist am Gerät?')).toBeTruthy()
+    // the page stays underneath
+    expect(screen.getByText('Termine-Seite')).toBeTruthy()
+  })
+
+  it('using the device restarts the wait', () => {
+    vi.useFakeTimers()
+    device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
+    renderAt('/tasks')
+    act(() => vi.advanceTimersByTime(4 * 60_000))
+    fireEvent.keyDown(window, { key: 'a' })
+    act(() => vi.advanceTimersByTime(2 * 60_000))
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
+  })
+
+  it('the TV is never locked', () => {
+    vi.useFakeTimers()
+    device = { kind: 'viewOnly' }
+    renderAt('/tasks')
+    act(() => vi.advanceTimersByTime(30 * 60_000))
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
   })
 })

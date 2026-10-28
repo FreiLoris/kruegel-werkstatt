@@ -850,6 +850,15 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   all optional. On a whole A5 page for the parcel, on A4, or on one label of a sheet from the
   settings with its start position. Says when no address is entered. Not built: the return noted in
   the history of the position, a state "Retour" (FB-28 has none).
+- [x] **16h – Active person** (FB-29)
+  Done: after some minutes without use (mouse, keyboard, finger) a device asks "Wer ist am Gerät?" –
+  big name buttons, no password, the page stays as it is underneath (a half-typed task is still
+  there). Every device but "Nur ansehen" (the workshop TV), as decided 2026-10-28. The minutes are
+  one setting for all (Einstellungen → Bildschirmsperre, 5 by default, 0 = never; V51, live). A click
+  on the person in the header lists everyone else – one more click switches, no dialog. "Angenommen
+  von" of a new task and "Erfasst von" of a new part are the person at the device and follow a
+  switch while still empty or that person (not when chosen by hand for someone else). Notes,
+  to-dos and the history take the person anyway (X-Person).
 
 ---
 
