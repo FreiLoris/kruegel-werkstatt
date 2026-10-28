@@ -97,7 +97,9 @@ public class SupplierService {
         List<SupplierDelivery> deliveries = request.deliveries() == null ? List.of()
                 : request.deliveries().stream().map(SupplierDeliveryDto::toDelivery).toList();
         return new SupplierDetails(request.name(), request.phone(), request.email(), webshop, request.customerNumber(),
-                request.orderChannel(), request.delivery(), request.remark(), contacts, deliveries);
+                request.orderChannel(), request.delivery(), request.remark(), contacts, deliveries,
+                request.address() == null ? null : request.address().toAddress(),
+                request.returnAddress() == null ? null : request.returnAddress().toAddress());
     }
 
     private Supplier find(UUID id) {

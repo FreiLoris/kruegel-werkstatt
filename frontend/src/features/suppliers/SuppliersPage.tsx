@@ -9,6 +9,7 @@ import { useStockItems } from '../stock/stockApi'
 import { useShoppingItems } from '../shopping/shoppingApi'
 import { ORDER_CHANNEL_LABEL, useSuppliers, type Supplier } from './supplierApi'
 import { SupplierDialog } from './SupplierDialog'
+import { addressLine, hasPlace } from './returnLabel'
 import { deliveryText, nextDeadline } from './supplierDeliveries'
 import styles from './SuppliersPage.module.css'
 
@@ -78,6 +79,7 @@ export function SuppliersPage() {
                   {supplier.orderChannel && <span className={styles.channel}>{ORDER_CHANNEL_LABEL[supplier.orderChannel]}</span>}
                 </div>
                 {deadline && <p className={styles.next}>{deadline}</p>}
+                {hasPlace(supplier.address) && <p className="muted">{addressLine(supplier.address)}</p>}
                 <ul className={styles.contact}>
                   {supplier.phone && (
                     <li>
@@ -157,6 +159,7 @@ export function SuppliersPage() {
                   <span className={styles.links}>
                     <Link to={`/stock?supplier=${supplier.id}`}>{count === 1 ? '1 Artikel im Lager' : `${count} Artikel im Lager`}</Link>
                     {open > 0 && <Link to="/shopping">{open} auf der Einkaufsliste</Link>}
+                    <Link to={`/suppliers/${supplier.id}/return-label`}>Rücksende-Etikett</Link>
                   </span>
                   {canEdit && (
                     <Button small icon={Pencil} onClick={() => setDialog({ kind: 'edit', supplier })} aria-label={`${supplier.name} bearbeiten`}>

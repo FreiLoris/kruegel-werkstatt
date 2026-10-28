@@ -15594,6 +15594,33 @@
         },
         "required" : [ "name" ]
       },
+      "SupplierAddressDto" : {
+        "type" : "object",
+        "properties" : {
+          "city" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "name" : {
+            "type" : [ "string", "null" ],
+            "description" : "Only for the return address, e.g. \"Zentrallager\"",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "postalCode" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 10,
+            "minLength" : 0
+          },
+          "street" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "city", "name", "postalCode", "street" ]
+      },
       "SupplierContactDto" : {
         "type" : "object",
         "properties" : {
@@ -15679,6 +15706,10 @@
       "SupplierDto" : {
         "type" : "object",
         "properties" : {
+          "address" : {
+            "$ref" : "#/components/schemas/SupplierAddressDto",
+            "description" : "Its postal address (FB-31); fields empty when not known"
+          },
           "contacts" : {
             "type" : "array",
             "items" : {
@@ -15719,6 +15750,14 @@
           "remark" : {
             "type" : [ "string", "null" ]
           },
+          "returnAddress" : {
+            "description" : "Where returns go when not to the address; empty = there",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SupplierAddressDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -15737,7 +15776,7 @@
             "description" : "Always http(s)"
           }
         },
-        "required" : [ "contacts", "customerNumber", "deliveries", "delivery", "email", "id", "name", "orderChannel", "phone", "remark", "updatedAt", "updatedBy", "version", "webshopUrl" ]
+        "required" : [ "address", "contacts", "customerNumber", "deliveries", "delivery", "email", "id", "name", "orderChannel", "phone", "remark", "returnAddress", "updatedAt", "updatedBy", "version", "webshopUrl" ]
       },
       "SupplierRef" : {
         "type" : "object",
@@ -15757,6 +15796,14 @@
       "SupplierRequest" : {
         "type" : "object",
         "properties" : {
+          "address" : {
+            "description" : "Its postal address (FB-31); the name is not used",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SupplierAddressDto"
+            }, {
+              "type" : "null"
+            } ]
+          },
           "contacts" : {
             "type" : "array",
             "description" : "Departments and people (FB-30); missing = none",
@@ -15810,6 +15857,14 @@
             "type" : "string",
             "maxLength" : 1000,
             "minLength" : 0
+          },
+          "returnAddress" : {
+            "description" : "Where returns go when not to the address (FB-31)",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SupplierAddressDto"
+            }, {
+              "type" : "null"
+            } ]
           },
           "version" : {
             "type" : "integer",

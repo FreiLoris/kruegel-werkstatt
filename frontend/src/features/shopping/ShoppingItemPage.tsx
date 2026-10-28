@@ -212,6 +212,12 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
             ))}
           </Select>
         </div>
+        {/* FB-31: wrong or broken – back to the supplier, with this part on the label (the saved supplier only) */}
+        {item.supplierId && form.supplierId === item.supplierId && (
+          <p>
+            <Link to={`/suppliers/${item.supplierId}/return-label?item=${item.id}`}>Rücksende-Etikett drucken</Link>
+          </p>
+        )}
         <div className={styles.row}>
           <TextField label="Bestellt am" type="date" value={form.orderedOn} onChange={(e) => set('orderedOn', e.target.value)} />
           <TextField label="Lieferung erwartet" type="date" value={form.expectedOn} onChange={(e) => set('expectedOn', e.target.value)} />

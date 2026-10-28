@@ -45,6 +45,15 @@ public class Supplier extends BaseEntity {
 
     private String remark;
 
+    /** Its postal address and the one for returns, if another one (FB-31) – flat columns, both optional */
+    private String street;
+    private String postalCode;
+    private String city;
+    private String returnName;
+    private String returnStreet;
+    private String returnPostalCode;
+    private String returnCity;
+
     /** Departments and people (FB-30) – phone and e-mail above are the main line */
     @ElementCollection
     @CollectionTable(name = "supplier_contact", joinColumns = @JoinColumn(name = "supplier_id"))
@@ -81,6 +90,13 @@ public class Supplier extends BaseEntity {
         this.orderChannel = details.orderChannel();
         this.delivery = details.delivery();
         this.remark = details.remark();
+        this.street = details.address().street();
+        this.postalCode = details.address().postalCode();
+        this.city = details.address().city();
+        this.returnName = details.returnAddress().name();
+        this.returnStreet = details.returnAddress().street();
+        this.returnPostalCode = details.returnAddress().postalCode();
+        this.returnCity = details.returnAddress().city();
         // replaced as a whole – they are edited together with the supplier; untouched when the same
         // (otherwise every save would rewrite the rows)
         if (!contacts.equals(details.contacts())) {
@@ -127,6 +143,15 @@ public class Supplier extends BaseEntity {
 
     public List<SupplierDelivery> getDeliveries() {
         return List.copyOf(deliveries);
+    }
+
+    public SupplierAddress getAddress() {
+        return new SupplierAddress(null, street, postalCode, city);
+    }
+
+    /** Where returns go when not to {@link #getAddress()}; empty = there */
+    public SupplierAddress getReturnAddress() {
+        return new SupplierAddress(returnName, returnStreet, returnPostalCode, returnCity);
     }
 
     public String getRemark() {

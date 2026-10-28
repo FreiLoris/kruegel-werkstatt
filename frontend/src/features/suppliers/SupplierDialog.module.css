@@ -11,6 +11,20 @@
   gap: var(--space-4);
 }
 
+/* street wide, postal code narrow, city */
+.address {
+  display: grid;
+  justify-self: stretch;
+  grid-template-columns: minmax(10rem, 2fr) minmax(5rem, 0.7fr) minmax(8rem, 1.5fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 40rem) {
+  .address {
+    grid-template-columns: 1fr;
+  }
+}
+
 .row3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));

@@ -18,6 +18,8 @@ vi.mock('./supplierApi', async (original) => ({
         orderChannel: 'WEBSHOP',
         delivery: '2× täglich',
         remark: null,
+        address: { name: null, street: 'Industriestrasse 1', postalCode: '6000', city: 'Luzern' },
+        returnAddress: null,
         contacts: [{ department: 'Reifen', name: 'Frau Beispiel', phone: null, mobile: '079 000 00 02', email: 'reifen@example.ch', remark: null }],
         deliveries: [{ kind: 'Nachtexpress', orderDeadline: '17:00:00', tour: null, arrival: '07:30:00', arrivalNextDay: true, postage: null, remark: null }],
       },
@@ -56,5 +58,8 @@ describe('SuppliersPage', () => {
     screen.getByText('Reifen – Frau Beispiel')
     expect(screen.getByText('079 000 00 02').getAttribute('href')).toBe('tel:0790000002')
     screen.getByText('1 Lieferart')
+    // FB-31: the address and the return label
+    screen.getByText('Industriestrasse 1, 6000 Luzern')
+    expect(screen.getByText('Rücksende-Etikett').getAttribute('href')).toBe('/suppliers/m/return-label')
   })
 })

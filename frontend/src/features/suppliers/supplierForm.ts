@@ -1,5 +1,5 @@
 import { formatTime } from '../../lib/format'
-import type { SupplierContact, SupplierDelivery } from './supplierApi'
+import type { SupplierAddress, SupplierContact, SupplierDelivery } from './supplierApi'
 
 /** A contact as typed – empty text = not set; `rowId` only keeps the row's identity in the form */
 export interface ContactForm {
@@ -66,6 +66,23 @@ export const deliveryForm = (d: SupplierDelivery): DeliveryForm => ({
 })
 
 const text = (value: string) => value.trim() || null
+
+/** An address as typed (FB-31) – the name only for the return address */
+export interface AddressForm {
+  name: string
+  street: string
+  postalCode: string
+  city: string
+}
+
+export const addressForm = (a: SupplierAddress | null | undefined): AddressForm => ({
+  name: a?.name ?? '',
+  street: a?.street ?? '',
+  postalCode: a?.postalCode ?? '',
+  city: a?.city ?? '',
+})
+
+export const toAddress = (a: AddressForm): SupplierAddress => ({ name: text(a.name), street: text(a.street), postalCode: text(a.postalCode), city: text(a.city) })
 
 /**
  * Rows left completely empty go – an extra "+" by mistake is no error. Done before checking and
