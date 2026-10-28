@@ -46,8 +46,9 @@
  * on a wide screen) ── two rows: description, number, quantity – then the three selects; in one row
  * where it has room.
  */
+/* a box of its own: a container cannot query itself, and .entry changes its columns by this width */
 .entryBox {
-  container-type: inline-size;
+  container: shopping-entry / inline-size;
 }
 
 .entry {
@@ -58,15 +59,15 @@
 }
 
 .entry > * {
-  grid-column: span 2;
+  grid-column: span var(--span, 2);
 }
 
-.entry > .description {
-  grid-column: span 3;
+.description {
+  --span: 3;
 }
 
-.entry > .quantity {
-  grid-column: span 1;
+.quantity {
+  --span: 1;
 }
 
 .entry > .entryActions {
@@ -74,23 +75,19 @@
 }
 
 /* very narrow: one field per line */
-@container (max-width: 30rem) {
-  .entry > *,
-  .entry > .description,
-  .entry > .quantity {
+@container shopping-entry (max-width: 30rem) {
+  .entry > * {
     grid-column: 1 / -1;
   }
 }
 
 /* room enough: all six in one row, the selects as wide as "nicht zugewiesen" */
-@container (min-width: 60rem) {
+@container shopping-entry (min-width: 60rem) {
   .entry {
     grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) minmax(4rem, 0.5fr) repeat(3, minmax(9.5rem, 1fr));
   }
 
-  .entry > *,
-  .entry > .description,
-  .entry > .quantity {
+  .entry > * {
     grid-column: auto;
   }
 }
