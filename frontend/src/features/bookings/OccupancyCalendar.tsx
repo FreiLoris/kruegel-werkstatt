@@ -35,8 +35,13 @@ interface OccupancyCalendarProps {
   onBlocked: (message: string) => void
   /** the booking shown in the panel */
   selectedId?: string
-  /** bars can be dragged to another day or car – not while booking for a task (FB-32) */
-  movable?: boolean
+  /**
+   * Bars can be dragged to another day or car and opened – not while booking for a task (FB-32): then
+   * they are only shown (no buttons that do nothing)
+   */
+  canMoveBars?: boolean
+  /** narrower days – the calendar above a form, where the whole period should fit (FB-32) */
+  compact?: boolean
   /** the period being booked, shaded in every row (FB-32): "2026-11-02T08:00" … */
   highlight?: { start: string; end: string }
 }
@@ -77,7 +82,8 @@ export function OccupancyCalendar({
   onMove,
   onBlocked,
   selectedId,
-  movable: barsMovable = true,
+  canMoveBars = true,
+  compact = false,
   highlight,
 }: OccupancyCalendarProps) {
   const [gesture, setGesture] = useState<Gesture | null>(null)
@@ -117,10 +123,14 @@ export function OccupancyCalendar({
   }
 
   const total = days * DAY
-  // the shaded period, cut to the days shown
+  // the shaded period, cut to the days shown – a cut side has no edge (it goes on)
+  const shadedStart = highlight && minutesBetween(`${from}T00:00`, highlight.start)
+  const shadedEnd = highlight && minutesBetween(`${from}T00:00`, highlight.end)
   const shaded = highlight && {
-    start: Math.max(minutesBetween(`${from}T00:00`, highlight.start), 0),
-    end: Math.min(minutesBetween(`${from}T00:00`, highlight.end), days * DAY),
+    start: Math.max(shadedStart!, 0),
+    end: Math.min(shadedEnd!, days * DAY),
+    cutBefore: shadedStart! < 0,
+    cutAfter: shadedEnd! > days * DAY,
   }
   /** position in the row as percentage – the calendar is as wide as the page */
   const pct = (minutes: number) => `${(minutes / total) * 100}%`
@@ -155,6 +165,13 @@ export function OccupancyCalendar({
     if (gesture?.kind !== 'select' || e.pointerId !== gesture.pointerId) return
     const to = gesture.held ? dayIndexAt(e.clientX, e.currentTarget) : gesture.from
     setGesture(null)
+    // days where the car is visibly taken: nothing is chosen (the ghost said "belegt")
+    const first = Math.min(gesture.from, to)
+    const last = Math.max(gesture.from, to)
+    if (overlaps(barsFor(gesture.carId), first * DAY + 8 * 60, last * DAY + 17 * 60)) {
+      onBlocked(`${cars.find((c) => c.id === gesture.carId)?.name ?? 'Der Wagen'} ist in diesen Tagen vergeben`)
+      return
+    }
     onSelect(gesture.carId, dayList[gesture.from], dayList[to])
   }
 
@@ -163,7 +180,7 @@ export function OccupancyCalendar({
   function startMove(e: PointerEvent<HTMLDivElement>, bar: Bar) {
     if (e.button !== 0) return
     const touch = e.pointerType === 'touch'
-    const movable = canEdit && barsMovable && bar.state === 'planned'
+    const movable = canEdit && canMoveBars && bar.state === 'planned'
     if (movable && touch) armHold(e.pointerId)
     else if (movable) e.currentTarget.setPointerCapture(e.pointerId)
     const carId = bar.booking.courtesyCarId
@@ -242,7 +259,7 @@ export function OccupancyCalendar({
 
   return (
     <div className={styles.scroller}>
-      <div className={styles.grid} style={{ '--days': days } as CSSProperties}>
+      <div className={[styles.grid, compact && styles.compact].filter(Boolean).join(' ')} style={{ '--days': days } as CSSProperties}>
         <div className={styles.corner}>Fahrzeug</div>
         <div className={styles.days}>
           {dayList.map((d) => (
@@ -281,13 +298,17 @@ export function OccupancyCalendar({
                   ) : null,
                 )}
                 {shaded && shaded.end > shaded.start && (
-                  <div className={styles.highlight} style={{ left: pct(shaded.start), width: pct(shaded.end - shaded.start) }} aria-hidden />
+                  <div
+                    className={[styles.highlight, shaded.cutBefore && styles.cutBefore, shaded.cutAfter && styles.cutAfter].filter(Boolean).join(' ')}
+                    style={{ left: pct(shaded.start), width: pct(shaded.end - shaded.start) }}
+                    aria-hidden
+                  />
                 )}
                 {bars.map((bar) => (
                   <div
                     key={bar.booking.id}
-                    role="button"
-                    tabIndex={0}
+                    role={canMoveBars ? 'button' : undefined}
+                    tabIndex={canMoveBars ? 0 : undefined}
                     className={[
                       styles.bar,
                       styles[bar.state],

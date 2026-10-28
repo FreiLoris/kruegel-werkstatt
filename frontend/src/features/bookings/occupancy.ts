@@ -91,6 +91,9 @@ export function daySelection(fromDay: string, toDay: string): { pickupAt: string
 const DAYS_BEFORE = 2
 /** … and after the return: what comes next */
 const DAYS_AFTER = 5
+/** At least the week around it, at most three weeks */
+const MIN_DAYS = 10
+const MAX_DAYS = 21
 
 /**
  * Which days the occupancy calendar shows while booking for a task (FB-32): from two days before the
@@ -99,7 +102,13 @@ const DAYS_AFTER = 5
 export function calendarRange(pickupDay: string, returnDay: string | null): { from: string; days: number } {
   const from = addDays(pickupDay, -DAYS_BEFORE)
   const last = addDays(returnDay && returnDay > pickupDay ? returnDay : pickupDay, DAYS_AFTER)
-  return { from, days: Math.min(Math.max(daysBetween(from, last) + 1, 10), 21) }
+  return { from, days: Math.min(Math.max(daysBetween(from, last) + 1, MIN_DAYS), MAX_DAYS) }
+}
+
+/** The day of "2026-11-02T08:00" – null for nothing or half typed ("", "T08:00", "2026-11") */
+export function validDay(dateTime: string | null | undefined): string | null {
+  const day = dateTime?.slice(0, 10) ?? ''
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null
 }
 
 /** A booking moved by whole days – same times, same length */

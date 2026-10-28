@@ -78,7 +78,10 @@ export function BookingEditor({ booking, taskId, initial, onSaved, onCancel, wit
         name={`booking-${booking?.id ?? 'new'}`}
         pickupAt={draft.pickupAt}
         returnAt={draft.returnAt}
-        onPeriodChange={(pickupAt, returnAt, courtesyCarId = draft.courtesyCarId) => setDraft({ ...draft, pickupAt, returnAt, courtesyCarId })}
+        // with a car when days were dragged open in its row – one change, or the second would undo the first
+        onPeriodChange={(pickupAt, returnAt, courtesyCarId) =>
+          setDraft({ ...draft, pickupAt, returnAt, courtesyCarId: courtesyCarId ?? draft.courtesyCarId })
+        }
         courtesyCarId={draft.courtesyCarId}
         onCarChange={(courtesyCarId) => setDraft({ ...draft, courtesyCarId })}
         excludeBookingId={booking?.id}

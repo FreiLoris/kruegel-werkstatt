@@ -5,7 +5,8 @@ import { useHolidayNames } from '../publicholidays/publicHolidayApi'
 import { useAllCourtesyCars } from '../courtesy-cars/courtesyCarApi'
 import { useBookingsBetween } from './bookingApi'
 import styles from './BookingCalendar.module.css'
-import { calendarRange, daySelection } from './occupancy'
+import { isValidPeriod } from './courtesyCarChoice'
+import { calendarRange, daySelection, validDay } from './occupancy'
 import { OccupancyCalendar } from './OccupancyCalendar'
 
 /**
@@ -17,39 +18,45 @@ import { OccupancyCalendar } from './OccupancyCalendar'
 export function BookingCalendar({
   pickupAt,
   returnAt,
+  excludeBookingId,
   onPick,
 }: {
   /** "2026-11-02T08:00"; null = not known yet */
   pickupAt: string | null
   returnAt: string | null
+  /** the booking being changed – not shown: the shaded period is where it goes */
+  excludeBookingId?: string
   /** a car's row tapped (period null) or days dragged open in it */
   onPick: (courtesyCarId: string, period: { pickupAt: string; returnAt: string } | null) => void
 }) {
   const toast = useToast()
   const holidays = useHolidayNames()
   const { today, time } = useClock()
-  const { from, days } = calendarRange(pickupAt?.slice(0, 10) ?? today, returnAt?.slice(0, 10) ?? null)
+  // half typed dates (a cleared field) count as not known
+  const { from, days } = calendarRange(validDay(pickupAt) ?? today, validDay(returnAt))
   const { data: allCars } = useAllCourtesyCars()
   const bookings = useBookingsBetween(`${from}T00:00`, `${addDays(from, days)}T00:00`)
   const cars = (allCars ?? []).filter((car) => car.active)
 
+  if (bookings.error) return <p className="muted">Belegung konnte nicht geladen werden: {bookings.error.message}</p>
   if (cars.length === 0 || !bookings.data) return null
   return (
     <section className={styles.calendar} aria-label="Belegung der Ersatzwagen">
       <p className="muted">
-        Belegung ab {formatDate(from)} – der gewählte Zeitraum ist markiert. In der Zeile eines freien Wagens Tage aufziehen übernimmt
-        Wagen und Zeitraum.
+        Belegung ab {formatDate(from)} – der gewählte Zeitraum ist markiert. In der Zeile eines freien Wagens Tage aufziehen (am Tablet
+        kurz halten) übernimmt Wagen und Zeitraum.
       </p>
       <OccupancyCalendar
         cars={cars}
-        bookings={bookings.data}
+        bookings={bookings.data.filter((b) => b.id !== excludeBookingId)}
         from={from}
         days={days}
         now={`${today}T${time}`}
         holidays={holidays}
         canEdit
-        movable={false}
-        highlight={pickupAt && returnAt && pickupAt < returnAt ? { start: pickupAt, end: returnAt } : undefined}
+        canMoveBars={false}
+        compact
+        highlight={pickupAt && returnAt && isValidPeriod(pickupAt, returnAt) ? { start: pickupAt, end: returnAt } : undefined}
         onSelect={(carId, first, last) => onPick(carId, first === last ? null : daySelection(first, last))}
         onOpen={() => undefined}
         onMove={() => undefined}

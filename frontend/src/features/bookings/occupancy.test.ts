@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Booking } from './bookingApi'
-import { barsOf, calendarRange, carState, daySelection, defaultPeriod, movedByDays } from './occupancy'
+import { barsOf, calendarRange, carState, daySelection, defaultPeriod, movedByDays, validDay } from './occupancy'
 
 const booking = (id: string, pickupAt: string, returnAt: string, returnedAt: string | null = null) =>
   ({ id, pickupAt: `${pickupAt}:00`, returnAt: `${returnAt}:00`, returnedAt: returnedAt && `${returnedAt}:00` }) as Booking
@@ -73,6 +73,18 @@ describe('defaultPeriod', () => {
 describe('calendarRange (FB-32)', () => {
   it('from two days before the pickup to five days after the return', () => {
     expect(calendarRange('2026-11-10', '2026-11-20')).toEqual({ from: '2026-11-08', days: 18 })
+  })
+
+  it('a return before the pickup counts as none', () => {
+    expect(calendarRange('2026-11-10', '2026-11-01')).toEqual({ from: '2026-11-08', days: 10 })
+  })
+
+  it('half typed dates are no day – the calendar does not crash on a cleared field', () => {
+    expect(validDay('2026-11-02T08:00')).toBe('2026-11-02')
+    expect(validDay('')).toBeNull()
+    expect(validDay('T08:00')).toBeNull()
+    expect(validDay('2026-11')).toBeNull()
+    expect(validDay(null)).toBeNull()
   })
 
   it('at least ten days, at most three weeks', () => {

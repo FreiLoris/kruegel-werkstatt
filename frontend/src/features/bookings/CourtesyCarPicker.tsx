@@ -64,6 +64,7 @@ export function CourtesyCarPicker({
         <BookingCalendar
           pickupAt={pickupAt}
           returnAt={returnAt}
+          excludeBookingId={excludeBookingId}
           onPick={(carId, period) => (period ? onPeriodChange(period.pickupAt, period.returnAt, carId) : onCarChange(carId))}
         />
       )}
