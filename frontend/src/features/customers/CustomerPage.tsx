@@ -13,6 +13,7 @@ import { useVehiclesOfCustomer } from '../vehicles/vehicleApi'
 import { useCustomer } from './customerApi'
 import { CustomerDialog } from './CustomerDialog'
 import styles from './CustomerPage.module.css'
+import { FormerBadge } from './FormerBadge'
 import type { Customer } from './customerSearchApi'
 import { VehicleTires } from '../tire-hotel/VehicleTires'
 
@@ -57,7 +58,10 @@ function CustomerView({ customer }: { customer: Customer }) {
         </Button>
       </p>
       <div className={styles.title}>
-        <h1>{customer.displayName}</h1>
+        <h1>
+          {customer.displayName}
+          <FormerBadge customer={customer} />
+        </h1>
         <div className={styles.actions}>
           {canEdit && customer.editable && (
             <Button icon={Pencil} onClick={() => setEditing(true)}>

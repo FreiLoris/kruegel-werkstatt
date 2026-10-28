@@ -932,6 +932,11 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   contents and may grow below a place with a code. A place without one shows the code above:
   "KA01 · Keller › Treppe", inside it "KA01 › oberes Fach". In the stock list, its filter and the
   article dialog; the search finds the code and the names.
+- [x] **16t – Former customers** (FB-27, Reto's answer 2026-10-28)
+  Done: a holder that is "gesperrt" or "ehemalig" in SwissGarage stays a customer (16a) and is marked
+  former by the address list import (V56) – a supplier with a car or an empty address kind is not.
+  The search shows former customers greyed with "ehemalig", after the others; so do the wizard and
+  the customer's page. No filter needed: they are found, but not taken for current customers.
 
 ---
 

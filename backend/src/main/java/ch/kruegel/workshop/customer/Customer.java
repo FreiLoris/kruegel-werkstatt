@@ -40,6 +40,9 @@ public class Customer extends BaseEntity {
 
     private boolean active;
 
+    /** Blocked or former in SwissGarage, kept as the holder of a vehicle (FB-27) – set by the import */
+    private boolean former;
+
     protected Customer() {
         // for JPA
     }
@@ -121,6 +124,16 @@ public class Customer extends BaseEntity {
 
     public String getSwissgarageNumber() {
         return swissgarageNumber;
+    }
+
+    /** FB-27: blocked or former in SwissGarage – by the address list import, it knows the address kind */
+    public void markFormer(boolean isFormer) {
+        requireSource(RecordSource.SWISSGARAGE);
+        this.former = isFormer;
+    }
+
+    public boolean isFormer() {
+        return former;
     }
 
     public boolean isActive() {

@@ -109,14 +109,19 @@ public class CustomerImportService {
                 continue;
             }
 
+            // FB-27: a holder blocked or former in SwissGarage – imported, marked
+            boolean former = isFormer(row);
             Customer existing = known.get(number);
             if (existing == null) {
-                toSave.add(Customer.fromSwissGarage(number, details));
+                Customer customer = Customer.fromSwissGarage(number, details);
+                customer.markFormer(former);
+                toSave.add(customer);
                 created++;
-            } else if (existing.isActive() && existing.getDetails().equals(details)) {
+            } else if (existing.isActive() && existing.getDetails().equals(details) && existing.isFormer() == former) {
                 unchanged++;
             } else {
                 existing.updateFromSwissGarage(details);
+                existing.markFormer(former);
                 updated++;
             }
         }
@@ -140,6 +145,15 @@ public class CustomerImportService {
         events.publishEvent(new DataChanged("customers"));
         events.publishEvent(new DataChanged(SwissGarageImportController.TOPIC));
         return ImportRunDto.of(run);
+    }
+
+    /**
+     * FB-27: kept only as the holder of a vehicle, and blocked or former in SwissGarage ("gesperrt",
+     * "ehemalig" in the address kind) – a supplier with a car is no former customer.
+     */
+    private static boolean isFormer(ExcelRow row) {
+        String kind = row.get("Adressart").toLowerCase(Locale.ROOT);
+        return !isGarageCustomer(row) && (kind.contains("gesperrt") || kind.contains("ehemal"));
     }
 
     /** Like the old app: address kind contains "Garage-Kunde" and not "gesperrt". */

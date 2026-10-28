@@ -2,6 +2,7 @@ import { Search } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../components/licenseplate/LicensePlate'
+import { FormerBadge } from '../features/customers/FormerBadge'
 import { MIN_SEARCH_LENGTH, useCustomerSearch } from '../features/customers/customerSearchApi'
 import { useDebouncedValue } from '../lib/useDebouncedValue'
 import styles from './CustomerQuickSearch.module.css'
@@ -104,7 +105,10 @@ export function CustomerQuickSearch() {
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => choose(customer.id)}
                 >
-                  <strong>{customer.displayName}</strong>
+                  <strong className={customer.former ? 'muted' : undefined}>
+                    {customer.displayName}
+                    <FormerBadge customer={customer} />
+                  </strong>
                   <span className="muted">{[customer.city, customer.mobile ?? customer.phone].filter(Boolean).join(' · ')}</span>
                   {vehicles[0]?.licensePlate && <LicensePlate text={vehicles[0].licensePlate} size="sm" />}
                 </li>

@@ -159,6 +159,10 @@ class CustomerImportApiTest {
         assertThat(response).bodyJson().extractingPath("$.deactivated").isEqualTo(0);
         assertThat(customers.findById(empty.getId()).orElseThrow().getDetails().city()).isEqualTo("Neftenbach");
         assertThat(customers.findById(blocked.getId()).orElseThrow().isActive()).isTrue();
+        // FB-27: blocked or former – kept and marked; a supplier with a car or an empty kind is no former customer
+        assertThat(customers.findById(blocked.getId()).orElseThrow().isFormer()).isTrue();
+        assertThat(customers.findById(empty.getId()).orElseThrow().isFormer()).isFalse();
+        assertThat(customers.findById(supplier.getId()).orElseThrow().isFormer()).isFalse();
         assertThat(customers.findById(notInTheFile.getId()).orElseThrow().isActive()).isTrue();
         assertThat(customers.findById(supplier.getId()).orElseThrow().isActive()).isTrue();
         assertThat(customers.findBySwissgarageNumber("3001")).isEmpty();
