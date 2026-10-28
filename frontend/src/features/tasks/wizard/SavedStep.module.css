@@ -1,5 +1,7 @@
 .saved {
   display: grid;
+  /* a wide child must not widen the card beyond its frame (FB-26) */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--space-3);
   max-width: 40rem;

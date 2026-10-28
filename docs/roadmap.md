@@ -798,6 +798,11 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   updates them and never deactivates them. Vehicles still without holder (no address number, no
   name) are listed one by one with the reason. A new holder was not seen as a change when the vehicle
   had none ("unchanged") – saved right away now.
+- [x] **16b – Parts entry fits its place** (FB-26)
+  Done: the six fields of the quick entry follow the width they have (container query), not the
+  window's – the card "Auftrag gespeichert" is narrow on a wide screen, the fields ran out of it.
+  Narrow: description, number, quantity in one row, the three selects in the next; with room all
+  six in one row; very narrow one per line. The card keeps a wide child inside its frame.
 
 ---
 

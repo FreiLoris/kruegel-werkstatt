@@ -41,28 +41,61 @@
   font-size: var(--font-size-lg);
 }
 
-/* ── quick entry: the six fields in one row on a laptop, wrapping on a tablet ── */
+/*
+ * ── quick entry: by the width it has, not the window's (FB-26: the narrow card "Auftrag gespeichert"
+ * on a wide screen) ── two rows: description, number, quantity – then the three selects; in one row
+ * where it has room.
+ */
+.entryBox {
+  container-type: inline-size;
+}
+
 .entry {
   display: grid;
-  /* the three selects as wide as "nicht zugewiesen" – a cut-off choice cannot be read */
-  grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) minmax(4rem, 0.5fr) repeat(3, minmax(9.5rem, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   align-items: end;
   gap: var(--space-2) var(--space-3);
 }
 
-/* tablet: description on its own line, the rest in two rows of three */
-@media (max-width: 64rem) {
-  .entry {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.entry > * {
+  grid-column: span 2;
+}
 
-  .description {
+.entry > .description {
+  grid-column: span 3;
+}
+
+.entry > .quantity {
+  grid-column: span 1;
+}
+
+.entry > .entryActions {
+  grid-column: 1 / -1;
+}
+
+/* very narrow: one field per line */
+@container (max-width: 30rem) {
+  .entry > *,
+  .entry > .description,
+  .entry > .quantity {
     grid-column: 1 / -1;
   }
 }
 
+/* room enough: all six in one row, the selects as wide as "nicht zugewiesen" */
+@container (min-width: 60rem) {
+  .entry {
+    grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) minmax(4rem, 0.5fr) repeat(3, minmax(9.5rem, 1fr));
+  }
+
+  .entry > *,
+  .entry > .description,
+  .entry > .quantity {
+    grid-column: auto;
+  }
+}
+
 .entryActions {
-  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);

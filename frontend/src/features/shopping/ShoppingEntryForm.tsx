@@ -74,55 +74,59 @@ export function ShoppingEntryForm({ item, taskId, onSaved, onCancel }: ShoppingE
 
   const error = (field: keyof typeof errors) => (showErrors ? errors[field] : undefined)
   return (
-    <form className={styles.entry} onSubmit={submit} aria-label={item ? `«${item.description}» bearbeiten` : 'Teil erfassen'}>
-      <div className={styles.description}>
-        <TextField
-          label="Bezeichnung"
-          placeholder="z. B. Bremsscheiben vorne"
-          maxLength={500}
-          autoComplete="off"
-          value={form.description}
-          onChange={(e) => set('description', e.target.value)}
-          error={error('description')}
-        />
-      </div>
-      <TextField label="Nummer" placeholder="Art.-/Teilenr." maxLength={60} autoComplete="off" value={form.partNumber} onChange={(e) => set('partNumber', e.target.value)} />
-      <TextField label="Anzahl" inputMode="numeric" maxLength={4} autoComplete="off" value={form.quantity} onChange={(e) => set('quantity', e.target.value)} error={error('quantity')} />
-      <Select label="Status" value={form.status} onChange={(e) => set('status', e.target.value as ShoppingStatus)}>
-        {Object.entries(SHOPPING_STATUS).map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
+    <div className={styles.entryBox}>
+      <form className={styles.entry} onSubmit={submit} aria-label={item ? `«${item.description}» bearbeiten` : 'Teil erfassen'}>
+        <div className={styles.description}>
+          <TextField
+            label="Bezeichnung"
+            placeholder="z. B. Bremsscheiben vorne"
+            maxLength={500}
+            autoComplete="off"
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            error={error('description')}
+          />
+        </div>
+        <TextField label="Nummer" placeholder="Art.-/Teilenr." maxLength={60} autoComplete="off" value={form.partNumber} onChange={(e) => set('partNumber', e.target.value)} />
+        <div className={styles.quantity}>
+          <TextField label="Anzahl" inputMode="numeric" maxLength={4} autoComplete="off" value={form.quantity} onChange={(e) => set('quantity', e.target.value)} error={error('quantity')} />
+        </div>
+        <Select label="Status" value={form.status} onChange={(e) => set('status', e.target.value as ShoppingStatus)}>
+          {Object.entries(SHOPPING_STATUS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <Select label="Erfasst von" value={form.recordedById} onChange={(e) => set('recordedById', e.target.value)} error={error('recordedById')}>
+          <option value="" disabled>
+            Bitte wählen …
           </option>
-        ))}
-      </Select>
-      <Select label="Erfasst von" value={form.recordedById} onChange={(e) => set('recordedById', e.target.value)} error={error('recordedById')}>
-        <option value="" disabled>
-          Bitte wählen …
-        </option>
-        {recorders.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-      </Select>
-      <Select label="Bestellen durch" value={form.orderById} onChange={(e) => set('orderById', e.target.value)}>
-        <option value="">nicht zugewiesen</option>
-        {orderers.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name}
-          </option>
-        ))}
-      </Select>
-      <div className={styles.entryActions}>
-        {onCancel && (
-          <Button onClick={onCancel} disabled={save.isPending}>
-            Abbrechen
+          {recorders.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </Select>
+        <Select label="Bestellen durch" value={form.orderById} onChange={(e) => set('orderById', e.target.value)}>
+          <option value="">nicht zugewiesen</option>
+          {orderers.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </Select>
+        <div className={styles.entryActions}>
+          {onCancel && (
+            <Button onClick={onCancel} disabled={save.isPending}>
+              Abbrechen
+            </Button>
+          )}
+          <Button type="submit" variant={item ? 'primary' : 'secondary'} icon={item ? Save : Plus} loading={save.isPending}>
+            {item ? 'Speichern' : 'Teil hinzufügen'}
           </Button>
-        )}
-        <Button type="submit" variant={item ? 'primary' : 'secondary'} icon={item ? Save : Plus} loading={save.isPending}>
-          {item ? 'Speichern' : 'Teil hinzufügen'}
-        </Button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </div>
   )
 }
