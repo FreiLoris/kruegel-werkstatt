@@ -175,6 +175,13 @@
   padding-inline: 0;
 }
 
+/* a day of a series (FB-33): its second symbol only where both fit */
+@container absence-bar (max-width: 2.5rem) {
+  .seriesIcon {
+    display: none;
+  }
+}
+
 /* too short for the text: only the symbol – "K…" said nothing (the tooltip has all) */
 @container absence-bar (max-width: 3.5rem) {
   .barText {

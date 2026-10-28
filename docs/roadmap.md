@@ -816,6 +816,14 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   orders it; undoing goes back to where we were up last (from the history). "Wir sind dran" without
   "Bestellen durch" stands out – nobody has a to-do for it. A task's parts count as arrived when
   nothing is open and something arrived – the same rule on the task and in "Ohne Termin".
+- [x] **16d – Recurring absences** (FB-33)
+  Done: "Wiederholen" when entering: weekdays Mo–Fr as buttons, the period (first / last day), "nur
+  jede 2. Woche"; category, company, times or half days and note for every day. Before saving the
+  dialog says what it makes ("Erstellt 39 Einträge vom 02.11.2026 bis 28.01.2027") and which days it
+  leaves out – public holidays and days with something else entered (skipped, never overwritten).
+  Every day is an entry of its own with one `series_id` (V48) – so statistics, start page and TV
+  show them like any other. A day of a series: "Gilt für nur diesen Tag / ab diesem Tag / ganze
+  Serie" for changing (each keeps its day) and deleting; the bar has a repeat symbol where it fits.
 
 ---
 

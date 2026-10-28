@@ -21,6 +21,8 @@ public record AbsenceDto(
         @Schema(format = "date") LocalDate endDate,
         @Schema(description = "Vacation: only the morning of the last day") boolean endsNoon,
         @Schema(types = {"string", "null"}, format = "time", description = "Until this time on the last day (not vacation)") LocalTime endTime,
+        @Schema(types = {"string", "null"}, format = "uuid", description = "The series it was entered with (FB-33); empty = a single entry")
+        UUID seriesId,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID updatedBy) {
 
@@ -29,6 +31,6 @@ public record AbsenceDto(
         // getId() on a LAZY reference does not load it
         return new AbsenceDto(absence.getId(), absence.getVersion(), absence.getEmployee().getId(), absence.getCategory(),
                 absence.getCompany(), absence.getNote(), p.startDate(), p.startsAfternoon(), p.startTime(), p.endDate(), p.endsNoon(), p.endTime(),
-                absence.getUpdatedAt(), absence.getUpdatedBy());
+                absence.getSeriesId(), absence.getUpdatedAt(), absence.getUpdatedBy());
     }
 }

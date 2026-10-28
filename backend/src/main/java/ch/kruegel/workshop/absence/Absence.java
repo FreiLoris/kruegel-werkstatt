@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * An absence of an employee: vacation, sick, external work at a company, training – from/to;
@@ -39,12 +40,23 @@ public class Absence extends BaseEntity {
     @Embedded
     private AbsencePeriod period;
 
+    /** The days entered together as a series (FB-33) – empty for a single entry */
+    private UUID seriesId;
+
     protected Absence() {
         // for JPA
     }
 
     public Absence(Employee employee, AbsenceCategory category, String company, String note, AbsencePeriod period) {
         apply(employee, category, company, note, period);
+    }
+
+    /** One day of a series (FB-33) */
+    public static Absence inSeries(UUID seriesId, Employee employee, AbsenceCategory category, String company, String note,
+                                   AbsencePeriod period) {
+        Absence absence = new Absence(employee, category, company, note, period);
+        absence.seriesId = Objects.requireNonNull(seriesId, "seriesId");
+        return absence;
     }
 
     public void update(Employee employee, AbsenceCategory category, String company, String note, AbsencePeriod period) {
@@ -85,6 +97,10 @@ public class Absence extends BaseEntity {
 
     public String getNote() {
         return note;
+    }
+
+    public UUID getSeriesId() {
+        return seriesId;
     }
 
     public AbsencePeriod getPeriod() {
