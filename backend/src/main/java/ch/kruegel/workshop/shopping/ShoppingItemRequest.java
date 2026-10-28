@@ -29,6 +29,9 @@ public record ShoppingItemRequest(
         @Schema(types = {"string", "null"}, format = "uuid") UUID supplierId,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = the day it is set to ordered") LocalDate orderedOn,
         @Schema(types = {"string", "null"}, format = "date") LocalDate expectedOn,
+        @Size(max = ShoppingItemDetails.DELIVERY_MAX)
+        @Schema(types = {"string", "null"}, example = "Tagesexpress", description = "How it is ordered – one of the supplier's ways of delivery")
+        String delivery,
         @Size(max = ShoppingEntry.TEXT_MAX)
         @Schema(types = {"string", "null"}, description = "With a change of state: a note for the history, e.g. \"Offerte per Mail angefragt\"")
         String statusNote,

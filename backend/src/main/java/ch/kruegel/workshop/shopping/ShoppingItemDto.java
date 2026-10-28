@@ -23,6 +23,7 @@ public record ShoppingItemDto(
         @Schema(types = {"string", "null"}, format = "uuid") UUID supplierId,
         @Schema(types = {"string", "null"}, format = "date") LocalDate orderedOn,
         @Schema(types = {"string", "null"}, format = "date") LocalDate expectedOn,
+        @Schema(types = {"string", "null"}, description = "How it is ordered – a supplier's way of delivery") String delivery,
         @Schema(types = {"string", "null"}, format = "date") LocalDate arrivedOn,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy) {
@@ -31,7 +32,7 @@ public record ShoppingItemDto(
         ShoppingItemDetails d = item.getDetails();
         return new ShoppingItemDto(item.getId(), item.getVersion(), d.description(), d.partNumber(), d.quantity(), item.getStatus(),
                 idOf(d.recordedBy()), idOf(d.orderBy()), TaskRefDto.of(d.task()), d.stockItemId(), d.supplierId(), d.orderedOn(),
-                d.expectedOn(), item.getArrivedOn(), item.getCreatedAt(), item.getCreatedBy());
+                d.expectedOn(), d.delivery(), item.getArrivedOn(), item.getCreatedAt(), item.getCreatedBy());
     }
 
     // getId() on a LAZY reference does not load it

@@ -162,7 +162,7 @@ public class ShoppingService {
         if (existing.isEmpty()) {
             if (event.newlyChosen()) {
                 create(new ShoppingItemRequest(description, null, event.count(), ShoppingStatus.TO_ORDER, event.acceptedBy(), event.acceptedBy(),
-                        event.taskId(), null, null, null, null, null, null));
+                        event.taskId(), null, null, null, null, null, null, null));
             }
             return;
         }
@@ -275,7 +275,7 @@ public class ShoppingService {
         checkExists(request.supplierId(), before == null ? null : before.supplierId(), suppliers::existsById, "supplierId",
                 "Diesen Lieferanten gibt es nicht");
         return new ShoppingItemDetails(request.description(), request.partNumber(), request.quantity(), recordedBy, orderBy, task,
-                request.stockItemId(), request.supplierId(), request.orderedOn(), request.expectedOn());
+                request.stockItemId(), request.supplierId(), request.orderedOn(), request.expectedOn(), request.delivery());
     }
 
     /**

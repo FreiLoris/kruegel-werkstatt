@@ -23,7 +23,7 @@ import {
   type ShoppingItem,
   type ShoppingStatus,
 } from './shoppingApi'
-import { detailFormFromItem, shoppingErrors, toShoppingDetailRequest, type ShoppingDetailForm } from './shoppingForm'
+import { detailFormFromItem, shoppingErrors, toShoppingDetailRequest, withSupplier, type ShoppingDetailForm } from './shoppingForm'
 import { taskLabel } from './shoppingText'
 import { nextDeadline } from '../suppliers/supplierDeliveries'
 import styles from './Shopping.module.css'
@@ -111,12 +111,13 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
   }
   const recorders = withCurrent(active ?? [], form.recordedById)
   const orderers = withCurrent((active ?? []).filter((e) => e.selectableForTodos), form.orderById)
+  const deliveryKinds = (supplierId: string) => (suppliers.find((s) => s.id === supplierId)?.deliveries ?? []).map((d) => d.kind)
   const mainSupplier = (stockItemId: string) => stock.find((i) => i.id === stockItemId)?.suppliers[0]?.supplierId ?? ''
 
   /** An article of the stock list brings its main supplier (FB-09) – unless one was chosen by hand */
   function chooseArticle(stockItemId: string) {
     const supplierFollows = form.supplierId === '' || form.supplierId === mainSupplier(form.stockItemId)
-    setForm({ ...form, stockItemId, supplierId: supplierFollows ? mainSupplier(stockItemId) : form.supplierId })
+    setForm(withSupplier({ ...form, stockItemId }, supplierFollows ? mainSupplier(stockItemId) : form.supplierId, deliveryKinds))
   }
 
   function submit(e: FormEvent) {
@@ -196,7 +197,7 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
           <Select
             label="Lieferant"
             value={form.supplierId}
-            onChange={(e) => set('supplierId', e.target.value)}
+            onChange={(e) => setForm(withSupplier(form, e.target.value, deliveryKinds))}
             // FB-30: which delivery can still be reached today – while it is still to be ordered
             hint={
               item.status === 'ORDERED' || isClosed(item.status)
@@ -211,6 +212,17 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
               </option>
             ))}
           </Select>
+          {/* FB-30: how it is ordered – the supplier's ways of delivery; one saved earlier stays choosable */}
+          {(deliveryKinds(form.supplierId).length > 0 || form.delivery) && (
+            <Select label="Versandart" value={form.delivery} onChange={(e) => set('delivery', e.target.value)}>
+              <option value="">–</option>
+              {[...new Set([...deliveryKinds(form.supplierId), ...(form.delivery ? [form.delivery] : [])])].map((kind) => (
+                <option key={kind} value={kind}>
+                  {kind}
+                </option>
+              ))}
+            </Select>
+          )}
         </div>
         {/* FB-31: wrong or broken – back to the supplier, with this part on the label (the saved supplier only) */}
         {item.supplierId && form.supplierId === item.supplierId && (

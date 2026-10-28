@@ -21,6 +21,7 @@ import java.util.UUID;
  * @param supplierId  where to order it; only the ID
  * @param orderedOn   day of the order – set when it is ordered, may be corrected
  * @param expectedOn  expected delivery
+ * @param delivery    how it is ordered – one of the supplier's ways of delivery (FB-30), as text; may be empty
  */
 public record ShoppingItemDetails(
         String description,
@@ -32,16 +33,19 @@ public record ShoppingItemDetails(
         UUID stockItemId,
         UUID supplierId,
         LocalDate orderedOn,
-        LocalDate expectedOn) {
+        LocalDate expectedOn,
+        String delivery) {
 
     static final int DESCRIPTION_MAX = 500;
     static final int PART_NUMBER_MAX = 60;
     static final int QUANTITY_MAX = 9999;
+    /** Like a supplier's kind of delivery (SupplierDelivery.KIND_MAX) */
+    static final int DELIVERY_MAX = 40;
 
     /** The same position with another description and quantity */
     ShoppingItemDetails withOrder(String newDescription, int newQuantity) {
         return new ShoppingItemDetails(newDescription, partNumber, newQuantity, recordedBy, orderBy, task, stockItemId, supplierId, orderedOn,
-                expectedOn);
+                expectedOn, delivery);
     }
 
     public ShoppingItemDetails {
@@ -50,6 +54,7 @@ public record ShoppingItemDetails(
             throw new IllegalArgumentException("Description is required");
         }
         partNumber = Texts.checkMaxLength(Texts.emptyToNull(partNumber), PART_NUMBER_MAX, "Part number");
+        delivery = Texts.checkMaxLength(Texts.emptyToNull(delivery), DELIVERY_MAX, "Delivery");
         if (quantity < 1 || quantity > QUANTITY_MAX) {
             throw new IllegalArgumentException("Quantity out of range: " + quantity);
         }

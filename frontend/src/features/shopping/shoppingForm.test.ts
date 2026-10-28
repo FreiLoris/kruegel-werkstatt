@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ShoppingItem } from './shoppingApi'
-import { detailFormFromItem, emptyShoppingForm, formFromItem, shoppingErrors, toShoppingDetailRequest, toShoppingRequest } from './shoppingForm'
+import { detailFormFromItem, emptyShoppingForm, formFromItem, shoppingErrors, toShoppingDetailRequest, toShoppingRequest, withSupplier, type ShoppingDetailForm } from './shoppingForm'
 
 // fictitious
 const item = {
@@ -80,5 +80,16 @@ describe('position page', () => {
       taskId: 't1',
       version: 3,
     })
+  })
+})
+
+describe('withSupplier (FB-30)', () => {
+  const kinds = (id: string) => (id === 'a' ? ['Tagesexpress', 'Abholung'] : id === 'b' ? ['Tagesexpress'] : [])
+  const form = { supplierId: 'a', delivery: 'Abholung' } as ShoppingDetailForm
+
+  it('keeps the way of delivery only if the new supplier has it too', () => {
+    expect(withSupplier(form, 'b', kinds)).toMatchObject({ supplierId: 'b', delivery: '' })
+    expect(withSupplier({ ...form, delivery: 'Tagesexpress' }, 'b', kinds).delivery).toBe('Tagesexpress')
+    expect(withSupplier(form, '', kinds).delivery).toBe('')
   })
 })

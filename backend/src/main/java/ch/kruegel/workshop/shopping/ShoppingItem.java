@@ -53,6 +53,8 @@ public class ShoppingItem extends BaseEntity {
     private UUID supplierId;
     private LocalDate orderedOn;
     private LocalDate expectedOn;
+    /** How it is ordered (FB-30) – a supplier's way of delivery as text */
+    private String delivery;
 
     /** When it arrived – only with {@link ShoppingStatus#ARRIVED}; the list "Erledigt" is sorted by it */
     private LocalDate arrivedOn;
@@ -154,11 +156,12 @@ public class ShoppingItem extends BaseEntity {
         this.stockItemId = details.stockItemId();
         this.supplierId = details.supplierId();
         this.expectedOn = details.expectedOn();
+        this.delivery = details.delivery();
     }
 
     public ShoppingItemDetails getDetails() {
         return new ShoppingItemDetails(description, partNumber, quantity, recordedBy, orderBy, task, stockItemId, supplierId, orderedOn,
-                expectedOn);
+                expectedOn, delivery);
     }
 
     public ShoppingStatus getStatus() {
