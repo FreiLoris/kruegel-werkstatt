@@ -6,6 +6,8 @@ import type { components } from '../../api/schema'
 export type Supplier = components['schemas']['SupplierDto']
 export type SupplierRequest = components['schemas']['SupplierRequest']
 export type OrderChannel = NonNullable<Supplier['orderChannel']>
+export type SupplierContact = components['schemas']['SupplierContactDto']
+export type SupplierDelivery = components['schemas']['SupplierDeliveryDto']
 
 /** Topic for query keys and live updates – same text as in the backend. */
 const TOPIC = 'suppliers'

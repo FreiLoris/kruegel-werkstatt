@@ -94,6 +94,10 @@ class SupplierApiTest {
                   "deliveries": [] }""");
         assertThat(changed).bodyJson().extractingPath("$.contacts.length()").isEqualTo(1);
         assertThat(changed).bodyJson().extractingPath("$.deliveries").asArray().isEmpty();
+        // only the lists changed – still a new version: the old one is refused
+        assertThat(changed).bodyJson().extractingPath("$.version").isEqualTo(1);
+        assertThat(send("PUT", "/api/suppliers/" + idOf(response), """
+                { "name": "Muster Teile AG", "version": 0, "contacts": [] }""")).hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test

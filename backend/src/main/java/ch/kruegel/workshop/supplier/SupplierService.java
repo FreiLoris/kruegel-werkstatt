@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /** Suppliers: list, create, edit, delete. Names are unique (ignoring case). */
 @Service
@@ -82,13 +83,16 @@ public class SupplierService {
         if (webshop != null && webshop.length() > Supplier.URL_MAX) {
             throw new InvalidInputException("webshopUrl", "Höchstens " + Supplier.URL_MAX + " Zeichen (mit https://)");
         }
+        List<SupplierContactDto> contactInput = request.contacts() == null ? List.of() : request.contacts();
         List<SupplierContact> contacts = new ArrayList<>();
-        for (int i = 0; request.contacts() != null && i < request.contacts().size(); i++) {
-            try {
-                contacts.add(request.contacts().get(i).toContact());
-            } catch (IllegalArgumentException e) {
+        for (int i = 0; i < contactInput.size(); i++) {
+            SupplierContactDto contact = contactInput.get(i);
+            // the only rule @Size/@Email have not checked yet: a contact is not empty
+            if (Stream.of(contact.department(), contact.name(), contact.phone(), contact.mobile(), contact.email())
+                    .allMatch(value -> value == null || value.isBlank())) {
                 throw new InvalidInputException("contacts[" + i + "]", "Abteilung, Name, Telefon oder E-Mail angeben");
             }
+            contacts.add(contact.toContact());
         }
         List<SupplierDelivery> deliveries = request.deliveries() == null ? List.of()
                 : request.deliveries().stream().map(SupplierDeliveryDto::toDelivery).toList();

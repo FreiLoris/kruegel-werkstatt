@@ -70,13 +70,14 @@ export function SuppliersPage() {
           {suppliers.data.map((supplier) => {
             const count = articleCounts.get(supplier.id) ?? 0
             const open = openCounts.get(supplier.id) ?? 0
+            const deadline = nextDeadline(supplier.deliveries, today, time)
             return (
               <li key={supplier.id} className={styles.card}>
                 <div className={styles.cardHeader}>
                   <h2>{supplier.name}</h2>
                   {supplier.orderChannel && <span className={styles.channel}>{ORDER_CHANNEL_LABEL[supplier.orderChannel]}</span>}
                 </div>
-                {nextDeadline(supplier.deliveries, today, time) && <p className={styles.next}>{nextDeadline(supplier.deliveries, today, time)}</p>}
+                {deadline && <p className={styles.next}>{deadline}</p>}
                 <ul className={styles.contact}>
                   {supplier.phone && (
                     <li>
@@ -119,11 +120,16 @@ export function SuppliersPage() {
                         <li key={i}>
                           <strong>{[c.department, c.name].filter(Boolean).join(' – ')}</strong>
                           <ul className={styles.contact}>
-                            {[c.phone, c.mobile].filter(Boolean).map((number) => (
-                              <li key={number}>
-                                <Phone aria-hidden /> <a href={`tel:${number!.replace(/\s/g, '')}`}>{number}</a>
-                              </li>
-                            ))}
+                            {[
+                              ['phone', c.phone],
+                              ['mobile', c.mobile],
+                            ].map(([kind, number]) =>
+                              number ? (
+                                <li key={kind}>
+                                  <Phone aria-hidden /> <a href={`tel:${number.replace(/\s/g, '')}`}>{number}</a>
+                                </li>
+                              ) : null,
+                            )}
                             {c.email && (
                               <li>
                                 <Mail aria-hidden /> <a href={`mailto:${c.email}`}>{c.email}</a>

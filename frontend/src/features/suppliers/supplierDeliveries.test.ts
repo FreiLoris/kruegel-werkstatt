@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { deliveryText, nextDeadline, type SupplierDelivery } from './supplierDeliveries'
+import type { SupplierDelivery } from './supplierApi'
+import { deliveryText, nextDeadline } from './supplierDeliveries'
 
 // fictitious: three tours a day and a night express
 const delivery = (more: Partial<SupplierDelivery>): SupplierDelivery => ({

@@ -15659,7 +15659,6 @@
           "postage" : {
             "type" : [ "number", "null" ],
             "description" : "CHF",
-            "maximum" : 999999.99,
             "minimum" : 0
           },
           "remark" : {

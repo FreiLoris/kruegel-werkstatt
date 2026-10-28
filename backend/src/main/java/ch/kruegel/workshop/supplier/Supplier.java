@@ -81,11 +81,16 @@ public class Supplier extends BaseEntity {
         this.orderChannel = details.orderChannel();
         this.delivery = details.delivery();
         this.remark = details.remark();
-        // replaced as a whole – they are edited together with the supplier
-        this.contacts.clear();
-        this.contacts.addAll(details.contacts());
-        this.deliveries.clear();
-        this.deliveries.addAll(details.deliveries());
+        // replaced as a whole – they are edited together with the supplier; untouched when the same
+        // (otherwise every save would rewrite the rows)
+        if (!contacts.equals(details.contacts())) {
+            contacts.clear();
+            contacts.addAll(details.contacts());
+        }
+        if (!deliveries.equals(details.deliveries())) {
+            deliveries.clear();
+            deliveries.addAll(details.deliveries());
+        }
     }
 
     public String getName() {

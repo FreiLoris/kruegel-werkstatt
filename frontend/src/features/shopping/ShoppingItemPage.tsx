@@ -14,6 +14,7 @@ import { MaterialTabs } from '../stock/MaterialTabs'
 import { useStockItems } from '../stock/stockApi'
 import { useSuppliers } from '../suppliers/supplierApi'
 import {
+  isClosed,
   SHOPPING_STATUS,
   useAddShoppingNote,
   useSaveShoppingItem,
@@ -196,8 +197,12 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
             label="Lieferant"
             value={form.supplierId}
             onChange={(e) => set('supplierId', e.target.value)}
-            // FB-30: which delivery can still be reached today
-            hint={nextDeadline(suppliers.find((s) => s.id === form.supplierId)?.deliveries ?? [], today, time) ?? undefined}
+            // FB-30: which delivery can still be reached today – while it is still to be ordered
+            hint={
+              item.status === 'ORDERED' || isClosed(item.status)
+                ? undefined
+                : (nextDeadline(suppliers.find((s) => s.id === form.supplierId)?.deliveries ?? [], today, time) ?? undefined)
+            }
           >
             <option value="">–</option>
             {suppliers.map((s) => (

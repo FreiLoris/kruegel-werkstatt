@@ -1,8 +1,8 @@
 package ch.kruegel.workshop.supplier;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -16,7 +16,7 @@ public record SupplierDeliveryDto(
         @Size(max = SupplierDelivery.TOUR_MAX) @Schema(types = {"string", "null"}, example = "Tour 1") String tour,
         @Schema(types = {"string", "null"}, format = "time", description = "About when it is here") LocalTime arrival,
         @Schema(description = "The arrival is on the next working day; missing = false") Boolean arrivalNextDay,
-        @DecimalMin("0") @DecimalMax("999999.99") @Schema(types = {"number", "null"}, description = "CHF") BigDecimal postage,
+        @DecimalMin("0") @Digits(integer = 6, fraction = 2) @Schema(types = {"number", "null"}, description = "CHF") BigDecimal postage,
         @Size(max = SupplierDelivery.REMARK_MAX) @Schema(types = {"string", "null"}, example = "ab CHF 100 gratis") String remark) {
 
     public SupplierDeliveryDto {

@@ -1,14 +1,14 @@
-import { isWeekend, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
+import { isWeekend, nextWorkingDay, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatTime } from '../../lib/format'
-import type { components } from '../../api/schema'
+import type { SupplierDelivery } from './supplierApi'
 
-export type SupplierDelivery = components['schemas']['SupplierDeliveryDto']
-export type SupplierContact = components['schemas']['SupplierContactDto']
+/** Public holidays are not known here – Monday to Friday */
+const NO_HOLIDAYS: ReadonlySet<string> = new Set()
 
 /** Suggestions for the kind of delivery (FB-30) – any other text is fine too */
 export const DELIVERY_KINDS = ['Tagesexpress', 'Nachtexpress', 'Standardversand', 'Abholung', 'Kurier']
 
-/** "Fr. 12.50" – Swiss francs with two decimals */
+/** "CHF 12.50" – Swiss francs with two decimals */
 const chf = (amount: number) => `CHF ${amount.toFixed(2)}`
 
 /** "Tagesexpress · Bestellschluss 09:30 · Tour 1 · Ankunft ca. 11:00 · CHF 0.00 · ab CHF 100 gratis" */
@@ -23,13 +23,6 @@ export function deliveryText(d: SupplierDelivery): string {
   ]
     .filter(Boolean)
     .join(' · ')
-}
-
-/** The next working day from `day` on (Monday to Friday – public holidays are not known here) */
-function workingDayFrom(day: string): string {
-  let d = day
-  while (isWeekend(d)) d = addDays(d, 1)
-  return d
 }
 
 /**
@@ -52,6 +45,6 @@ export function nextDeadline(deliveries: SupplierDelivery[], today: string, time
 
 /** "morgen " or "Mo " – the next working day after today */
 function nextDayLabel(today: string): string {
-  const next = workingDayFrom(addDays(today, 1))
+  const next = nextWorkingDay(addDays(today, 1), NO_HOLIDAYS)
   return next === addDays(today, 1) ? 'morgen ' : `${WEEKDAYS_SHORT[weekdayOf(next)]} `
 }

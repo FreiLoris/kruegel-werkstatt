@@ -8,7 +8,18 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import styles from './SupplierDialog.module.css'
-import { contactForm, deliveryForm, toContacts, toDeliveries, type ContactForm, type DeliveryForm } from './supplierForm'
+import {
+  contactForm,
+  deliveryForm,
+  deliveryProblems,
+  filledContacts,
+  filledDeliveries,
+  toContacts,
+  toDeliveries,
+  type ContactForm,
+  type DeliveryForm,
+  type DeliveryProblems,
+} from './supplierForm'
 import { ContactsEditor, DeliveriesEditor } from './SupplierLists'
 import { ORDER_CHANNEL_LABEL, useDeleteSupplier, useSaveSupplier, type OrderChannel, type Supplier, type SupplierRequest } from './supplierApi'
 
@@ -47,8 +58,21 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
   const [values, setValues] = useState(() => initialValues(supplier))
   const [contacts, setContacts] = useState<ContactForm[]>(() => supplier?.contacts.map(contactForm) ?? [])
   const [deliveries, setDeliveries] = useState<DeliveryForm[]>(() => supplier?.deliveries.map(deliveryForm) ?? [])
+  // checked before sending (FB-30): a way of delivery without kind, a postage that is no amount
+  const [problems, setProblems] = useState<Map<number, DeliveryProblems>>(new Map())
 
   const fieldError = (field: string) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
+  const contactError = (i: number, field: keyof ContactForm) =>
+    // "Abteilung, Name, Telefon oder E-Mail angeben" is for the whole row – shown at its first field
+    fieldError(`contacts[${i}].${field}`) ?? (field === 'department' ? fieldError(`contacts[${i}]`) : undefined)
+  const deliveryError = (i: number, field: keyof DeliveryForm) =>
+    (field === 'kind' || field === 'postage' ? problems.get(i)?.[field] : undefined) ?? fieldError(`deliveries[${i}].${field}`)
+
+  /** A field error the form does not show at a field – said as a message, so saving never seems to do nothing */
+  function unshownError(error: ApiError): string | undefined {
+    const shown = (field: string) => (FIELDS as readonly string[]).includes(field) || /^(contacts|deliveries)\[\d+\]/.test(field)
+    return error.problem.errors?.find((e) => !shown(e.field))?.message
+  }
 
   function set(field: keyof FormValues, value: string) {
     setValues({ ...values, [field]: value })
@@ -57,9 +81,17 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
 
   function submit(event: FormEvent) {
     event.preventDefault()
+    // empty rows go first – so the row numbers of the server's errors are the rows shown
+    const sentContacts = filledContacts(contacts)
+    const sentDeliveries = filledDeliveries(deliveries)
+    setContacts(sentContacts)
+    setDeliveries(sentDeliveries)
+    const found = deliveryProblems(sentDeliveries)
+    setProblems(found)
+    if (found.size > 0) return
     once((done) =>
       save.mutate(
-        { id: supplier?.id, request: toRequest(values, contacts, deliveries, supplier?.version) },
+        { id: supplier?.id, request: toRequest(values, sentContacts, sentDeliveries, supplier?.version) },
         {
           onSettled: done,
           onSuccess: (saved) => {
@@ -74,6 +106,8 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
               onClose()
             } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
               toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+            } else if (unshownError(error)) {
+              toast.error(`Speichern fehlgeschlagen: ${unshownError(error)}`)
             }
           },
         },
@@ -139,7 +173,7 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
             setContacts(next)
             if (save.error) save.reset()
           }}
-          errorAt={(i) => fieldError(`contacts[${i}]`) ?? fieldError(`contacts[${i}].email`)}
+          errorAt={contactError}
         />
         {field('webshopUrl', 'Webshop', { maxLength: 300, placeholder: 'z. B. shop.example.ch' })}
         <div className={styles.row}>
@@ -157,9 +191,10 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
           deliveries={deliveries}
           onChange={(next) => {
             setDeliveries(next)
+            setProblems(new Map())
             if (save.error) save.reset()
           }}
-          errorAt={(i) => fieldError(`deliveries[${i}].kind`) ?? fieldError(`deliveries[${i}].postage`) ?? fieldError(`deliveries[${i}]`)}
+          errorAt={deliveryError}
         />
         <TextArea label="Bemerkung" rows={2} maxLength={1000} value={values.remark} onChange={(e) => set('remark', e.target.value)} error={fieldError('remark')} />
       </form>
