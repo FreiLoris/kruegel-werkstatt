@@ -35,20 +35,24 @@ public record TaskTireBookingRequest(
 
     /**
      * A set of the vehicle ({@code setId}: the one on the car, or one retrieved earlier) – or a new one
-     * ({@code newSet}); stored in the hotel, or the customer takes it home ({@code store = false}, FB-12).
+     * ({@code newSet}); stored in the hotel, or the customer takes it home ({@code store = false}, FB-12),
+     * or it is disposed of ({@code dispose}, FB-25).
      *
      * @param store   into the hotel; false = the customer takes it home; missing = into the hotel
      * @param placeId only when stored; empty = assigned later
+     * @param dispose worn out, disposed of – then not stored; missing = false
      */
     public record RemovedSet(
             @Schema(description = "A set of the vehicle not in the hotel – empty = a new one") UUID setId,
             @Valid @Schema(description = "Only for a new set") NewSet newSet,
             @Valid @Schema(description = "As noted on the task sheet") DepthsRequest depths,
             @Schema(description = "Into the hotel (default) or the customer takes it home (false)") Boolean store,
-            @Schema(description = "Only into the hotel: the place; empty = assigned later") UUID placeId) {
+            @Schema(description = "Only into the hotel: the place; empty = assigned later") UUID placeId,
+            @Schema(description = "Disposed of (FB-25) – then not stored; missing = false") Boolean dispose) {
 
         public RemovedSet {
-            store = !Boolean.FALSE.equals(store);
+            dispose = Boolean.TRUE.equals(dispose);
+            store = !dispose && !Boolean.FALSE.equals(store);
         }
     }
 

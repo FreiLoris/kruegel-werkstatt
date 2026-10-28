@@ -38,6 +38,8 @@ public record TaskDto(
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who took the order (\"Annehmer\"); empty for old tasks") UUID acceptedById,
         boolean tireChange,
         @Schema(types = {"string", "null"}) TireChangeKind tireChangeKind,
+        @Schema(types = {"string", "null"}, description = "New tyres (FB-25): the dimension to order") String newTiresDimension,
+        @Schema(types = {"integer", "null"}, description = "New tyres: how many – set with new tyres") Integer newTiresCount,
         boolean mfk,
         @Schema(types = {"string", "null"}, example = "2026-10-15T10:00:00") LocalDateTime mfkAppointment,
         @Schema(types = {"integer", "null"}, description = "MFK: how long the car is away incl. the drive; set with MFK") Integer mfkMinutes,
@@ -70,7 +72,7 @@ public record TaskDto(
         return new TaskDto(task.getId(), task.getVersion(), task.getTaskNumber(), task.getStatus(), task.getVehicleLocation(),
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
-                w.tireChange(), w.tireChangeKind(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, mfkStationId, serviceItemIds,
+                w.tireChange(), w.tireChangeKind(), task.getNewTiresDimension(), task.getNewTiresCount(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, mfkStationId, serviceItemIds,
                 w.description(), task.getNotes(), insuranceId, task.getClaimNumber(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());
     }

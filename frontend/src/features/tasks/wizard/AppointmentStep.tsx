@@ -11,6 +11,8 @@ import {
   appointmentErrors,
   appointmentMinutes,
   MFK_DURATIONS,
+  NEW_TIRES_COUNTS,
+  NEW_TIRES_DIMENSION_MAX,
   mfkBeforeEnd,
   withArrivesEarlier,
   withDate,
@@ -29,6 +31,8 @@ import { TireChangeHint } from './TireChangeHint'
 import { useAppointmentWarnings } from './useAppointmentWarnings'
 import { VehicleLocationSwitch } from '../VehicleLocationSwitch'
 import { VehicleTires } from '../../tire-hotel/VehicleTires'
+import { useVehicleTireSets } from '../../tire-hotel/tireHotelApi'
+import { proposedDimension } from './tireAppointment'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -66,6 +70,14 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
   const required = (field: 'date' | 'serviceItemIds' | 'acceptedById' | 'insuranceId') => (showRequired ? errors[field] : undefined)
 
   const set = <K extends keyof AppointmentForm>(field: K, fieldValue: AppointmentForm[K]) => onChange({ ...form, [field]: fieldValue })
+  // FB-25: the dimension of new tyres – proposed from the car's tyres (already loaded for "Reifen dieses Fahrzeugs")
+  const { data: tireSets } = useVehicleTireSets(vehicleId)
+  const chooseTireChangeKind = (kind: TireChangeKind | '') =>
+    onChange({
+      ...form,
+      tireChangeKind: kind,
+      newTiresDimension: kind === 'NEW_TIRES' && !form.newTiresDimension.trim() ? proposedDimension(tireSets ?? []) : form.newTiresDimension,
+    })
 
   function toggleServiceItem(id: string, on: boolean) {
     set('serviceItemIds', on ? [...form.serviceItemIds, id] : form.serviceItemIds.filter((item) => item !== id))
@@ -262,11 +274,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
           />
           {form.tireChange && (
             <div className={`${styles.row} ${styles.indented}`}>
-              <Select
-                label="Art"
-                value={form.tireChangeKind}
-                onChange={(e) => set('tireChangeKind', e.target.value as TireChangeKind | '')}
-              >
+              <Select label="Art" value={form.tireChangeKind} onChange={(e) => chooseTireChangeKind(e.target.value as TireChangeKind | '')}>
                 <option value="">noch offen</option>
                 {Object.entries(TIRE_CHANGE_KINDS).map(([kind, label]) => (
                   <option key={kind} value={kind}>
@@ -274,7 +282,31 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                   </option>
                 ))}
               </Select>
+              {form.tireChangeKind === 'NEW_TIRES' && (
+                <>
+                  <TextField
+                    label="Reifendimension"
+                    placeholder="z. B. 205/55 R16 91H"
+                    maxLength={NEW_TIRES_DIMENSION_MAX}
+                    value={form.newTiresDimension}
+                    onChange={(e) => set('newTiresDimension', e.target.value)}
+                  />
+                  <Select label="Anzahl" value={form.newTiresCount} onChange={(e) => set('newTiresCount', e.target.value)}>
+                    {NEW_TIRES_COUNTS.map((count) => (
+                      <option key={count} value={String(count)}>
+                        {count}
+                      </option>
+                    ))}
+                  </Select>
+                </>
+              )}
             </div>
+          )}
+          {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && (
+            <p className={`muted ${styles.indented}`}>
+              Die Dimension ist vom Reifensatz des Fahrzeugs übernommen, wenn bekannt – bitte prüfen. Beim ersten Speichern mit dieser Art kommt
+              die Bestellposition «Reifen …» auf die Einkaufsliste; spätere Änderungen dort bei der Position nachführen.
+            </p>
           )}
           {form.tireChange && vehicleId && customerId && (
             <TireChangeHint customerId={customerId} vehicleId={vehicleId} date={form.noAppointment ? '' : form.date} taskId={taskId} />

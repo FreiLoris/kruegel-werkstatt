@@ -10,7 +10,17 @@ import { useToday } from '../../lib/clock'
 import { useTask, type AnyTask } from '../tasks/taskApi'
 import { PlaceMap } from './PlaceMap'
 import { bookingErrors, hasErrors, initialBooking, isEmpty, setSummary, swapPlace, toBookingRequest, withChoice, withSet, type BookingForm } from './taskTires'
-import { useBookTaskTires, useTaskTires, useTireLocations, useTirePlaces, useTireSets, useTreadLimits, type TaskTires, type TireSet } from './tireHotelApi'
+import {
+  EVENT_TEXT,
+  useBookTaskTires,
+  useTaskTires,
+  useTireLocations,
+  useTirePlaces,
+  useTireSets,
+  useTreadLimits,
+  type TaskTires,
+  type TireSet,
+} from './tireHotelApi'
 import styles from './TireHotel.module.css'
 import { TireSetFields } from './TireSetFields'
 import { lastUsedPlace, nextFreePlace, occupancy } from './tirePlaces'
@@ -41,7 +51,9 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
   const today = useToday()
   const toast = useToast()
   const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
-  const [form, setForm] = useState<BookingForm>(() => initialBooking(tires, fromHotel, today))
+  // FB-25: new tyres go on as a new set with the dimension ordered
+  const newTires = task.tireChangeKind === 'NEW_TIRES' ? { dimension: task.newTiresDimension } : undefined
+  const [form, setForm] = useState<BookingForm>(() => initialBooking(tires, fromHotel, today, newTires))
   const [showRequired, setShowRequired] = useState(false)
   const { data: limits } = useTreadLimits()
   const { data: locations } = useTireLocations()
@@ -127,7 +139,7 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
             ))}
             <Choice
               name="mounted"
-              label="Vom Kunden mitgebracht – Reifendaten erfassen"
+              label={newTires ? 'Neue Reifen – Reifendaten erfassen' : 'Vom Kunden mitgebracht – Reifendaten erfassen'}
               checked={form.mountedChoice === 'new'}
               onChange={() => choose('mounted', 'new')}
             />
@@ -153,7 +165,7 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
 
       {tires.removed ? (
         <p className={styles.chosen}>
-          {tires.removedAs === 'TAKEN_HOME' ? 'Abmontiert, nimmt der Kunde mit' : 'Abmontiert eingelagert'}:{' '}
+          {tires.removedAs === 'STORED' ? 'Abmontiert eingelagert' : EVENT_TEXT[tires.removedAs ?? 'TAKEN_HOME']}:{' '}
           <Link to={`/tires/${tires.removed.id}`}>{setSummary(tires.removed)}</Link>
           {tires.removed.place && <strong>{tires.removed.place}</strong>}
         </p>
@@ -185,6 +197,15 @@ function Booking({ task, tires }: { task: AnyTask; tires: TaskTires }) {
                     label="Nimmt der Kunde mit"
                     checked={form.removedTo === 'customer'}
                     onChange={() => setForm({ ...form, removedTo: 'customer' })}
+                  />
+                )}
+                {/* FB-25: worn out – only tyres off the car, not ones the customer has at home */}
+                {removedSet?.state !== 'WITH_CUSTOMER' && (
+                  <Choice
+                    name="removed-to"
+                    label="Entsorgen"
+                    checked={form.removedTo === 'disposal'}
+                    onChange={() => setForm({ ...form, removedTo: 'disposal' })}
                   />
                 )}
               </div>

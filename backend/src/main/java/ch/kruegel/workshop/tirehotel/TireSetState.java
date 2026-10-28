@@ -7,5 +7,7 @@ public enum TireSetState {
     /** montiert – on the car */
     MOUNTED,
     /** beim Kunden – taken home, brought next time */
-    WITH_CUSTOMER
+    WITH_CUSTOMER,
+    /** entsorgt – worn out, replaced by new tyres (FB-25); kept with its history */
+    DISPOSED
 }

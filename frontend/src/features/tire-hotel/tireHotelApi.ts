@@ -26,7 +26,12 @@ const SETTINGS_TOPIC = 'tire-hotel-settings'
 const LOCATIONS_TOPIC = 'tire-locations'
 
 /** Where a set is (FB-12) */
-export const SET_STATES: Record<TireSetState, string> = { IN_HOTEL: 'Im Pneuhotel', MOUNTED: 'Montiert', WITH_CUSTOMER: 'Beim Kunden' }
+export const SET_STATES: Record<TireSetState, string> = {
+  IN_HOTEL: 'Im Pneuhotel',
+  MOUNTED: 'Montiert',
+  WITH_CUSTOMER: 'Beim Kunden',
+  DISPOSED: 'Entsorgt',
+}
 
 export const SEASONS: Record<Season, string> = { WINTER: 'Winter', SUMMER: 'Sommer', ALL_SEASON: 'Ganzjahr' }
 export const KINDS: Record<TireSetKind, string> = { WHEELS: 'Kompletträder', TIRES: 'Nur Reifen' }
@@ -42,6 +47,7 @@ export const EVENT_TEXT: Record<TireSetEvent['kind'], string> = {
   RECORDED: 'Erfasst (nicht eingelagert)',
   MOUNTED: 'Vom Kunden mitgebracht, montiert',
   TAKEN_HOME: 'Abmontiert, nimmt der Kunde mit',
+  DISPOSED: 'Abmontiert, entsorgt',
 }
 
 /** The sets in the hotel (newest first) – or the retrieved ones. Searched in the browser: a few hundred sets. */

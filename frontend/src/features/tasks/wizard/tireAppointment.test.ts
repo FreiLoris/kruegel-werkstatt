@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TireSet } from '../../tire-hotel/tireHotelApi'
 import type { AnyTask } from '../taskApi'
-import { openTireChangesElsewhere, tireAppointmentUrl, tireChangeKindOf } from './tireAppointment'
+import { openTireChangesElsewhere, proposedDimension, tireAppointmentUrl, tireChangeKindOf } from './tireAppointment'
 
 // fictitious
 const task = (id: string, date: string | null, more: Partial<AnyTask> = {}) =>
@@ -45,5 +45,21 @@ describe('openTireChangesElsewhere (FB-18)', () => {
 
   it('a link the wizard understands', () => {
     expect(tireAppointmentUrl('s 1')).toBe('/tasks/new?tireSet=s%201')
+  })
+})
+
+describe('proposedDimension (FB-25)', () => {
+  const dim = (state: TireSet['state'], dimension: string | null) => ({ state, dimension })
+
+  it('the set on the car first, else the newest – none known: empty', () => {
+    expect(proposedDimension([dim('IN_HOTEL', '225/45 R17'), dim('MOUNTED', '205/55 R16 91H')])).toBe('205/55 R16 91H')
+    expect(proposedDimension([dim('IN_HOTEL', '225/45 R17'), dim('WITH_CUSTOMER', '205/55 R16')])).toBe('225/45 R17')
+    expect(proposedDimension([dim('MOUNTED', null), dim('IN_HOTEL', '225/45 R17')])).toBe('225/45 R17')
+    expect(proposedDimension([])).toBe('')
+  })
+
+  it('a set disposed of only when nothing else is known', () => {
+    expect(proposedDimension([dim('DISPOSED', '195/65 R15'), dim('IN_HOTEL', '205/55 R16')])).toBe('205/55 R16')
+    expect(proposedDimension([dim('DISPOSED', '195/65 R15')])).toBe('195/65 R15')
   })
 })

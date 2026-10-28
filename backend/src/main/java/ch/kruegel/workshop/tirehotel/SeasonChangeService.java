@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class SeasonChangeService {
 
-    private static final Set<TireSetEventKind> TAKING_OFF = Set.of(TireSetEventKind.STORED, TireSetEventKind.TAKEN_HOME);
+    private static final Set<TireSetEventKind> TAKING_OFF = Set.of(TireSetEventKind.STORED, TireSetEventKind.TAKEN_HOME, TireSetEventKind.DISPOSED);
     private static final Set<TireSetEventKind> PUTTING_ON = Set.of(TireSetEventKind.RETRIEVED, TireSetEventKind.MOUNTED);
 
     private final TireSetRepository sets;

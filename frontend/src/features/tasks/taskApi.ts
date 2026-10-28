@@ -48,6 +48,7 @@ export const TIRE_CHANGE_KINDS: Record<TireChangeKind, string> = {
   TIRES_STORED: 'Reifen eingelagert',
   WHEELS_BROUGHT: 'Räder mitgebracht',
   TIRES_BROUGHT: 'Reifen mitgebracht',
+  NEW_TIRES: 'Neue Reifen (bestellt)',
 }
 
 

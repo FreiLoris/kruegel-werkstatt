@@ -1,14 +1,16 @@
 import { Link } from 'react-router'
 import { formatDate } from '../../lib/format'
 import { setSummary } from './taskTires'
-import type { TaskTires } from './tireHotelApi'
+import { EVENT_TEXT, type TaskTires } from './tireHotelApi'
 import styles from './TireHotel.module.css'
 
 /**
  * The tyre hotel on the task (13q): the set to mount and its place – once booked, which set went
  * out and which one in, with the prints of the stored one. Booking itself is a page of its own.
+ *
+ * @param newTires new tyres were mounted (FB-25) – not brought by the customer
  */
-export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHotel: boolean }) {
+export function TaskTiresPanel({ tires, fromHotel, newTires = false }: { tires: TaskTires; fromHotel: boolean; newTires?: boolean }) {
   return (
     <div className={styles.panel}>
       {tires.mounted ? (
@@ -17,7 +19,7 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
           {/* stored again next season → no retrieval date any more (it crashed the old task's page) */}
           {/* what this task did (FB-12) – the set may have moved on since */}
           {tires.mountedAs === 'MOUNTED' ? (
-            <span className="muted"> – vom Kunden mitgebracht</span>
+            <span className="muted">{newTires ? ' – neue Reifen' : ' – vom Kunden mitgebracht'}</span>
           ) : (
             tires.mounted.retrievedOn && <span className="muted"> – ausgelagert am {formatDate(tires.mounted.retrievedOn)}</span>
           )}
@@ -34,9 +36,9 @@ export function TaskTiresPanel({ tires, fromHotel }: { tires: TaskTires; fromHot
           ))
         ))
       )}
-      {tires.removed && tires.removedAs === 'TAKEN_HOME' ? (
+      {tires.removed && (tires.removedAs === 'TAKEN_HOME' || tires.removedAs === 'DISPOSED') ? (
         <p>
-          Abmontiert, nimmt der Kunde mit: <Link to={`/tires/${tires.removed.id}`}>{setSummary(tires.removed)}</Link>
+          {EVENT_TEXT[tires.removedAs]}: <Link to={`/tires/${tires.removed.id}`}>{setSummary(tires.removed)}</Link>
         </p>
       ) : tires.removed ? (
         <p>

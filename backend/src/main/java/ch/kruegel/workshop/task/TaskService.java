@@ -169,12 +169,15 @@ public class TaskService {
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
         task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
+        task.newTires(request.newTiresDimension(), request.newTiresCount());
         if (request.vehicleLocation() != null) {
             task.moveVehicle(request.vehicleLocation());
         }
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
-        return saved(repository.save(task));
+        Task created = repository.save(task);
+        orderNewTires(created, null);
+        return saved(created);
     }
 
     public TaskDto update(UUID id, TaskRequest request) {
@@ -189,15 +192,30 @@ public class TaskService {
         Employee mfkDriver = mfkDriver(request, task.getMfkDriver());
         InspectionStation mfkStation = mfkStation(request, task.getMfkStation());
         checkLiftFree(details.lift(), details.appointment(), id);
+        TireChangeKind kindBefore = task.getWork().tireChangeKind();
 
         task.update(details);
         task.acceptedBy(acceptedBy);
         task.insuranceCase(insurance, request.claimNumber());
         task.mfkTrip(mfkStation, request.mfkMinutes(), mfkDriver);
+        task.newTires(request.newTiresDimension(), request.newTiresCount());
         if (request.vehicleLocation() != null) {
             task.moveVehicle(request.vehicleLocation());
         }
+        orderNewTires(task, kindBefore);
         return saved(task);
+    }
+
+    /**
+     * New tyres chosen (FB-25): the shopping list gets the position to order them – once, when the
+     * kind becomes "Neue Reifen". Changed later, the position is changed on the list; chosen
+     * otherwise again, it stays there to be cancelled (it may be ordered already).
+     */
+    private void orderNewTires(Task task, TireChangeKind kindBefore) {
+        if (task.getWork().tireChangeKind() == TireChangeKind.NEW_TIRES && kindBefore != TireChangeKind.NEW_TIRES) {
+            events.publishEvent(new NewTiresChosen(task.getId(), task.getNewTiresDimension(), task.getNewTiresCount(),
+                    task.getAcceptedBy().getId()));
+        }
     }
 
     /**
@@ -391,6 +409,14 @@ public class TaskService {
     private TaskWork work(TaskRequest request, Set<ServiceItem> current) {
         if (!request.tireChange() && request.tireChangeKind() != null) {
             throw new InvalidInputException("tireChangeKind", "nur mit Radwechsel");
+        }
+        if (request.tireChangeKind() != TireChangeKind.NEW_TIRES) {
+            if (request.newTiresDimension() != null && !request.newTiresDimension().isBlank()) {
+                throw new InvalidInputException("newTiresDimension", "nur mit \u201eNeue Reifen\u201c");
+            }
+            if (request.newTiresCount() != null) {
+                throw new InvalidInputException("newTiresCount", "nur mit \u201eNeue Reifen\u201c");
+            }
         }
         if (!request.mfk() && request.mfkAppointment() != null) {
             throw new InvalidInputException("mfkAppointment", "nur mit MFK");

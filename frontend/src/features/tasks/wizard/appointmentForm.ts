@@ -37,6 +37,10 @@ export interface AppointmentForm {
   liftId: string
   tireChange: boolean
   tireChangeKind: TireChangeKind | ''
+  /** New tyres (FB-25): the dimension to order – proposed from the car's last set, may stay open */
+  newTiresDimension: string
+  /** New tyres: how many – a number as text, like a select */
+  newTiresCount: string
   mfk: boolean
   mfkDate: string
   mfkTime: string
@@ -74,6 +78,15 @@ export const DEFAULT_DURATION_MINUTES = 60
 /** The trip to the inspection: one hour unless said otherwise – like the backend default */
 export const MFK_DEFAULT_MINUTES = 60
 
+/** New tyres (FB-25): a set of four unless said otherwise – like the backend default */
+export const NEW_TIRES_DEFAULT_COUNT = 4
+
+/** New tyres: how many to choose from – up to the most the server takes (Task.NEW_TIRES_COUNT_MAX) */
+export const NEW_TIRES_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8]
+
+/** Like a tyre set's dimension on the server */
+export const NEW_TIRES_DIMENSION_MAX = 40
+
 /** "Dauer inkl. Fahrt" to choose from */
 export const MFK_DURATIONS = [30, 45, 60, 90, 120, 180, 240]
 
@@ -97,6 +110,8 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   liftId: '',
   tireChange: false,
   tireChangeKind: '',
+  newTiresDimension: '',
+  newTiresCount: String(NEW_TIRES_DEFAULT_COUNT),
   mfk: false,
   mfkDate: '',
   mfkTime: '',
@@ -327,6 +342,10 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     liftId: planned ? form.liftId || undefined : undefined,
     tireChange: form.tireChange,
     tireChangeKind: form.tireChange && form.tireChangeKind ? form.tireChangeKind : undefined,
+    ...(form.tireChange && form.tireChangeKind === 'NEW_TIRES' && {
+      newTiresDimension: text(form.newTiresDimension),
+      newTiresCount: Number(form.newTiresCount) || NEW_TIRES_DEFAULT_COUNT,
+    }),
     mfk: form.mfk,
     mfkAppointment: form.mfk && form.mfkDate && form.mfkTime ? `${form.mfkDate}T${form.mfkTime}` : undefined,
     mfkMinutes: form.mfk ? Number(form.mfkMinutes) || MFK_DEFAULT_MINUTES : undefined,
@@ -376,6 +395,8 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     liftId: task.liftId ?? '',
     tireChange: task.tireChange,
     tireChangeKind: task.tireChangeKind ?? '',
+    newTiresDimension: task.newTiresDimension ?? '',
+    newTiresCount: String(task.newTiresCount ?? NEW_TIRES_DEFAULT_COUNT),
     mfk: task.mfk,
     mfkDate,
     mfkTime,

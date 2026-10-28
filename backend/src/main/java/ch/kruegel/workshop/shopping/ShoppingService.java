@@ -8,6 +8,7 @@ import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.stock.StockItemRepository;
 import ch.kruegel.workshop.supplier.SupplierRepository;
+import ch.kruegel.workshop.task.NewTiresChosen;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
 import ch.kruegel.workshop.todo.ShoppingTodoChanged;
@@ -42,6 +43,8 @@ public class ShoppingService {
     public static final String TOPIC = "shopping-items";
     /** How many done positions (arrived or cancelled) the list shows at most – the latest */
     static final int DONE_LIMIT = 200;
+    /** The position of new tyres for a task (FB-25) starts so */
+    private static final String NEW_TIRES_PREFIX = "Reifen ";
 
     private final ShoppingItemRepository repository;
     private final EmployeeRepository employees;
@@ -135,6 +138,23 @@ public class ShoppingService {
         repository.delete(item);
         repository.flush();
         changed();
+    }
+
+    /**
+     * New tyres for a task (FB-25): "Reifen 205/55 R16 91H", to order – recorded and ordered by who
+     * took the order, like a part entered with the task (FB-24); all changeable on the list. Once per
+     * task: chosen again after another kind, the position not cancelled is still the one.
+     */
+    @EventListener
+    void onNewTiresChosen(NewTiresChosen event) {
+        boolean ordered = repository.ofTask(event.taskId()).stream()
+                .anyMatch(item -> item.getStatus() != ShoppingStatus.CANCELLED && item.getDetails().description().startsWith(NEW_TIRES_PREFIX));
+        if (ordered) {
+            return;
+        }
+        String description = event.dimension() == null ? NEW_TIRES_PREFIX + "(Dimension offen)" : NEW_TIRES_PREFIX + event.dimension();
+        create(new ShoppingItemRequest(description, null, event.count(), ShoppingStatus.TO_ORDER, event.acceptedBy(), event.acceptedBy(),
+                event.taskId(), null, null, null, null, null, null));
     }
 
     /**

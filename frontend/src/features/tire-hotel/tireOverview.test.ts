@@ -21,6 +21,11 @@ describe('tireOverview (FB-12)', () => {
     ])
   })
 
+  it('a set disposed of (FB-25) is not the current one – only counted', () => {
+    const overview = tireOverview([set('s-new', 'SUMMER', '2026-04-01'), set('s-old', 'SUMMER', '2026-10-15', { state: 'DISPOSED' }), set('w', 'WINTER', '2026-10-15', { state: 'DISPOSED' })])
+    expect(overview.map((t) => [t.season, t.set.id, t.older])).toEqual([['SUMMER', 's-new', 1]])
+  })
+
   it('no sets, nothing to show', () => {
     expect(tireOverview([])).toEqual([])
   })

@@ -51,9 +51,11 @@ export interface SheetTires {
 /**
  * @param fromHotel the task mounts wheels/tyres from the hotel – else the customer brings them: a set
  *                  known to be with them (FB-12)
+ * @param newTires  new tyres are mounted (FB-25) – none of the car's sets goes on
  */
-export function sheetTires(tires: TaskTires, fromHotel: boolean): SheetTires {
-  const mount = tires.mounted ?? (fromHotel ? tires.inHotel[0] : tires.outside.find((s) => s.state === 'WITH_CUSTOMER'))
+export function sheetTires(tires: TaskTires, fromHotel: boolean, newTires = false): SheetTires {
+  const known = fromHotel ? tires.inHotel[0] : tires.outside.find((s) => s.state === 'WITH_CUSTOMER')
+  const mount = tires.mounted ?? (newTires ? undefined : known)
   const takeOff = tires.removed ?? probablyOnTheCar(tires, mount)
   return { mount, moreInHotel: fromHotel ? tires.inHotel.filter((s) => s.id !== mount?.id) : [], takeOff }
 }
@@ -91,8 +93,8 @@ export const isBooked = (tires: TaskTires) => !!tires.mounted || !!tires.removed
 /** A set of the vehicle (its id), a new one, or nothing recorded */
 export type SetChoice = 'none' | 'new' | string
 
-/** Where the set taken off goes (FB-12) */
-export type RemovedTo = 'hotel' | 'customer'
+/** Where the set taken off goes (FB-12) – or it is worn out and disposed of (FB-25) */
+export type RemovedTo = 'hotel' | 'customer' | 'disposal'
 
 export interface BookingForm {
   /** "Montiert": a set from the hotel or brought by the customer, a new one they brought, or none */
@@ -105,20 +107,30 @@ export interface BookingForm {
   removed: TireSetForm
 }
 
+/** New tyres (FB-25): what was ordered – they go on as a new set */
+export interface NewTires {
+  dimension: string | null
+}
+
 /**
  * What is most likely: the set of the hotel – or the one the customer has – goes on, the one on the
- * car comes off and goes into the hotel (from the hotel) or home with the customer (brought).
+ * car comes off and goes into the hotel (from the hotel) or home with the customer (brought). New
+ * tyres (FB-25) go on as a new set with the dimension ordered, in the season of the set they
+ * replace; the old ones are worn out – disposed of.
  */
-export function initialBooking(tires: TaskTires, fromHotel: boolean, today: string): BookingForm {
-  const { mount, takeOff } = sheetTires(tires, fromHotel)
+export function initialBooking(tires: TaskTires, fromHotel: boolean, today: string, newTires?: NewTires): BookingForm {
+  const { mount, takeOff } = sheetTires(tires, fromHotel, !!newTires)
   const empty = emptyForm(today)
   const otherSeason = mount && OTHER_SEASON[mount.season]
-  const removedSeason = otherSeason ?? empty.season
+  const removedSeason = (newTires ? takeOff?.season : otherSeason) ?? empty.season
+  const mounted = newTires
+    ? { ...empty, season: takeOff?.season ?? empty.season, kind: 'TIRES' as const, dimension: newTires.dimension ?? '' }
+    : { ...empty, season: mount?.season ?? empty.season }
   return {
     mountedChoice: tires.mounted ? 'none' : (mount?.id ?? (fromHotel ? 'none' : 'new')),
-    mounted: { ...empty, season: mount?.season ?? empty.season },
+    mounted,
     removedChoice: tires.removed ? 'none' : (takeOff?.id ?? 'new'),
-    removedTo: fromHotel ? 'hotel' : 'customer',
+    removedTo: removedToFor(takeOff, newTires ? 'disposal' : fromHotel ? 'hotel' : 'customer'),
     removed: { ...empty, season: removedSeason, ...mountingProposal(setsOf(tires), removedSeason) },
   }
 }
@@ -163,8 +175,8 @@ function newSetOf(set: TireSetForm): NewTireSet {
 }
 
 /**
- * Another set chosen. A set already with the customer cannot be taken home again – it goes into the
- * hotel (FB-12). A known set brings its season along (the data of a new one stays as typed).
+ * Another set chosen. A set already with the customer cannot be taken home again or disposed of – it
+ * goes into the hotel (FB-12). A known set brings its season along (the data of a new one stays as typed).
  */
 export function withChoice(form: BookingForm, which: 'mounted' | 'removed', choice: SetChoice, set?: TireSet): BookingForm {
   if (which === 'mounted') {
@@ -174,8 +186,13 @@ export function withChoice(form: BookingForm, which: 'mounted' | 'removed', choi
     ...form,
     removedChoice: choice,
     removed: set ? { ...form.removed, season: set.season } : form.removed,
-    removedTo: set?.state === 'WITH_CUSTOMER' ? 'hotel' : form.removedTo,
+    removedTo: removedToFor(set, form.removedTo),
   }
+}
+
+/** A set already with the customer can only go into the hotel – not home again, not disposed of (FB-12, FB-25) */
+function removedToFor(set: TireSet | undefined, wanted: RemovedTo): RemovedTo {
+  return set?.state === 'WITH_CUSTOMER' ? 'hotel' : wanted
 }
 
 /** A known set or a new one, with the depths */
@@ -186,12 +203,18 @@ function setOf(choice: SetChoice, set: TireSetForm) {
 /** Form → JSON for POST /api/tasks/{id}/tires */
 export function toBookingRequest(form: BookingForm, placeId: string | null): TaskTireBookingRequest {
   const store = form.removedTo === 'hotel'
+  const dispose = form.removedTo === 'disposal'
   return {
     mounted: form.mountedChoice === 'none' ? undefined : setOf(form.mountedChoice, form.mounted),
     removed:
       form.removedChoice === 'none'
         ? undefined
-        : { ...setOf(form.removedChoice, form.removed), store, placeId: store ? (placeId ?? undefined) : undefined },
+        : {
+            ...setOf(form.removedChoice, form.removed),
+            store,
+            placeId: store ? (placeId ?? undefined) : undefined,
+            ...(dispose && { dispose }),
+          },
   }
 }
 
