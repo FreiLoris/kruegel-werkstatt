@@ -161,6 +161,14 @@ export function movedTo(task: Task, liftId: string | null, date: string, start: 
   return { liftId, date, time: timeOf(start), endAt: addMinutes(begin, durationOf(task)) }
 }
 
+/**
+ * A carried-over task dragged onto the grid (FB-14): it lands where the top of its card is – both
+ * tops as seen now (scrolling moves both), snapped to a quarter hour.
+ */
+export function carriedStartAt(cardTop: number, gridTop: number, rangeStart: number, scale: number): number {
+  return snap(rangeStart + (cardTop - gridTop) / scale)
+}
+
 /** The end dragged to {@code end} minutes of {@code date} – at least one quarter hour after the start. */
 export function resizedTo(task: Task, date: string, end: number): Schedule {
   const atLeast = addMinutes(startOf(task), SNAP_MINUTES)
