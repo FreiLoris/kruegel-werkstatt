@@ -144,6 +144,18 @@ describe('TaskSheet', () => {
     expect(screen.getByRole('heading', { name: 'Radwechsel' }).parentElement!.textContent).not.toContain('Felgen')
   })
 
+  it('new tires (FB-25): "Neue Reifen montieren" with what was ordered, the old ones may be disposed of', () => {
+    const ordered = { ...task, tireChangeKind: 'NEW_TIRES' as const, newTiresCount: 4, newTiresDimension: '205/55 R16 91H' }
+    render(<TaskSheet task={ordered} company={company} lookups={{ serviceItemNames: new Map() }} />)
+
+    const line = screen.getByText('Neue Reifen montieren').parentElement!
+    expect(line.textContent).toContain('Neue Reifen montieren – 4× 205/55 R16 91H')
+    // the dimension is known – only brand and DOT to fill in
+    expect(line.textContent).not.toContain('Dimension')
+    expect(screen.getByRole('heading', { name: 'Radwechsel' }).parentElement!.textContent).toContain('entsorgen')
+    expect(screen.getByRole('columnheader', { name: 'Neu mm' })).toBeTruthy()
+  })
+
   it('insurance case: insurance with phone, the claim number or a line for it (FB-06)', () => {
     // fictitious insurance
     const insurance = { name: 'Muster Versicherung', phone: '0800 000 000', email: null }

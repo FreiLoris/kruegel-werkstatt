@@ -15082,6 +15082,10 @@
             "$ref" : "#/components/schemas/DepthsRequest",
             "description" : "As noted on the task sheet"
           },
+          "dispose" : {
+            "type" : "boolean",
+            "description" : "Disposed of (FB-25) – then not stored; missing = false"
+          },
           "newSet" : {
             "$ref" : "#/components/schemas/NewSet",
             "description" : "Only for a new set"
@@ -16161,6 +16165,15 @@
             "format" : "uuid",
             "description" : "MFK: the inspection station"
           },
+          "newTiresCount" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32",
+            "description" : "New tyres: how many – set with new tyres"
+          },
+          "newTiresDimension" : {
+            "type" : [ "string", "null" ],
+            "description" : "New tyres (FB-25): the dimension to order"
+          },
           "notes" : {
             "type" : [ "string", "null" ],
             "description" : "Internal notes"
@@ -16201,7 +16214,7 @@
           },
           "tireChangeKind" : {
             "type" : [ "string", "null" ],
-            "enum" : [ "WHEELS_STORED", "TIRES_STORED", "WHEELS_BROUGHT", "TIRES_BROUGHT" ]
+            "enum" : [ "WHEELS_STORED", "TIRES_STORED", "WHEELS_BROUGHT", "TIRES_BROUGHT", "NEW_TIRES" ]
           },
           "updatedAt" : {
             "type" : "string",
@@ -16238,7 +16251,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "vehicleLocation", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "newTiresCount", "newTiresDimension", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "vehicleLocation", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -16357,6 +16370,20 @@
             "format" : "uuid",
             "description" : "MFK: the inspection station; empty = the standard one"
           },
+          "newTiresCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "New tyres: how many; empty = 4",
+            "maximum" : 8,
+            "minimum" : 1
+          },
+          "newTiresDimension" : {
+            "type" : "string",
+            "description" : "New tyres (FB-25): the dimension to order; may be open",
+            "example" : "205/55 R16 91H",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
           "notes" : {
             "type" : "string",
             "maxLength" : 2000,
@@ -16389,7 +16416,7 @@
           },
           "tireChangeKind" : {
             "type" : "string",
-            "enum" : [ "WHEELS_STORED", "TIRES_STORED", "WHEELS_BROUGHT", "TIRES_BROUGHT" ]
+            "enum" : [ "WHEELS_STORED", "TIRES_STORED", "WHEELS_BROUGHT", "TIRES_BROUGHT", "NEW_TIRES" ]
           },
           "vehicleId" : {
             "type" : "string",
@@ -16609,7 +16636,7 @@
           "mountedAs" : {
             "type" : [ "string", "null" ],
             "description" : "How: RETRIEVED from the hotel, MOUNTED brought by the customer (FB-12)",
-            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME", "DISPOSED" ]
           },
           "outside" : {
             "type" : "array",
@@ -16627,8 +16654,8 @@
           },
           "removedAs" : {
             "type" : [ "string", "null" ],
-            "description" : "How: STORED into the hotel, TAKEN_HOME by the customer (FB-12)",
-            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
+            "description" : "How: STORED into the hotel, TAKEN_HOME by the customer (FB-12), DISPOSED (FB-25)",
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME", "DISPOSED" ]
           }
         },
         "required" : [ "inHotel", "mounted", "mountedAs", "outside", "removed", "removedAs" ]
@@ -17019,7 +17046,7 @@
           "state" : {
             "type" : "string",
             "description" : "In the hotel, on the car or with the customer (FB-12)",
-            "enum" : [ "IN_HOTEL", "MOUNTED", "WITH_CUSTOMER" ]
+            "enum" : [ "IN_HOTEL", "MOUNTED", "WITH_CUSTOMER", "DISPOSED" ]
           },
           "storedOn" : {
             "type" : [ "string", "null" ],
@@ -17090,7 +17117,7 @@
           },
           "kind" : {
             "type" : "string",
-            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME" ]
+            "enum" : [ "STORED", "MEASURED", "MOVED", "RETRIEVED", "RECORDED", "MOUNTED", "TAKEN_HOME", "DISPOSED" ]
           },
           "note" : {
             "type" : [ "string", "null" ]
@@ -17261,7 +17288,7 @@
           },
           "states" : {
             "type" : "array",
-            "description" : "Label = IN_HOTEL, MOUNTED or WITH_CUSTOMER",
+            "description" : "Label = IN_HOTEL, MOUNTED, WITH_CUSTOMER or DISPOSED",
             "items" : {
               "$ref" : "#/components/schemas/CountDto"
             }

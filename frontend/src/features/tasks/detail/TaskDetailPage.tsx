@@ -337,7 +337,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
             ) : !tires.data ? (
               <p className="muted">Lade …</p>
             ) : (
-              <TaskTiresPanel tires={tires.data} fromHotel={fromHotel} />
+              <TaskTiresPanel tires={tires.data} fromHotel={fromHotel} newTires={task.tireChangeKind === 'NEW_TIRES'} />
             )}
           </Card>
         )}

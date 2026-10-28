@@ -16,7 +16,7 @@ import styles from './TaskSheet.module.css'
  */
 export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: TaskTires }) {
   const what = block.wheels ? 'Räder' : 'Reifen'
-  const tires = hotel && sheetTires(hotel, block.stored)
+  const tires = hotel && sheetTires(hotel, block.stored, !!block.newTires)
   const mount = tires?.mount
   const takeOff = tires?.takeOff
   const pressure = mount ? pressureSummary(mount) : ''
@@ -24,10 +24,17 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
   return (
     <Block title="Radwechsel">
       <div className={styles.tireRow}>
-        <p className={styles.tireSet}>
-          <strong>Montiert</strong> {block.stored ? `– ${what} aus dem Pneuhotel` : `– mitgebrachte ${what}`}:{' '}
-          {mount ? setSummary(mount) : <SetWriteIn wheels={block.wheels} />}
-        </p>
+        {block.newTires ? (
+          <p className={styles.tireSet}>
+            <strong>Neue Reifen montieren</strong> – {block.newTires.count}× {block.newTires.dimension ?? <WriteIn />}:{' '}
+            {mount ? setSummary(mount) : <SetWriteIn wheels={false} withDimension={false} />}
+          </p>
+        ) : (
+          <p className={styles.tireSet}>
+            <strong>Montiert</strong> {block.stored ? `– ${what} aus dem Pneuhotel` : `– mitgebrachte ${what}`}:{' '}
+            {mount ? setSummary(mount) : <SetWriteIn wheels={block.wheels} />}
+          </p>
+        )}
         {block.stored && (
           <p className={styles.storagePlace}>
             Lagerplatz {mount?.place ?? <WriteIn />}
@@ -39,7 +46,11 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
           <strong>Abmontiert</strong>: {takeOff ? setSummary(takeOff) : <SetWriteIn wheels={block.wheels} />}
         </p>
         <p className={styles.tireQuestion}>
-          {block.stored ? (
+          {block.newTires ? (
+            <>
+              <Box /> einlagern <Box /> nimmt Kunde mit <Box /> entsorgen · Platz:
+            </>
+          ) : block.stored ? (
             <>ins Pneuhotel, Platz:</>
           ) : (
             <>
@@ -59,7 +70,7 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
           <tr>
             <th scope="col">Rad</th>
             <th scope="col" className={styles.wide}>
-              Montiert mm
+              {block.newTires ? 'Neu mm' : 'Montiert mm'}
             </th>
             <th scope="col" className={styles.wide}>
               Abmontiert mm
@@ -113,11 +124,18 @@ export function TireBlock({ block, tires: hotel }: { block: TiresBlock; tires?: 
   )
 }
 
-/** The data of a set to fill in by hand – once per set, not per wheel */
-function SetWriteIn({ wheels }: { wheels: boolean }) {
+/** The data of a set to fill in by hand – once per set, not per wheel; the dimension of new tyres is known */
+function SetWriteIn({ wheels, withDimension = true }: { wheels: boolean; withDimension?: boolean }) {
   return (
     <span className={styles.setWriteIn}>
-      Marke/Modell <WriteIn /> Dimension <WriteIn /> DOT <span className={styles.writeLineShort} aria-hidden />
+      Marke/Modell <WriteIn />
+      {withDimension && (
+        <>
+          {' '}
+          Dimension <WriteIn />
+        </>
+      )}{' '}
+      DOT <span className={styles.writeLineShort} aria-hidden />
       {wheels && (
         <>
           {' '}

@@ -127,6 +127,16 @@ describe('booking', () => {
     expect(toBookingRequest(filled, null).mounted).toMatchObject({ newSet: { kind: 'TIRES', brand: 'Muster' }, depths: { frontLeft: 7 } })
   })
 
+  it('new tyres (FB-25): a new set with the dimension ordered goes on, the one on the car is disposed of', () => {
+    const form = initialBooking(tires(), false, today, { dimension: '205/55 R16 91H' })
+    expect(form).toMatchObject({ mountedChoice: 'new', removedChoice: 's', removedTo: 'disposal' })
+    // in the season of the tyres they replace, only tyres
+    expect(form.mounted).toMatchObject({ season: 'SUMMER', kind: 'TIRES', dimension: '205/55 R16 91H' })
+    expect(toBookingRequest(form, 'p1').removed).toMatchObject({ setId: 's', store: false, dispose: true, placeId: undefined })
+    // the customer's own set in the hotel is not mounted instead
+    expect(sheetTires(tires(), false, true).mount).toBeUndefined()
+  })
+
   it('a set already with the customer goes into the hotel – not home again', () => {
     const own = set('o', { season: 'SUMMER', state: 'WITH_CUSTOMER', storedOn: null })
     const form = { ...initialBooking(tires(), false, today), removedTo: 'customer' as const }

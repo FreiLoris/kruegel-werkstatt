@@ -45,6 +45,10 @@ public class Task extends BaseEntity {
     static final int MFK_MINUTES_DEFAULT = 60;
     static final int MFK_MINUTES_MIN = 15;
     static final int MFK_MINUTES_MAX = 480;
+    /** Same as a tyre set's dimension (TireSetDetails.DIMENSION_MAX) */
+    static final int NEW_TIRES_DIMENSION_MAX = 40;
+    static final int NEW_TIRES_COUNT_DEFAULT = 4;
+    static final int NEW_TIRES_COUNT_MAX = 8;
 
     /** Assigned by the app when the task is created ("26-0001"); older ones may be SwissGarage numbers. Unique */
     private String taskNumber;
@@ -82,6 +86,10 @@ public class Task extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private TireChangeKind tireChangeKind;
+
+    /** New tyres (FB-25): what to order – the dimension may still be open, the count is set */
+    private String newTiresDimension;
+    private Integer newTiresCount;
 
     private boolean mfk;
     private LocalDateTime mfkAppointment;
@@ -186,6 +194,29 @@ public class Task extends BaseEntity {
         this.mfkDriver = driver;
     }
 
+    /**
+     * The new tyres to order (FB-25) – like the MFK trip not part of {@link TaskDetails}: set with every
+     * edit, after the details (they say whether new tyres are mounted).
+     *
+     * @param dimension e.g. "205/55 R16 91H"; may still be open
+     * @param count     how many; empty = {@link #NEW_TIRES_COUNT_DEFAULT}
+     */
+    public void newTires(String dimension, Integer count) {
+        String text = Texts.checkMaxLength(Texts.emptyToNull(dimension), NEW_TIRES_DIMENSION_MAX, "Tyre dimension");
+        if (tireChangeKind != TireChangeKind.NEW_TIRES) {
+            if (text != null || count != null) {
+                throw new IllegalArgumentException("New tyres without the tyre change kind " + TireChangeKind.NEW_TIRES);
+            }
+            return;
+        }
+        int tyres = count == null ? NEW_TIRES_COUNT_DEFAULT : count;
+        if (tyres < 1 || tyres > NEW_TIRES_COUNT_MAX) {
+            throw new IllegalArgumentException("New tyres: " + tyres);
+        }
+        this.newTiresDimension = text;
+        this.newTiresCount = tyres;
+    }
+
     /** Sets the task number; empty removes it. Uniqueness is checked by the service/database. */
     public void assignTaskNumber(String number) {
         this.taskNumber = Texts.checkMaxLength(Texts.emptyToNull(number), TASK_NUMBER_MAX, "Task number");
@@ -226,6 +257,13 @@ public class Task extends BaseEntity {
         TaskWork work = details.work();
         this.tireChange = work.tireChange();
         this.tireChangeKind = work.tireChangeKind();
+        // what to order goes with the new tyres: gone without them, the default until newTires says more
+        if (tireChangeKind != TireChangeKind.NEW_TIRES) {
+            this.newTiresDimension = null;
+            this.newTiresCount = null;
+        } else if (newTiresCount == null) {
+            this.newTiresCount = NEW_TIRES_COUNT_DEFAULT;
+        }
         this.mfk = work.mfk();
         this.mfkAppointment = work.mfkAppointment();
         // the trip goes with the MFK: gone without one, the default until mfkTrip says more
@@ -249,6 +287,14 @@ public class Task extends BaseEntity {
 
     public TaskWork getWork() {
         return new TaskWork(tireChange, tireChangeKind, mfk, mfkAppointment, serviceItems, workDescription);
+    }
+
+    public String getNewTiresDimension() {
+        return newTiresDimension;
+    }
+
+    public Integer getNewTiresCount() {
+        return newTiresCount;
     }
 
     public Employee getAcceptedBy() {

@@ -119,7 +119,7 @@ public class TireSet extends BaseEntity {
      * Tyres not stored (FB-12): brought by the customer and mounted, or taken off and taken home –
      * recorded with the depths measured, so they are known next time.
      *
-     * @param state {@link TireSetState#MOUNTED} or {@link TireSetState#WITH_CUSTOMER}
+     * @param state {@link TireSetState#MOUNTED}, {@link TireSetState#WITH_CUSTOMER} or {@link TireSetState#DISPOSED}
      */
     public static TireSet recorded(TireSetDetails details, TreadDepths depths, LocalDate day, TireSetState state, String note, Task task) {
         if (state == TireSetState.IN_HOTEL) {
@@ -130,8 +130,12 @@ public class TireSet extends BaseEntity {
         set.depths = Objects.requireNonNull(depths, "depths");
         set.state = state;
         set.events.add(new TireSetEvent(set, TireSetEventKind.RECORDED, day, depths, null, note, task));
-        set.events.add(new TireSetEvent(set, state == TireSetState.MOUNTED ? TireSetEventKind.MOUNTED : TireSetEventKind.TAKEN_HOME,
-                day, depths, null, note, task));
+        TireSetEventKind kind = switch (state) {
+            case MOUNTED -> TireSetEventKind.MOUNTED;
+            case DISPOSED -> TireSetEventKind.DISPOSED;
+            default -> TireSetEventKind.TAKEN_HOME;
+        };
+        set.events.add(new TireSetEvent(set, kind, day, depths, null, note, task));
         return set;
     }
 
@@ -153,6 +157,16 @@ public class TireSet extends BaseEntity {
         checkNotBefore(day, "Taken home");
         this.state = TireSetState.WITH_CUSTOMER;
         events.add(new TireSetEvent(this, TireSetEventKind.TAKEN_HOME, day, getDepths(), null, note, task));
+    }
+
+    /** Taken off and disposed of (FB-25) – worn out, new tyres went on. */
+    public void dispose(LocalDate day, String note, Task task) {
+        if (state != TireSetState.MOUNTED) {
+            throw new IllegalStateException("Only a set on the car is disposed of: " + state);
+        }
+        checkNotBefore(day, "Disposed of");
+        this.state = TireSetState.DISPOSED;
+        events.add(new TireSetEvent(this, TireSetEventKind.DISPOSED, day, getDepths(), null, note, task));
     }
 
     /**

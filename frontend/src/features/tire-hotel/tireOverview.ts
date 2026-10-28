@@ -2,7 +2,8 @@ import type { Season, TireSet } from './tireHotelApi'
 
 /**
  * The tyres of a vehicle at a glance (FB-12): per season the set used last – summer and winter –
- * the older ones only counted (sets replaced by new tyres stay in the history). Pure, tested.
+ * the older ones only counted (sets replaced by new tyres stay in the history). A set disposed of
+ * (FB-25) is never the current one. Pure, tested.
  */
 export interface SeasonTires {
   season: Season
@@ -23,6 +24,7 @@ const lastUsed = (set: TireSet) =>
 export function tireOverview(sets: TireSet[]): SeasonTires[] {
   return ORDER.flatMap((season) => {
     const ofSeason = sets.filter((s) => s.season === season).sort((a, b) => lastUsed(b).localeCompare(lastUsed(a)))
-    return ofSeason.length === 0 ? [] : [{ season, set: ofSeason[0], older: ofSeason.length - 1 }]
+    const current = ofSeason.find((s) => s.state !== 'DISPOSED')
+    return current ? [{ season, set: current, older: ofSeason.length - 1 }] : []
   })
 }

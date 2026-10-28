@@ -9,5 +9,7 @@ public enum TireChangeKind {
     /** Räder mitgebracht */
     WHEELS_BROUGHT,
     /** Reifen mitgebracht */
-    TIRES_BROUGHT
+    TIRES_BROUGHT,
+    /** Neue Reifen (bestellt) – ordered for the customer, mounted on the old rims (FB-25) */
+    NEW_TIRES
 }

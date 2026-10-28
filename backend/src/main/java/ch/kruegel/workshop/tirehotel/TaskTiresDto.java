@@ -17,7 +17,7 @@ public record TaskTiresDto(
         @Schema(types = {"string", "null"}, description = "How: RETRIEVED from the hotel, MOUNTED brought by the customer (FB-12)")
         TireSetEventKind mountedAs,
         @Schema(types = {"object", "null"}, description = "The set the task took off (stored or home) – empty = not booked yet") TireSetDto removed,
-        @Schema(types = {"string", "null"}, description = "How: STORED into the hotel, TAKEN_HOME by the customer (FB-12)")
+        @Schema(types = {"string", "null"}, description = "How: STORED into the hotel, TAKEN_HOME by the customer (FB-12), DISPOSED (FB-25)")
         TireSetEventKind removedAs,
         List<TireSetDto> inHotel,
         List<TireSetDto> outside) {

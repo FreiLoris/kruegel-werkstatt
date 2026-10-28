@@ -859,6 +859,17 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   von" of a new task and "Erfasst von" of a new part are the person at the device and follow a
   switch while still empty or that person (not when chosen by hand for someone else). Notes,
   to-dos and the history take the person anyway (X-Person).
+- [x] **16i – New tyres ordered** (FB-25, first part)
+  Done: a fifth kind of tyre change "Neue Reifen (bestellt)" with the dimension and how many (4 by
+  default; V52). The dimension is proposed from the car's tyres – the set on the car first, else the
+  one used last – and stays changeable (other rims). Saving it the first time with this kind puts
+  "Reifen 205/55 R16 91H", to order, on the shopping list of the task – recorded and ordered by who
+  took the order (FB-24), all changeable there; edited later, it is not ordered twice. The sheet
+  says "Neue Reifen montieren – 4× 205/55 R16 91H" with brand and DOT to fill in, a column "Neu mm"
+  and for the old ones "einlagern / nimmt Kunde mit / entsorgen". Booking the change puts the new
+  tyres on as a new set (season of the ones they replace) and proposes to dispose of the old ones:
+  a new state "Entsorgt" (kept with its history, never offered again, never the car's current set).
+  Open (FB-25b): "nur 2 Reifen" with the axle, data per wheel; the hint "Reifen noch nicht geliefert".
 
 ---
 

@@ -38,6 +38,9 @@ public record TaskRequest(
         UUID liftId,
         @Schema(description = "Missing = false") Boolean tireChange,
         TireChangeKind tireChangeKind,
+        @Size(max = Task.NEW_TIRES_DIMENSION_MAX)
+        @Schema(example = "205/55 R16 91H", description = "New tyres (FB-25): the dimension to order; may be open") String newTiresDimension,
+        @Min(1) @Max(Task.NEW_TIRES_COUNT_MAX) @Schema(description = "New tyres: how many; empty = 4") Integer newTiresCount,
         @Schema(description = "Missing = false") Boolean mfk,
         @Schema(example = "2026-10-15T10:00") LocalDateTime mfkAppointment,
         @Min(Task.MFK_MINUTES_MIN) @Max(Task.MFK_MINUTES_MAX)

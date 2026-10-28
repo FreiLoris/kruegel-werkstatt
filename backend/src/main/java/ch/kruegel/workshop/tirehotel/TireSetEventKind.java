@@ -12,5 +12,7 @@ public enum TireSetEventKind {
     /** put on the car from the customer (FB-12) – brought along again */
     MOUNTED,
     /** taken off, the customer takes it home (FB-12) */
-    TAKEN_HOME
+    TAKEN_HOME,
+    /** taken off and disposed of – new tyres went on (FB-25) */
+    DISPOSED
 }

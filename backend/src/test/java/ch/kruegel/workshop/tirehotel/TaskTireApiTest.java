@@ -248,6 +248,65 @@ class TaskTireApiTest {
                 { "mounted": { "newSet": { "season": "SUMMER", "kind": "TIRES" } } }""")).hasStatus(HttpStatus.CONFLICT);
     }
 
+    @Test
+    void newTyresAreOrderedWithTheTaskOnce() {
+        String task = idOf(send("POST", "/api/tasks", newTyresTask("\"newTiresDimension\": \"205/55 R16 91H\"")));
+        MvcTestResult items = mvc.get().uri("/api/shopping-items?taskId=" + task).exchange();
+        assertThat(items).bodyJson().extractingPath("$[*].description").asArray().containsExactly("Reifen 205/55 R16 91H");
+        assertThat(items).bodyJson().extractingPath("$[0].quantity").isEqualTo(4);
+        assertThat(items).bodyJson().extractingPath("$[0].status").isEqualTo("TO_ORDER");
+        assertThat(items).bodyJson().extractingPath("$[0].orderById").isEqualTo(chef);
+        assertThat(mvc.get().uri("/api/tasks/" + task).exchange()).bodyJson().extractingPath("$.newTiresCount").isEqualTo(4);
+
+        // edited again: the position is not ordered twice
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresCount\": 2, \"version\": 0"))).hasStatusOk();
+        assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$").asArray().hasSize(1);
+
+        // chosen later: ordered then, the dimension still open
+        String later = idOf(send("POST", "/api/tasks", task(true)));
+        assertThat(send("PUT", "/api/tasks/" + later, newTyresTask("\"version\": 0"))).hasStatusOk();
+        assertThat(mvc.get().uri("/api/shopping-items?taskId=" + later).exchange()).bodyJson().extractingPath("$[*].description").asArray()
+                .containsExactly("Reifen (Dimension offen)");
+
+        // what to order only with new tyres
+        assertFieldError(send("POST", "/api/tasks", task(true).replace(" }", ", \"newTiresCount\": 2 }")), "newTiresCount");
+    }
+
+    @Test
+    void theWornTyresTakenOffAreDisposedOf() {
+        String summer = idOf(send("POST", "/api/tire-sets", """
+                { "customerId": "%s", "vehicleId": "%s", "season": "SUMMER", "kind": "TIRES", "placeId": "%s" }"""
+                .formatted(huber.getId(), golf.getId(), place1)));
+        send("POST", "/api/tire-sets/" + summer + "/retrieve", "{}");
+        String task = idOf(send("POST", "/api/tasks", newTyresTask("\"newTiresDimension\": \"205/55 R16 91H\"")));
+
+        MvcTestResult booked = send("POST", "/api/tasks/" + task + "/tires", """
+                { "mounted": { "newSet": { "season": "SUMMER", "kind": "TIRES", "dimension": "205/55 R16 91H" },
+                               "depths": { "frontLeft": 8, "frontRight": 8, "rearLeft": 8, "rearRight": 8 } },
+                  "removed": { "setId": "%s", "depths": { "frontLeft": 1.4 }, "dispose": true } }""".formatted(summer));
+        assertThat(booked).hasStatusOk();
+        assertThat(booked).bodyJson().extractingPath("$.removed.state").isEqualTo("DISPOSED");
+        assertThat(booked).bodyJson().extractingPath("$.removedAs").isEqualTo("DISPOSED");
+        assertThat(mvc.get().uri("/api/tire-sets/" + summer + "/history").exchange()).bodyJson().extractingPath("$[*].kind").asArray()
+                .endsWith("MEASURED", "DISPOSED");
+
+        // gone: the next tyre change does not offer it
+        String next = idOf(send("POST", "/api/tasks", task(true)));
+        assertThat(mvc.get().uri("/api/tasks/" + next + "/tires").exchange()).bodyJson().extractingPath("$.outside[*].id").asArray()
+                .doesNotContain(summer);
+        // only tyres on the car are disposed of – not ones the customer has at home
+        MvcTestResult home = send("POST", "/api/tasks/" + next + "/tires", """
+                { "removed": { "newSet": { "season": "WINTER", "kind": "TIRES" }, "store": false } }""");
+        assertThat(home).hasStatusOk();
+        String third = idOf(send("POST", "/api/tasks", task(true)));
+        assertFieldError(send("POST", "/api/tasks/" + third + "/tires", """
+                { "removed": { "setId": "%s", "dispose": true } }""".formatted(read(home, "$.removed.id"))), "removed.setId");
+    }
+
+    private String newTyresTask(String more) {
+        return task(true).replace("WHEELS_STORED\"", "NEW_TIRES\", " + more);
+    }
+
     private String task(boolean tireChange) {
         return """
                 { "customerId": "%s", "vehicleId": "%s", "acceptedById": "%s", "date": "%s", "time": "08:00", "tireChange": %s %s }"""

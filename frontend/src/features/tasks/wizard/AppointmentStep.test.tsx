@@ -25,6 +25,11 @@ vi.mock('../../service-items/serviceItemApi', () => ({
   }),
 }))
 // the week overview loads tasks – not what is tested here
+vi.mock('../../tire-hotel/tireHotelApi', async (original) => ({
+  ...(await original<typeof import('../../tire-hotel/tireHotelApi')>()),
+  // fictitious: the car's summer tyres are on it
+  useVehicleTireSets: () => ({ data: [{ state: 'MOUNTED', dimension: '205/55 R16 91H' }] }),
+}))
 vi.mock('./CapacityOverview', () => ({ CapacityOverview: () => null }))
 vi.mock('./SameVehicleHint', () => ({ SameVehicleHint: () => null }))
 vi.mock('./useAppointmentWarnings', () => ({ useAppointmentWarnings: () => [] }))
@@ -109,5 +114,23 @@ describe('AppointmentStep – Versicherungsfall', () => {
     renderStep({ ...THURSDAY, insuranceCase: true }, true)
 
     expect(screen.getByText('Versicherung wählen – oder «Versicherungsfall» abwählen')).toBeTruthy()
+  })
+})
+
+describe('AppointmentStep – Neue Reifen (FB-25)', () => {
+  it('proposes the dimension of the tyres on the car and orders four – both changeable', () => {
+    const seen = renderStep({ ...THURSDAY, tireChange: true })
+    fireEvent.change(screen.getByLabelText('Art'), { target: { value: 'NEW_TIRES' } })
+
+    expect(seen.form).toMatchObject({ tireChangeKind: 'NEW_TIRES', newTiresDimension: '205/55 R16 91H', newTiresCount: '4' })
+    fireEvent.change(screen.getByLabelText('Reifendimension'), { target: { value: '225/45 R17' } })
+    fireEvent.change(screen.getByLabelText('Anzahl'), { target: { value: '2' } })
+    expect(seen.form).toMatchObject({ newTiresDimension: '225/45 R17', newTiresCount: '2' })
+  })
+
+  it('a dimension already typed is kept when the kind is chosen again', () => {
+    const seen = renderStep({ ...THURSDAY, tireChange: true, newTiresDimension: '195/65 R15' })
+    fireEvent.change(screen.getByLabelText('Art'), { target: { value: 'NEW_TIRES' } })
+    expect(seen.form.newTiresDimension).toBe('195/65 R15')
   })
 })

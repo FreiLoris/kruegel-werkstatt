@@ -3145,6 +3145,8 @@ export interface components {
         RemovedSet: {
             /** @description As noted on the task sheet */
             depths?: components["schemas"]["DepthsRequest"];
+            /** @description Disposed of (FB-25) – then not stored; missing = false */
+            dispose?: boolean;
             /** @description Only for a new set */
             newSet?: components["schemas"]["NewSet"];
             /**
@@ -3679,6 +3681,13 @@ export interface components {
              * @description MFK: the inspection station
              */
             mfkStationId: string | null;
+            /**
+             * Format: int32
+             * @description New tyres: how many – set with new tyres
+             */
+            newTiresCount: number | null;
+            /** @description New tyres (FB-25): the dimension to order */
+            newTiresDimension: string | null;
             /** @description Internal notes */
             notes: string | null;
             /**
@@ -3702,7 +3711,7 @@ export interface components {
             timeOpen: boolean;
             tireChange: boolean;
             /** @enum {string|null} */
-            tireChangeKind: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT" | null;
+            tireChangeKind: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT" | "NEW_TIRES" | null;
             /** Format: date-time */
             updatedAt: string;
             /**
@@ -3804,6 +3813,16 @@ export interface components {
              * @description MFK: the inspection station; empty = the standard one
              */
             mfkStationId?: string;
+            /**
+             * Format: int32
+             * @description New tyres: how many; empty = 4
+             */
+            newTiresCount?: number;
+            /**
+             * @description New tyres (FB-25): the dimension to order; may be open
+             * @example 205/55 R16 91H
+             */
+            newTiresDimension?: string;
             notes?: string;
             /**
              * Format: date-time
@@ -3821,7 +3840,7 @@ export interface components {
             /** @description Missing = false */
             tireChange?: boolean;
             /** @enum {string} */
-            tireChangeKind?: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT";
+            tireChangeKind?: "WHEELS_STORED" | "TIRES_STORED" | "WHEELS_BROUGHT" | "TIRES_BROUGHT" | "NEW_TIRES";
             /** Format: uuid */
             vehicleId?: string;
             /**
@@ -3914,15 +3933,15 @@ export interface components {
              * @description How: RETRIEVED from the hotel, MOUNTED brought by the customer (FB-12)
              * @enum {string|null}
              */
-            mountedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | null;
+            mountedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | "DISPOSED" | null;
             outside: components["schemas"]["TireSetDto"][];
             /** @description The set the task took off (stored or home) – empty = not booked yet */
             removed: components["schemas"]["TireSetDto"] | null;
             /**
-             * @description How: STORED into the hotel, TAKEN_HOME by the customer (FB-12)
+             * @description How: STORED into the hotel, TAKEN_HOME by the customer (FB-12), DISPOSED (FB-25)
              * @enum {string|null}
              */
-            removedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | null;
+            removedAs: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | "DISPOSED" | null;
         };
         TaskWithBookingDto: {
             booking: components["schemas"]["BookingDto"];
@@ -4139,7 +4158,7 @@ export interface components {
              * @description In the hotel, on the car or with the customer (FB-12)
              * @enum {string}
              */
-            state: "IN_HOTEL" | "MOUNTED" | "WITH_CUSTOMER";
+            state: "IN_HOTEL" | "MOUNTED" | "WITH_CUSTOMER" | "DISPOSED";
             /**
              * Format: date
              * @description Empty = never in the hotel (FB-12)
@@ -4184,7 +4203,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME";
+            kind: "STORED" | "MEASURED" | "MOVED" | "RETRIEVED" | "RECORDED" | "MOUNTED" | "TAKEN_HOME" | "DISPOSED";
             note: string | null;
             /**
              * @description The place of that moment
@@ -4279,7 +4298,7 @@ export interface components {
             seasons: components["schemas"]["CountDto"][];
             /** Format: int64 */
             sets: number;
-            /** @description Label = IN_HOTEL, MOUNTED or WITH_CUSTOMER */
+            /** @description Label = IN_HOTEL, MOUNTED, WITH_CUSTOMER or DISPOSED */
             states: components["schemas"]["CountDto"][];
         };
         TodoAssigneeRequest: {

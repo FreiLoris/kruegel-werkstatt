@@ -22,6 +22,12 @@ describe('sheetBlocks', () => {
     expect(sheetBlocks(task({ tireChange: true, tireChangeKind: 'TIRES_BROUGHT' }))).toEqual([{ kind: 'tires', stored: false, wheels: false }])
   })
 
+  it('new tires (FB-25): only tires, with what was ordered', () => {
+    expect(sheetBlocks({ ...task({ tireChange: true, tireChangeKind: 'NEW_TIRES' }), newTiresCount: 2, newTiresDimension: '205/55 R16 91H' })).toEqual([
+      { kind: 'tires', stored: false, wheels: false, newTires: { count: 2, dimension: '205/55 R16 91H' } },
+    ])
+  })
+
   it('tire change without a kind: like brought wheels – the mechanic ticks what applies', () => {
     expect(sheetBlocks(task({ tireChange: true }))).toEqual([{ kind: 'tires', stored: false, wheels: true }])
   })

@@ -32,7 +32,7 @@ public class TaskTireService {
     /** What putting a set on the car leaves in its history */
     static final Set<TireSetEventKind> MOUNTING = Set.of(TireSetEventKind.RETRIEVED, TireSetEventKind.MOUNTED);
     /** What taking a set off leaves in its history */
-    static final Set<TireSetEventKind> REMOVING = Set.of(TireSetEventKind.STORED, TireSetEventKind.TAKEN_HOME);
+    static final Set<TireSetEventKind> REMOVING = Set.of(TireSetEventKind.STORED, TireSetEventKind.TAKEN_HOME, TireSetEventKind.DISPOSED);
 
     private final TireSetRepository repository;
     private final TireHotelService hotel;
@@ -107,14 +107,18 @@ public class TaskTireService {
             if (removed == null) {
                 TireSetDetails details = details(task, r.newSet(), "removed");
                 repository.save(r.store() ? new TireSet(details, depths, today, place, note, task)
-                        : TireSet.recorded(details, depths, today, TireSetState.WITH_CUSTOMER, note, task));
+                        : TireSet.recorded(details, depths, today, r.dispose() ? TireSetState.DISPOSED : TireSetState.WITH_CUSTOMER, note, task));
             } else if (r.store()) {
                 removed.storeAgain(depths, today, place, note, task);
             } else {
                 if (depths.lowest() != null) {
                     removed.measure(depths, today, note, task);
                 }
-                removed.takeHome(today, note, task);
+                if (r.dispose()) {
+                    removed.dispose(today, note, task);
+                } else {
+                    removed.takeHome(today, note, task);
+                }
             }
         }
         repository.flush();
@@ -152,7 +156,7 @@ public class TaskTireService {
             throw new InvalidInputException("removed.setId", "Satz liegt schon im Pneuhotel");
         }
         if (!r.store() && set.getState() == TireSetState.WITH_CUSTOMER) {
-            throw new InvalidInputException("removed.setId", "Satz ist schon beim Kunden");
+            throw new InvalidInputException("removed.setId", r.dispose() ? "Nur montierte Räder werden entsorgt" : "Satz ist schon beim Kunden");
         }
         return set;
     }
@@ -178,10 +182,14 @@ public class TaskTireService {
                 n.brand(), n.model(), n.dimension(), n.year(), n.remark(), n.torque(), n.pressureFront(), n.pressureRear());
     }
 
-    /** The sets of the task's vehicle – and those of the customer without a vehicle (e.g. taken over from SwissGarage). */
+    /**
+     * The sets of the task's vehicle – and those of the customer without a vehicle (e.g. taken over from
+     * SwissGarage). Not the ones disposed of: they are gone.
+     */
     private List<TireSet> candidates(Task task) {
         Vehicle vehicle = task.getVehicle();
         return repository.ofCustomer(task.getCustomer().getId()).stream()
+                .filter(s -> s.getState() != TireSetState.DISPOSED)
                 .filter(s -> vehicle == null || s.getVehicle() == null || s.getVehicle().equals(vehicle))
                 .toList();
     }
