@@ -141,6 +141,30 @@ class StorageLocationTreeApiTest {
 
     // ── Helpers ──────────────────────────────────────────────────────
 
+    @Test
+    void aCodeToWriteOnTheShelfOnceOnThePremises() {
+        String cellar = create("Keller", null);
+        MvcTestResult stairs = send("POST", "/api/storage-locations", "{ \"name\": \"Treppe\", \"parentId\": \"%s\", \"code\": \" ka01 \" }".formatted(cellar));
+        assertThat(stairs).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.code").isEqualTo("KA01");
+        // a place inside it may have none – it shows the one above
+        String shelf = create("oberes Fach", idOf(stairs));
+        assertThat(mvc.get().uri("/api/storage-locations").exchange()).bodyJson()
+                .extractingPath("$[?(@.id == '%s')].code".formatted(shelf)).asArray().containsExactly((Object) null);
+
+        // once on the premises – also when the other one is no longer in use
+        MvcTestResult twice = send("POST", "/api/storage-locations", "{ \"name\": \"Haken\", \"parentId\": \"%s\", \"code\": \"KA01\" }".formatted(cellar));
+        assertThat(twice).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("code");
+        // AA00 only
+        assertThat(send("POST", "/api/storage-locations", "{ \"name\": \"Haken\", \"code\": \"K1\" }"))
+                .hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("code");
+
+        // renamed it keeps its code – and an edit may take it away
+        MvcTestResult renamed = send("PUT", "/api/storage-locations/" + idOf(stairs), "{ \"name\": \"Kellertreppe\", \"code\": \"KA01\", \"version\": 0 }");
+        assertThat(renamed).hasStatusOk().bodyJson().extractingPath("$.code").isEqualTo("KA01");
+        assertThat(send("PUT", "/api/storage-locations/" + idOf(stairs), "{ \"name\": \"Kellertreppe\", \"version\": 1 }"))
+                .hasStatusOk().bodyJson().extractingPath("$.code").isNull();
+    }
+
     private String create(String name, String parentId) {
         String parent = parentId == null ? "null" : "\"" + parentId + "\"";
         MvcTestResult response = send("POST", "/api/storage-locations", "{ \"name\": \"%s\", \"parentId\": %s }".formatted(name, parent));

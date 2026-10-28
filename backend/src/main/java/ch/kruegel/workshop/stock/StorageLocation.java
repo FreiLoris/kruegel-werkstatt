@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import org.hibernate.annotations.OptimisticLock;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,8 @@ import java.util.UUID;
 public class StorageLocation extends BaseEntity implements Sortable {
 
     static final int NAME_MAX = 40;
+    /** FB-23: two capitals and two digits, e.g. KA01 */
+    static final String CODE_PATTERN = "^[A-Z]{2}[0-9]{2}$";
 
     @Column(nullable = false)
     private String name;
@@ -38,6 +41,9 @@ public class StorageLocation extends BaseEntity implements Sortable {
      * Empty for the ones cleared out before V38 (they come back with their place, as they did then).
      */
     private UUID deactivatedWith;
+
+    /** What is written on the shelf (FB-23), e.g. "KA01" – empty = the code of the place above counts */
+    private String code;
 
     protected StorageLocation() {
         // for JPA
@@ -66,6 +72,18 @@ public class StorageLocation extends BaseEntity implements Sortable {
             throw new IllegalArgumentException("Name must be 1–" + NAME_MAX + " characters: '" + cleaned + "'");
         }
         this.name = cleaned;
+    }
+
+    /**
+     * The label (FB-23) – upper case, without spaces; empty = none. Unique on the premises (the
+     * service checks it, the database too).
+     */
+    public void label(String newCode) {
+        String cleaned = newCode == null ? "" : newCode.strip().toUpperCase(Locale.ROOT);
+        if (!cleaned.isEmpty() && !cleaned.matches(CODE_PATTERN)) {
+            throw new IllegalArgumentException("Code must be like KA01: '" + cleaned + "'");
+        }
+        this.code = cleaned.isEmpty() ? null : cleaned;
     }
 
     /** @param with the place being cleared out – this one or one it lies in */
@@ -103,5 +121,9 @@ public class StorageLocation extends BaseEntity implements Sortable {
 
     public UUID getParentId() {
         return parentId;
+    }
+
+    public String getCode() {
+        return code;
     }
 }

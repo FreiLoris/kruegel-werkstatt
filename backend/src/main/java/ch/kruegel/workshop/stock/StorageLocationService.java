@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -50,7 +51,10 @@ public class StorageLocationService {
         checkParent(all, request.parentId(), null);
         String name = request.name().strip();
         checkNameFree(all, request.parentId(), name, null);
-        return saved(repository.save(new StorageLocation(name, request.parentId(), nextSortOrder(all, request.parentId()))));
+        checkCodeFree(all, request.code(), null);
+        StorageLocation location = new StorageLocation(name, request.parentId(), nextSortOrder(all, request.parentId()));
+        location.label(request.code());
+        return saved(repository.save(location));
     }
 
     public StorageLocationDto rename(UUID id, StorageLocationRequest request) {
@@ -64,7 +68,9 @@ public class StorageLocationService {
         if (location.isActive()) {
             checkNameFree(all, location.getParentId(), name, id);
         }
+        checkCodeFree(all, request.code(), id);
         location.rename(name);
+        location.label(request.code());
         return saved(location);
     }
 
@@ -164,6 +170,18 @@ public class StorageLocationService {
         if (!parent.isActive() && (moved == null || moved.isActive())) {
             throw new InvalidInputException("parentId", parent.getName() + " wird nicht mehr verwendet");
         }
+    }
+
+    /** FB-23: a code once on the premises – also one of a place not in use any more (its label may still hang there) */
+    private static void checkCodeFree(List<StorageLocation> all, String code, UUID self) {
+        if (code == null || code.isBlank()) {
+            return;
+        }
+        String wanted = code.strip().toUpperCase(Locale.ROOT);
+        all.stream().filter(l -> wanted.equals(l.getCode()) && !l.getId().equals(self)).findFirst().ifPresent(other -> {
+            // User-facing message, hence German
+            throw new InvalidInputException("code", wanted + " hat schon " + other.getName() + (other.isActive() ? "" : " (nicht mehr verwendet)"));
+        });
     }
 
     private static void checkNameFree(List<StorageLocation> all, UUID parentId, String name, UUID self) {
