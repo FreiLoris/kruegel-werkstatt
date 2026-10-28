@@ -1,4 +1,5 @@
 import { Eye, UserRound } from 'lucide-react'
+import { useConfirm } from '../../components/ui/confirmContext'
 import { Menu, MenuItem } from '../../components/ui/Menu'
 import type { Employee } from '../../features/employees/employeeApi'
 import { choose } from '../../lib/devicePerson'
@@ -10,6 +11,7 @@ import type { DeviceStatus } from './deviceStatus'
  * ansehen" at the end, for the workshop TV.
  */
 export function PersonMenu({ status, active }: { status: DeviceStatus; active: Employee[] }) {
+  const confirm = useConfirm()
   if (status.kind !== 'person' && status.kind !== 'viewOnly') {
     return null
   }
@@ -22,7 +24,17 @@ export function PersonMenu({ status, active }: { status: DeviceStatus; active: E
         </MenuItem>
       ))}
       {status.kind === 'person' && (
-        <MenuItem icon={Eye} onClick={() => choose({ kind: 'viewOnly' })}>
+        <MenuItem
+          icon={Eye}
+          // a mis-tap must not take away the editing – asked once
+          onClick={() =>
+            void confirm({
+              title: 'Nur ansehen?',
+              text: 'Dieses Gerät kann dann nichts mehr ändern – gedacht für den Werkstatt-TV.',
+              confirmLabel: 'Nur ansehen',
+            }).then((ok) => ok && choose({ kind: 'viewOnly' }))
+          }
+        >
           Nur ansehen (z. B. Werkstatt-TV)
         </MenuItem>
       )}

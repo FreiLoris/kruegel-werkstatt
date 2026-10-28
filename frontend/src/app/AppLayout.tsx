@@ -40,8 +40,9 @@ export function AppLayout() {
   useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
   const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
   // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen")
-  const { data: lockSettings } = useScreenLockSettings()
-  const lock = useIdleLock(lockSettings?.lockMinutes ?? 0, device.kind === 'person')
+  const { data: lockSettings, isError: lockSettingsMissing } = useScreenLockSettings()
+  // not loaded: the 5 minutes of the workshop rather than never
+  const lock = useIdleLock(lockSettings?.lockMinutes ?? (lockSettingsMissing ? 5 : 0), device.kind === 'person')
 
   // Browser tab and bookmarks carry the page and the workshop's name: "Pneuhotel – Garage Muster"
   useEffect(() => {

@@ -22,7 +22,7 @@ export function PersonPicker({ active, noLongerActive }: { active: Employee[]; n
   )
 }
 
-/** The people and "Nur ansehen" – also in the dialog "Person wechseln" and on the lock screen (without "Nur ansehen"). */
+/** The people and "Nur ansehen" – also on the lock screen (without "Nur ansehen", FB-29). */
 export function PersonChoices({ active, onChosen, withViewOnly = true }: { active: Employee[]; onChosen?: () => void; withViewOnly?: boolean }) {
   function pick(choice: Parameters<typeof choose>[0]) {
     choose(choice)

@@ -13,7 +13,9 @@ export function useFollowPerson(me: string | undefined, onSwitch: (previous: str
   })
 
   useEffect(() => {
-    if (me && me !== previous.current) callback.current(previous.current ?? '', me)
+    // "Nur ansehen" for a moment: the last real person is kept, so the field follows the next one
+    if (!me) return
+    if (me !== previous.current) callback.current(previous.current ?? '', me)
     previous.current = me
   }, [me])
 }

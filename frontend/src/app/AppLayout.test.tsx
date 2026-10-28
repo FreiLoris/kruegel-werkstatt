@@ -12,7 +12,7 @@ vi.mock('./live/useLiveUpdates', () => ({ useLiveUpdates: () => 'connected' }))
 vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useCanEdit: () => false }))
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
 vi.mock('./CustomerQuickSearch', () => ({ CustomerQuickSearch: () => null }))
-vi.mock('../features/employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
+vi.mock('../features/employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [{ id: 'r', name: 'Reto', color: '#f6d860' }] }) }))
 vi.mock('../features/company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Testgarage', logoUrl: null } }) }))
 vi.mock('../features/screenlock/screenLockApi', () => ({ useScreenLockSettings: () => ({ data: { version: 0, lockMinutes: 5 } }) }))
 
@@ -140,6 +140,10 @@ describe('AppLayout', () => {
     expect(screen.getByText('Wer ist am Gerät?')).toBeTruthy()
     // the page stays underneath
     expect(screen.getByText('Termine-Seite')).toBeTruthy()
+
+    // a name chosen: unlocked
+    fireEvent.click(screen.getByRole('button', { name: /Reto/, hidden: true }))
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
   })
 
   it('using the device restarts the wait', () => {

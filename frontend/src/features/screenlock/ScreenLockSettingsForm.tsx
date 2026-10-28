@@ -8,6 +8,9 @@ import { useToast } from '../../components/ui/toastContext'
 import styles from '../tire-hotel/TireHotel.module.css'
 import { useSaveScreenLockSettings, useScreenLockSettings, type ScreenLockSettings } from './screenLockApi'
 
+/** The most the server takes (ScreenLockSettings.MAX_MINUTES) */
+const MAX_LOCK_MINUTES = 120
+
 /** After how many minutes without use a device asks who is at it (FB-29) – one setting for all devices. */
 export function ScreenLockSettingsForm() {
   const { data: settings, error } = useScreenLockSettings()
@@ -26,7 +29,7 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
   const [minutes, setMinutes] = useState(String(settings.lockMinutes))
 
   const value = /^\d{1,3}$/.test(minutes.trim()) ? Number(minutes.trim()) : null
-  const invalid = value === null || value > 120
+  const invalid = value === null || value > MAX_LOCK_MINUTES
   const changed = minutes.trim() !== String(settings.lockMinutes)
   useUnsavedChanges(changed)
 
@@ -63,7 +66,7 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
           disabled={!canEdit}
           value={minutes}
           onChange={(e) => setMinutes(e.target.value)}
-          error={invalid ? '0 bis 120' : save.error instanceof ApiError ? save.error.messageForField('lockMinutes') : undefined}
+          error={invalid ? `0 bis ${MAX_LOCK_MINUTES}` : save.error instanceof ApiError ? save.error.messageForField('lockMinutes') : undefined}
         />
       </form>
       {canEdit && (
