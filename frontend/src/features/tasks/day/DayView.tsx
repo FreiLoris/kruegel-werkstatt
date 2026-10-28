@@ -38,8 +38,9 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   const canEdit = useCanEdit()
   const navigate = useNavigate()
   const courtesyCars = useCourtesyCarsByTask(`${date}T00:00`, `${addDays(date, 1)}T00:00`)
-  // FB-25: new tyres not delivered yet – only the tasks with new tyres ask the shopping list
-  const { data: tireItems } = useTasksShoppingItems(newTiresTaskIds([...(tasks.data ?? []), ...(carriedOver ?? [])]))
+  // FB-25: new tyres not delivered yet – only the tasks of the day with new tyres ask the shopping list
+  // (carried-over ones show no flags)
+  const { data: tireItems } = useTasksShoppingItems(newTiresTaskIds(tasks.data ?? []))
   const waitingForTires = useMemo(() => tasksWaitingForTires(tireItems ?? []), [tireItems])
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])

@@ -888,7 +888,8 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
 - [x] **16l – "Reifen fehlen"** (FB-25, Reto's proposal)
   Done: as long as the ordered new tyres of a task are neither delivered nor cancelled, its block in
   the day view says "Reifen fehlen" and the task "Reifen noch nicht geliefert" above the tyre change
-  (until it is booked). Only tasks with new tyres ask the shopping list.
+  (until it is booked). Only tasks of the day with new tyres ask the shopping list; a done task shows
+  nothing any more, carried-over ones show no flags.
 
 ---
 

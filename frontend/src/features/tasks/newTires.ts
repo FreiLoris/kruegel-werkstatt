@@ -1,21 +1,25 @@
 import { isClosed, type ShoppingItem } from '../shopping/shoppingApi'
 import type { AnyTask } from './taskApi'
 
-/**
- * New tyres ordered for a task (FB-25): the position the server puts on the shopping list starts
- * with this (ShoppingService.NEW_TIRES_PREFIX). Pure, tested.
- */
+// New tyres ordered for a task (FB-25): still missing? Pure, tested.
+
+/** The position the server puts on the shopping list for new tyres starts so (ShoppingService.NEW_TIRES_PREFIX) */
 const NEW_TIRES_PREFIX = 'Reifen '
 
-/** The tyres of the task are not here yet – its tyre position is neither arrived nor cancelled */
-export const tiresNotDelivered = (items: Pick<ShoppingItem, 'description' | 'status'>[]) =>
-  items.some((item) => item.description.startsWith(NEW_TIRES_PREFIX) && !isClosed(item.status))
+/** A tyre position neither arrived nor cancelled */
+const isOpenTirePosition = (item: Pick<ShoppingItem, 'description' | 'status'>) =>
+  item.description.startsWith(NEW_TIRES_PREFIX) && !isClosed(item.status)
 
-/** The tasks that mount new tyres – only theirs need the shopping list */
-export const newTiresTaskIds = (tasks: readonly Pick<AnyTask, 'id' | 'tireChangeKind'>[]) =>
-  tasks.filter((task) => task.tireChangeKind === 'NEW_TIRES').map((task) => task.id)
+/** The tyres of the task are not here yet */
+export const tiresNotDelivered = (items: Pick<ShoppingItem, 'description' | 'status'>[]) => items.some(isOpenTirePosition)
 
-/** Per task: its tyres are still missing – from all positions of the tasks */
-export function tasksWaitingForTires(items: Pick<ShoppingItem, 'description' | 'status' | 'task'>[]): Set<string> {
-  return new Set(items.filter((item) => item.task && tiresNotDelivered([item])).map((item) => item.task!.id))
-}
+/**
+ * The tasks that mount new tyres and are not done – only theirs need the shopping list. A done task
+ * says nothing any more, even if nobody marked the tyres arrived.
+ */
+export const newTiresTaskIds = (tasks: readonly Pick<AnyTask, 'id' | 'tireChangeKind' | 'status'>[]) =>
+  tasks.filter((task) => task.tireChangeKind === 'NEW_TIRES' && task.status !== 'DONE').map((task) => task.id)
+
+/** The tasks whose tyres are still missing – from all positions of the tasks */
+export const tasksWaitingForTires = (items: Pick<ShoppingItem, 'description' | 'status' | 'task'>[]) =>
+  new Set(items.flatMap((item) => (item.task && isOpenTirePosition(item) ? [item.task.id] : [])))

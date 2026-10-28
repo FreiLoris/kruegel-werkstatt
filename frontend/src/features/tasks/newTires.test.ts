@@ -19,7 +19,14 @@ describe('new tyres not delivered (FB-25)', () => {
   })
 
   it('per task, only tasks with new tyres asked for', () => {
-    expect(newTiresTaskIds([{ id: 'a', tireChangeKind: 'NEW_TIRES' }, { id: 'b', tireChangeKind: 'WHEELS_STORED' }])).toEqual(['a'])
+    expect(
+      newTiresTaskIds([
+        { id: 'a', tireChangeKind: 'NEW_TIRES', status: 'RECEIVED' },
+        { id: 'b', tireChangeKind: 'WHEELS_STORED', status: 'RECEIVED' },
+        // done: nothing to say any more, even if nobody marked the tyres arrived
+        { id: 'c', tireChangeKind: 'NEW_TIRES', status: 'DONE' },
+      ]),
+    ).toEqual(['a'])
     expect([...tasksWaitingForTires([item('Reifen 205/55 R16', 'ORDERED', 'a'), item('Reifen 195/65 R15', 'ARRIVED', 'b'), item('Reifen x', 'ORDERED', null)])]).toEqual(['a'])
   })
 })

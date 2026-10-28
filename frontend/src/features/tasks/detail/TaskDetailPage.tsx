@@ -342,6 +342,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
               <p className="muted">Lade …</p>
             ) : (
               <>
+                {/* until the change is booked – the day view stops with "done" */}
                 {parts && tiresNotDelivered(parts) && !tires.data.mounted && (
                   <p className={styles.tiresMissing}>Reifen noch nicht geliefert – siehe Ersatzteilbestellungen.</p>
                 )}
