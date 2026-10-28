@@ -5,6 +5,11 @@ import type { components } from '../../api/schema'
 
 export type Absence = components['schemas']['AbsenceDto']
 export type AbsenceRequest = components['schemas']['AbsenceRequest']
+export type AbsenceSeriesRequest = components['schemas']['AbsenceSeriesRequest']
+export type AbsenceSeriesPlan = components['schemas']['AbsenceSeriesPlanDto']
+export type Weekday = AbsenceSeriesRequest['weekdays'][number]
+/** Which days of a series a change or delete is for (FB-33) */
+export type SeriesScope = 'DAY' | 'FROM_HERE' | 'ALL'
 export type AbsenceCategory = Absence['category']
 
 /** Topic for query keys and live updates – same text as in the backend (AbsenceService.TOPIC). */
@@ -39,6 +44,51 @@ export function useSaveAbsence() {
       id
         ? dataOrThrow(await api.PUT('/api/absences/{id}', { params: { path: { id } }, body: request }))
         : dataOrThrow(await api.POST('/api/absences', { body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/**
+ * What a series would make (FB-33) – asked while the dialog is filled in; nothing saved. `null` = not
+ * complete yet.
+ */
+export function useSeriesPreview(request: AbsenceSeriesRequest | null) {
+  return useQuery({
+    queryKey: [TOPIC, 'series-preview', request],
+    queryFn: async ({ signal }) => dataOrThrow(await api.POST('/api/absences/series/preview', { body: request!, signal })),
+    enabled: request !== null,
+    // while typing: keep showing the last count instead of flickering
+    placeholderData: (previous) => previous,
+  })
+}
+
+/** One entry per day of the preview, all in one series (FB-33). */
+export function useCreateSeries() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (request: AbsenceSeriesRequest) => dataOrThrow(await api.POST('/api/absences/series', { body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** Category, times, note … for the day, from it on or the whole series – each keeps its day (FB-33). */
+export function useUpdateSeries() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, scope, request }: { id: string; scope: SeriesScope; request: AbsenceRequest }) =>
+      dataOrThrow(await api.PUT('/api/absences/{id}/series', { params: { path: { id }, query: { scope } }, body: request })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}
+
+/** The day, from it on or the whole series (FB-33). */
+export function useDeleteSeries() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, scope }: { id: string; scope: SeriesScope }) => {
+      const { error, response } = await api.DELETE('/api/absences/{id}/series', { params: { path: { id }, query: { scope } } })
+      if (!response.ok) dataOrThrow({ error, response })
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

@@ -30,10 +30,12 @@ import java.util.UUID;
 class AbsenceController {
 
     private final AbsenceService service;
+    private final AbsenceSeriesService series;
     private final AbsenceStatisticsService statistics;
 
-    AbsenceController(AbsenceService service, AbsenceStatisticsService statistics) {
+    AbsenceController(AbsenceService service, AbsenceSeriesService series, AbsenceStatisticsService statistics) {
         this.service = service;
+        this.series = series;
         this.statistics = statistics;
     }
 
@@ -65,6 +67,37 @@ class AbsenceController {
     @PutMapping("/{id}")
     AbsenceDto update(@PathVariable UUID id, @Valid @RequestBody AbsenceRequest request) {
         return service.update(id, request);
+    }
+
+    @Operation(summary = "Preview of a series", description = "FB-33: the days it would make – public holidays and days the "
+            + "person has something else entered are left out (and listed). Nothing saved.")
+    @PostMapping("/series/preview")
+    AbsenceSeriesPlanDto previewSeries(@Valid @RequestBody AbsenceSeriesRequest request) {
+        return series.plan(request);
+    }
+
+    @Operation(summary = "Enter a series", description = "FB-33: one entry per day of the preview, all with one `seriesId`.")
+    @ApiResponse(responseCode = "201", description = "Created – the days it made")
+    @PostMapping("/series")
+    @ResponseStatus(HttpStatus.CREATED)
+    AbsenceSeriesPlanDto createSeries(@Valid @RequestBody AbsenceSeriesRequest request) {
+        return series.create(request);
+    }
+
+    @Operation(summary = "Change days of a series", description = "Category, company, note and times for the day (`DAY`, "
+            + "dates too), from it on (`FROM_HERE`) or the whole series (`ALL`) – each keeps its day. Needs the loaded `version` "
+            + "of the day clicked.")
+    @PutMapping("/{id}/series")
+    List<AbsenceDto> updateSeries(@PathVariable UUID id, @RequestParam SeriesScope scope, @Valid @RequestBody AbsenceRequest request) {
+        return series.update(id, scope, request);
+    }
+
+    @Operation(summary = "Delete days of a series", description = "The day (`DAY`), from it on (`FROM_HERE`) or the whole series (`ALL`).")
+    @ApiResponse(responseCode = "204", description = "Deleted")
+    @DeleteMapping("/{id}/series")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteSeries(@PathVariable UUID id, @RequestParam SeriesScope scope) {
+        series.delete(id, scope);
     }
 
     @Operation(summary = "Delete absence")

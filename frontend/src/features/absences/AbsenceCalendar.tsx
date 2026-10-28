@@ -1,4 +1,4 @@
-import { Cake } from 'lucide-react'
+import { Cake, Repeat } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { isWeekend, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { formatDate, formatTime } from '../../lib/format'
@@ -192,6 +192,8 @@ export function AbsenceCalendar({ employees, absences, days, today, holidays, ca
                     onClick={() => onOpen(bar.absence)}
                   >
                     <CategoryIcon category={bar.absence.category} className={styles.barIcon} />
+                    {/* a day of a series (FB-33) – hidden by CSS where there is no room next to the symbol */}
+                    {bar.absence.seriesId && <Repeat className={[styles.barIcon, styles.seriesIcon].join(' ')} aria-hidden />}
                     <span className={styles.barText}>{labelOf(bar.absence)}</span>
                   </button>
                 ))}
@@ -227,5 +229,5 @@ function describe(name: string, absence: Absence): string {
     absence.startDate !== absence.endDate
       ? `${formatDate(absence.startDate)}${startPart} – ${formatDate(absence.endDate)}${endPart}`
       : `${formatDate(absence.startDate)}${startPart}${endPart}`
-  return [`${name}: ${labelOf(absence)}, ${when}`, absence.note].filter(Boolean).join(' · ')
+  return [`${name}: ${labelOf(absence)}, ${when}`, absence.seriesId && 'wiederkehrend', absence.note].filter(Boolean).join(' · ')
 }

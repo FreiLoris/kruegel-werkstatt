@@ -21,4 +21,11 @@ public interface AbsenceRepository extends JpaRepository<Absence, UUID> {
               AND (:employeeId IS NULL OR a.employee.id = :employeeId)
             ORDER BY a.period.startDate, a.period.startsAfternoon, a.period.startTime""")
     List<Absence> touching(LocalDate from, LocalDate to, UUID employeeId);
+
+    /** The days of a series from {@code from} on (empty = all), oldest first (FB-33). */
+    @Query("""
+            SELECT a FROM Absence a
+            WHERE a.seriesId = :seriesId AND (CAST(:from AS LocalDate) IS NULL OR a.period.startDate >= :from)
+            ORDER BY a.period.startDate""")
+    List<Absence> ofSeries(UUID seriesId, LocalDate from);
 }

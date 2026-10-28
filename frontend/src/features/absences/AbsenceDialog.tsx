@@ -8,8 +8,24 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDate, formatTime } from '../../lib/format'
 import type { Employee } from '../employees/employeeApi'
-import { ABSENCE_CATEGORY, entryNoun, useDeleteAbsence, useSaveAbsence, type Absence, type AbsenceCategory, type AbsenceRequest } from './absenceApi'
+import {
+  ABSENCE_CATEGORY,
+  entryNoun,
+  useCreateSeries,
+  useDeleteAbsence,
+  useDeleteSeries,
+  useSaveAbsence,
+  useSeriesPreview,
+  useUpdateSeries,
+  type Absence,
+  type AbsenceCategory,
+  type AbsenceRequest,
+  type AbsenceSeriesPlan,
+  type SeriesScope,
+  type Weekday,
+} from './absenceApi'
 import styles from './AbsenceDialog.module.css'
+import { planSummary, SERIES_SCOPE, SERIES_WEEKDAYS, skippedDays, toSeriesRequest } from './absenceSeries'
 import { CATEGORY_CLASS } from './categoryColors'
 
 /** Form state: dates as "2026-10-15", empty text = not set */
@@ -100,19 +116,83 @@ export function AbsenceDialog({
   const confirm = useConfirm()
   const save = useSaveAbsence()
   const remove = useDeleteAbsence()
+  const createSeries = useCreateSeries()
+  const updateSeries = useUpdateSeries()
+  const removeSeries = useDeleteSeries()
   const [values, setValues] = useState(() => initialValues(absence, fresh))
+  // FB-33: a new entry can repeat on weekdays; a day of a series is changed for the day, from it on or all
+  const [repeat, setRepeat] = useState(false)
+  const [weekdays, setWeekdays] = useState<Weekday[]>([])
+  const [everyOtherWeek, setEveryOtherWeek] = useState(false)
+  const [scope, setScope] = useState<SeriesScope>('DAY')
+  const inSeries = !!absence?.seriesId
+  const seriesRequest = !absence && repeat ? toSeriesRequest({ ...values, weekdays, everyOtherWeek }) : null
+  const preview = useSeriesPreview(seriesRequest)
 
   const nameOf = (id: string) => employees.find((e) => e.id === id)?.name ?? 'Unbekannt'
-  const fieldError = (field: string) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
+  const error = save.error ?? createSeries.error ?? updateSeries.error
+  const fieldError = (field: string) => (error instanceof ApiError ? error.messageForField(field) : undefined)
+
+  function resetErrors() {
+    // an old error message disappears as soon as something is corrected
+    if (save.error) save.reset()
+    if (createSeries.error) createSeries.reset()
+    if (updateSeries.error) updateSeries.reset()
+  }
 
   function set<K extends keyof FormValues>(field: K, value: FormValues[K]) {
     setValues((current) => ({ ...current, [field]: value }))
-    // an old error message disappears as soon as something is corrected
-    if (save.error) save.reset()
+    resetErrors()
+  }
+
+  function toggleWeekday(day: Weekday) {
+    setWeekdays((current) => (current.includes(day) ? current.filter((d) => d !== day) : SERIES_WEEKDAYS.map((w) => w.value).filter((d) => d === day || current.includes(d))))
+    resetErrors()
+  }
+
+  /** Field errors appear at the field – everything else as a message */
+  function showError(error: Error) {
+    if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
+      toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+    }
   }
 
   function submit(event: FormEvent) {
     event.preventDefault()
+    if (!absence && repeat) {
+      if (!seriesRequest) {
+        toast.error(weekdays.length === 0 ? 'Bitte mindestens einen Wochentag wählen.' : 'Bitte Person, Zeitraum und ggf. Firma angeben.')
+        return
+      }
+      createSeries.mutate(seriesRequest, {
+        onSuccess: (plan) => {
+          toast.success(`${nameOf(values.employeeId)}: ${ABSENCE_CATEGORY[values.category]} an ${plan.days.length} Tagen gespeichert`)
+          onClose()
+        },
+        onError: showError,
+      })
+      return
+    }
+    if (absence && inSeries && scope !== 'DAY') {
+      updateSeries.mutate(
+        { id: absence.id, scope, request: toRequest(values, absence.version) },
+        {
+          onSuccess: (days) => {
+            toast.success(`${nameOf(values.employeeId)}: ${days.length} Tage der Serie geändert`)
+            onClose()
+          },
+          onError: (error) => {
+            if (error instanceof ApiError && error.isVersionConflict) {
+              toast.error(`Dieser Eintrag wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
+              onClose()
+            } else {
+              showError(error)
+            }
+          },
+        },
+      )
+      return
+    }
     save.mutate(
       { id: absence?.id, request: toRequest(values, absence?.version) },
       {
@@ -126,9 +206,8 @@ export function AbsenceDialog({
           if (absence && error instanceof ApiError && error.isVersionConflict) {
             toast.error(`Dieser Eintrag wurde inzwischen auf einem anderen Gerät geändert. Bitte nochmals öffnen.`)
             onClose()
-          } else if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) {
-            // field errors appear at the field – everything else as a message
-            toast.error(`Speichern fehlgeschlagen: ${error.message}`)
+          } else {
+            showError(error)
           }
         },
       },
@@ -137,13 +216,32 @@ export function AbsenceDialog({
 
   async function deleteIt() {
     if (!absence) return
+    const days =
+      inSeries && scope !== 'DAY'
+        ? scope === 'ALL'
+          ? 'alle Tage dieser Serie'
+          : `alle Tage dieser Serie ab ${formatDate(absence.startDate)}`
+        : `vom ${formatDate(absence.startDate)} bis ${formatDate(absence.endDate)}`
     const ok = await confirm({
       title: `${entryNoun(absence.category)} löschen?`,
-      text: `${nameOf(absence.employeeId)}: ${ABSENCE_CATEGORY[absence.category]} vom ${formatDate(absence.startDate)} bis ${formatDate(absence.endDate)}. Das lässt sich nicht rückgängig machen.`,
+      text: `${nameOf(absence.employeeId)}: ${ABSENCE_CATEGORY[absence.category]} ${days}. Das lässt sich nicht rückgängig machen.`,
       confirmLabel: 'Löschen',
       dangerous: true,
     })
     if (!ok) return
+    if (inSeries) {
+      removeSeries.mutate(
+        { id: absence.id, scope },
+        {
+          onSuccess: () => {
+            toast.success(`${entryNoun(absence.category)} gelöscht`)
+            onClose()
+          },
+          onError: (error) => toast.error(`Nicht gelöscht: ${error.message}`),
+        },
+      )
+      return
+    }
     remove.mutate(absence.id, {
       onSuccess: () => {
         toast.success(`${entryNoun(absence.category)} gelöscht`)
@@ -166,12 +264,12 @@ export function AbsenceDialog({
         ) : (
           <>
             {absence && (
-              <Button variant="ghost" icon={Trash2} onClick={deleteIt} loading={remove.isPending} className={styles.left}>
+              <Button variant="ghost" icon={Trash2} onClick={deleteIt} loading={remove.isPending || removeSeries.isPending} className={styles.left}>
                 Löschen
               </Button>
             )}
             <Button onClick={onClose}>Abbrechen</Button>
-            <Button variant="primary" type="submit" form={formId} loading={save.isPending}>
+            <Button variant="primary" type="submit" form={formId} loading={save.isPending || createSeries.isPending || updateSeries.isPending}>
               Speichern
             </Button>
           </>
@@ -217,9 +315,10 @@ export function AbsenceDialog({
           <div className={styles.period}>
             <div className={styles.day}>
               <TextField
-                label="Von"
+                label={repeat ? 'Erster Tag' : 'Von'}
                 type="date"
                 required
+                disabled={inSeries && scope !== 'DAY'}
                 value={values.startDate}
                 onChange={(e) => {
                   const startDate = e.target.value
@@ -230,7 +329,7 @@ export function AbsenceDialog({
                 error={fieldError('startDate')}
               />
               {values.category === 'VACATION' ? (
-                <Checkbox label="erst ab Mittag" checked={values.startsAfternoon} onChange={(e) => set('startsAfternoon', e.target.checked)} />
+                <Checkbox label={repeat ? 'jeweils erst ab Mittag' : 'erst ab Mittag'} checked={values.startsAfternoon} onChange={(e) => set('startsAfternoon', e.target.checked)} />
               ) : (
                 <TextField
                   label="ab Uhrzeit"
@@ -244,9 +343,10 @@ export function AbsenceDialog({
             </div>
             <div className={styles.day}>
               <TextField
-                label="Bis"
+                label={repeat ? 'Letzter Tag' : 'Bis'}
                 type="date"
                 required
+                disabled={inSeries && scope !== 'DAY'}
                 min={values.startDate || undefined}
                 value={values.endDate}
                 onChange={(e) => set('endDate', e.target.value)}
@@ -255,9 +355,9 @@ export function AbsenceDialog({
               {values.category === 'VACATION' ? (
                 <>
                   <Checkbox
-                    label="nur bis Mittag"
+                    label={repeat ? 'jeweils nur bis Mittag' : 'nur bis Mittag'}
                     checked={endsNoonCounts(values)}
-                    disabled={values.startDate === values.endDate && values.startsAfternoon}
+                    disabled={(repeat || values.startDate === values.endDate) && values.startsAfternoon}
                     onChange={(e) => set('endsNoon', e.target.checked)}
                   />
                   {fieldError('endsNoon') && <p className={styles.error}>{fieldError('endsNoon')}</p>}
@@ -275,6 +375,44 @@ export function AbsenceDialog({
             </div>
           </div>
 
+          {!absence && !readOnly && (
+            <div className={styles.series}>
+              <Checkbox label="Wiederholen – an bestimmten Wochentagen" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
+              {repeat && (
+                <>
+                  <div role="group" aria-label="Wochentage" className={styles.weekdays}>
+                    {SERIES_WEEKDAYS.map((day) => (
+                      <button
+                        key={day.value}
+                        type="button"
+                        className={styles.weekday}
+                        aria-pressed={weekdays.includes(day.value)}
+                        onClick={() => toggleWeekday(day.value)}
+                      >
+                        {day.label}
+                      </button>
+                    ))}
+                  </div>
+                  {fieldError('weekdays') && <p className={styles.error}>{fieldError('weekdays')}</p>}
+                  <Checkbox label="nur jede 2. Woche" checked={everyOtherWeek} onChange={(e) => setEveryOtherWeek(e.target.checked)} />
+                  <SeriesPreview plan={seriesRequest ? preview.data : undefined} />
+                </>
+              )}
+            </div>
+          )}
+
+          {inSeries && !readOnly && (
+            <div role="radiogroup" aria-label="Gilt für" className={styles.scope}>
+              <span className={styles.scopeLabel}>Gilt für</span>
+              {(Object.keys(SERIES_SCOPE) as SeriesScope[]).map((value) => (
+                <label key={value}>
+                  <input type="radio" name="scope" value={value} checked={scope === value} onChange={() => setScope(value)} />
+                  {SERIES_SCOPE[value]}
+                </label>
+              ))}
+            </div>
+          )}
+
           <TextField
             label="Bemerkung"
             placeholder={values.category === 'TRAINING' ? 'z. B. Kurs Hochvolt' : undefined}
@@ -287,5 +425,26 @@ export function AbsenceDialog({
         </fieldset>
       </form>
     </Modal>
+  )
+}
+
+/** "Erstellt 39 Einträge vom … bis …" and the days left out – before saving (FB-33) */
+function SeriesPreview({ plan }: { plan: AbsenceSeriesPlan | undefined }) {
+  if (!plan) return <p className="muted">Wochentage und Zeitraum wählen – dann steht hier, welche Tage entstehen.</p>
+  const skipped = skippedDays(plan)
+  return (
+    <div className={styles.preview} aria-live="polite">
+      <strong>{planSummary(plan)}</strong>
+      {skipped.length > 0 && (
+        <>
+          <span className="muted">Übersprungen:</span>
+          <ul>
+            {skipped.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
   )
 }

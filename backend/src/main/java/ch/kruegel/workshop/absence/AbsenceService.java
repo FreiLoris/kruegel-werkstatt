@@ -68,7 +68,7 @@ public class AbsenceService {
     public AbsenceDto create(AbsenceRequest request) {
         Employee employee = employee(request.employeeId(), null);
         AbsencePeriod period = period(request);
-        String company = company(request);
+        String company = company(request.category(), request.company());
         checkFree(employee, period, null);
         Absence absence = new Absence(employee, request.category(), company, request.note(), period);
         return saved(repository.save(absence));
@@ -82,7 +82,7 @@ public class AbsenceService {
         absence.checkVersion(request.version());
         Employee employee = employee(request.employeeId(), absence.getEmployee());
         AbsencePeriod period = period(request);
-        String company = company(request);
+        String company = company(request.category(), request.company());
         checkFree(employee, period, id);
         absence.update(employee, request.category(), company, request.note(), period);
         return saved(absence);
@@ -96,7 +96,7 @@ public class AbsenceService {
     }
 
     /** A newly chosen person must be active; the person already on the absence stays valid. */
-    private Employee employee(UUID id, Employee current) {
+    Employee employee(UUID id, Employee current) {
         if (current != null && current.getId().equals(id)) {
             return current;
         }
@@ -112,69 +112,88 @@ public class AbsenceService {
      * category is dropped, like the company.
      */
     private static AbsencePeriod period(AbsenceRequest request) {
-        if (request.endDate().isBefore(request.startDate())) {
+        return period(request.category(), request.startDate(), request.startsAfternoon(), request.startTime(),
+                request.endDate(), request.endsNoon(), request.endTime());
+    }
+
+    /** The same for one day of a series (FB-33): its day, the times or half days of the series */
+    static AbsencePeriod period(AbsenceCategory category, LocalDate startDate, boolean startsAfternoon, LocalTime startTime,
+                                LocalDate endDate, boolean endsNoon, LocalTime endTime) {
+        if (endDate.isBefore(startDate)) {
             throw new InvalidInputException("endDate", "darf nicht vor dem ersten Tag liegen");
         }
-        if (request.category() == AbsenceCategory.VACATION) {
-            if (request.startDate().equals(request.endDate()) && request.startsAfternoon() && request.endsNoon()) {
+        if (category == AbsenceCategory.VACATION) {
+            if (startDate.equals(endDate) && startsAfternoon && endsNoon) {
                 throw new InvalidInputException("endsNoon", "Ein Tag kann nicht nur Nachmittag und nur Vormittag sein");
             }
-            return new AbsencePeriod(request.startDate(), request.startsAfternoon(), request.endDate(), request.endsNoon());
+            return new AbsencePeriod(startDate, startsAfternoon, endDate, endsNoon);
         }
-        if (LocalTime.MIDNIGHT.equals(request.endTime())) {
+        if (LocalTime.MIDNIGHT.equals(endTime)) {
             throw new InvalidInputException("endTime", "00:00 ist schon der nächste Tag – leer lassen für den ganzen Tag");
         }
-        if (request.startDate().equals(request.endDate()) && request.startTime() != null && request.endTime() != null
-                && !request.endTime().isAfter(request.startTime())) {
+        if (startDate.equals(endDate) && startTime != null && endTime != null && !endTime.isAfter(startTime)) {
             throw new InvalidInputException("endTime", "muss nach der Startzeit liegen");
         }
-        return AbsencePeriod.times(request.startDate(), request.startTime(), request.endDate(), request.endTime());
+        return AbsencePeriod.times(startDate, startTime, endDate, endTime);
     }
 
     /** External work names the company; the others have none (an old value is dropped). */
-    private static String company(AbsenceRequest request) {
-        String company = request.company() == null || request.company().isBlank() ? null : request.company().strip();
-        if (request.category() == AbsenceCategory.EXTERNAL_WORK && company == null) {
+    static String company(AbsenceCategory category, String text) {
+        String company = text == null || text.isBlank() ? null : text.strip();
+        if (category == AbsenceCategory.EXTERNAL_WORK && company == null) {
             throw new InvalidInputException("company", "Bei Fremdarbeit die Firma angeben");
         }
-        return request.category() == AbsenceCategory.EXTERNAL_WORK ? company : null;
+        return category == AbsenceCategory.EXTERNAL_WORK ? company : null;
     }
 
     /** Says in words which absence is in the way – e.g. "Reto ist vom 13.10.2026 bis 16.10.2026 bereits als Ferien eingetragen". */
-    private void checkFree(Employee employee, AbsencePeriod period, UUID excludeId) {
+    void checkFree(Employee employee, AbsencePeriod period, UUID excludeId) {
         repository.touching(period.startDate(), period.endDate(), employee.getId()).stream()
                 .filter(a -> !a.getId().equals(excludeId))
                 .filter(a -> a.getPeriod().overlaps(period))
                 .findFirst()
                 .ifPresent(other -> {
-                    AbsencePeriod p = other.getPeriod();
-                    String when = p.startDate().equals(p.endDate())
-                            ? "am " + DAY.format(p.startDate())
-                            : "vom " + DAY.format(p.startDate()) + " bis " + DAY.format(p.endDate());
-                    if (p.startTime() != null || p.endTime() != null) {
-                        when += " (%s–%s)".formatted(p.startTime() == null ? "" : p.startTime(), p.endTime() == null ? "" : p.endTime());
-                    }
                     throw new InvalidInputException("startDate", "%s ist %s bereits als %s eingetragen".formatted(
-                            employee.getName(), when, NAMES.get(other.getCategory())));
+                            employee.getName(), when(other.getPeriod()), name(other.getCategory())));
                 });
+    }
+
+    /** "am 13.10.2026" / "vom 13.10.2026 bis 16.10.2026" – with the times if there are any */
+    static String when(AbsencePeriod p) {
+        String when = p.startDate().equals(p.endDate())
+                ? "am " + DAY.format(p.startDate())
+                : "vom " + DAY.format(p.startDate()) + " bis " + DAY.format(p.endDate());
+        if (p.startTime() != null || p.endTime() != null) {
+            when += " (%s–%s)".formatted(p.startTime() == null ? "" : p.startTime(), p.endTime() == null ? "" : p.endTime());
+        }
+        return when;
+    }
+
+    /** "Ferien", "krank" … */
+    static String name(AbsenceCategory category) {
+        return NAMES.get(category);
     }
 
     private Absence find(UUID id) {
         return repository.findById(id).orElseThrow(() -> new NotFoundException("Abwesenheit", id));
     }
 
-    /** Flush here so the overlap constraint fires inside this method and gets a friendly message. */
     private AbsenceDto saved(Absence absence) {
+        flush(absence.getEmployee());
+        return AbsenceDto.of(absence);
+    }
+
+    /** Flush here so the overlap constraint fires inside this method and gets a friendly message. */
+    void flush(Employee employee) {
         try {
             repository.flush();
         } catch (DataIntegrityViolationException e) {
             if (Objects.toString(e.getMostSpecificCause().getMessage(), "").contains(OVERLAP_CONSTRAINT)) {
-                throw new BusinessRuleException("Für " + absence.getEmployee().getName()
+                throw new BusinessRuleException("Für " + employee.getName()
                         + " wurde gerade auf einem anderen Gerät eine Abwesenheit in dieser Zeit eingetragen. Bitte neu laden.");
             }
             throw e;
         }
         events.publishEvent(new DataChanged(TOPIC));
-        return AbsenceDto.of(absence);
     }
 }

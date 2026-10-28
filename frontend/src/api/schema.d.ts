@@ -28,6 +28,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/absences/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enter a series
+         * @description FB-33: one entry per day of the preview, all with one `seriesId`.
+         */
+        post: operations["createSeries"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/absences/series/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview of a series
+         * @description FB-33: the days it would make – public holidays and days the person has something else entered are left out (and listed). Nothing saved.
+         */
+        post: operations["previewSeries"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/absences/statistics": {
         parameters: {
             query?: never;
@@ -64,6 +104,30 @@ export interface paths {
         post?: never;
         /** Delete absence */
         delete: operations["delete_8"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/absences/{id}/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change days of a series
+         * @description Category, company, note and times for the day (`DAY`, dates too), from it on (`FROM_HERE`) or the whole series (`ALL`) – each keeps its day. Needs the loaded `version` of the day clicked.
+         */
+        put: operations["updateSeries"];
+        post?: never;
+        /**
+         * Delete days of a series
+         * @description The day (`DAY`), from it on (`FROM_HERE`) or the whole series (`ALL`).
+         */
+        delete: operations["deleteSeries"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2252,6 +2316,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             note: string | null;
+            /**
+             * Format: uuid
+             * @description The series it was entered with (FB-33); empty = a single entry
+             */
+            seriesId: string | null;
             /** Format: date */
             startDate: string;
             /**
@@ -2299,6 +2368,43 @@ export interface components {
              * @description Only needed when editing
              */
             version?: number;
+        };
+        AbsenceSeriesPlanDto: {
+            conflicts: components["schemas"]["SeriesConflictDto"][];
+            /** Format: date */
+            days: string[];
+            /** Format: date */
+            holidays: string[];
+        };
+        AbsenceSeriesRequest: {
+            /** @enum {string} */
+            category: "VACATION" | "SICK" | "EXTERNAL_WORK" | "TRAINING" | "PRESENT";
+            /** @description Only for external work – required there */
+            company?: string;
+            /** Format: uuid */
+            employeeId: string;
+            /**
+             * Format: time
+             * @description Not for vacation: until this time on each day; empty = whole day
+             */
+            endTime?: string | null;
+            /** @description Vacation only: only the morning of each day; missing = false */
+            endsNoon?: boolean;
+            /** @description Only every second week; missing = every week */
+            everyOtherWeek?: boolean;
+            /** Format: date */
+            from: string;
+            note?: string;
+            /**
+             * Format: time
+             * @description Not for vacation: from this time on each day; empty = whole day
+             */
+            startTime?: string | null;
+            /** @description Vacation only: only the afternoon of each day; missing = false */
+            startsAfternoon?: boolean;
+            /** Format: date */
+            to: string;
+            weekdays: ("MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY")[];
         };
         AbsenceStatisticsDto: {
             companies: components["schemas"]["CompanyStatisticsDto"][];
@@ -3100,6 +3206,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             taskNumber: string | null;
+        };
+        SeriesConflictDto: {
+            /** Format: date */
+            day: string;
+            reason: string;
         };
         ServiceItemDto: {
             active: boolean;
@@ -4404,6 +4515,144 @@ export interface operations {
             };
         };
     };
+    createSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbsenceSeriesRequest"];
+            };
+        };
+        responses: {
+            /** @description Created – the days it made */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AbsenceSeriesPlanDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    previewSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbsenceSeriesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AbsenceSeriesPlanDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     statistics: {
         parameters: {
             query: {
@@ -4545,6 +4794,146 @@ export interface operations {
     delete_8: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    updateSeries: {
+        parameters: {
+            query: {
+                scope: "DAY" | "FROM_HERE" | "ALL";
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbsenceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AbsenceDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    deleteSeries: {
+        parameters: {
+            query: {
+                scope: "DAY" | "FROM_HERE" | "ALL";
+            };
             header?: never;
             path: {
                 id: string;

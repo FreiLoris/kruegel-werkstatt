@@ -184,6 +184,166 @@
         "tags" : [ "Absences" ]
       }
     },
+    "/api/absences/series" : {
+      "post" : {
+        "description" : "FB-33: one entry per day of the preview, all with one `seriesId`.",
+        "operationId" : "createSeries",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AbsenceSeriesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AbsenceSeriesPlanDto"
+                }
+              }
+            },
+            "description" : "Created – the days it made"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Enter a series",
+        "tags" : [ "Absences" ]
+      }
+    },
+    "/api/absences/series/preview" : {
+      "post" : {
+        "description" : "FB-33: the days it would make – public holidays and days the person has something else entered are left out (and listed). Nothing saved.",
+        "operationId" : "previewSeries",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AbsenceSeriesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AbsenceSeriesPlanDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Preview of a series",
+        "tags" : [ "Absences" ]
+      }
+    },
     "/api/absences/statistics" : {
       "get" : {
         "description" : "In working days (Mon–Fri without public holidays), half days as 0.5: vacation taken/planned/left per person, sick, training, external work – and per company.",
@@ -418,6 +578,184 @@
           }
         },
         "summary" : "Change absence",
+        "tags" : [ "Absences" ]
+      }
+    },
+    "/api/absences/{id}/series" : {
+      "delete" : {
+        "description" : "The day (`DAY`), from it on (`FROM_HERE`) or the whole series (`ALL`).",
+        "operationId" : "deleteSeries",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "scope",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DAY", "FROM_HERE", "ALL" ]
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Delete days of a series",
+        "tags" : [ "Absences" ]
+      },
+      "put" : {
+        "description" : "Category, company, note and times for the day (`DAY`, dates too), from it on (`FROM_HERE`) or the whole series (`ALL`) – each keeps its day. Needs the loaded `version` of the day clicked.",
+        "operationId" : "updateSeries",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "scope",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DAY", "FROM_HERE", "ALL" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AbsenceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AbsenceDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Change days of a series",
         "tags" : [ "Absences" ]
       }
     },
@@ -12832,6 +13170,11 @@
           "note" : {
             "type" : [ "string", "null" ]
           },
+          "seriesId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "The series it was entered with (FB-33); empty = a single entry"
+          },
           "startDate" : {
             "type" : "string",
             "format" : "date"
@@ -12858,7 +13201,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "category", "company", "employeeId", "endDate", "endTime", "endsNoon", "id", "note", "startDate", "startTime", "startsAfternoon", "updatedAt", "updatedBy", "version" ]
+        "required" : [ "category", "company", "employeeId", "endDate", "endTime", "endsNoon", "id", "note", "seriesId", "startDate", "startTime", "startsAfternoon", "updatedAt", "updatedBy", "version" ]
       },
       "AbsenceRequest" : {
         "type" : "object",
@@ -12915,6 +13258,98 @@
           }
         },
         "required" : [ "category", "employeeId", "endDate", "startDate" ]
+      },
+      "AbsenceSeriesPlanDto" : {
+        "type" : "object",
+        "properties" : {
+          "conflicts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeriesConflictDto"
+            }
+          },
+          "days" : {
+            "type" : "array",
+            "format" : "date",
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            }
+          },
+          "holidays" : {
+            "type" : "array",
+            "format" : "date",
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            }
+          }
+        },
+        "required" : [ "conflicts", "days", "holidays" ]
+      },
+      "AbsenceSeriesRequest" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "type" : "string",
+            "enum" : [ "VACATION", "SICK", "EXTERNAL_WORK", "TRAINING", "PRESENT" ]
+          },
+          "company" : {
+            "type" : "string",
+            "description" : "Only for external work – required there",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "employeeId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "endTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Not for vacation: until this time on each day; empty = whole day"
+          },
+          "endsNoon" : {
+            "type" : "boolean",
+            "description" : "Vacation only: only the morning of each day; missing = false"
+          },
+          "everyOtherWeek" : {
+            "type" : "boolean",
+            "description" : "Only every second week; missing = every week"
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "startTime" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Not for vacation: from this time on each day; empty = whole day"
+          },
+          "startsAfternoon" : {
+            "type" : "boolean",
+            "description" : "Vacation only: only the afternoon of each day; missing = false"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekdays" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ]
+            },
+            "minItems" : 1,
+            "uniqueItems" : true
+          }
+        },
+        "required" : [ "category", "employeeId", "from", "to", "weekdays" ]
       },
       "AbsenceStatisticsDto" : {
         "type" : "object",
@@ -14652,6 +15087,19 @@
           }
         },
         "required" : [ "date", "id", "taskNumber" ]
+      },
+      "SeriesConflictDto" : {
+        "type" : "object",
+        "properties" : {
+          "day" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "day", "reason" ]
       },
       "ServiceItemDto" : {
         "type" : "object",
