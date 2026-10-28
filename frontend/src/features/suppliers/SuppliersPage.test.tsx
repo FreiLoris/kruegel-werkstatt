@@ -11,7 +11,6 @@ vi.mock('./supplierApi', async (original) => ({
       {
         id: 'm',
         name: 'Muster Teile AG',
-        contactPerson: null,
         phone: '044 000 00 00',
         email: null,
         webshopUrl: 'https://shop.example.ch',
@@ -19,6 +18,8 @@ vi.mock('./supplierApi', async (original) => ({
         orderChannel: 'WEBSHOP',
         delivery: '2× täglich',
         remark: null,
+        contacts: [{ department: 'Reifen', name: 'Frau Beispiel', phone: null, mobile: '079 000 00 02', email: 'reifen@example.ch', remark: null }],
+        deliveries: [{ kind: 'Nachtexpress', orderDeadline: '17:00:00', tour: null, arrival: '07:30:00', arrivalNextDay: true, postage: null, remark: null }],
       },
     ],
   }),
@@ -30,6 +31,10 @@ vi.mock('../stock/stockApi', () => ({
 }))
 vi.mock('../shopping/shoppingApi', () => ({ useShoppingItems: () => ({ data: [{ supplierId: 'm' }, { supplierId: null }] }) }))
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => false }))
+vi.mock('../../lib/clock', async (original) => ({
+  ...(await original<typeof import('../../lib/clock')>()),
+  useClock: () => ({ today: '2026-10-28', time: '10:00' }),
+}))
 
 describe('SuppliersPage', () => {
   it('shows what is needed to order and links to the articles in stock', () => {
@@ -46,5 +51,10 @@ describe('SuppliersPage', () => {
     // main or further supplier – both count
     expect(screen.getByText('2 Artikel im Lager').getAttribute('href')).toBe('/stock?supplier=m')
     expect(screen.getByText('1 auf der Einkaufsliste').getAttribute('href')).toBe('/shopping')
+    // FB-30: the next order deadline, contacts and ways of delivery to unfold
+    screen.getByText('Nächster Bestellschluss 17:00 – Nachtexpress (Ankunft ca. 07:30 am nächsten Tag)')
+    screen.getByText('Reifen – Frau Beispiel')
+    expect(screen.getByText('079 000 00 02').getAttribute('href')).toBe('tel:0790000002')
+    screen.getByText('1 Lieferart')
   })
 })

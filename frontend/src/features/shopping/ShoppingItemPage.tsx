@@ -6,6 +6,7 @@ import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { Select, TextArea, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
+import { useClock } from '../../lib/clock'
 import { formatDate, formatTimestamp } from '../../lib/format'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import { useActiveEmployees, useAllEmployees } from '../employees/employeeApi'
@@ -13,6 +14,7 @@ import { MaterialTabs } from '../stock/MaterialTabs'
 import { useStockItems } from '../stock/stockApi'
 import { useSuppliers } from '../suppliers/supplierApi'
 import {
+  isClosed,
   SHOPPING_STATUS,
   useAddShoppingNote,
   useSaveShoppingItem,
@@ -23,6 +25,7 @@ import {
 } from './shoppingApi'
 import { detailFormFromItem, shoppingErrors, toShoppingDetailRequest, type ShoppingDetailForm } from './shoppingForm'
 import { taskLabel } from './shoppingText'
+import { nextDeadline } from '../suppliers/supplierDeliveries'
 import styles from './Shopping.module.css'
 
 /**
@@ -90,6 +93,7 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
   const { data: everyone } = useAllEmployees()
   const { data: stock = [] } = useStockItems()
   const { data: suppliers = [] } = useSuppliers()
+  const { today, time } = useClock()
   const save = useSaveShoppingItem()
   const toast = useToast()
   const once = useSingleFlight()
@@ -189,7 +193,17 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
               </option>
             ))}
           </Select>
-          <Select label="Lieferant" value={form.supplierId} onChange={(e) => set('supplierId', e.target.value)}>
+          <Select
+            label="Lieferant"
+            value={form.supplierId}
+            onChange={(e) => set('supplierId', e.target.value)}
+            // FB-30: which delivery can still be reached today – while it is still to be ordered
+            hint={
+              item.status === 'ORDERED' || isClosed(item.status)
+                ? undefined
+                : (nextDeadline(suppliers.find((s) => s.id === form.supplierId)?.deliveries ?? [], today, time) ?? undefined)
+            }
+          >
             <option value="">–</option>
             {suppliers.map((s) => (
               <option key={s.id} value={s.id}>
