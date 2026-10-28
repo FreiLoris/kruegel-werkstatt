@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CallLog } from './CallLog'
 import { isDeletable, type CustomerCall } from './customerCallApi'
 
@@ -19,6 +19,10 @@ vi.mock('../../lib/clock', () => ({ useClock: () => ({ today: '2026-10-28', time
 const latest = { id: 'c1', customerId: 'k1', outcome: 'NOT_REACHED', note: null, calledAt: '2026-10-28T13:55:00Z', calledBy: 'r' } as CustomerCall
 
 describe('CallLog (FB-16, FB-21)', () => {
+  // five minutes after the call
+  beforeEach(() => vi.setSystemTime(new Date('2026-10-28T14:00:00Z')))
+  afterEach(() => vi.useRealTimers())
+
   it('the latest call – and one tap notes the next one', () => {
     render(<CallLog customerId="k1" latest={latest} canEdit />)
     expect(screen.getByText(/nicht erreicht · Reto$/)).toBeTruthy()
@@ -38,8 +42,7 @@ describe('CallLog (FB-16, FB-21)', () => {
 })
 
 describe('isDeletable', () => {
-  // local time 15:00 = 14:00 UTC (winter time)
-  const now = '2026-10-28T15:00'
+  const now = Date.parse('2026-10-28T14:00:00Z')
   it('one’s own call of the last half hour only', () => {
     expect(isDeletable({ calledAt: '2026-10-28T13:45:00Z', calledBy: 'r' }, 'r', now)).toBe(true)
     expect(isDeletable({ calledAt: '2026-10-28T13:15:00Z', calledBy: 'r' }, 'r', now)).toBe(false)

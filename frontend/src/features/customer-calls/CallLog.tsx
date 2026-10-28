@@ -20,7 +20,8 @@ export function CallLog({ customerId, latest, canEdit }: { customerId: string; l
   const note = useNoteCall()
   const remove = useDeleteCall()
   const me = useMyEmployeeId()
-  const clock = useClock()
+  // re-checked every minute – ✕ goes away after half an hour
+  useClock()
   const nameOf = (id: string) => employees?.find((e) => e.id === id)?.name
 
   const noteCall = (outcome: CallOutcome) =>
@@ -31,7 +32,7 @@ export function CallLog({ customerId, latest, canEdit }: { customerId: string; l
       {latest && (
         <span className={styles.latest}>
           {callText(latest, nameOf)}
-          {canEdit && isDeletable(latest, me, `${clock.today}T${clock.time}`) && (
+          {canEdit && isDeletable(latest, me) && (
             <button
               type="button"
               className={styles.remove}

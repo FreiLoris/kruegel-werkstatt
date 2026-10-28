@@ -24,10 +24,10 @@ const DELETABLE_MINUTES = 30
 /**
  * One's own call, just noted – the only one that can be deleted (tapped by mistake)
  *
- * @param now the local time of the app's clock, "2026-10-28T15:05"
+ * @param now a point in time in milliseconds – not a local time, the device's time zone does not matter
  */
-export const isDeletable = (call: Pick<CustomerCall, 'calledAt' | 'calledBy'>, person: string | undefined, now: string) =>
-  !!person && call.calledBy === person && Date.parse(now) - Date.parse(call.calledAt) < DELETABLE_MINUTES * 60_000
+export const isDeletable = (call: Pick<CustomerCall, 'calledAt' | 'calledBy'>, person: string | undefined, now = Date.now()) =>
+  !!person && call.calledBy === person && now - Date.parse(call.calledAt) < DELETABLE_MINUTES * 60_000
 
 /**
  * The latest call of every customer called in the last half year (FB-16, FB-21) – by customer id;
