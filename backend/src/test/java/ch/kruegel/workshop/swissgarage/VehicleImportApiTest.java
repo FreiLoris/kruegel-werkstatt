@@ -93,15 +93,101 @@ class VehicleImportApiTest {
     }
 
     @Test
-    void unknownHolderIsImportedWithoutHolderAndReported() {
+    void holderMissingFromTheAddressListIsCreatedFromTheAddressOnTheVehicle() {
+        // FB-27: address kind empty in SwissGarage → skipped by the address list import
+        MvcTestResult response = upload(TestExcel.with("Int.Nr.", "Kennz", "Marke", "Typ", "Name", "Strasse", "PLZ", "Ort", "Adressnummer")
+                .row(5001, "SH 1", "VW", "Passat", "Muster AG", "Werkstrasse 1", 8413, "Neftenbach", 2001)
+                .row(5002, "SH 2", "VW", "Caddy", "Muster AG", "Werkstrasse 1", 8413, "Neftenbach", 2001)
+                .row(5003, "ZH 3", "VW", "Golf", "Muster AG", "Hauptstrasse 9", 8400, "Winterthur", 2002)
+                .bytes(), "Fahrzeug.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.created").isEqualTo(3);
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString().startsWith("2 Halter aus der Adresse beim Fahrzeug");
+        transaction.executeWithoutResult(status -> {
+            Customer neftenbach = vehicles.findBySwissgarageNumber("5001").orElseThrow().getCustomer();
+            assertThat(neftenbach.getSwissgarageNumber()).isEqualTo("2001");
+            assertThat(neftenbach.getDetails().city()).isEqualTo("Neftenbach");
+            // same address number = same customer; the same company elsewhere = a customer of its own
+            assertThat(vehicles.findBySwissgarageNumber("5002").orElseThrow().getCustomer().getId()).isEqualTo(neftenbach.getId());
+            assertThat(vehicles.findBySwissgarageNumber("5003").orElseThrow().getCustomer().getDetails().city()).isEqualTo("Winterthur");
+        });
+    }
+
+    @Test
+    void secondImportGivesTheHolderToVehiclesImportedWithoutOne() {
+        Vehicle orphan = vehicles.save(Vehicle.fromSwissGarage("5001", null,
+                new VehicleDetails("SH 1", "VW", "Passat", null, null, null, null, null, null, null)));
+
         MvcTestResult response = upload(TestExcel.with(HEADERS)
-                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Unbekannt", 9999)
+                .row(5001, "SH 1", "VW", "Passat", null, null, null, null, null, null, null, "Muster AG", 2001).bytes(), "b.xlsx");
+
+        // before, the new holder had no ID yet – the vehicle without one counted as "unchanged"
+        assertThat(response).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.unchanged").isEqualTo(0);
+        transaction.executeWithoutResult(status -> assertThat(vehicles.findById(orphan.getId()).orElseThrow()
+                .getCustomer().getSwissgarageNumber()).isEqualTo("2001"));
+    }
+
+    @Test
+    void withoutAddressNumberTheVehicleStaysWithoutHolderAndIsListed() {
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, null, null)
                 .bytes(), "Fahrzeug.xlsx");
 
         assertThat(response).bodyJson().extractingPath("$.created").isEqualTo(1);
-        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString().startsWith("1 Fahrzeuge ohne bekannten Halter");
+        assertThat(response).bodyJson().extractingPath("$.problems").asArray().hasSize(1);
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString()
+                .contains("Int.Nr. 5001").contains("ohne Halter – keine Adressnummer");
         transaction.executeWithoutResult(status ->
                 assertThat(vehicles.findBySwissgarageNumber("5001").orElseThrow().getCustomer()).isNull());
+    }
+
+    @Test
+    void holderWithoutNameIsNotCreatedAndListed() {
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, null, 2001)
+                .bytes(), "Fahrzeug.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString()
+                .contains("Int.Nr. 5001").contains("Halter Nr. 2001 ohne Name");
+        assertThat(customers.findBySwissgarageNumber("2001")).isEmpty();
+    }
+
+    @Test
+    void refusedImportLeavesNoNewHolderBehind() {
+        TestExcel full = TestExcel.with(HEADERS);
+        IntStream.rangeClosed(1, 30).forEach(i -> full.row(5000 + i, "ZH " + i, "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001));
+        upload(full.bytes(), "voll.xlsx");
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Muster AG", 2001).bytes(), "teil.xlsx");
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT);
+        assertThat(customers.findBySwissgarageNumber("2001")).isEmpty();
+    }
+
+    @Test
+    void withoutAddressListTheHintSaysToImportIt() {
+        TestDatabase.clear(jdbc);
+        chef = employees.save(EmployeeTestData.employee("Chef", 0)).getId().toString();
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001).bytes(), "a.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString().contains("Adressliste ist noch nicht importiert");
+    }
+
+    @Test
+    void deactivatedHolderIsActivatedAgain() {
+        // e.g. "Garage-Kunde gesperrt/ehemalig" – still the holder of a vehicle in SwissGarage
+        huber.deactivate();
+        customers.save(huber);
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001).bytes(), "a.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString().startsWith("1 frühere Kunden wieder aktiv");
+        assertThat(customers.findById(huber.getId()).orElseThrow().isActive()).isTrue();
     }
 
     @Test
@@ -184,7 +270,7 @@ class VehicleImportApiTest {
     void statusCountsOnlyActiveSwissGarageData() {
         upload(TestExcel.with(HEADERS)
                 .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001)
-                .row(5002, "ZH 2", "Audi", "A3", null, null, null, null, null, null, null, "Unbekannt", 9999)
+                .row(5002, "ZH 2", "Audi", "A3", null, null, null, null, null, null, null, null, null)
                 .bytes(), "a.xlsx");
         customers.save(CustomerTestData.local("Lokal"));
         vehicles.save(Vehicle.local(null, new VehicleDetails("ZH 9", "Toyota", null, null, null, null, null, null, null, null)));

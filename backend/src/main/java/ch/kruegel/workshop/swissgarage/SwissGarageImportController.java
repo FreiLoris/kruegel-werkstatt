@@ -81,7 +81,8 @@ class SwissGarageImportController {
     }
 
     @Operation(summary = "Import the SwissGarage address list (xlsx)",
-            description = "Only \"Garage-Kunde\", not \"gesperrt\". Customers missing from the file are deactivated.")
+            description = "Only \"Garage-Kunde\", not \"gesperrt\" – and the holders of active vehicles, whatever their "
+                    + "address kind. Customers missing from the file are deactivated, holders of active vehicles never.")
     @ApiResponse(responseCode = "201", description = "Imported – the result is in the log entry")
     @PostMapping(path = "/customers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
@@ -90,8 +91,8 @@ class SwissGarageImportController {
     }
 
     @Operation(summary = "Import the SwissGarage vehicle list (xlsx)",
-            description = "Import the address list first – holders are matched by address number. "
-                    + "Vehicles missing from the file are deactivated.")
+            description = "Import the address list first – holders are matched by address number; a holder it "
+                    + "does not have is created from the address on the vehicle. Vehicles missing from the file are deactivated.")
     @ApiResponse(responseCode = "201", description = "Imported – the result is in the log entry")
     @PostMapping(path = "/vehicles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)

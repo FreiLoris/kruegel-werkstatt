@@ -7,6 +7,7 @@ import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.CustomerDetails;
 import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.swissgarage.ExcelSheet.ExcelRow;
+import ch.kruegel.workshop.vehicle.VehicleRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +27,12 @@ import java.util.Set;
  *
  * <p>Rules (ADR 0003, old app):
  * <ul>
- *   <li>Only addresses of the kind "Garage-Kunde" that are not "gesperrt" (suppliers etc. are skipped).</li>
+ *   <li>Only addresses of the kind "Garage-Kunde" that are not "gesperrt" (suppliers etc. are skipped) –
+ *       except the holders of active vehicles: a vehicle is always found with the customer SwissGarage
+ *       has on it, whatever the address kind (empty, blocked, supplier – FB-27).</li>
  *   <li>Matched by SwissGarage address number: new → created, changed → updated, same → untouched.</li>
- *   <li>SwissGarage customers missing from the export are deactivated – never deleted.</li>
+ *   <li>SwissGarage customers missing from the export are deactivated – never deleted, never a
+ *       holder of an active vehicle.</li>
  *   <li>Local customers are never touched.</li>
  *   <li>Like the old app, no company detection: "Name" → last name, "Vorname" → first name.</li>
  * </ul>
@@ -42,11 +46,14 @@ public class CustomerImportService {
     private static final String LAST_NAME = "Name";
 
     private final CustomerRepository customers;
+    private final VehicleRepository vehicles;
     private final ImportRunRepository runs;
     private final ApplicationEventPublisher events;
 
-    CustomerImportService(CustomerRepository customers, ImportRunRepository runs, ApplicationEventPublisher events) {
+    CustomerImportService(CustomerRepository customers, VehicleRepository vehicles, ImportRunRepository runs,
+                          ApplicationEventPublisher events) {
         this.customers = customers;
+        this.vehicles = vehicles;
         this.runs = runs;
         this.events = events;
     }
@@ -61,7 +68,11 @@ public class CustomerImportService {
 
         Map<String, Customer> known = new HashMap<>();
         customers.findBySource(RecordSource.SWISSGARAGE).forEach(c -> known.put(c.getSwissgarageNumber(), c));
-        long knownActive = known.values().stream().filter(Customer::isActive).count();
+        Set<String> holderNumbers = vehicles.findAddressNumbersOfActiveHolders(RecordSource.SWISSGARAGE);
+        // holders are never deactivated – they do not count for the guard against a partial file
+        long knownActive = known.values().stream()
+                .filter(c -> c.isActive() && !holderNumbers.contains(c.getSwissgarageNumber()))
+                .count();
 
         int rowsRead = 0, skipped = 0, created = 0, updated = 0, unchanged = 0;
         List<String> problems = new ArrayList<>();
@@ -73,7 +84,7 @@ public class CustomerImportService {
                 continue;
             }
             rowsRead++;
-            if (!isGarageCustomer(row)) {
+            if (!isGarageCustomer(row) && !holderNumbers.contains(row.get(NUMBER))) {
                 skipped++;
                 continue;
             }
@@ -115,7 +126,8 @@ public class CustomerImportService {
         }
 
         List<Customer> missing = known.values().stream()
-                .filter(c -> c.isActive() && !seen.contains(c.getSwissgarageNumber()))
+                .filter(c -> c.isActive() && !seen.contains(c.getSwissgarageNumber())
+                        && !holderNumbers.contains(c.getSwissgarageNumber()))
                 .toList();
         ImportGuard.checkDeactivations(knownActive, missing.size(), "Kunden");
         missing.forEach(Customer::deactivate);
@@ -136,8 +148,12 @@ public class CustomerImportService {
         return kind.contains("garage-kunde") && !kind.contains("gesperrt");
     }
 
-    /** Throws IllegalArgumentException without a name (rule of {@link CustomerDetails}). */
-    private static CustomerDetails details(ExcelRow row) {
+    /**
+     * The address of a row – of the address list, or the holder's on a row of the vehicle list (same
+     * columns there, the phone as "Telefon 1"). Throws IllegalArgumentException without a name (rule
+     * of {@link CustomerDetails}).
+     */
+    static CustomerDetails details(ExcelRow row) {
         return new CustomerDetails(
                 row.get("Anrede"),
                 row.get("Vorname"),

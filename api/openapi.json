@@ -8066,7 +8066,7 @@
     },
     "/api/swissgarage-imports/customers" : {
       "post" : {
-        "description" : "Only \"Garage-Kunde\", not \"gesperrt\". Customers missing from the file are deactivated.",
+        "description" : "Only \"Garage-Kunde\", not \"gesperrt\" – and the holders of active vehicles, whatever their address kind. Customers missing from the file are deactivated, holders of active vehicles never.",
         "operationId" : "importCustomers",
         "requestBody" : {
           "content" : {
@@ -8307,7 +8307,7 @@
     },
     "/api/swissgarage-imports/vehicles" : {
       "post" : {
-        "description" : "Import the address list first – holders are matched by address number. Vehicles missing from the file are deactivated.",
+        "description" : "Import the address list first – holders are matched by address number; a holder it does not have is created from the address on the vehicle. Vehicles missing from the file are deactivated.",
         "operationId" : "importVehicles",
         "requestBody" : {
           "content" : {
