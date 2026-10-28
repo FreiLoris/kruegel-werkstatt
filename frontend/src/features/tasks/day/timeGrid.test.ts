@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { MfkSlot } from '../mfk/mfkSlots'
 import type { Task } from '../taskApi'
-import { blockingIn, draggedTo, isCompleteSlot, movedTo, placeInColumn, placeWithMfk, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
+import { blockingIn,
+  carriedStartAt, draggedTo, isCompleteSlot, movedTo, placeInColumn, placeWithMfk, resizedTo, selection, snap, spanOn, timeOf, visibleRange, withSchedule } from './timeGrid'
 
 const DAY = '2026-10-15'
 const task = (id: string, time: string, endAt: string, date = DAY) =>
@@ -122,5 +123,16 @@ describe('isCompleteSlot', () => {
     expect(isCompleteSlot('', '2026-10-15T10:00')).toBe(false)
     expect(isCompleteSlot('09:00', '2026-10-15T')).toBe(false)
     expect(isCompleteSlot('09:00', 'T10:00')).toBe(false)
+  })
+})
+
+describe('carriedStartAt (FB-14)', () => {
+  it('where the top of the card is, snapped to a quarter hour – scrolling moves both tops', () => {
+    // grid from 07:00, 1.5 px per minute: 90 px under its top = 08:00
+    expect(carriedStartAt(690, 600, 7 * 60, 1.5)).toBe(8 * 60)
+    expect(carriedStartAt(690 - 300, 600 - 300, 7 * 60, 1.5)).toBe(8 * 60)
+    // 08:07 → 08:00, 08:08 → 08:15
+    expect(carriedStartAt(600 + 67 * 1.5, 600, 7 * 60, 1.5)).toBe(8 * 60)
+    expect(carriedStartAt(600 + 68 * 1.5, 600, 7 * 60, 1.5)).toBe(8 * 60 + 15)
   })
 })

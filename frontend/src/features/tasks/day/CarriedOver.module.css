@@ -43,8 +43,7 @@
   color: var(--color-text-muted);
 }
 
-/* day view (FB-14): held and dragged onto a lift – the finger must not scroll the page meanwhile */
+/* day view (FB-14): held and dragged onto a lift – a finger still scrolls the list (the drag starts after holding) */
 .draggable {
-  touch-action: none;
   cursor: grab;
 }
