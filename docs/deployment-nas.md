@@ -83,8 +83,8 @@ the middle one for new functions, the first one for big steps.
 
 Within 5 minutes Watchtower on the NAS sees the new `latest`, pulls it and restarts backend,
 frontend and backup (the app is gone for about a minute). Database changes are applied by the
-backend itself when it starts (Flyway). Before a release with database changes: back up first
-(`docs/operations.md`). When Watchtower looks is `UPDATE_SCHEDULE` in `.env` – e.g. only at
+backend itself when it starts (Flyway) – right before, it backs the database up into
+`Datensicherung/werkstatt/vor-update` (`docs/operations.md`). When Watchtower looks is `UPDATE_SCHEDULE` in `.env` – e.g. only at
 lunch, if a restart during work disturbs. The database (PostgreSQL) is never updated by
 Watchtower.
 
@@ -94,6 +94,13 @@ Watchtower.
 *Projekt → Aktion → Erstellen*; Watchtower then stays on it. Only possible as long as no database
 migration came in between – otherwise restore the backup from before the update. Back to the
 releases: `APP_VERSION=latest` and *Erstellen* again.
+
+### Taking over a new `compose.yaml`
+
+Watchtower only exchanges images – a change of `deploy/compose.yaml` (e.g. 16k: the backend gets
+the backup folder for the backup before an update) reaches the NAS only by hand: replace
+`/volume1/docker/kruegel-werkstatt/compose.yaml` with the new `deploy/compose.yaml` – the `.env`
+stays as it is – then *Projekt → Stopp* and *Erstellen*.
 
 ### Switching an older NAS project to Watchtower
 

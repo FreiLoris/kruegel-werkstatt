@@ -28,6 +28,21 @@ docker compose logs backup          # one line per backup, with size
 ls -l Datensicherung/               # or the folder from BACKUP_DIR
 ```
 
+### Before an update with a database change
+
+When a new version brings a database change (a Flyway migration), the backend backs the database
+up **itself, right before** changing it – into `vor-update/` inside `BACKUP_DIR`, e.g.
+`vor-update/werkstatt_2026-10-28_1847_vor-V52.dump`. Updates without a database change make none.
+The latest 10 are kept; the nightly cleanup does not touch them.
+
+- No backup, no change: if the backup cannot be written, the backend does not start (the log says
+  why) – the database stays as it was. The backup container prepares the folder when it starts;
+  Docker restarts the backend, so it usually sorts itself out within a minute.
+- Needs the backend's `/dumps` volume and `BACKUP_BEFORE_MIGRATION_DIR` from `compose.yaml`
+  (since 16k). An older `compose.yaml` on the NAS has neither – then there is no such backup until
+  it is replaced (`deployment-nas.md`). In an emergency the line `BACKUP_BEFORE_MIGRATION_DIR` can
+  be removed from `compose.yaml` to start without.
+
 Back up right now (e.g. before an update):
 
 ```sh
@@ -49,6 +64,10 @@ docker compose start backend
 - The restore runs in one transaction: either everything is restored or nothing changes.
 - The backup contains the migration history (Flyway). If the backup is older than the app
   version, the backend brings the database up to date when it starts.
+- **An update went wrong:** set `APP_VERSION` back to the version before (`deployment-nas.md`,
+  "Going back") and restore its `vor-update/…` backup – otherwise the new version changes the
+  database again on its next start:
+  `restore.sh vor-update/werkstatt_2026-10-28_1847_vor-V52.dump --yes`.
 
 > On Windows in Git Bash, prefix the `exec` commands with `MSYS_NO_PATHCONV=1` – otherwise Git
 > Bash turns `/backup/…` into a Windows path. Not needed on the NAS.

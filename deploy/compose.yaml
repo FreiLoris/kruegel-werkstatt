@@ -46,6 +46,10 @@ services:
       DB_USER: ${DB_USER:-werkstatt}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50 -XX:+UseSerialGC
+      # an update with a database change backs it up first (prepared by the backup container)
+      BACKUP_BEFORE_MIGRATION_DIR: /dumps/vor-update
+    volumes:
+      - ${BACKUP_DIR:?BACKUP_DIR fehlt in .env}:/dumps
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
       interval: 10s

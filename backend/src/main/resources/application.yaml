@@ -65,6 +65,11 @@ springdoc:
   writer-with-default-pretty-printer: true
   writer-with-order-by-keys: true
 
+# Backup before an update with a database change (MigrationConfig): the folder for it; empty = none
+# (tests, development). Installed instances set it in compose.yaml.
+workshop:
+  backup-before-migration-dir: ${BACKUP_BEFORE_MIGRATION_DIR:}
+
 # Actuator: operational endpoints of Spring Boot.
 # We only publish "health" and put it under /api,
 # so everything backend-related lives under one path (nginx forwards /api).
