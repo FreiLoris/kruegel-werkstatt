@@ -102,6 +102,11 @@ the backup folder for the backup before an update) reaches the NAS only by hand:
 `/volume1/docker/kruegel-werkstatt/compose.yaml` with the new `deploy/compose.yaml` – the `.env`
 stays as it is – then *Projekt → Stopp* and *Erstellen*.
 
+After taking over 16k, check once that the backend can write its backup before an update (on a
+Synology share the folder rights may not take): *Container → backend → Terminal* →
+`touch /dumps/vor-update/.probe && rm /dumps/vor-update/.probe` – no message = fine. Else give the
+folder `Datensicherung/werkstatt/vor-update` write access for everyone in File Station.
+
 ### Switching an older NAS project to Watchtower
 
 Projects set up before 11f (four containers, no watchtower) once: replace

@@ -12,7 +12,7 @@ set -eu
 if [ "$#" -lt 1 ]; then
   echo "Usage: restore.sh <backup file in Datensicherung> --yes"
   echo "Available:"
-  ls -1t /dumps/werkstatt_*.dump 2>/dev/null | sed 's#^/dumps/#  #' || echo "  (none)"
+  ls -1t /dumps/werkstatt_*.dump /dumps/vor-update/werkstatt_*.dump 2>/dev/null | sed 's#^/dumps/#  #' || echo "  (none)"
   exit 1
 fi
 

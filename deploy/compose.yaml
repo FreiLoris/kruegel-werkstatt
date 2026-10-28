@@ -39,6 +39,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # it prepares the folder for the backup before an update
+      backup:
+        condition: service_started
     environment:
       DB_HOST: db
       DB_PORT: 5432
