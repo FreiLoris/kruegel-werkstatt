@@ -23,7 +23,7 @@ import {
   type ShoppingItem,
   type ShoppingStatus,
 } from './shoppingApi'
-import { detailFormFromItem, shoppingErrors, toShoppingDetailRequest, withSupplier, type ShoppingDetailForm } from './shoppingForm'
+import { deliveryChoices, detailFormFromItem, shoppingErrors, toShoppingDetailRequest, withSupplier, type ShoppingDetailForm } from './shoppingForm'
 import { taskLabel } from './shoppingText'
 import { nextDeadline } from '../suppliers/supplierDeliveries'
 import styles from './Shopping.module.css'
@@ -112,6 +112,7 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
   const recorders = withCurrent(active ?? [], form.recordedById)
   const orderers = withCurrent((active ?? []).filter((e) => e.selectableForTodos), form.orderById)
   const deliveryKinds = (supplierId: string) => (suppliers.find((s) => s.id === supplierId)?.deliveries ?? []).map((d) => d.kind)
+  const choices = deliveryChoices(deliveryKinds(form.supplierId), form.delivery)
   const mainSupplier = (stockItemId: string) => stock.find((i) => i.id === stockItemId)?.suppliers[0]?.supplierId ?? ''
 
   /** An article of the stock list brings its main supplier (FB-09) – unless one was chosen by hand */
@@ -213,10 +214,10 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
             ))}
           </Select>
           {/* FB-30: how it is ordered – the supplier's ways of delivery; one saved earlier stays choosable */}
-          {(deliveryKinds(form.supplierId).length > 0 || form.delivery) && (
+          {choices.length > 0 && (
             <Select label="Versandart" value={form.delivery} onChange={(e) => set('delivery', e.target.value)}>
               <option value="">–</option>
-              {[...new Set([...deliveryKinds(form.supplierId), ...(form.delivery ? [form.delivery] : [])])].map((kind) => (
+              {choices.map((kind) => (
                 <option key={kind} value={kind}>
                   {kind}
                 </option>

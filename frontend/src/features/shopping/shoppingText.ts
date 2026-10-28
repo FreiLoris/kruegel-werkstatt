@@ -32,10 +32,17 @@ export function deliveriesOf(items: Pick<ShoppingItem, 'delivery'>[]): string[] 
   return [...new Set(items.flatMap((i) => (i.delivery ? [i.delivery] : [])))].sort((a, b) => a.localeCompare(b, 'de'))
 }
 
-/** Without a filter for the way of delivery */
+/** Without a filter for the way of delivery – empty, so the address has no "via" */
 export const ALL_DELIVERIES = ''
-/** The filter for positions without a way of delivery */
+/** The filter for positions without a way of delivery – a supplier's kind is never just "-" in practice */
 export const NO_DELIVERY = '-'
+
+/**
+ * The filter from the address – one not in use any more (an old link, the last Nachtexpress
+ * arrived) shows all instead of an empty list that looks like "nothing to order"
+ */
+export const deliveryFilter = (param: string | null, deliveries: string[]) =>
+  param === NO_DELIVERY || (param !== null && deliveries.includes(param)) ? param : ALL_DELIVERIES
 
 /** Only the positions ordered with that way of delivery – {@link NO_DELIVERY}: those without one */
 export function byDelivery<T extends Pick<ShoppingItem, 'delivery'>>(items: T[], delivery: string): T[] {

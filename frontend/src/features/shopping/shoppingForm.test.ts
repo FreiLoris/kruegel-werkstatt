@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ShoppingItem } from './shoppingApi'
-import { detailFormFromItem, emptyShoppingForm, formFromItem, shoppingErrors, toShoppingDetailRequest, toShoppingRequest, withSupplier, type ShoppingDetailForm } from './shoppingForm'
+import { detailFormFromItem, emptyShoppingForm, formFromItem, shoppingErrors, toShoppingDetailRequest, toShoppingRequest, withSupplier, deliveryChoices, type ShoppingDetailForm } from './shoppingForm'
 
 // fictitious
 const item = {
@@ -17,6 +17,7 @@ const item = {
   supplierId: 's1',
   orderedOn: '2026-10-20',
   expectedOn: '2026-10-23',
+  delivery: 'Tagesexpress',
   arrivedOn: null,
 } as unknown as ShoppingItem
 
@@ -64,6 +65,8 @@ describe('quick entry', () => {
       supplierId: 's1',
       orderedOn: '2026-10-20',
       expectedOn: '2026-10-23',
+      // FB-30: the quick entry does not show it – and keeps it
+      delivery: 'Tagesexpress',
       version: 3,
     })
   })
@@ -91,5 +94,11 @@ describe('withSupplier (FB-30)', () => {
     expect(withSupplier(form, 'b', kinds)).toMatchObject({ supplierId: 'b', delivery: '' })
     expect(withSupplier({ ...form, delivery: 'Tagesexpress' }, 'b', kinds).delivery).toBe('Tagesexpress')
     expect(withSupplier(form, '', kinds).delivery).toBe('')
+  })
+
+  it('the same supplier keeps one no longer in its list – and it stays choosable', () => {
+    expect(withSupplier({ ...form, delivery: 'Kurier' }, 'a', kinds).delivery).toBe('Kurier')
+    expect(deliveryChoices(['Tagesexpress'], 'Kurier')).toEqual(['Tagesexpress', 'Kurier'])
+    expect(deliveryChoices(['Tagesexpress'], 'Tagesexpress')).toEqual(['Tagesexpress'])
   })
 })

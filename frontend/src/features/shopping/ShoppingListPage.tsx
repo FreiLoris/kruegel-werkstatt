@@ -7,7 +7,7 @@ import { useShoppingItems, type Turn } from './shoppingApi'
 import { ShoppingBySupplier } from './ShoppingBySupplier'
 import { ShoppingEntryForm } from './ShoppingEntryForm'
 import { ShoppingTable } from './ShoppingTable'
-import { ALL_DELIVERIES, byDelivery, byTask, byTurn, deliveriesOf, NO_DELIVERY, openSummary, type TaskFilter } from './shoppingText'
+import { ALL_DELIVERIES, byDelivery, byTask, byTurn, deliveriesOf, deliveryFilter, NO_DELIVERY, openSummary, type TaskFilter } from './shoppingText'
 import styles from './Shopping.module.css'
 
 /** FB-28: who is up – what we have to do, what we wait for */
@@ -40,7 +40,7 @@ export function ShoppingListPage() {
   const list = showDone ? arrived : open
   // FB-30: what goes with the Tagesexpress – only offered when some positions say how they are ordered
   const deliveries = deliveriesOf(list.data ?? [])
-  const delivery = deliveries.length > 0 ? (params.get('via') ?? ALL_DELIVERIES) : ALL_DELIVERIES
+  const delivery = deliveryFilter(params.get('via'), deliveries)
   // only the open ones have someone up
   const turn: Turn | 'all' = showDone ? 'all' : params.get('turn') === 'us' ? 'us' : params.get('turn') === 'supplier' ? 'supplier' : 'all'
   const items = list.data && byTurn(byDelivery(byTask(list.data, taskFilter), delivery), turn)
@@ -115,7 +115,9 @@ export function ShoppingListPage() {
         <p className="muted">Lade …</p>
       ) : items.length === 0 ? (
         <section className={styles.card}>
-          <p className="muted">{showDone ? 'Noch nichts erledigt.' : 'Nichts auf der Einkaufsliste.'}</p>
+          <p className="muted">
+            {list.data && list.data.length > 0 ? 'Keine Positionen mit diesem Filter.' : showDone ? 'Noch nichts erledigt.' : 'Nichts auf der Einkaufsliste.'}
+          </p>
         </section>
       ) : bySupplier && !showDone ? (
         <ShoppingBySupplier items={items} canEdit={canEdit} />

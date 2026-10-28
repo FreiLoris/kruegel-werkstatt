@@ -111,5 +111,10 @@ export function toShoppingDetailRequest(form: ShoppingDetailForm, item: Shopping
  * of one supplier is not the other's.
  */
 export function withSupplier(form: ShoppingDetailForm, supplierId: string, deliveryKinds: (id: string) => string[]): ShoppingDetailForm {
+  // the same supplier: one saved earlier and no longer in its list stays
+  if (supplierId === form.supplierId) return form
   return { ...form, supplierId, delivery: deliveryKinds(supplierId).includes(form.delivery) ? form.delivery : '' }
 }
+
+/** The ways of delivery to choose from – the supplier's, and the one saved, even if it is not among them any more */
+export const deliveryChoices = (kinds: string[], current: string) => [...new Set([...kinds, ...(current ? [current] : [])])]
