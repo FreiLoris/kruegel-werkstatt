@@ -21,15 +21,15 @@ public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, UUID
     List<ShoppingItem> open();
 
     /**
-     * Done – arrived or cancelled: the latest first (a cancelled one by its last change, it has no day
-     * of arrival) – limited, the list grows forever.
+     * Done – arrived or cancelled: the latest first – limited, the list grows forever. A cancelled one
+     * has no day of arrival and goes by its last change (the day in UTC – close enough for an order).
      */
     @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})
     @Query("""
             SELECT s FROM ShoppingItem s
             WHERE s.status IN (ch.kruegel.workshop.shopping.ShoppingStatus.ARRIVED, ch.kruegel.workshop.shopping.ShoppingStatus.CANCELLED)
             ORDER BY COALESCE(s.arrivedOn, CAST(s.updatedAt AS LocalDate)) DESC, s.updatedAt DESC""")
-    List<ShoppingItem> arrived(Limit limit);
+    List<ShoppingItem> done(Limit limit);
 
     /** All positions of a task, whatever their state – the block on the task (FB-19); oldest first */
     @EntityGraph(attributePaths = {"task", "task.customer", "task.vehicle"})

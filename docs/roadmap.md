@@ -813,7 +813,9 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   "Infos an Lieferant liefern: …", "Offerte prüfen: …"); while the supplier is up it is done – a
   deliberate change to the wish "bleibt offen bzw. wartet": the to-do list shows only what someone
   has to do. Ticking off a Rückfrage gives it back to the supplier (Offerte angefragt), any other
-  orders it.
+  orders it; undoing goes back to where we were up last (from the history). "Wir sind dran" without
+  "Bestellen durch" stands out – nobody has a to-do for it. A task's parts count as arrived when
+  nothing is open and something arrived – the same rule on the task and in "Ohne Termin".
 
 ---
 

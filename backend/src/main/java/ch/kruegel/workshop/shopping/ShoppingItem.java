@@ -83,7 +83,8 @@ public class ShoppingItem extends BaseEntity {
         }
         if (status.isBeforeOrder()) {
             orderedOn = null;
-        } else if (details.orderedOn() != null) {
+        } else if (details.orderedOn() != null && (status != ShoppingStatus.CANCELLED || orderedOn != null)) {
+            // cancelled keeps a day of order it had – it does not get one it never had
             orderedOn = details.orderedOn();
         }
     }
@@ -114,6 +115,19 @@ public class ShoppingItem extends BaseEntity {
         status = newStatus;
         entries.add(ShoppingEntry.status(this, newStatus));
         return true;
+    }
+
+    /**
+     * Where we were up last – what undoing the to-do goes back to (FB-28): a Rückfrage ticked off is a
+     * Rückfrage again, an ordered quote a quote again; "to order" when we never were anywhere else.
+     */
+    public ShoppingStatus lastOurTurn() {
+        for (ShoppingEntry entry : entries.reversed()) {
+            if (entry.getKind() == ShoppingEntry.Kind.STATUS && entry.getStatus().isOurTurn()) {
+                return entry.getStatus();
+            }
+        }
+        return ShoppingStatus.TO_ORDER;
     }
 
     /** Someone else orders it – the to-do was given to them (FB-20); empty = nobody */

@@ -23,15 +23,15 @@ interface ShoppingTableProps {
 }
 
 /**
- * Who is up (FB-28). A Rückfrage nobody answers – no one orders, so no to-do – stands out.
+ * Who is up (FB-28). We are, but nobody orders – so nobody has a to-do to remind them: stands out.
  */
 function Turn({ item }: { item: ShoppingItem }) {
   const turn = turnOf(item.status)
   if (!turn) return null
-  const unanswered = item.status === 'INFO_NEEDED' && !item.orderById
+  const forgotten = turn === 'us' && !item.orderById
   return (
-    <span className={[styles.turn, styles[turn], unanswered && styles.unanswered].filter(Boolean).join(' ')}>
-      {unanswered ? 'Rückfrage – niemand zugewiesen' : turn === 'us' ? 'wir sind dran' : 'wartet auf Lieferant'}
+    <span className={[styles.turn, styles[turn], forgotten && styles.unanswered].filter(Boolean).join(' ')}>
+      {forgotten ? 'wir sind dran – niemand zugewiesen' : turn === 'us' ? 'wir sind dran' : 'wartet auf Lieferant'}
     </span>
   )
 }
@@ -92,7 +92,7 @@ export function ShoppingTable({ items, canEdit, showTask = false, label, detailO
           const orderer = person(item.orderById)
           const detail = detailOf?.(item)
           return (
-            <tr key={item.id} className={[isClosed(item.status) && styles.arrived, item.status === 'CANCELLED' && styles.cancelled].filter(Boolean).join(' ') || undefined}>
+            <tr key={item.id} className={[isClosed(item.status) && styles.closed, item.status === 'CANCELLED' && styles.cancelled].filter(Boolean).join(' ') || undefined}>
               <td>
                 <Link to={`/shopping/${item.id}`} className={styles.itemLink}>
                   {item.description}

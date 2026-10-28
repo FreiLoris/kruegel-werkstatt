@@ -1110,7 +1110,7 @@ export interface paths {
         get?: never;
         /**
          * Change the state
-         * @description No version needed. The to-do of "Bestellen durch" is done once ordered.
+         * @description No version needed. The to-do of "Bestellen durch" is open while we are up (to order, Rückfrage, quote received) and done while the supplier is up or once ordered.
          */
         put: operations["changeStatus_1"];
         post?: never;
@@ -2836,7 +2836,7 @@ export interface components {
             courtesyDays: number;
             /** Format: int64 */
             shoppingItems: number;
-            /** @description Label = TO_ORDER, ORDERED or ARRIVED */
+            /** @description Label = a ShoppingStatus, e.g. TO_ORDER or ARRIVED */
             shoppingStatus: components["schemas"]["CountDto"][];
             /** @description Label = SPARE_PART, CONSUMABLE or TOOL */
             stockCategories: components["schemas"]["CountDto"][];
@@ -3213,6 +3213,8 @@ export interface components {
              * @enum {string}
              */
             status?: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
+            /** @description With a change of state: a note for the history, e.g. "Offerte per Mail angefragt" */
+            statusNote?: string | null;
             /** Format: uuid */
             stockItemId?: string | null;
             /** Format: uuid */
@@ -3232,8 +3234,6 @@ export interface components {
             text: string;
         };
         ShoppingStatusRequest: {
-            /** @description Optional note for the history, e.g. "Offerte per Mail angefragt" */
-            note?: string | null;
             /** @enum {string} */
             status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
         };

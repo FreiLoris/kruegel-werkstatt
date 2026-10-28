@@ -55,6 +55,8 @@ describe('ShoppingTable', () => {
     expect(screen.getByText('Reto')).toBeTruthy()
     expect(screen.getByText('nicht zugewiesen')).toBeTruthy()
     expect(screen.getByText('zu bestellen')).toBeTruthy()
+    // FB-28: we are up, but nobody has a to-do for it
+    expect(screen.getByText('wir sind dran – niemand zugewiesen')).toBeTruthy()
   })
 
   it('the state is changed right in the line', () => {

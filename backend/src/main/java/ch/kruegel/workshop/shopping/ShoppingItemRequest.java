@@ -29,6 +29,9 @@ public record ShoppingItemRequest(
         @Schema(types = {"string", "null"}, format = "uuid") UUID supplierId,
         @Schema(types = {"string", "null"}, format = "date", description = "Empty = the day it is set to ordered") LocalDate orderedOn,
         @Schema(types = {"string", "null"}, format = "date") LocalDate expectedOn,
+        @Size(max = ShoppingEntry.TEXT_MAX)
+        @Schema(types = {"string", "null"}, description = "With a change of state: a note for the history, e.g. \"Offerte per Mail angefragt\"")
+        String statusNote,
         @Schema(description = "Only needed when editing") Long version) {
 
     public ShoppingItemRequest {

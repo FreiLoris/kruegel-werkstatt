@@ -50,6 +50,12 @@ describe('partsByTask (FB-19)', () => {
 
     expect(parts.get('t1')).toEqual({ missing: [], arrived: true })
   })
+
+  it('all cancelled: nothing missing, but nothing arrived either – same rule as on the task', () => {
+    const parts = partsByTask([item('t1', 'Felgen', 'CANCELLED')])
+
+    expect(parts.get('t1')).toEqual({ missing: [], arrived: false })
+  })
 })
 
 describe('unplannedCount', () => {

@@ -207,7 +207,9 @@ class ShoppingApiTest {
         // FB-28: quote asked → the supplier is up; Rückfrage / quote received → we are
         String item = idOf(create("\"description\": \"Werkzeugkiste\", \"orderById\": \"%s\"".formatted(erich)));
 
-        send("PUT", "/api/shopping-items/" + item + "/status", "{ \"status\": \"QUOTE_REQUESTED\", \"note\": \"Offerte per Mail angefragt\" }");
+        // the note goes with the change of the position
+        send("PUT", "/api/shopping-items/" + item, body(("\"description\": \"Werkzeugkiste\", \"orderById\": \"%s\", \"status\": \"QUOTE_REQUESTED\", "
+                + "\"statusNote\": \"Offerte per Mail angefragt\", \"version\": 0").formatted(erich)));
         assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNotNull();
         assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isNull();
 
@@ -237,6 +239,50 @@ class ShoppingApiTest {
 
         assertThat(get(item)).bodyJson().extractingPath("$.status").isEqualTo("QUOTE_REQUESTED");
         assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].doneAt").isNotNull();
+    }
+
+    @Test
+    void undoingTheTodoGoesBackToWhereWeWereUpLastWithItsText() {
+        String item = idOf(create("\"description\": \"Werkzeugkiste\", \"status\": \"INFO_NEEDED\", \"orderById\": \"%s\"".formatted(erich)));
+        String todo = read(todoOf(erich), "$[0].id");
+
+        send("PUT", "/api/todos/" + todo + "/done", "{ \"done\": true }");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].text").isEqualTo("Offerte angefragt: Werkzeugkiste");
+        send("PUT", "/api/todos/" + todo + "/done", "{ \"done\": false }");
+
+        assertThat(get(item)).bodyJson().extractingPath("$.status").isEqualTo("INFO_NEEDED");
+        assertThat(todoOf(erich)).bodyJson().extractingPath("$[0].text").isEqualTo("Infos an Lieferant liefern: Werkzeugkiste");
+    }
+
+    @Test
+    void tickingOffTheQuoteOrdersItUndoingMakesItAQuoteAgain() {
+        String item = idOf(create("\"description\": \"Werkzeugkiste\", \"status\": \"QUOTE_RECEIVED\", \"orderById\": \"%s\"".formatted(erich)));
+        String todo = read(todoOf(erich), "$[0].id");
+
+        send("PUT", "/api/todos/" + todo + "/done", "{ \"done\": true }");
+        assertThat(get(item)).bodyJson().extractingPath("$.status").isEqualTo("ORDERED");
+        assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isEqualTo(LocalDate.now().toString());
+
+        send("PUT", "/api/todos/" + todo + "/done", "{ \"done\": false }");
+        assertThat(get(item)).bodyJson().extractingPath("$.status").isEqualTo("QUOTE_RECEIVED");
+        assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isNull();
+    }
+
+    @Test
+    void whileTheSupplierIsUpThereIsNoTodoToCreate() {
+        create("\"description\": \"Werkzeugkiste\", \"status\": \"QUOTE_REQUESTED\", \"orderById\": \"%s\"".formatted(erich));
+
+        assertThat(mvc.get().uri("/api/todos?done=true").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        assertThat(mvc.get().uri("/api/todos").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
+
+    @Test
+    void cancelledBeforeAnOrderGetsNoDayOfOrder() {
+        String item = idOf(create("\"description\": \"Felgen\", \"status\": \"CANCELLED\""));
+
+        send("PUT", "/api/shopping-items/" + item, body("\"description\": \"Felgen\", \"orderedOn\": \"2026-10-20\", \"version\": 0"));
+
+        assertThat(get(item)).bodyJson().extractingPath("$.orderedOn").isNull();
     }
 
     @Test

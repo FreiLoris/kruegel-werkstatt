@@ -40,8 +40,8 @@ import java.util.function.Predicate;
 public class ShoppingService {
 
     public static final String TOPIC = "shopping-items";
-    /** How many arrived positions the list shows at most – the latest */
-    static final int ARRIVED_LIMIT = 200;
+    /** How many done positions (arrived or cancelled) the list shows at most – the latest */
+    static final int DONE_LIMIT = 200;
 
     private final ShoppingItemRepository repository;
     private final EmployeeRepository employees;
@@ -73,7 +73,7 @@ public class ShoppingService {
     public List<ShoppingItemDto> list(boolean arrived, UUID taskId, List<UUID> taskIds) {
         List<ShoppingItem> found = taskId != null ? repository.ofTask(taskId)
                 : taskIds != null ? (taskIds.isEmpty() ? List.of() : repository.ofTasks(taskIds))
-                : arrived ? repository.arrived(Limit.of(ARRIVED_LIMIT)) : repository.open();
+                : arrived ? repository.done(Limit.of(DONE_LIMIT)) : repository.open();
         return found.stream().map(ShoppingItemDto::of).toList();
     }
 
@@ -101,22 +101,21 @@ public class ShoppingService {
         }
         ShoppingItem item = find(id);
         item.checkVersion(request.version());
+        ShoppingStatus before = item.getStatus();
         item.update(details(request, item), request.status(), today());
+        // FB-28: a short note with a change of state, right after it in the history – in the same save
+        if (item.getStatus() != before && request.statusNote() != null && !request.statusNote().isBlank()) {
+            item.addNote(request.statusNote());
+        }
         syncTodo(item);
         return saved(item);
     }
 
-    /**
-     * Another state – no version needed, like ticking off a to-do. With a note (optional, FB-28: e.g.
-     * "Offerte per Mail angefragt") in the history right after it.
-     */
-    public ShoppingItemDto changeStatus(UUID id, ShoppingStatus status, String note) {
+    /** Another state – no version needed, like ticking off a to-do. */
+    public ShoppingItemDto changeStatus(UUID id, ShoppingStatus status) {
         ShoppingItem item = find(id);
         if (item.changeStatus(status, today())) {
             syncTodo(item);
-        }
-        if (note != null && !note.isBlank()) {
-            item.addNote(note);
         }
         return saved(item);
     }
@@ -140,18 +139,20 @@ public class ShoppingService {
 
     /**
      * The to-do was ticked off, undone or given to someone else – the position follows: done moves it
-     * on (information given → the supplier is up again; otherwise ordered), undone is "not ordered
-     * after all" – also when it was marked arrived: the to-do is open again.
+     * on ({@link ShoppingStatus#afterTodoDone()}), undone goes back to where we were up last – also
+     * when it was marked arrived: the to-do is open again. Its text follows the state.
      */
     @EventListener
     void onTodoChanged(ShoppingTodoChanged event) {
         repository.findById(event.shoppingItemId()).ifPresent(item -> {
             ShoppingStatus status = item.getStatus();
             if (event.done() && status.isOurTurn()) {
-                item.changeStatus(status == ShoppingStatus.INFO_NEEDED ? ShoppingStatus.QUOTE_REQUESTED : ShoppingStatus.ORDERED, today());
+                item.changeStatus(status.afterTodoDone(), today());
             } else if (!event.done() && !status.isOurTurn()) {
-                item.changeStatus(ShoppingStatus.TO_ORDER, today());
+                item.changeStatus(item.lastOurTurn(), today());
             }
+            // the text only – no event, so no loop back here
+            todos.findByShoppingItemId(item.getId()).ifPresent(todo -> todo.update(todoDetails(item, todo.getDueDate())));
             Employee orderBy = item.getOrderBy();
             if (!Objects.equals(orderBy == null ? null : orderBy.getId(), event.assigneeId())) {
                 item.reassign(event.assigneeId() == null ? null : employees.getReferenceById(event.assigneeId()));

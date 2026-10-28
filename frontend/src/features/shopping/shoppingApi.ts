@@ -42,6 +42,10 @@ export function turnOf(status: ShoppingStatus): Turn | null {
 /** Nothing more to happen: arrived or cancelled – on the list "Erledigt" */
 export const isClosed = (status: ShoppingStatus) => status === 'ARRIVED' || status === 'CANCELLED'
 
+/** The parts of a task are here: nothing open any more and something arrived – cancelled ones are not waited for */
+export const allArrived = (items: Pick<ShoppingItem, 'status'>[]) =>
+  items.some((i) => i.status === 'ARRIVED') && items.every((i) => isClosed(i.status))
+
 /** After a change: the list – and the to-dos, the one who orders has one (FB-20) */
 function refresh(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: ['todos'] })
@@ -103,12 +107,12 @@ export function useSaveShoppingItem() {
   })
 }
 
-/** Another state – no version, like ticking off a to-do; with a note for the history if given (FB-28). */
+/** Another state – no version, like ticking off a to-do. */
 export function useChangeShoppingStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, status, note }: { id: string; status: ShoppingStatus; note?: string }) =>
-      dataOrThrow(await api.PUT('/api/shopping-items/{id}/status', { params: { path: { id } }, body: { status, note: note ?? null } })),
+    mutationFn: async ({ id, status }: { id: string; status: ShoppingStatus }) =>
+      dataOrThrow(await api.PUT('/api/shopping-items/{id}/status', { params: { path: { id } }, body: { status } })),
     onSettled: () => refresh(queryClient),
   })
 }

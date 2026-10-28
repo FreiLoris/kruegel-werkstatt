@@ -91,7 +91,6 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
   const { data: stock = [] } = useStockItems()
   const { data: suppliers = [] } = useSuppliers()
   const save = useSaveShoppingItem()
-  const addNote = useAddShoppingNote()
   const toast = useToast()
   const once = useSingleFlight()
   const [form, setForm] = useState<ShoppingDetailForm>(() => detailFormFromItem(item, me))
@@ -122,13 +121,11 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
     if (Object.keys(errors).length > 0) return
     once((done) =>
       save.mutate(
-        { id: item.id, request: toShoppingDetailRequest(form, item) },
+        // the note goes with the change of state – saved together or not at all
+        { id: item.id, request: { ...toShoppingDetailRequest(form, item), statusNote: statusChanged ? statusNote.trim() || null : null } },
         {
           onSuccess: () => {
             toast.success('Position gespeichert')
-            if (statusChanged && statusNote.trim()) {
-              addNote.mutate({ id: item.id, text: statusNote.trim() }, { onError: (error) => toast.error(`Notiz nicht gespeichert: ${reasonOf(error)}`) })
-            }
             setStatusNote('')
           },
           onError: (error) => toast.error(`Nicht gespeichert: ${reasonOf(error)}`),

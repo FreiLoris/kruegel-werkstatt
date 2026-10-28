@@ -159,7 +159,7 @@
   height: 1rem;
 }
 
-.arrived .itemLink {
+.closed .itemLink {
   color: var(--color-text-muted);
 }
 

@@ -25,6 +25,14 @@ public enum ShoppingStatus {
         return this == TO_ORDER || this == INFO_NEEDED || this == QUOTE_RECEIVED;
     }
 
+    /**
+     * The to-do was ticked off: information given → the supplier is up again, otherwise it is ordered.
+     * Only for a state where we are up.
+     */
+    public ShoppingStatus afterTodoDone() {
+        return this == INFO_NEEDED ? QUOTE_REQUESTED : ORDERED;
+    }
+
     /** Not ordered yet – no day of order */
     public boolean isBeforeOrder() {
         return this == TO_ORDER || this == QUOTE_REQUESTED || this == INFO_NEEDED || this == QUOTE_RECEIVED;

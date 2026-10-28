@@ -1,4 +1,4 @@
-import { isClosed, type ShoppingItem } from '../../shopping/shoppingApi'
+import { allArrived, isClosed, type ShoppingItem } from '../../shopping/shoppingApi'
 import { quantityText } from '../../shopping/shoppingText'
 import type { AnyTask } from '../taskApi'
 
@@ -21,18 +21,18 @@ export interface TaskParts {
   arrived: boolean
 }
 
-/** Per task: what is missing, and whether all its parts arrived – from all positions of the tasks */
+/** Per task: what is missing, and whether its parts arrived (same rule as on the task) – from all positions of the tasks */
 export function partsByTask(items: ShoppingItem[]): Map<string, TaskParts> {
-  const parts = new Map<string, TaskParts>()
+  const byTask = new Map<string, ShoppingItem[]>()
   for (const item of items) {
-    if (!item.task) continue
-    const task = parts.get(item.task.id) ?? parts.set(item.task.id, { missing: [], arrived: true }).get(item.task.id)!
-    if (!isClosed(item.status)) {
-      task.missing.push(quantityText(item))
-      task.arrived = false
-    }
+    if (item.task) byTask.set(item.task.id, [...(byTask.get(item.task.id) ?? []), item])
   }
-  return parts
+  return new Map(
+    [...byTask].map(([taskId, ofTask]) => [
+      taskId,
+      { missing: ofTask.filter((i) => !isClosed(i.status)).map(quantityText), arrived: allArrived(ofTask) },
+    ]),
+  )
 }
 
 export function unplannedGroups(withoutAppointment: AnyTask[], waitingSinceTheirDay: AnyTask[], parts = new Map<string, TaskParts>()): UnplannedGroups {

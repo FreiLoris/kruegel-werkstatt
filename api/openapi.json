@@ -6643,7 +6643,7 @@
     },
     "/api/shopping-items/{id}/status" : {
       "put" : {
-        "description" : "No version needed. The to-do of \"Bestellen durch\" is done once ordered.",
+        "description" : "No version needed. The to-do of \"Bestellen durch\" is open while we are up (to order, Rückfrage, quote received) and done while the supplier is up or once ordered.",
         "operationId" : "changeStatus_1",
         "parameters" : [ {
           "in" : "path",
@@ -14126,7 +14126,7 @@
           },
           "shoppingStatus" : {
             "type" : "array",
-            "description" : "Label = TO_ORDER, ORDERED or ARRIVED",
+            "description" : "Label = a ShoppingStatus, e.g. TO_ORDER or ARRIVED",
             "items" : {
               "$ref" : "#/components/schemas/CountDto"
             }
@@ -14866,6 +14866,12 @@
             "description" : "Missing = to order when new, unchanged when editing",
             "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
           },
+          "statusNote" : {
+            "type" : [ "string", "null" ],
+            "description" : "With a change of state: a note for the history, e.g. \"Offerte per Mail angefragt\"",
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
           "stockItemId" : {
             "type" : [ "string", "null" ],
             "format" : "uuid"
@@ -14901,12 +14907,6 @@
       "ShoppingStatusRequest" : {
         "type" : "object",
         "properties" : {
-          "note" : {
-            "type" : [ "string", "null" ],
-            "description" : "Optional note for the history, e.g. \"Offerte per Mail angefragt\"",
-            "maxLength" : 1000,
-            "minLength" : 0
-          },
           "status" : {
             "type" : "string",
             "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
