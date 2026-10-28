@@ -258,19 +258,35 @@ class TaskTireApiTest {
         assertThat(items).bodyJson().extractingPath("$[0].orderById").isEqualTo(chef);
         assertThat(mvc.get().uri("/api/tasks/" + task).exchange()).bodyJson().extractingPath("$.newTiresCount").isEqualTo(4);
 
-        // edited again: the position is not ordered twice, and keeps what was ordered
-        MvcTestResult edited = send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresCount\": 2, \"version\": 0"));
+        // edited again: not ordered twice – still to order, the position follows
+        MvcTestResult edited = send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"205/55 R16 91H\", \"newTiresCount\": 2, \"version\": 0"));
         assertThat(edited).bodyJson().extractingPath("$.newTiresCount").isEqualTo(2);
-        assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$[*].quantity").asArray()
-                .containsExactly(4);
+        MvcTestResult followed = mvc.get().uri("/api/shopping-items?taskId=" + task).exchange();
+        assertThat(followed).bodyJson().extractingPath("$[*].quantity").asArray().containsExactly(2);
+        String position = read(followed, "$[0].id");
+        assertThat(mvc.get().uri("/api/shopping-items/" + position + "/entries").exchange()).bodyJson().extractingPath("$[*].text").asArray()
+                .contains("Vom Auftrag übernommen: 2× Reifen 205/55 R16 91H");
 
         // another kind: what to order is gone from the task – the position stays to be cancelled
         MvcTestResult other = send("PUT", "/api/tasks/" + task, task(true).replace(" }", ", \"version\": 1 }"));
         assertThat(other).bodyJson().extractingPath("$.newTiresCount").isNull();
         assertThat(other).bodyJson().extractingPath("$.newTiresDimension").isNull();
         // and back: still one position
-        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"version\": 2"))).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"205/55 R16 91H\", \"newTiresCount\": 2, \"version\": 2")))
+                .hasStatusOk();
         assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$").asArray().hasSize(1);
+
+        // ordered already: nothing changed behind the back – a note to check
+        long itemVersion = ((Number) JsonPath.read(body(mvc.get().uri("/api/shopping-items/" + position).exchange()), "$.version")).longValue();
+        assertThat(send("PUT", "/api/shopping-items/" + position, """
+                { "description": "Reifen 205/55 R16 91H", "quantity": 2, "status": "ORDERED", "recordedById": "%s", "taskId": "%s", "version": %d }"""
+                .formatted(chef, task, itemVersion))).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"225/45 R17\", \"newTiresCount\": 2, \"version\": 3")))
+                .hasStatusOk();
+        MvcTestResult ordered = mvc.get().uri("/api/shopping-items/" + position).exchange();
+        assertThat(ordered).bodyJson().extractingPath("$.description").isEqualTo("Reifen 205/55 R16 91H");
+        assertThat(mvc.get().uri("/api/shopping-items/" + position + "/entries").exchange()).bodyJson().extractingPath("$[*].text").asArray()
+                .contains("Auftrag geändert auf 2× Reifen 225/45 R17 – bitte prüfen");
 
         // chosen later: ordered then, the dimension still open
         String later = idOf(send("POST", "/api/tasks", task(true)));
@@ -320,6 +336,14 @@ class TaskTireApiTest {
         assertThat(unknown).bodyJson().extractingPath("$.removed.state").isEqualTo("DISPOSED");
         assertThat(mvc.get().uri("/api/tire-sets/" + read(unknown, "$.removed.id") + "/history").exchange()).bodyJson()
                 .extractingPath("$[*].kind").asArray().containsExactly("RECORDED", "DISPOSED");
+    }
+
+    private static String body(MvcTestResult response) {
+        try {
+            return response.getResponse().getContentAsString();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private String newTyresTask(String more) {

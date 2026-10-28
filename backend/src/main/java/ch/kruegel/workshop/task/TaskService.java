@@ -192,7 +192,7 @@ public class TaskService {
         Employee mfkDriver = mfkDriver(request, task.getMfkDriver());
         InspectionStation mfkStation = mfkStation(request, task.getMfkStation());
         checkLiftFree(details.lift(), details.appointment(), id);
-        TireChangeKind kindBefore = task.getWork().tireChangeKind();
+        NewTires tiresBefore = NewTires.of(task);
 
         task.update(details);
         task.acceptedBy(acceptedBy);
@@ -202,19 +202,27 @@ public class TaskService {
         if (request.vehicleLocation() != null) {
             task.moveVehicle(request.vehicleLocation());
         }
-        orderNewTires(task, kindBefore);
+        orderNewTires(task, tiresBefore);
         return saved(task);
     }
 
     /**
-     * New tyres chosen (FB-25): the shopping list gets the position to order them – once, when the
-     * kind becomes "Neue Reifen". Changed later, the position is changed on the list; chosen
-     * otherwise again, it stays there to be cancelled (it may be ordered already).
+     * New tyres chosen or what to order changed (FB-25): the shopping list orders them or follows
+     * (ShoppingService). Chosen otherwise again, the position stays there to be cancelled (it may be
+     * ordered already).
      */
-    private void orderNewTires(Task task, TireChangeKind kindBefore) {
-        if (task.getWork().tireChangeKind() == TireChangeKind.NEW_TIRES && kindBefore != TireChangeKind.NEW_TIRES) {
-            events.publishEvent(new NewTiresChosen(task.getId(), task.getNewTiresDimension(), task.getNewTiresCount(),
-                    task.getAcceptedBy().getId()));
+    private void orderNewTires(Task task, NewTires before) {
+        NewTires now = NewTires.of(task);
+        if (now != null && !now.equals(before)) {
+            events.publishEvent(new NewTiresChosen(task.getId(), now.dimension(), now.count(), task.getAcceptedBy().getId()));
+        }
+    }
+
+    /** What to order – null without new tyres */
+    private record NewTires(String dimension, Integer count) {
+        static NewTires of(Task task) {
+            return task.getWork().tireChangeKind() == TireChangeKind.NEW_TIRES
+                    ? new NewTires(task.getNewTiresDimension(), task.getNewTiresCount()) : null;
         }
     }
 

@@ -142,19 +142,39 @@ public class ShoppingService {
 
     /**
      * New tyres for a task (FB-25): "Reifen 205/55 R16 91H", to order – recorded and ordered by who
-     * took the order, like a part entered with the task (FB-24); all changeable on the list. Once per
-     * task: chosen again after another kind, the position not cancelled is still the one.
+     * took the order, like a part entered with the task (FB-24); all changeable on the list. One
+     * position per task: chosen again after another kind, the one not cancelled is still it. What to
+     * order changed on the task: still to order, the position follows; asked for or ordered already,
+     * it gets a note to check – nothing ordered is changed behind someone's back.
      */
     @EventListener
     void onNewTiresChosen(NewTiresChosen event) {
-        boolean ordered = repository.ofTask(event.taskId()).stream()
-                .anyMatch(item -> item.getStatus() != ShoppingStatus.CANCELLED && item.getDetails().description().startsWith(NEW_TIRES_PREFIX));
-        if (ordered) {
+        String description = event.dimension() == null ? NEW_TIRES_PREFIX + "(Dimension offen)" : NEW_TIRES_PREFIX + event.dimension();
+        Optional<ShoppingItem> existing = repository.ofTask(event.taskId()).stream()
+                .filter(item -> item.getStatus() != ShoppingStatus.CANCELLED && item.getDetails().description().startsWith(NEW_TIRES_PREFIX))
+                .findFirst();
+        if (existing.isEmpty()) {
+            create(new ShoppingItemRequest(description, null, event.count(), ShoppingStatus.TO_ORDER, event.acceptedBy(), event.acceptedBy(),
+                    event.taskId(), null, null, null, null, null, null));
             return;
         }
-        String description = event.dimension() == null ? NEW_TIRES_PREFIX + "(Dimension offen)" : NEW_TIRES_PREFIX + event.dimension();
-        create(new ShoppingItemRequest(description, null, event.count(), ShoppingStatus.TO_ORDER, event.acceptedBy(), event.acceptedBy(),
-                event.taskId(), null, null, null, null, null, null));
+        ShoppingItem item = existing.get();
+        ShoppingItemDetails d = item.getDetails();
+        if (d.description().equals(description) && d.quantity() == event.count()) {
+            return;
+        }
+        if (item.getStatus() == ShoppingStatus.TO_ORDER) {
+            item.update(new ShoppingItemDetails(description, d.partNumber(), event.count(), d.recordedBy(), d.orderBy(), d.task(),
+                    d.stockItemId(), d.supplierId(), d.orderedOn(), d.expectedOn()), null, today());
+            item.addNote("Vom Auftrag übernommen: " + event.count() + "× " + description);
+            syncTodo(item);
+        } else if (!item.getStatus().isClosed()) {
+            item.addNote("Auftrag geändert auf " + event.count() + "× " + description + " – bitte prüfen");
+        } else {
+            return;
+        }
+        repository.flush();
+        changed();
     }
 
     /**

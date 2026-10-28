@@ -305,7 +305,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
           {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && (
             <p className={`muted ${styles.indented}`}>
               Die Dimension ist vom Reifensatz des Fahrzeugs übernommen, wenn bekannt – bitte prüfen. Beim ersten Speichern mit dieser Art kommt
-              die Bestellposition «Reifen …» auf die Einkaufsliste; spätere Änderungen dort bei der Position nachführen.
+              die Bestellposition «Reifen …» auf die Einkaufsliste. Spätere Änderungen übernimmt sie, solange sie noch zu bestellen ist – sonst bekommt sie einen Vermerk.
             </p>
           )}
           {form.tireChange && vehicleId && customerId && (
