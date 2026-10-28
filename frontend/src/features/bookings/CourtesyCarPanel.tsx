@@ -45,6 +45,7 @@ export function CourtesyCarPanel({ task, canEdit }: { task: AnyTask; canEdit: bo
           initial={initial}
           onSaved={() => setEditing(null)}
           onCancel={() => setEditing(null)}
+          withCalendar
         />
       </div>
     )

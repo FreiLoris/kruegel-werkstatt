@@ -14,6 +14,11 @@
   grid-template-columns: minmax(8.5rem, 11rem) minmax(calc(var(--days) * 4.25rem), 1fr);
 }
 
+/* above a form (FB-32): narrower days, so the period and the days around it fit a tablet */
+.compact {
+  grid-template-columns: minmax(7rem, 9rem) minmax(calc(var(--days) * 2.75rem), 1fr);
+}
+
 .corner,
 .car {
   position: sticky;
@@ -118,6 +123,24 @@
 
 .creatable {
   cursor: crosshair;
+}
+
+/* the period being booked (FB-32) – a car with a bar inside it is taken then */
+.highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-inline: 2px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  pointer-events: none;
+}
+
+.cutBefore {
+  border-left: 0;
+}
+
+.cutAfter {
+  border-right: 0;
 }
 
 .offDay {

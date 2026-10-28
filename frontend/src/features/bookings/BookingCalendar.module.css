@@ -1,0 +1,10 @@
+/* the occupancy above the booking form (FB-32) */
+.calendar {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.calendar p {
+  margin: 0;
+}

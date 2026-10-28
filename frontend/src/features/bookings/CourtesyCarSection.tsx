@@ -36,9 +36,13 @@ export function CourtesyCarSection({
             name="wizard-courtesy-car"
             pickupAt={period?.pickupAt ?? null}
             returnAt={period?.returnAt ?? null}
-            onPeriodChange={(pickupAt, returnAt) => onChange({ ...choice, pickupAt, returnAt })}
+            // with a car when days were dragged open in its row – one change, or the second would undo the first
+            onPeriodChange={(pickupAt, returnAt, courtesyCarId) =>
+              onChange({ ...choice, pickupAt, returnAt, courtesyCarId: courtesyCarId ?? choice.courtesyCarId })
+            }
             courtesyCarId={choice.courtesyCarId}
             onCarChange={(courtesyCarId) => onChange({ ...choice, courtesyCarId })}
+            withCalendar
           />
           <TextField label="Notiz zum Ersatzwagen" value={choice.notes} onChange={(e) => onChange({ ...choice, notes: e.target.value })} />
           {error && (
