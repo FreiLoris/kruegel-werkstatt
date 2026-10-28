@@ -41,7 +41,7 @@ export function SeasonChangeView({ query, limits, canEdit }: SeasonChangeViewPro
   const today = useToday()
   const [acknowledging, setAcknowledging] = useState<SeasonEntry | null>(null)
   // FB-21: who called whom – only the customers to call
-  const { data: calls } = useLatestCalls((change.data?.entries ?? []).filter(isToCall).map((e) => e.set.customer.id))
+  const { data: calls } = useLatestCalls()
 
   if (change.error) return <p className="muted">Saisonwechsel konnte nicht geladen werden: {change.error.message}</p>
   if (!change.data) return <p className="muted">Lade …</p>

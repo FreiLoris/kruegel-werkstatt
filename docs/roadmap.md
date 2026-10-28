@@ -911,9 +911,10 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
 - [x] **16q – Call log** (FB-16, FB-21)
   Done: next to the phone number in "Ohne Termin – Beim Kunden" and in the season change (open,
   stored for longer) one tap notes how the call went – "erreicht", "nicht erreicht", "Rückruf" –
-  with time and person ("Angerufen 28.10.2026 14:05 · nicht erreicht · Reto"); ✕ deletes one tapped
-  by mistake. Per customer (V54 `customer_call`): a call is a call, whatever it was about; live on
-  every device, so nobody calls twice.
+  with time and person ("Angerufen 28.10.2026 14:05 · nicht erreicht · Reto"); ✕ deletes one's own
+  call tapped by mistake within half an hour (the others' stay). Per customer (V54 `customer_call`):
+  a call is a call, whatever it was about; the latest of each customer of the last half year in one
+  list, live on every device, so nobody calls twice.
 
 ---
 

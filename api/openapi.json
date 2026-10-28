@@ -2281,20 +2281,7 @@
     },
     "/api/customer-calls/latest" : {
       "get" : {
-        "description" : "Customers never called are left out.",
         "operationId" : "latest",
-        "parameters" : [ {
-          "in" : "query",
-          "name" : "customerIds",
-          "required" : true,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "format" : "uuid"
-            }
-          }
-        } ],
         "responses" : {
           "200" : {
             "content" : {
@@ -2360,12 +2347,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "The latest call of each customer",
+        "summary" : "The latest call of each customer called in the last 180 days",
         "tags" : [ "Customer calls" ]
       }
     },
     "/api/customer-calls/{id}" : {
       "delete" : {
+        "description" : "Only one's own, within 30 minutes; else 409.",
         "operationId" : "delete_9",
         "parameters" : [ {
           "in" : "path",
@@ -2677,7 +2665,7 @@
     "/api/customers/{customerId}/calls" : {
       "post" : {
         "description" : "When and who: now and the person of the device.",
-        "operationId" : "call",
+        "operationId" : "note",
         "parameters" : [ {
           "in" : "path",
           "name" : "customerId",

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,20 +26,20 @@ class CustomerCallController {
         this.service = service;
     }
 
-    @Operation(summary = "The latest call of each customer", description = "Customers never called are left out.")
+    @Operation(summary = "The latest call of each customer called in the last 180 days")
     @GetMapping("/api/customer-calls/latest")
-    List<CustomerCallDto> latest(@RequestParam List<UUID> customerIds) {
-        return service.latest(customerIds);
+    List<CustomerCallDto> latest() {
+        return service.latest();
     }
 
     @Operation(summary = "Note a call to the customer", description = "When and who: now and the person of the device.")
     @PostMapping("/api/customers/{customerId}/calls")
     @ResponseStatus(HttpStatus.CREATED)
-    CustomerCallDto call(@PathVariable UUID customerId, @Valid @RequestBody CustomerCallRequest request) {
-        return service.call(customerId, request);
+    CustomerCallDto note(@PathVariable UUID customerId, @Valid @RequestBody CustomerCallRequest request) {
+        return service.note(customerId, request);
     }
 
-    @Operation(summary = "Delete a call noted by mistake")
+    @Operation(summary = "Delete a call noted by mistake", description = "Only one's own, within 30 minutes; else 409.")
     @DeleteMapping("/api/customer-calls/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable UUID id) {

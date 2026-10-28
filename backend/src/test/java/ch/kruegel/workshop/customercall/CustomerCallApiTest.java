@@ -60,7 +60,7 @@ class CustomerCallApiTest {
         MvcTestResult latest = call(huber.getId().toString(), "{ \"outcome\": \"CALLBACK\", \"note\": \" ab 17 Uhr \" }");
         assertThat(latest).hasStatus(HttpStatus.CREATED);
 
-        MvcTestResult list = mvc.get().uri("/api/customer-calls/latest?customerIds=" + huber.getId() + "," + meier.getId()).exchange();
+        MvcTestResult list = mvc.get().uri("/api/customer-calls/latest").exchange();
         // Meier was never called – not in the list
         assertThat(list).bodyJson().extractingPath("$[*].customerId").asArray().containsExactly(huber.getId().toString());
         assertThat(list).bodyJson().extractingPath("$[0].outcome").isEqualTo("CALLBACK");
@@ -76,8 +76,32 @@ class CustomerCallApiTest {
         assertThat(mvc.delete().uri("/api/customer-calls/" + mistake).header(CurrentPerson.HEADER, reto).exchange())
                 .hasStatus(HttpStatus.NO_CONTENT);
 
-        assertThat(mvc.get().uri("/api/customer-calls/latest?customerIds=" + huber.getId()).exchange()).bodyJson()
+        assertThat(mvc.get().uri("/api/customer-calls/latest").exchange()).bodyJson()
                 .extractingPath("$[*].id").asArray().containsExactly(first);
+    }
+
+    @Test
+    void onlyOnesOwnCallCanBeDeleted() {
+        String retosCall = read(call(huber.getId().toString(), "{ \"outcome\": \"REACHED\" }"), "$.id");
+        String erich = employees.save(EmployeeTestData.employee("Erich", 1)).getId().toString();
+
+        assertThat(mvc.delete().uri("/api/customer-calls/" + retosCall).header(CurrentPerson.HEADER, erich).exchange())
+                .hasStatus(HttpStatus.CONFLICT);
+        // noted long ago: kept too
+        jdbc.update("UPDATE customer_call SET created_at = now() - interval '1 hour'");
+        assertThat(mvc.delete().uri("/api/customer-calls/" + retosCall).header(CurrentPerson.HEADER, reto).exchange())
+                .hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void oneCallPerCustomerAlsoAtTheSameMoment() {
+        call(huber.getId().toString(), "{ \"outcome\": \"NOT_REACHED\" }");
+        String later = read(call(huber.getId().toString(), "{ \"outcome\": \"REACHED\" }"), "$.id");
+        jdbc.update("UPDATE customer_call SET created_at = '2026-10-28T10:00:00Z'");
+        jdbc.update("UPDATE customer_call SET created_at = now()");
+
+        assertThat(mvc.get().uri("/api/customer-calls/latest").exchange()).bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactly(later);
     }
 
     @Test

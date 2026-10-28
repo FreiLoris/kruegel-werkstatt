@@ -15,15 +15,28 @@ export const OUTCOMES: Record<CallOutcome, string> = {
   CALLBACK: 'Rückruf',
 }
 
-/** The latest call of each of these customers (FB-16, FB-21) – by customer id; never called = missing */
-export function useLatestCalls(customerIds: string[]) {
-  const ids = [...new Set(customerIds)].sort()
+/** The buttons, in this order */
+export const OUTCOME_ORDER: readonly CallOutcome[] = ['REACHED', 'NOT_REACHED', 'CALLBACK']
+
+/** How long one's own call can be deleted – like the server (CustomerCallService.DELETABLE) */
+const DELETABLE_MINUTES = 30
+
+/**
+ * One's own call, just noted – the only one that can be deleted (tapped by mistake)
+ *
+ * @param now the local time of the app's clock, "2026-10-28T15:05"
+ */
+export const isDeletable = (call: Pick<CustomerCall, 'calledAt' | 'calledBy'>, person: string | undefined, now: string) =>
+  !!person && call.calledBy === person && Date.parse(now) - Date.parse(call.calledAt) < DELETABLE_MINUTES * 60_000
+
+/**
+ * The latest call of every customer called in the last half year (FB-16, FB-21) – by customer id;
+ * not called = missing. One list for all views: no ids in the address.
+ */
+export function useLatestCalls() {
   return useQuery({
-    queryKey: [TOPIC, 'latest', ids],
-    queryFn: async ({ signal }) =>
-      ids.length === 0
-        ? []
-        : dataOrThrow(await api.GET('/api/customer-calls/latest', { params: { query: { customerIds: ids } }, signal })),
+    queryKey: [TOPIC, 'latest'],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/customer-calls/latest', { signal })),
     select: (calls) => new Map(calls.map((call) => [call.customerId, call])),
   })
 }

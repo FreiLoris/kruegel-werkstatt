@@ -369,10 +369,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * The latest call of each customer
-         * @description Customers never called are left out.
-         */
+        /** The latest call of each customer called in the last 180 days */
         get: operations["latest"];
         put?: never;
         post?: never;
@@ -392,7 +389,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a call noted by mistake */
+        /**
+         * Delete a call noted by mistake
+         * @description Only one's own, within 30 minutes; else 409.
+         */
         delete: operations["delete_9"];
         options?: never;
         head?: never;
@@ -469,7 +469,7 @@ export interface paths {
          * Note a call to the customer
          * @description When and who: now and the person of the device.
          */
-        post: operations["call"];
+        post: operations["note"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6491,9 +6491,7 @@ export interface operations {
     };
     latest: {
         parameters: {
-            query: {
-                customerIds: string[];
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -6823,7 +6821,7 @@ export interface operations {
             };
         };
     };
-    call: {
+    note: {
         parameters: {
             query?: never;
             header?: never;

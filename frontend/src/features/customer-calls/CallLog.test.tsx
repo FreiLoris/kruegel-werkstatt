@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { CallLog } from './CallLog'
-import type { CustomerCall } from './customerCallApi'
+import { isDeletable, type CustomerCall } from './customerCallApi'
 
 const noteCall = vi.fn()
 const deleteCall = vi.fn()
@@ -12,14 +12,16 @@ vi.mock('./customerCallApi', async (original) => ({
 }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [{ id: 'r', name: 'Reto' }] }) }))
 vi.mock('../../components/ui/toastContext', () => ({ useToast: () => ({ error: vi.fn() }) }))
+vi.mock('../../app/person/useDevicePerson', () => ({ useMyEmployeeId: () => 'r' }))
+vi.mock('../../lib/clock', () => ({ useClock: () => ({ today: '2026-10-28', time: '15:00' }) }))
 
 // fictitious call
-const latest = { id: 'c1', customerId: 'k1', outcome: 'NOT_REACHED', note: null, calledAt: '2026-10-28T13:05:00Z', calledBy: 'r' } as CustomerCall
+const latest = { id: 'c1', customerId: 'k1', outcome: 'NOT_REACHED', note: null, calledAt: '2026-10-28T13:55:00Z', calledBy: 'r' } as CustomerCall
 
 describe('CallLog (FB-16, FB-21)', () => {
   it('the latest call – and one tap notes the next one', () => {
     render(<CallLog customerId="k1" latest={latest} canEdit />)
-    expect(screen.getByText(/nicht erreicht · Reto/)).toBeTruthy()
+    expect(screen.getByText(/nicht erreicht · Reto$/)).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Rückruf' }))
     expect(noteCall).toHaveBeenCalledWith({ customerId: 'k1', outcome: 'CALLBACK' }, expect.anything())
@@ -32,5 +34,16 @@ describe('CallLog (FB-16, FB-21)', () => {
     render(<CallLog customerId="k1" latest={latest} canEdit={false} />)
     expect(screen.getByText(/nicht erreicht/)).toBeTruthy()
     expect(screen.queryAllByRole('button')).toHaveLength(0)
+  })
+})
+
+describe('isDeletable', () => {
+  // local time 15:00 = 14:00 UTC (winter time)
+  const now = '2026-10-28T15:00'
+  it('one’s own call of the last half hour only', () => {
+    expect(isDeletable({ calledAt: '2026-10-28T13:45:00Z', calledBy: 'r' }, 'r', now)).toBe(true)
+    expect(isDeletable({ calledAt: '2026-10-28T13:15:00Z', calledBy: 'r' }, 'r', now)).toBe(false)
+    expect(isDeletable({ calledAt: '2026-10-28T13:45:00Z', calledBy: 'e' }, 'r', now)).toBe(false)
+    expect(isDeletable({ calledAt: '2026-10-28T13:45:00Z', calledBy: 'r' }, undefined, now)).toBe(false)
   })
 })

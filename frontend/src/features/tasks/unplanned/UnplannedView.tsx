@@ -87,7 +87,7 @@ function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string
   const navigate = useNavigate()
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
   // FB-16: who called whom – only those to call in
-  const { data: calls } = useLatestCalls(tasks.filter((t) => t.vehicleLocation === 'AT_CUSTOMER').map((t) => t.customer.id))
+  const { data: calls } = useLatestCalls()
 
   return (
     <ul className={styles.list} aria-label={label}>

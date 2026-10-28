@@ -9,7 +9,7 @@ CREATE TABLE customer_call (
     created_by   uuid        REFERENCES employee (id),
     updated_by   uuid        REFERENCES employee (id),
 
-    customer_id  uuid        NOT NULL REFERENCES customer (id) ON DELETE CASCADE,
+    customer_id  uuid        NOT NULL REFERENCES customer (id),
     outcome      text        NOT NULL CHECK (outcome IN ('REACHED', 'NOT_REACHED', 'CALLBACK')),
     note         text        CHECK (length(note) <= 200)
 );
