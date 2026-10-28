@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUp, FolderInput, Pencil, Plus, PowerOff, RotateCcw } from 'lucide-react'
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useCanEdit } from '../../app/person/useDevicePerson'
-import { NameDialog } from '../../components/masterdata/NameDialog'
 import { Button } from '../../components/ui/Button'
 import { Select } from '../../components/ui/Fields'
 import { Menu, MenuItem } from '../../components/ui/Menu'
@@ -17,6 +16,7 @@ import {
   useSetStorageLocationActive,
   type StorageLocation,
 } from './storageLocationApi'
+import { StorageLocationDialog } from './StorageLocationDialog'
 import styles from './StorageLocationSettings.module.css'
 
 type Dialog =
@@ -38,9 +38,14 @@ export function StorageLocationSettings() {
   const setActive = useSetStorageLocationActive()
   const toast = useToast()
   const [dialog, setDialog] = useState<Dialog>(null)
+  // FB-23: every code on the premises (also of places no longer in use – their label may still hang there)
+  const usedCodes = useMemo(() => (all ?? []).flatMap((l) => (l.code ? [l.code] : [])), [all])
 
   const active = useMemo(() => placeTree((all ?? []).filter((l) => l.active)), [all])
   const inactive = useMemo(() => placeTree(all ?? []).filter((p) => !p.location.active), [all])
+  /** The code a place inside `parentId` shows when it has none – what the place above shows (placeTree) */
+  const shownCodes = useMemo(() => new Map([...active, ...inactive].map((p) => [p.location.id, p.shownCode])), [active, inactive])
+  const inheritedCode = (parentId: string | null) => (parentId ? shownCodes.get(parentId) : undefined)
 
   if (isPending) return <p className="muted">Lade Lagerorte …</p>
   if (error) {
@@ -100,6 +105,7 @@ export function StorageLocationSettings() {
             return (
               <li key={location.id} className={styles.row} style={{ paddingLeft: `calc(var(--space-3) + ${place.depth * 1.5}rem)` }}>
                 <span className={styles.name} title={place.path}>
+                  {location.code && <span className={styles.code}>{location.code}</span>}
                   {location.name}
                 </span>
                 {canEdit && (
@@ -129,7 +135,7 @@ export function StorageLocationSettings() {
                     />
                     <Menu label="Mehr">
                       <MenuItem icon={Pencil} onClick={() => setDialog({ kind: 'rename', location })}>
-                        Umbenennen
+                        Bearbeiten (Name, Kürzel)
                       </MenuItem>
                       <MenuItem icon={FolderInput} onClick={() => setDialog({ kind: 'move', location })}>
                         Verschieben
@@ -169,24 +175,24 @@ export function StorageLocationSettings() {
         <MoveDialog key={dialog.location.id} location={dialog.location} all={all} onClose={() => setDialog(null)} />
       ) : (
         dialog && (
-          <NameDialog
+          <StorageLocationDialog
             key={dialog.kind === 'new' ? `new-${dialog.parent?.id}` : dialog.location.id}
             title={
               dialog.kind === 'new'
                 ? dialog.parent
                   ? `Neuer Lagerort in ${dialog.parent.name}`
                   : 'Neuer Lagerort'
-                : `${dialog.location.name} umbenennen`
+                : `${dialog.location.name} bearbeiten`
             }
-            initialName={dialog.kind === 'rename' ? dialog.location.name : undefined}
+            initial={dialog.kind === 'rename' ? { name: dialog.location.name, code: dialog.location.code } : undefined}
+            inheritedCode={inheritedCode(dialog.kind === 'new' ? (dialog.parent?.id ?? null) : dialog.location.parentId)}
+            usedCodes={usedCodes}
             placeholder={dialog.kind === 'new' && dialog.parent ? 'z. B. Regal 2, Schublade 3' : 'z. B. Keller, Büro, 1. OG'}
-            hint="So erscheint der Lagerort in der Lagerliste."
-            maxLength={40}
-            save={(name) =>
+            save={({ name, code }) =>
               save.mutateAsync(
                 dialog.kind === 'new'
-                  ? { name, parentId: dialog.parent?.id ?? null }
-                  : { id: dialog.location.id, name, version: dialog.location.version },
+                  ? { name, code, parentId: dialog.parent?.id ?? null }
+                  : { id: dialog.location.id, name, code, version: dialog.location.version },
               )
             }
             onClose={() => setDialog(null)}

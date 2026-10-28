@@ -922,6 +922,16 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   themselves in the header to edit, nobody stays signed in by mistake – the tablet at rest is no TV:
   it keeps its header and its page), or never. `/board-test` serves the test page of the whiteboard
   too.
+- [x] **16s – Codes for storage locations** (FB-23, scheme of the workshop 2026-10-28)
+  Done: a storage location may have a code to write on the shelf (V55): AA00 – the area (K =
+  Keller), the place in it (A, B, C …), the number there (01, 02 …). Entered by hand, upper case by
+  itself, AA00 only, once on the premises (also against places no longer in use: their label may
+  still hang there). "Vorschlag" gives the next free one of what is typed ("K" → the next free place
+  in the cellar, "KA" → its next number; Z full → on with L) – or, empty, of the place above. Not
+  derived from the tree: renamed or moved, a place keeps its label; the tree stays the table of
+  contents and may grow below a place with a code. A place without one shows the code above:
+  "KA01 · Keller › Treppe", inside it "KA01 › oberes Fach". In the stock list, its filter and the
+  article dialog; the search finds the code and the names.
 
 ---
 

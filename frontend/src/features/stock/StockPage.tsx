@@ -86,7 +86,9 @@ export function StockPage() {
   const places = useMemo(() => placeTree(locations), [locations])
   const lookup: StockLookup = useMemo(
     () => ({
-      locationNames: new Map(places.map((p) => [p.location.id, p.path])),
+      locationNames: new Map(places.map((p) => [p.location.id, p.label])),
+      // FB-23: found by its code and by its names – "KA01" and "Keller"
+      locationSearch: new Map(places.map((p) => [p.location.id, [p.shownCode, p.path].filter(Boolean).join(' ')])),
       locationsWithin: placesWithin(locations),
       locationOrder: new Map(places.map((p, index) => [p.location.id, index])),
       supplierNames: new Map(suppliers.map((s) => [s.id, s.name])),
@@ -153,7 +155,7 @@ export function StockPage() {
           <option value="">Alle</option>
           {filterPlaces.map((p) => (
             <option key={p.location.id} value={p.location.id}>
-              {p.path}
+              {p.label}
             </option>
           ))}
           <option value={NONE}>ohne Lagerort</option>

@@ -25,6 +25,16 @@ describe('placeTree', () => {
     ])
   })
 
+  it('its code in front – one without shows the code of the nearest place above (FB-23)', () => {
+    const coded = [
+      { ...place('k', 'Keller'), code: null },
+      { ...place('t', 'Treppe', 'k'), code: 'KA01' },
+      { ...place('f', 'oberes Fach', 't'), code: null },
+      { ...place('b', 'Box', 'f'), code: null },
+    ] as StorageLocation[]
+    expect(placeTree(coded).map((p) => p.label)).toEqual(['Keller', 'KA01 · Keller › Treppe', 'KA01 › oberes Fach', 'KA01 › oberes Fach › Box'])
+  })
+
   it('a place whose parent is missing is top level', () => {
     expect(placeTree([place('x', 'Fach', 'gone')]).map((p) => p.path)).toEqual(['Fach'])
   })

@@ -125,6 +125,45 @@ class StorageLocationTreeApiTest {
     }
 
     @Test
+    void aCodeToWriteOnTheShelfUpperCaseAndAA00Only() {
+        String cellar = create("Keller", null);
+        assertThat(createWithCode("Treppe", cellar, " ka01 ")).hasStatus(HttpStatus.CREATED).bodyJson().extractingPath("$.code").isEqualTo("KA01");
+        assertThat(createWithCode("Haken", cellar, "K1")).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field")
+                .isEqualTo("code");
+    }
+
+    @Test
+    void aPlaceInsideMayHaveNoCodeOfItsOwn() {
+        String stairs = idOf(createWithCode("Treppe", create("Keller", null), "KA01"));
+        String shelf = create("oberes Fach", stairs);
+        assertThat(mvc.get().uri("/api/storage-locations").exchange()).bodyJson()
+                .extractingPath("$[?(@.id == '%s')].code".formatted(shelf)).asArray().containsExactly((Object) null);
+    }
+
+    @Test
+    void aCodeOnceOnThePremisesAlsoAgainstAPlaceNoLongerInUse() {
+        String cellar = create("Keller", null);
+        String stairs = idOf(createWithCode("Treppe", cellar, "KA01"));
+        assertThat(createWithCode("Haken", cellar, "KA01")).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field")
+                .isEqualTo("code");
+
+        // its label may still hang there
+        assertThat(send("POST", "/api/storage-locations/" + stairs + "/deactivate", null)).hasStatusOk();
+        MvcTestResult again = createWithCode("Haken", cellar, "KA01");
+        assertThat(again).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].message").asString()
+                .contains("nicht mehr verwendet");
+    }
+
+    @Test
+    void renamedItKeepsItsCodeAndAnEditMayTakeItAway() {
+        String stairs = idOf(createWithCode("Treppe", create("Keller", null), "KA01"));
+        assertThat(send("PUT", "/api/storage-locations/" + stairs, "{ \"name\": \"Kellertreppe\", \"code\": \"KA01\", \"version\": 0 }"))
+                .hasStatusOk().bodyJson().extractingPath("$.code").isEqualTo("KA01");
+        assertThat(send("PUT", "/api/storage-locations/" + stairs, "{ \"name\": \"Kellertreppe\", \"version\": 1 }"))
+                .hasStatusOk().bodyJson().extractingPath("$.code").isNull();
+    }
+
+    @Test
     void orderPerLevel() {
         String office = create("Büro", null);
         String a = create("Regal A", office);
@@ -140,6 +179,10 @@ class StorageLocationTreeApiTest {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    private MvcTestResult createWithCode(String name, String parentId, String code) {
+        return send("POST", "/api/storage-locations", "{ \"name\": \"%s\", \"parentId\": \"%s\", \"code\": \"%s\" }".formatted(name, parentId, code));
+    }
 
     private String create(String name, String parentId) {
         String parent = parentId == null ? "null" : "\"" + parentId + "\"";

@@ -3546,6 +3546,8 @@ export interface components {
         };
         StorageLocationDto: {
             active: boolean;
+            /** @description FB-23: what is written on the shelf, e.g. KA01 */
+            code: string | null;
             /** Format: uuid */
             id: string;
             name: string;
@@ -3574,6 +3576,11 @@ export interface components {
             parentId?: string | null;
         };
         StorageLocationRequest: {
+            /**
+             * @description FB-23: what is written on the shelf; empty = none
+             * @example KA01
+             */
+            code?: string | null;
             name: string;
             /**
              * Format: uuid

@@ -76,3 +76,21 @@
   align-items: center;
   gap: var(--space-4);
 }
+
+/* FB-23: the code written on the shelf, in front of the name */
+.code {
+  margin-right: var(--space-2);
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+}
+
+/* code and its proposal side by side */
+.codeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}

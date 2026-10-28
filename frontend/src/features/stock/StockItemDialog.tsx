@@ -205,7 +205,7 @@ export function StockItemDialog({
           <option value="">– kein fester Platz –</option>
           {choosable.map((p) => (
             <option key={p.location.id} value={p.location.id}>
-              {p.location.active ? p.path : `${p.path} (nicht mehr verwendet)`}
+              {p.location.active ? p.label : `${p.label} (nicht mehr verwendet)`}
             </option>
           ))}
         </Select>

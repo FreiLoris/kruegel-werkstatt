@@ -20,7 +20,10 @@ export interface StockFilter {
 /** Names and order of places and suppliers – the article only has their IDs */
 export interface StockLookup {
   /** the path of each place, e.g. "Büro › Regal 2" */
+  /** what is shown for each place – its code and path (placeTree's label) */
   locationNames: Map<string, string>
+  /** what the search finds a place by – its code and its names (FB-23) */
+  locationSearch: Map<string, string>
   /** each place with everything inside it (13f) */
   locationsWithin: Map<string, Set<string>>
   /** position in the tree (along the shelves) */
@@ -35,7 +38,7 @@ function searchText(item: StockItem, lookup: StockLookup) {
     CATEGORY_LABEL[item.category],
     item.articleNumber,
     item.manufacturer,
-    item.storageLocationId && lookup.locationNames.get(item.storageLocationId),
+    item.storageLocationId && lookup.locationSearch.get(item.storageLocationId),
     item.remark,
     ...item.suppliers.flatMap((s) => [lookup.supplierNames.get(s.supplierId), s.articleNumber]),
   ]
