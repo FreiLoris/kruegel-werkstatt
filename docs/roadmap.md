@@ -830,6 +830,16 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   car just back may need cleaning or fuel) to five days after the return, 10 to 21 days, the period
   being booked shaded in every row. Days dragged open in a car's row take car and period, a tap takes
   the car; bars cannot be moved there. The courtesy car page keeps its own calendar.
+- [x] **16f – Supplier contacts and ways of delivery** (FB-30)
+  Done: a supplier has any number of contacts – department, name, direct line, mobile, e-mail,
+  remark – and ways of delivery: kind (Tagesexpress, Nachtexpress, Standardversand, Abholung, Kurier
+  as suggestions, any other text too), order deadline, tour, arrival (also "next day"), postage,
+  remark (V49). Phone and e-mail stay as "Zentrale"; the one contact person so far became the first
+  contact; "Lieferzeit / Touren" stays as a remark. The card says which order deadline is still in
+  reach ("Nächster Bestellschluss 13:30 – Tagesexpress (Tour 3, Ankunft ca. 16:00)", else the first
+  one of the next working day), contacts and ways of delivery fold out with phone and mail links; the
+  position of the shopping list says it under the supplier too. Not built: a way of delivery stored
+  with the order (proposal, can follow).
 
 ---
 

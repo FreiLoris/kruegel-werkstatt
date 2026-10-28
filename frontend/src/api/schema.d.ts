@@ -3455,10 +3455,44 @@ export interface components {
              */
             version?: number;
         };
+        SupplierContactDto: {
+            /** @example Verkauf Innendienst */
+            department: string | null;
+            /** Format: email */
+            email: string | null;
+            mobile: string | null;
+            name: string | null;
+            /** @description Direct line */
+            phone: string | null;
+            remark: string | null;
+        };
+        SupplierDeliveryDto: {
+            /**
+             * Format: time
+             * @description About when it is here
+             */
+            arrival: string | null;
+            /** @description The arrival is on the next working day; missing = false */
+            arrivalNextDay: boolean;
+            /** @example Tagesexpress */
+            kind: string;
+            /**
+             * Format: time
+             * @description Order until
+             */
+            orderDeadline: string | null;
+            /** @description CHF */
+            postage: number | null;
+            /** @example ab CHF 100 gratis */
+            remark: string | null;
+            /** @example Tour 1 */
+            tour: string | null;
+        };
         SupplierDto: {
-            contactPerson: string | null;
+            contacts: components["schemas"]["SupplierContactDto"][];
             /** @description Our customer number with the supplier */
             customerNumber: string | null;
+            deliveries: components["schemas"]["SupplierDeliveryDto"][];
             /** @description Delivery times or rounds */
             delivery: string | null;
             email: string | null;
@@ -3487,8 +3521,11 @@ export interface components {
             supplierId: string;
         };
         SupplierRequest: {
-            contactPerson?: string;
+            /** @description Departments and people (FB-30); missing = none */
+            contacts?: components["schemas"]["SupplierContactDto"][];
             customerNumber?: string;
+            /** @description Ways it delivers (FB-30); missing = none */
+            deliveries?: components["schemas"]["SupplierDeliveryDto"][];
             /** @description Delivery times or rounds, e.g. "2× täglich" */
             delivery?: string;
             /** Format: email */

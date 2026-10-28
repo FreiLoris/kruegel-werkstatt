@@ -1,10 +1,18 @@
 package ch.kruegel.workshop.supplier;
 
 import ch.kruegel.workshop.common.persistence.BaseEntity;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
+import org.hibernate.annotations.BatchSize;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A supplier of the workshop (FB-09) – kept in this app, unlike customers and vehicles (SwissGarage).
@@ -22,8 +30,6 @@ public class Supplier extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    private String contactPerson;
-
     private String phone;
 
     private String email;
@@ -39,6 +45,21 @@ public class Supplier extends BaseEntity {
 
     private String remark;
 
+    /** Departments and people (FB-30) – phone and e-mail above are the main line */
+    @ElementCollection
+    @CollectionTable(name = "supplier_contact", joinColumns = @JoinColumn(name = "supplier_id"))
+    @OrderColumn(name = "position")
+    // the list shows all suppliers: load the contacts of 50 in one go instead of one by one
+    @BatchSize(size = 50)
+    private List<SupplierContact> contacts = new ArrayList<>();
+
+    /** Ways it delivers – Tagesexpress, tours with their order deadline … (FB-30) */
+    @ElementCollection
+    @CollectionTable(name = "supplier_delivery", joinColumns = @JoinColumn(name = "supplier_id"))
+    @OrderColumn(name = "position")
+    @BatchSize(size = 50)
+    private List<SupplierDelivery> deliveries = new ArrayList<>();
+
     protected Supplier() {
         // for JPA
     }
@@ -53,7 +74,6 @@ public class Supplier extends BaseEntity {
 
     private void apply(SupplierDetails details) {
         this.name = details.name();
-        this.contactPerson = details.contactPerson();
         this.phone = details.phone();
         this.email = details.email();
         this.webshopUrl = details.webshopUrl();
@@ -61,14 +81,15 @@ public class Supplier extends BaseEntity {
         this.orderChannel = details.orderChannel();
         this.delivery = details.delivery();
         this.remark = details.remark();
+        // replaced as a whole – they are edited together with the supplier
+        this.contacts.clear();
+        this.contacts.addAll(details.contacts());
+        this.deliveries.clear();
+        this.deliveries.addAll(details.deliveries());
     }
 
     public String getName() {
         return name;
-    }
-
-    public String getContactPerson() {
-        return contactPerson;
     }
 
     public String getPhone() {
@@ -93,6 +114,14 @@ public class Supplier extends BaseEntity {
 
     public String getDelivery() {
         return delivery;
+    }
+
+    public List<SupplierContact> getContacts() {
+        return List.copyOf(contacts);
+    }
+
+    public List<SupplierDelivery> getDeliveries() {
+        return List.copyOf(deliveries);
     }
 
     public String getRemark() {

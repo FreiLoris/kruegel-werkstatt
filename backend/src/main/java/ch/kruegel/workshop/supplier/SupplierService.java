@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,8 +82,18 @@ public class SupplierService {
         if (webshop != null && webshop.length() > Supplier.URL_MAX) {
             throw new InvalidInputException("webshopUrl", "Höchstens " + Supplier.URL_MAX + " Zeichen (mit https://)");
         }
-        return new SupplierDetails(request.name(), request.contactPerson(), request.phone(), request.email(),
-                webshop, request.customerNumber(), request.orderChannel(), request.delivery(), request.remark());
+        List<SupplierContact> contacts = new ArrayList<>();
+        for (int i = 0; request.contacts() != null && i < request.contacts().size(); i++) {
+            try {
+                contacts.add(request.contacts().get(i).toContact());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidInputException("contacts[" + i + "]", "Abteilung, Name, Telefon oder E-Mail angeben");
+            }
+        }
+        List<SupplierDelivery> deliveries = request.deliveries() == null ? List.of()
+                : request.deliveries().stream().map(SupplierDeliveryDto::toDelivery).toList();
+        return new SupplierDetails(request.name(), request.phone(), request.email(), webshop, request.customerNumber(),
+                request.orderChannel(), request.delivery(), request.remark(), contacts, deliveries);
     }
 
     private Supplier find(UUID id) {

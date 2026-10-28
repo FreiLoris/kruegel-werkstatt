@@ -3,19 +3,22 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
+import { useClock } from '../../lib/clock'
 import { MaterialTabs } from '../stock/MaterialTabs'
 import { useStockItems } from '../stock/stockApi'
 import { useShoppingItems } from '../shopping/shoppingApi'
 import { ORDER_CHANNEL_LABEL, useSuppliers, type Supplier } from './supplierApi'
 import { SupplierDialog } from './SupplierDialog'
+import { deliveryText, nextDeadline } from './supplierDeliveries'
 import styles from './SuppliersPage.module.css'
 
 type Dialog = { kind: 'new' } | { kind: 'edit'; supplier: Supplier } | null
 
 /**
  * The suppliers (FB-09) – a tab under "Material". One card each with what is needed to order:
- * order channel, phone, e-mail, webshop, our customer number, delivery rounds. Each card links to
- * its articles in the stock list.
+ * order channel, phone, e-mail, webshop, our customer number, the next order deadline still in
+ * reach, contacts and ways of delivery to unfold (FB-30). Each card links to its articles in the
+ * stock list.
  */
 export function SuppliersPage() {
   const canEdit = useCanEdit()
@@ -23,6 +26,8 @@ export function SuppliersPage() {
   const { data: items } = useStockItems()
   const { data: shoppingList } = useShoppingItems()
   const [dialog, setDialog] = useState<Dialog>(null)
+  // "Nächster Bestellschluss" moves on by itself (FB-30)
+  const { today, time } = useClock()
 
   // how many articles each one sells
   const articleCounts = useMemo(() => {
@@ -71,7 +76,7 @@ export function SuppliersPage() {
                   <h2>{supplier.name}</h2>
                   {supplier.orderChannel && <span className={styles.channel}>{ORDER_CHANNEL_LABEL[supplier.orderChannel]}</span>}
                 </div>
-                {supplier.contactPerson && <p className="muted">{supplier.contactPerson}</p>}
+                {nextDeadline(supplier.deliveries, today, time) && <p className={styles.next}>{nextDeadline(supplier.deliveries, today, time)}</p>}
                 <ul className={styles.contact}>
                   {supplier.phone && (
                     <li>
@@ -106,6 +111,41 @@ export function SuppliersPage() {
                     </>
                   )}
                 </dl>
+                {supplier.contacts.length > 0 && (
+                  <details className={styles.more}>
+                    <summary>{supplier.contacts.length === 1 ? '1 Ansprechpartner' : `${supplier.contacts.length} Ansprechpartner`}</summary>
+                    <ul className={styles.people}>
+                      {supplier.contacts.map((c, i) => (
+                        <li key={i}>
+                          <strong>{[c.department, c.name].filter(Boolean).join(' – ')}</strong>
+                          <ul className={styles.contact}>
+                            {[c.phone, c.mobile].filter(Boolean).map((number) => (
+                              <li key={number}>
+                                <Phone aria-hidden /> <a href={`tel:${number!.replace(/\s/g, '')}`}>{number}</a>
+                              </li>
+                            ))}
+                            {c.email && (
+                              <li>
+                                <Mail aria-hidden /> <a href={`mailto:${c.email}`}>{c.email}</a>
+                              </li>
+                            )}
+                          </ul>
+                          {c.remark && <span className="muted">{c.remark}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+                {supplier.deliveries.length > 0 && (
+                  <details className={styles.more}>
+                    <summary>{supplier.deliveries.length === 1 ? '1 Lieferart' : `${supplier.deliveries.length} Lieferarten`}</summary>
+                    <ul className={styles.deliveries}>
+                      {supplier.deliveries.map((d, i) => (
+                        <li key={i}>{deliveryText(d)}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
                 {supplier.remark && <p className={styles.remark}>{supplier.remark}</p>}
                 <div className={styles.cardFooter}>
                   <span className={styles.links}>

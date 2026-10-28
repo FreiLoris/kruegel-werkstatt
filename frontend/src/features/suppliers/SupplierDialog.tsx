@@ -8,20 +8,21 @@ import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import styles from './SupplierDialog.module.css'
+import { contactForm, deliveryForm, toContacts, toDeliveries, type ContactForm, type DeliveryForm } from './supplierForm'
+import { ContactsEditor, DeliveriesEditor } from './SupplierLists'
 import { ORDER_CHANNEL_LABEL, useDeleteSupplier, useSaveSupplier, type OrderChannel, type Supplier, type SupplierRequest } from './supplierApi'
 
-const FIELDS = ['name', 'contactPerson', 'phone', 'email', 'webshopUrl', 'customerNumber', 'orderChannel', 'delivery', 'remark'] as const
+const FIELDS = ['name', 'phone', 'email', 'webshopUrl', 'customerNumber', 'orderChannel', 'delivery', 'remark'] as const
 type FormValues = Record<(typeof FIELDS)[number], string>
 
 function initialValues(supplier?: Supplier): FormValues {
   return Object.fromEntries(FIELDS.map((field) => [field, supplier?.[field] ?? ''])) as FormValues
 }
 
-function toRequest(values: FormValues, version?: number): SupplierRequest {
+function toRequest(values: FormValues, contacts: ContactForm[], deliveries: DeliveryForm[], version?: number): SupplierRequest {
   const text = (field: keyof FormValues) => values[field].trim() || undefined
   return {
     name: values.name.trim(),
-    contactPerson: text('contactPerson'),
     phone: text('phone'),
     email: text('email'),
     webshopUrl: text('webshopUrl'),
@@ -29,6 +30,8 @@ function toRequest(values: FormValues, version?: number): SupplierRequest {
     orderChannel: (values.orderChannel || null) as OrderChannel | null,
     delivery: text('delivery'),
     remark: text('remark'),
+    contacts: toContacts(contacts),
+    deliveries: toDeliveries(deliveries),
     version,
   }
 }
@@ -42,6 +45,8 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
   const once = useSingleFlight()
   const remove = useDeleteSupplier()
   const [values, setValues] = useState(() => initialValues(supplier))
+  const [contacts, setContacts] = useState<ContactForm[]>(() => supplier?.contacts.map(contactForm) ?? [])
+  const [deliveries, setDeliveries] = useState<DeliveryForm[]>(() => supplier?.deliveries.map(deliveryForm) ?? [])
 
   const fieldError = (field: string) => (save.error instanceof ApiError ? save.error.messageForField(field) : undefined)
 
@@ -54,7 +59,7 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     event.preventDefault()
     once((done) =>
       save.mutate(
-        { id: supplier?.id, request: toRequest(values, supplier?.version) },
+        { id: supplier?.id, request: toRequest(values, contacts, deliveries, supplier?.version) },
         {
           onSettled: done,
           onSuccess: (saved) => {
@@ -104,6 +109,8 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     <Modal
       open
       onClose={onClose}
+      // contacts and ways of delivery side by side need the room (FB-30)
+      wide
       title={supplier ? `${supplier.name} bearbeiten` : 'Neuer Lieferant'}
       footer={
         <>
@@ -121,14 +128,19 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     >
       <form id={formId} className={styles.form} onSubmit={submit}>
         {field('name', 'Firma', { required: true, maxLength: 100, placeholder: 'z. B. Muster Teile AG' })}
+        {field('customerNumber', 'Unsere Kundennummer', { maxLength: 60, hint: 'Unsere Nummer beim Lieferanten' })}
         <div className={styles.row}>
-          {field('contactPerson', 'Kontaktperson', { maxLength: 100 })}
-          {field('customerNumber', 'Unsere Kundennummer', { maxLength: 60, hint: 'Unsere Nummer beim Lieferanten' })}
+          {field('phone', 'Telefon Zentrale', { type: 'tel', maxLength: 40 })}
+          {field('email', 'E-Mail Zentrale', { type: 'email', maxLength: 100 })}
         </div>
-        <div className={styles.row}>
-          {field('phone', 'Telefon', { type: 'tel', maxLength: 40 })}
-          {field('email', 'E-Mail', { type: 'email', maxLength: 100 })}
-        </div>
+        <ContactsEditor
+          contacts={contacts}
+          onChange={(next) => {
+            setContacts(next)
+            if (save.error) save.reset()
+          }}
+          errorAt={(i) => fieldError(`contacts[${i}]`) ?? fieldError(`contacts[${i}].email`)}
+        />
         {field('webshopUrl', 'Webshop', { maxLength: 300, placeholder: 'z. B. shop.example.ch' })}
         <div className={styles.row}>
           <Select label="Bestellweg" value={values.orderChannel} onChange={(e) => set('orderChannel', e.target.value)} error={fieldError('orderChannel')}>
@@ -139,8 +151,16 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
               </option>
             ))}
           </Select>
-          {field('delivery', 'Lieferzeit / Touren', { maxLength: 100, placeholder: 'z. B. 2× täglich' })}
+          {field('delivery', 'Lieferzeit – Bemerkung', { maxLength: 100, placeholder: 'z. B. 5× täglich' })}
         </div>
+        <DeliveriesEditor
+          deliveries={deliveries}
+          onChange={(next) => {
+            setDeliveries(next)
+            if (save.error) save.reset()
+          }}
+          errorAt={(i) => fieldError(`deliveries[${i}].kind`) ?? fieldError(`deliveries[${i}].postage`) ?? fieldError(`deliveries[${i}]`)}
+        />
         <TextArea label="Bemerkung" rows={2} maxLength={1000} value={values.remark} onChange={(e) => set('remark', e.target.value)} error={fieldError('remark')} />
       </form>
     </Modal>

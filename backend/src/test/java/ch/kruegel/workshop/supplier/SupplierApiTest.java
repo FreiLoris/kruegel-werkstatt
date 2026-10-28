@@ -55,7 +55,7 @@ class SupplierApiTest {
     @Test
     void createsASupplierWithAllFields() {
         MvcTestResult response = send("POST", "/api/suppliers", """
-                { "name": " Muster Teile AG ", "contactPerson": "Frau Beispiel", "phone": "044 000 00 00",
+                { "name": " Muster Teile AG ", "phone": "044 000 00 00",
                   "email": "bestellung@example.ch", "webshopUrl": "shop.example.ch", "customerNumber": "K-42",
                   "orderChannel": "WEBSHOP", "delivery": "2× täglich", "remark": " " }""");
 
@@ -65,6 +65,45 @@ class SupplierApiTest {
         assertThat(response).bodyJson().extractingPath("$.webshopUrl").isEqualTo("https://shop.example.ch");
         assertThat(response).bodyJson().extractingPath("$.remark").isNull();
         assertThat(events.stream(DataChanged.class)).extracting(DataChanged::topic).containsExactly("suppliers");
+    }
+
+    @Test
+    void severalContactsAndWaysOfDeliveryInTheirOrder() {
+        // FB-30: departments with direct line and mobile; tours with order deadline and arrival
+        MvcTestResult response = send("POST", "/api/suppliers", """
+                { "name": "Muster Teile AG", "phone": "044 000 00 00",
+                  "contacts": [
+                    { "department": "Verkauf Innendienst", "name": "Frau Beispiel", "phone": "044 000 00 01", "email": "vi@example.ch" },
+                    { "department": "Reifen", "mobile": "079 000 00 02" } ],
+                  "deliveries": [
+                    { "kind": "Tagesexpress", "orderDeadline": "09:30", "tour": "Tour 1", "arrival": "11:00", "postage": 0 },
+                    { "kind": "Nachtexpress", "orderDeadline": "17:00", "arrival": "07:30", "arrivalNextDay": true,
+                      "postage": 12.50, "remark": "ab CHF 100 gratis" } ] }""");
+
+        assertThat(response).hasStatus(HttpStatus.CREATED);
+        assertThat(response).bodyJson().extractingPath("$.contacts[*].department").asArray().containsExactly("Verkauf Innendienst", "Reifen");
+        assertThat(response).bodyJson().extractingPath("$.contacts[1].name").isNull();
+        assertThat(response).bodyJson().extractingPath("$.deliveries[0].orderDeadline").isEqualTo("09:30:00");
+        assertThat(response).bodyJson().extractingPath("$.deliveries[1].arrivalNextDay").isEqualTo(true);
+        assertThat(response).bodyJson().extractingPath("$.deliveries[1].postage").isEqualTo(12.5);
+
+        // edited together with the supplier: replaced as a whole, in the new order
+        MvcTestResult changed = send("PUT", "/api/suppliers/" + idOf(response), """
+                { "name": "Muster Teile AG", "version": 0,
+                  "contacts": [ { "department": "Reifen", "mobile": "079 000 00 02" } ],
+                  "deliveries": [] }""");
+        assertThat(changed).bodyJson().extractingPath("$.contacts.length()").isEqualTo(1);
+        assertThat(changed).bodyJson().extractingPath("$.deliveries").asArray().isEmpty();
+    }
+
+    @Test
+    void anEmptyContactOrADeliveryWithoutKindIsAFieldError() {
+        assertThat(send("POST", "/api/suppliers", """
+                { "name": "Muster Teile AG", "contacts": [ { "department": " ", "remark": "nur Bemerkung" } ] }"""))
+                .hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("contacts[0]");
+        assertThat(send("POST", "/api/suppliers", """
+                { "name": "Muster Teile AG", "deliveries": [ { "kind": "", "tour": "Tour 1" } ] }"""))
+                .hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     @Test

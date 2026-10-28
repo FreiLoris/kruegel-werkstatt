@@ -15594,15 +15594,107 @@
         },
         "required" : [ "name" ]
       },
+      "SupplierContactDto" : {
+        "type" : "object",
+        "properties" : {
+          "department" : {
+            "type" : [ "string", "null" ],
+            "example" : "Verkauf Innendienst",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "email" : {
+            "type" : [ "string", "null" ],
+            "format" : "email",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "mobile" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "name" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "phone" : {
+            "type" : [ "string", "null" ],
+            "description" : "Direct line",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "remark" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "department", "email", "mobile", "name", "phone", "remark" ]
+      },
+      "SupplierDeliveryDto" : {
+        "type" : "object",
+        "properties" : {
+          "arrival" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "About when it is here"
+          },
+          "arrivalNextDay" : {
+            "type" : "boolean",
+            "description" : "The arrival is on the next working day; missing = false"
+          },
+          "kind" : {
+            "type" : "string",
+            "example" : "Tagesexpress",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "orderDeadline" : {
+            "type" : [ "string", "null" ],
+            "format" : "time",
+            "description" : "Order until"
+          },
+          "postage" : {
+            "type" : [ "number", "null" ],
+            "description" : "CHF",
+            "maximum" : 999999.99,
+            "minimum" : 0
+          },
+          "remark" : {
+            "type" : [ "string", "null" ],
+            "example" : "ab CHF 100 gratis",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "tour" : {
+            "type" : [ "string", "null" ],
+            "example" : "Tour 1",
+            "maxLength" : 60,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "arrival", "arrivalNextDay", "kind", "orderDeadline", "postage", "remark", "tour" ]
+      },
       "SupplierDto" : {
         "type" : "object",
         "properties" : {
-          "contactPerson" : {
-            "type" : [ "string", "null" ]
+          "contacts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SupplierContactDto"
+            }
           },
           "customerNumber" : {
             "type" : [ "string", "null" ],
             "description" : "Our customer number with the supplier"
+          },
+          "deliveries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SupplierDeliveryDto"
+            }
           },
           "delivery" : {
             "type" : [ "string", "null" ],
@@ -15646,7 +15738,7 @@
             "description" : "Always http(s)"
           }
         },
-        "required" : [ "contactPerson", "customerNumber", "delivery", "email", "id", "name", "orderChannel", "phone", "remark", "updatedAt", "updatedBy", "version", "webshopUrl" ]
+        "required" : [ "contacts", "customerNumber", "deliveries", "delivery", "email", "id", "name", "orderChannel", "phone", "remark", "updatedAt", "updatedBy", "version", "webshopUrl" ]
       },
       "SupplierRef" : {
         "type" : "object",
@@ -15666,15 +15758,28 @@
       "SupplierRequest" : {
         "type" : "object",
         "properties" : {
-          "contactPerson" : {
-            "type" : "string",
-            "maxLength" : 100,
-            "minLength" : 0
+          "contacts" : {
+            "type" : "array",
+            "description" : "Departments and people (FB-30); missing = none",
+            "items" : {
+              "$ref" : "#/components/schemas/SupplierContactDto"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
           },
           "customerNumber" : {
             "type" : "string",
             "maxLength" : 60,
             "minLength" : 0
+          },
+          "deliveries" : {
+            "type" : "array",
+            "description" : "Ways it delivers (FB-30); missing = none",
+            "items" : {
+              "$ref" : "#/components/schemas/SupplierDeliveryDto"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
           },
           "delivery" : {
             "type" : "string",
