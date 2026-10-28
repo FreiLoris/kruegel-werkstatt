@@ -3,7 +3,8 @@ import { ApiError, reasonOf } from '../../api/errors'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { Button } from '../../components/ui/Button'
-import { TextField } from '../../components/ui/Fields'
+import { Select, TextField } from '../../components/ui/Fields'
+import { IDLE_MODES, setIdleMode, useIdleMode, type IdleMode } from '../../lib/deviceIdleMode'
 import { useToast } from '../../components/ui/toastContext'
 import styles from '../tire-hotel/TireHotel.module.css'
 import { useSaveScreenLockSettings, useScreenLockSettings, type ScreenLockSettings } from './screenLockApi'
@@ -55,8 +56,9 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
     <>
       <h2>Bildschirmsperre</h2>
       <p className="muted">
-        Nach so vielen Minuten ohne Bedienung fragt jedes Gerät wieder, wer am Gerät ist – angefangene Eingaben bleiben erhalten. Nicht auf
-        Geräten «Nur ansehen» (Werkstatt-TV). 0 = nie.
+        Nach so vielen Minuten ohne Bedienung fragt ein Gerät wieder, wer am Gerät ist – angefangene Eingaben bleiben erhalten. Nicht auf
+        Geräten «Nur ansehen» (Werkstatt-TV). 0 = nie. Was das einzelne Gerät dann tut, steht darunter – das Werkstatt-Tablet fällt still
+        auf «Nur ansehen» zurück.
       </p>
       <form id={formId} className={styles.row} onSubmit={submit}>
         <TextField
@@ -76,6 +78,26 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
           </Button>
         </div>
       )}
+      <DeviceIdleMode />
     </>
+  )
+}
+
+/**
+ * Per device (FB-29): the office PC locks, the shared workshop tablet falls back to "Nur ansehen"
+ * silently. Stored on the device itself – also changeable on a device that only shows.
+ */
+function DeviceIdleMode() {
+  const mode = useIdleMode()
+  return (
+    <div className={styles.row}>
+      <Select label="Dieses Gerät nach der Zeit ohne Bedienung" value={mode} onChange={(e) => setIdleMode(e.target.value as IdleMode)}>
+        {(Object.keys(IDLE_MODES) as IdleMode[]).map((value) => (
+          <option key={value} value={value}>
+            {IDLE_MODES[value]}
+          </option>
+        ))}
+      </Select>
+    </div>
   )
 }
