@@ -231,11 +231,13 @@ public class VehicleImportService {
             List<String> messages = new ArrayList<>();
             if (created > 0) {
                 messages.add(created + " Halter aus der Adresse beim Fahrzeug angelegt – " + (addressListImported
-                        ? "in der Adressliste sind sie nicht als Garage-Kunde geführt (Adressart leer, gesperrt oder Lieferant)."
+                        ? "in der Adressliste sind sie nicht als Garage-Kunde geführt (Adressart leer, gesperrt oder Lieferant). "
+                        + "Die Adressliste nochmals importieren, damit gesperrte als «ehemalig» erscheinen."
                         : "die Adressliste ist noch nicht importiert. Sie ergänzt die Kunden, am besten jetzt importieren."));
             }
             if (activated > 0) {
-                messages.add(activated + " frühere Kunden wieder aktiv – sie haben in SwissGarage noch ein Fahrzeug.");
+                messages.add(activated + " frühere Kunden wieder aktiv – sie haben in SwissGarage noch ein Fahrzeug. "
+                        + "Die Adressliste nochmals importieren, damit gesperrte als «ehemalig» erscheinen.");
             }
             messages.addAll(missing);
             return messages;

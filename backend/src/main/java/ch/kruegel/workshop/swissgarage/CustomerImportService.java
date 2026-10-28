@@ -30,6 +30,8 @@ import java.util.Set;
  *   <li>Only addresses of the kind "Garage-Kunde" that are not "gesperrt" (suppliers etc. are skipped) –
  *       except the holders of active vehicles: a vehicle is always found with the customer SwissGarage
  *       has on it, whatever the address kind (empty, blocked, supplier – FB-27).</li>
+ *   <li>Such a holder blocked or former in SwissGarage ("Garage-Kunde gesperrt/ehemalig") is marked
+ *       former (FB-27) – shown greyed; a garage customer again, the mark goes.</li>
  *   <li>Matched by SwissGarage address number: new → created, changed → updated, same → untouched.</li>
  *   <li>SwissGarage customers missing from the export are deactivated – never deleted, never a
  *       holder of an active vehicle.</li>
@@ -44,6 +46,7 @@ public class CustomerImportService {
 
     private static final String NUMBER = "Adressnummer";
     private static final String LAST_NAME = "Name";
+    private static final String ADDRESS_KIND = "Adressart";
 
     private final CustomerRepository customers;
     private final VehicleRepository vehicles;
@@ -148,18 +151,23 @@ public class CustomerImportService {
     }
 
     /**
-     * FB-27: kept only as the holder of a vehicle, and blocked or former in SwissGarage ("gesperrt",
-     * "ehemalig" in the address kind) – a supplier with a car is no former customer.
+     * FB-27: kept only as the holder of a vehicle, and blocked or former in SwissGarage – the export
+     * says "Garage-Kunde gesperrt/ehemalig"; "ehemal" also catches a kind of its own. A supplier with
+     * a car or an empty kind is no former customer.
      */
     private static boolean isFormer(ExcelRow row) {
-        String kind = row.get("Adressart").toLowerCase(Locale.ROOT);
+        String kind = addressKind(row);
         return !isGarageCustomer(row) && (kind.contains("gesperrt") || kind.contains("ehemal"));
     }
 
     /** Like the old app: address kind contains "Garage-Kunde" and not "gesperrt". */
     private static boolean isGarageCustomer(ExcelRow row) {
-        String kind = row.get("Adressart").toLowerCase(Locale.ROOT);
+        String kind = addressKind(row);
         return kind.contains("garage-kunde") && !kind.contains("gesperrt");
+    }
+
+    private static String addressKind(ExcelRow row) {
+        return row.get(ADDRESS_KIND).toLowerCase(Locale.ROOT);
     }
 
     /**

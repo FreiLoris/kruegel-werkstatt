@@ -169,6 +169,28 @@ class CustomerImportApiTest {
     }
 
     @Test
+    void aFormerHolderIsMarkedOnceAndUnmarkedWhenAGarageCustomerAgain() {
+        Customer holder = customers.save(CustomerTestData.swissGarage("2002", "Alt"));
+        vehicles.save(Vehicle.fromSwissGarage("v2002", holder,
+                new VehicleDetails("SH 2002", "VW", null, null, null, null, null, null, null, null)));
+        byte[] blocked = TestExcel.with(HEADERS)
+                .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
+                .row("Garage-Kunde gesperrt/ehemalig", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .bytes();
+
+        assertThat(upload(blocked, "a.xlsx")).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        // the same file again: nothing changed
+        assertThat(upload(blocked, "a.xlsx")).bodyJson().extractingPath("$.unchanged").isEqualTo(2);
+
+        MvcTestResult again = upload(TestExcel.with(HEADERS)
+                .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
+                .row("Garage-Kunde", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .bytes(), "b.xlsx");
+        assertThat(again).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        assertThat(customers.findById(holder.getId()).orElseThrow().isFormer()).isFalse();
+    }
+
+    @Test
     void localCustomersAreNeverTouched() {
         Customer local = customers.save(CustomerTestData.local("Laufkunde"));
 
