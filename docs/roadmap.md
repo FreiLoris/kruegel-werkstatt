@@ -824,6 +824,12 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   Every day is an entry of its own with one `series_id` (V48) – so statistics, start page and TV
   show them like any other. A day of a series: "Gilt für nur diesen Tag / ab diesem Tag / ganze
   Serie" for changing (each keeps its day) and deleting; the bar has a repeat symbol where it fits.
+- [x] **16e – Occupancy calendar while booking** (FB-32)
+  Done: booking a courtesy car on the task and "Kunde braucht einen Ersatzwagen" in the wizard show
+  the occupancy calendar of the courtesy cars above the form – from two days before the pickup (a
+  car just back may need cleaning or fuel) to five days after the return, 10 to 21 days, the period
+  being booked shaded in every row. Days dragged open in a car's row take car and period, a tap takes
+  the car; bars cannot be moved there. The courtesy car page keeps its own calendar.
 
 ---
 

@@ -1,3 +1,4 @@
+import { daysBetween } from '../../lib/calendar'
 import { addDays, addMinutes, minutesBetween } from '../../lib/format'
 import type { Booking } from './bookingApi'
 
@@ -84,6 +85,21 @@ export function barsOf(bookings: Booking[], from: string, days: number, now: str
 export function daySelection(fromDay: string, toDay: string): { pickupAt: string; returnAt: string } {
   const [first, last] = fromDay <= toDay ? [fromDay, toDay] : [toDay, fromDay]
   return { pickupAt: `${first}T${PICKUP_TIME}`, returnAt: `${last}T${RETURN_TIME}` }
+}
+
+/** Days before the pickup the calendar shows when booking (FB-32): a car just back may need cleaning or fuel */
+const DAYS_BEFORE = 2
+/** … and after the return: what comes next */
+const DAYS_AFTER = 5
+
+/**
+ * Which days the occupancy calendar shows while booking for a task (FB-32): from two days before the
+ * pickup to five days after the return – at least 10 days (the week around it), at most 21.
+ */
+export function calendarRange(pickupDay: string, returnDay: string | null): { from: string; days: number } {
+  const from = addDays(pickupDay, -DAYS_BEFORE)
+  const last = addDays(returnDay && returnDay > pickupDay ? returnDay : pickupDay, DAYS_AFTER)
+  return { from, days: Math.min(Math.max(daysBetween(from, last) + 1, 10), 21) }
 }
 
 /** A booking moved by whole days – same times, same length */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Booking } from './bookingApi'
-import { barsOf, carState, daySelection, defaultPeriod, movedByDays } from './occupancy'
+import { barsOf, calendarRange, carState, daySelection, defaultPeriod, movedByDays } from './occupancy'
 
 const booking = (id: string, pickupAt: string, returnAt: string, returnedAt: string | null = null) =>
   ({ id, pickupAt: `${pickupAt}:00`, returnAt: `${returnAt}:00`, returnedAt: returnedAt && `${returnedAt}:00` }) as Booking
@@ -67,5 +67,16 @@ describe('defaultPeriod', () => {
     expect(defaultPeriod('2026-10-15T06:20')).toEqual({ pickupAt: '2026-10-15T08:00', returnAt: '2026-10-15T17:00' })
     expect(defaultPeriod('2026-10-15T10:20')).toEqual({ pickupAt: '2026-10-15T11:00', returnAt: '2026-10-15T17:00' })
     expect(defaultPeriod('2026-10-15T15:10')).toEqual({ pickupAt: '2026-10-16T08:00', returnAt: '2026-10-16T17:00' })
+  })
+})
+
+describe('calendarRange (FB-32)', () => {
+  it('from two days before the pickup to five days after the return', () => {
+    expect(calendarRange('2026-11-10', '2026-11-20')).toEqual({ from: '2026-11-08', days: 18 })
+  })
+
+  it('at least ten days, at most three weeks', () => {
+    expect(calendarRange('2026-11-10', null)).toEqual({ from: '2026-11-08', days: 10 })
+    expect(calendarRange('2026-11-10', '2026-12-20')).toEqual({ from: '2026-11-08', days: 21 })
   })
 })

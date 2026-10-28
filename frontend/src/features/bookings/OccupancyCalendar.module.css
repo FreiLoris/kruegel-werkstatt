@@ -120,6 +120,16 @@
   cursor: crosshair;
 }
 
+/* the period being booked (FB-32) – a car with a bar inside it is taken then */
+.highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-inline: 2px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  pointer-events: none;
+}
+
 .offDay {
   position: absolute;
   top: 0;

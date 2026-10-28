@@ -16,13 +16,15 @@ interface BookingEditorProps {
   initial: { courtesyCarId: string; pickupAt: string; returnAt: string }
   onSaved: (booking: Booking) => void
   onCancel: () => void
+  /** the occupancy calendar above the form (FB-32: booking from the task) */
+  withCalendar?: boolean
 }
 
 /**
  * Book a courtesy car or change a booking: period freely changeable (F12: the old panel was fixed
  * to "today"), the car chosen from the availability list. Task detail and courtesy car page.
  */
-export function BookingEditor({ booking, taskId, initial, onSaved, onCancel }: BookingEditorProps) {
+export function BookingEditor({ booking, taskId, initial, onSaved, onCancel, withCalendar = false }: BookingEditorProps) {
   const save = useSaveBooking()
   const toast = useToast()
   const [draft, setDraft] = useState({ ...initial, notes: booking?.notes ?? '', holder: '' })
@@ -76,10 +78,11 @@ export function BookingEditor({ booking, taskId, initial, onSaved, onCancel }: B
         name={`booking-${booking?.id ?? 'new'}`}
         pickupAt={draft.pickupAt}
         returnAt={draft.returnAt}
-        onPeriodChange={(pickupAt, returnAt) => setDraft({ ...draft, pickupAt, returnAt })}
+        onPeriodChange={(pickupAt, returnAt, courtesyCarId = draft.courtesyCarId) => setDraft({ ...draft, pickupAt, returnAt, courtesyCarId })}
         courtesyCarId={draft.courtesyCarId}
         onCarChange={(courtesyCarId) => setDraft({ ...draft, courtesyCarId })}
         excludeBookingId={booking?.id}
+        withCalendar={withCalendar}
       />
       <TextField label="Notiz" value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
       {error && (

@@ -4,13 +4,15 @@ import { formatLocalDateTime } from '../../lib/format'
 import { useAllCourtesyCars } from '../courtesy-cars/courtesyCarApi'
 import { useAvailability } from './bookingApi'
 import { isValidPeriod, returnDateAfterMove, splitDateTime } from './courtesyCarChoice'
+import { BookingCalendar } from './BookingCalendar'
 import styles from './CourtesyCarPicker.module.css'
 
 interface CourtesyCarPickerProps {
   /** "2026-10-15T08:00"; null = not known yet */
   pickupAt: string | null
   returnAt: string | null
-  onPeriodChange: (pickupAt: string, returnAt: string) => void
+  /** with a car when days were dragged open in its row of the calendar – both in one change */
+  onPeriodChange: (pickupAt: string, returnAt: string, courtesyCarId?: string) => void
   /** '' = none chosen */
   courtesyCarId: string
   onCarChange: (id: string) => void
@@ -18,6 +20,8 @@ interface CourtesyCarPickerProps {
   excludeBookingId?: string
   /** name for the radio group – unique per page */
   name: string
+  /** the occupancy of the cars above the form (FB-32) – where the calendar is not on the page anyway */
+  withCalendar?: boolean
 }
 
 /**
@@ -25,7 +29,16 @@ interface CourtesyCarPickerProps {
  * all views – the server's availability). Only a free car can be chosen; a car that is overdue
  * (not back yet) stays choosable but says so (7d).
  */
-export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesyCarId, onCarChange, excludeBookingId, name }: CourtesyCarPickerProps) {
+export function CourtesyCarPicker({
+  pickupAt,
+  returnAt,
+  onPeriodChange,
+  courtesyCarId,
+  onCarChange,
+  excludeBookingId,
+  name,
+  withCalendar = false,
+}: CourtesyCarPickerProps) {
   const { data: cars } = useAllCourtesyCars()
   /** service or insurance overdue – the car should not go out unnoticed (UX M-04) */
   const dueWarning = (id: string) => {
@@ -47,6 +60,13 @@ export function CourtesyCarPicker({ pickupAt, returnAt, onPeriodChange, courtesy
 
   return (
     <div className={styles.picker}>
+      {withCalendar && (
+        <BookingCalendar
+          pickupAt={pickupAt}
+          returnAt={returnAt}
+          onPick={(carId, period) => (period ? onPeriodChange(period.pickupAt, period.returnAt, carId) : onCarChange(carId))}
+        />
+      )}
       <div className={styles.period}>
         <TextField label="Abholung am" type="date" value={pickupDate} onChange={(e) => change('pickupDate', e.target.value)} />
         <TextField label="um" type="time" step={900} value={pickupTime} onChange={(e) => change('pickupTime', e.target.value)} />

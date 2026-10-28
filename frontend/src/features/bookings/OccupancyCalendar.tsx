@@ -35,6 +35,10 @@ interface OccupancyCalendarProps {
   onBlocked: (message: string) => void
   /** the booking shown in the panel */
   selectedId?: string
+  /** bars can be dragged to another day or car – not while booking for a task (FB-32) */
+  movable?: boolean
+  /** the period being booked, shaded in every row (FB-32): "2026-11-02T08:00" … */
+  highlight?: { start: string; end: string }
 }
 
 type Gesture =
@@ -73,6 +77,8 @@ export function OccupancyCalendar({
   onMove,
   onBlocked,
   selectedId,
+  movable: barsMovable = true,
+  highlight,
 }: OccupancyCalendarProps) {
   const [gesture, setGesture] = useState<Gesture | null>(null)
   const holdTimer = useRef<number | undefined>(undefined)
@@ -111,6 +117,11 @@ export function OccupancyCalendar({
   }
 
   const total = days * DAY
+  // the shaded period, cut to the days shown
+  const shaded = highlight && {
+    start: Math.max(minutesBetween(`${from}T00:00`, highlight.start), 0),
+    end: Math.min(minutesBetween(`${from}T00:00`, highlight.end), days * DAY),
+  }
   /** position in the row as percentage – the calendar is as wide as the page */
   const pct = (minutes: number) => `${(minutes / total) * 100}%`
   const dayIndexAt = (clientX: number, track: Element) => {
@@ -152,7 +163,7 @@ export function OccupancyCalendar({
   function startMove(e: PointerEvent<HTMLDivElement>, bar: Bar) {
     if (e.button !== 0) return
     const touch = e.pointerType === 'touch'
-    const movable = canEdit && bar.state === 'planned'
+    const movable = canEdit && barsMovable && bar.state === 'planned'
     if (movable && touch) armHold(e.pointerId)
     else if (movable) e.currentTarget.setPointerCapture(e.pointerId)
     const carId = bar.booking.courtesyCarId
@@ -268,6 +279,9 @@ export function OccupancyCalendar({
                   isWeekend(d) || holidays.has(d) ? (
                     <div key={d} className={styles.offDay} style={{ left: pct(i * DAY), width: pct(DAY) }} aria-hidden />
                   ) : null,
+                )}
+                {shaded && shaded.end > shaded.start && (
+                  <div className={styles.highlight} style={{ left: pct(shaded.start), width: pct(shaded.end - shaded.start) }} aria-hidden />
                 )}
                 {bars.map((bar) => (
                   <div
