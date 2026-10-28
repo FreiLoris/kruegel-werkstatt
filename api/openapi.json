@@ -6060,7 +6060,7 @@
     },
     "/api/shopping-items" : {
       "get" : {
-        "description" : "Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").",
+        "description" : "Open (default): not ordered yet first, then ordered – each oldest first; `arrived=true`: the latest 200 done ones (arrived or cancelled). `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").",
         "operationId" : "list_6",
         "parameters" : [ {
           "in" : "query",
@@ -6643,7 +6643,7 @@
     },
     "/api/shopping-items/{id}/status" : {
       "put" : {
-        "description" : "No version needed. The to-do of \"Bestellen durch\" is done once ordered.",
+        "description" : "No version needed. The to-do of \"Bestellen durch\" is open while we are up (to order, Rückfrage, quote received) and done while the supplier is up or once ordered.",
         "operationId" : "changeStatus_1",
         "parameters" : [ {
           "in" : "path",
@@ -14126,7 +14126,7 @@
           },
           "shoppingStatus" : {
             "type" : "array",
-            "description" : "Label = TO_ORDER, ORDERED or ARRIVED",
+            "description" : "Label = a ShoppingStatus, e.g. TO_ORDER or ARRIVED",
             "items" : {
               "$ref" : "#/components/schemas/CountDto"
             }
@@ -14738,7 +14738,7 @@
           "status" : {
             "type" : [ "string", "null" ],
             "description" : "Only a change of state: the new one",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
+            "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
           },
           "text" : {
             "type" : [ "string", "null" ],
@@ -14796,7 +14796,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
+            "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
           },
           "stockItemId" : {
             "type" : [ "string", "null" ],
@@ -14864,7 +14864,13 @@
           "status" : {
             "type" : "string",
             "description" : "Missing = to order when new, unchanged when editing",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
+            "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
+          },
+          "statusNote" : {
+            "type" : [ "string", "null" ],
+            "description" : "With a change of state: a note for the history, e.g. \"Offerte per Mail angefragt\"",
+            "maxLength" : 1000,
+            "minLength" : 0
           },
           "stockItemId" : {
             "type" : [ "string", "null" ],
@@ -14903,7 +14909,7 @@
         "properties" : {
           "status" : {
             "type" : "string",
-            "enum" : [ "TO_ORDER", "ORDERED", "ARRIVED" ]
+            "enum" : [ "TO_ORDER", "QUOTE_REQUESTED", "INFO_NEEDED", "QUOTE_RECEIVED", "ORDERED", "ARRIVED", "CANCELLED" ]
           }
         },
         "required" : [ "status" ]

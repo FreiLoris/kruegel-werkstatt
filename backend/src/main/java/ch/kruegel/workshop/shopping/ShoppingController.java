@@ -42,8 +42,8 @@ class ShoppingController {
     record ShoppingNoteRequest(@NotBlank @Size(max = ShoppingEntry.TEXT_MAX) String text) {
     }
 
-    @Operation(summary = "Positions of the shopping list", description = "Not arrived yet (default): to order first, then ordered – "
-            + "each oldest first; `arrived=true`: the latest " + ShoppingService.ARRIVED_LIMIT + " arrived ones. "
+    @Operation(summary = "Positions of the shopping list", description = "Open (default): not ordered yet first, then ordered – "
+            + "each oldest first; `arrived=true`: the latest " + ShoppingService.DONE_LIMIT + " done ones (arrived or cancelled). "
             + "`taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks (\"Ohne Termin\").")
     @GetMapping
     List<ShoppingItemDto> list(@RequestParam(defaultValue = "false") boolean arrived, @RequestParam(required = false) UUID taskId,
@@ -77,7 +77,8 @@ class ShoppingController {
         return service.update(id, request);
     }
 
-    @Operation(summary = "Change the state", description = "No version needed. The to-do of \"Bestellen durch\" is done once ordered.")
+    @Operation(summary = "Change the state", description = "No version needed. The to-do of \"Bestellen durch\" is open while we are up "
+            + "(to order, Rückfrage, quote received) and done while the supplier is up or once ordered.")
     @PutMapping("/{id}/status")
     ShoppingItemDto changeStatus(@PathVariable UUID id, @Valid @RequestBody ShoppingStatusRequest request) {
         return service.changeStatus(id, request.status());

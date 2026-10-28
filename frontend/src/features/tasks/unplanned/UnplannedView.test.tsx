@@ -38,7 +38,10 @@ vi.mock('../taskApi', async (importOriginal) => ({
 // the parts of the tasks on the shopping list (FB-19)
 let parts: ShoppingItem[] = []
 const part = (taskId: string, description: string, status: ShoppingItem['status']) => ({ description, quantity: 1, status, task: { id: taskId } }) as ShoppingItem
-vi.mock('../../shopping/shoppingApi', () => ({ useTasksShoppingItems: () => ({ data: parts, error: null }) }))
+vi.mock('../../shopping/shoppingApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../shopping/shoppingApi')>()),
+  useTasksShoppingItems: () => ({ data: parts, error: null }),
+}))
 vi.mock('../VehicleLocationSwitch', () => ({ TaskVehicleLocation: ({ task }: { task: AnyTask }) => <span>Standort {task.vehicleLocation}</span> }))
 vi.mock('../../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit }))
 vi.mock('../../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [{ id: 'm1', name: 'Döme', color: '#9fdfaa' }] }) }))

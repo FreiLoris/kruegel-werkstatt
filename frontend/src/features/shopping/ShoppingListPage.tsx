@@ -81,7 +81,7 @@ export function ShoppingListPage() {
         <p className="muted">Lade …</p>
       ) : items.length === 0 ? (
         <section className={styles.card}>
-          <p className="muted">{showDone ? 'Noch nichts geliefert.' : 'Nichts auf der Einkaufsliste.'}</p>
+          <p className="muted">{showDone ? 'Noch nichts erledigt.' : 'Nichts auf der Einkaufsliste.'}</p>
         </section>
       ) : bySupplier && !showDone ? (
         <ShoppingBySupplier items={items} canEdit={canEdit} />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ShoppingItem } from './shoppingApi'
+import { turnOf, type ShoppingItem } from './shoppingApi'
 import { byTask, openSummary, quantityText, taskLabel } from './shoppingText'
 
 // fictitious
@@ -17,9 +17,17 @@ describe('shoppingText', () => {
     expect(quantityText(item('a', { quantity: 2 }))).toBe('2× Ölfilter')
   })
 
-  it('counts what is to order and what is ordered', () => {
-    expect(openSummary([item('a'), item('b'), item('c', { status: 'ORDERED' })])).toBe('2 zu bestellen · 1 bestellt')
+  it('counts who is up: we or the supplier (FB-28)', () => {
+    const items = [item('a'), item('b', { status: 'INFO_NEEDED' }), item('c', { status: 'QUOTE_REQUESTED' }), item('d', { status: 'ORDERED' })]
+    expect(openSummary(items)).toBe('2 – wir sind dran · 2 – wartet auf Lieferant')
     expect(openSummary([])).toBe('')
+  })
+
+  it('nobody is up any more when it arrived or was cancelled', () => {
+    expect(turnOf('QUOTE_RECEIVED')).toBe('us')
+    expect(turnOf('QUOTE_REQUESTED')).toBe('supplier')
+    expect(turnOf('ARRIVED')).toBeNull()
+    expect(turnOf('CANCELLED')).toBeNull()
   })
 
   it('filters with and without a task (FB-20)', () => {

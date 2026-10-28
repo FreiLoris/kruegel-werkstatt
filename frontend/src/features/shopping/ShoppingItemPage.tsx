@@ -94,6 +94,9 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
   const toast = useToast()
   const once = useSingleFlight()
   const [form, setForm] = useState<ShoppingDetailForm>(() => detailFormFromItem(item, me))
+  // a short note with a change of state, e.g. "Offerte per Mail angefragt" (FB-28)
+  const [statusNote, setStatusNote] = useState('')
+  const statusChanged = form.status !== item.status
   const [showErrors, setShowErrors] = useState(false)
   const errors = shoppingErrors(form)
   const set = <K extends keyof ShoppingDetailForm>(field: K, value: ShoppingDetailForm[K]) => setForm({ ...form, [field]: value })
@@ -118,9 +121,13 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
     if (Object.keys(errors).length > 0) return
     once((done) =>
       save.mutate(
-        { id: item.id, request: toShoppingDetailRequest(form, item) },
+        // the note goes with the change of state – saved together or not at all
+        { id: item.id, request: { ...toShoppingDetailRequest(form, item), statusNote: statusChanged ? statusNote.trim() || null : null } },
         {
-          onSuccess: () => toast.success('Position gespeichert'),
+          onSuccess: () => {
+            toast.success('Position gespeichert')
+            setStatusNote('')
+          },
           onError: (error) => toast.error(`Nicht gespeichert: ${reasonOf(error)}`),
           onSettled: done,
         },
@@ -144,6 +151,15 @@ function DetailForm({ item, canEdit, me }: { item: ShoppingItem; canEdit: boolea
             ))}
           </Select>
         </div>
+        {statusChanged && (
+          <TextField
+            label="Notiz zum Statuswechsel (optional)"
+            placeholder="z. B. Offerte per Mail angefragt"
+            maxLength={1000}
+            value={statusNote}
+            onChange={(e) => setStatusNote(e.target.value)}
+          />
+        )}
         <div className={styles.row}>
           <Select label="Erfasst von" value={form.recordedById} onChange={(e) => set('recordedById', e.target.value)} error={error('recordedById')}>
             <option value="" disabled>

@@ -31,16 +31,17 @@ import java.util.function.Predicate;
 
 /**
  * The shopping list (FB-20, FB-19): positions with their history. "Bestellen durch" gets a to-do
- * linked to the position; ticked off = ordered, and back – both ways (decision of the workshop:
- * the to-do is done once the part is ordered, whether it arrived shows the position).
+ * linked to the position, open while we are up (FB-28: to order, give the supplier information,
+ * decide on the quote) – done while the supplier is up and once it is ordered; ticked off moves the
+ * position on, and back – both ways.
  */
 @Service
 @Transactional
 public class ShoppingService {
 
     public static final String TOPIC = "shopping-items";
-    /** How many arrived positions the list shows at most – the latest */
-    static final int ARRIVED_LIMIT = 200;
+    /** How many done positions (arrived or cancelled) the list shows at most – the latest */
+    static final int DONE_LIMIT = 200;
 
     private final ShoppingItemRepository repository;
     private final EmployeeRepository employees;
@@ -64,7 +65,7 @@ public class ShoppingService {
     }
 
     /**
-     * @param arrived false = not arrived yet (to order first); true = the latest arrived ones
+     * @param arrived false = open (not ordered yet first); true = the latest done ones (arrived or cancelled)
      * @param taskId  all positions of this task, whatever their state (then {@code arrived} does not count)
      * @param taskIds all positions of these tasks, whatever their state
      */
@@ -72,7 +73,7 @@ public class ShoppingService {
     public List<ShoppingItemDto> list(boolean arrived, UUID taskId, List<UUID> taskIds) {
         List<ShoppingItem> found = taskId != null ? repository.ofTask(taskId)
                 : taskIds != null ? (taskIds.isEmpty() ? List.of() : repository.ofTasks(taskIds))
-                : arrived ? repository.arrived(Limit.of(ARRIVED_LIMIT)) : repository.open();
+                : arrived ? repository.done(Limit.of(DONE_LIMIT)) : repository.open();
         return found.stream().map(ShoppingItemDto::of).toList();
     }
 
@@ -100,12 +101,17 @@ public class ShoppingService {
         }
         ShoppingItem item = find(id);
         item.checkVersion(request.version());
+        ShoppingStatus before = item.getStatus();
         item.update(details(request, item), request.status(), today());
+        // FB-28: a short note with a change of state, right after it in the history – in the same save
+        if (item.getStatus() != before && request.statusNote() != null && !request.statusNote().isBlank()) {
+            item.addNote(request.statusNote());
+        }
         syncTodo(item);
         return saved(item);
     }
 
-    /** Ordered, arrived or back – no version needed, like ticking off a to-do. */
+    /** Another state – no version needed, like ticking off a to-do. */
     public ShoppingItemDto changeStatus(UUID id, ShoppingStatus status) {
         ShoppingItem item = find(id);
         if (item.changeStatus(status, today())) {
@@ -131,16 +137,22 @@ public class ShoppingService {
         changed();
     }
 
-    /** The to-do was ticked off, undone or given to someone else – the position follows. */
+    /**
+     * The to-do was ticked off, undone or given to someone else – the position follows: done moves it
+     * on ({@link ShoppingStatus#afterTodoDone()}), undone goes back to where we were up last – also
+     * when it was marked arrived: the to-do is open again. Its text follows the state.
+     */
     @EventListener
     void onTodoChanged(ShoppingTodoChanged event) {
         repository.findById(event.shoppingItemId()).ifPresent(item -> {
-            if (event.done() && item.getStatus() == ShoppingStatus.TO_ORDER) {
-                item.changeStatus(ShoppingStatus.ORDERED, today());
-            } else if (!event.done() && item.getStatus() != ShoppingStatus.TO_ORDER) {
-                // "not ordered after all" – also when it was marked arrived: the to-do is open again
-                item.changeStatus(ShoppingStatus.TO_ORDER, today());
+            ShoppingStatus status = item.getStatus();
+            if (event.done() && status.isOurTurn()) {
+                item.changeStatus(status.afterTodoDone(), today());
+            } else if (!event.done() && !status.isOurTurn()) {
+                item.changeStatus(item.lastOurTurn(), today());
             }
+            // the text only – no event, so no loop back here
+            todos.findByShoppingItemId(item.getId()).ifPresent(todo -> todo.update(todoDetails(item, todo.getDueDate())));
             Employee orderBy = item.getOrderBy();
             if (!Objects.equals(orderBy == null ? null : orderBy.getId(), event.assigneeId())) {
                 item.reassign(event.assigneeId() == null ? null : employees.getReferenceById(event.assigneeId()));
@@ -152,11 +164,11 @@ public class ShoppingService {
     /**
      * The to-do of "Bestellen durch" follows the position:
      * <pre>
-     *   nobody orders          → no to-do
-     *   to order               → a to-do, open
-     *   ordered / arrived      → the to-do done (a new one is not created for it)
+     *   nobody orders                          → no to-do
+     *   we are up (to order, Rückfrage, quote) → a to-do, open – its text says what to do
+     *   the supplier is up, ordered, done      → the to-do done (a new one is not created for it)
      * </pre>
-     * Its text says what to order, its task the task.
+     * Its task is the task.
      */
     private void syncTodo(ShoppingItem item) {
         Optional<Todo> existing = todos.findByShoppingItemId(item.getId());
@@ -164,27 +176,34 @@ public class ShoppingService {
             existing.ifPresent(todos::delete);
             return;
         }
-        boolean ordered = item.getStatus() != ShoppingStatus.TO_ORDER;
+        boolean ourTurn = item.getStatus().isOurTurn();
         Todo todo = existing.orElse(null);
         if (todo == null) {
-            if (ordered) {
-                return; // nothing left to do for anybody
+            if (!ourTurn) {
+                return; // nothing to do for anybody
             }
             todo = todos.save(Todo.forShoppingItem(todoDetails(item, null), item.getId()));
         } else {
             todo.update(todoDetails(item, todo.getDueDate()));
         }
-        if (ordered && !todo.isDone()) {
+        if (!ourTurn && !todo.isDone()) {
             todo.markDone(clock.instant(), CurrentPerson.id().orElse(null));
-        } else if (!ordered && todo.isDone()) {
+        } else if (ourTurn && todo.isDone()) {
             todo.reopen();
         }
     }
 
-    /** "Bestellen: 2× Bremsscheiben vorne (Nr. 0986479S27)" */
+    /** "Bestellen: 2× Bremsscheiben vorne (Nr. 0986479S27)" – what to do in its state */
     private static TodoDetails todoDetails(ShoppingItem item, LocalDate dueDate) {
         ShoppingItemDetails d = item.getDetails();
-        String text = "Bestellen: " + (d.quantity() > 1 ? d.quantity() + "× " : "") + d.description()
+        String what = switch (item.getStatus()) {
+            case INFO_NEEDED -> "Infos an Lieferant liefern: ";
+            case QUOTE_RECEIVED -> "Offerte prüfen: ";
+            case QUOTE_REQUESTED -> "Offerte angefragt: ";
+            case CANCELLED -> "Storniert: ";
+            case TO_ORDER, ORDERED, ARRIVED -> "Bestellen: ";
+        };
+        String text = what + (d.quantity() > 1 ? d.quantity() + "× " : "") + d.description()
                 + (d.partNumber() == null ? "" : " (Nr. " + d.partNumber() + ")");
         return new TodoDetails(text.length() > Todo.TEXT_MAX ? text.substring(0, Todo.TEXT_MAX) : text, d.orderBy(), dueDate, d.task());
     }

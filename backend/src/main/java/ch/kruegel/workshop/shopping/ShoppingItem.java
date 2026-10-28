@@ -81,16 +81,17 @@ public class ShoppingItem extends BaseEntity {
         if (newStatus != null) {
             changeStatus(newStatus, today);
         }
-        if (status == ShoppingStatus.TO_ORDER) {
+        if (status.isBeforeOrder()) {
             orderedOn = null;
-        } else if (details.orderedOn() != null) {
+        } else if (details.orderedOn() != null && (status != ShoppingStatus.CANCELLED || orderedOn != null)) {
+            // cancelled keeps a day of order it had – it does not get one it never had
             orderedOn = details.orderedOn();
         }
     }
 
     /**
-     * Ordered, arrived – or back. Ordered remembers the day (unless one is entered); back to "to
-     * order" forgets it. Kept in the history.
+     * Ordered, arrived – or back. Ordered remembers the day (unless one is entered); back to a state
+     * before the order forgets it, cancelled keeps it. Kept in the history.
      *
      * @return false when it already was in that state
      */
@@ -100,7 +101,7 @@ public class ShoppingItem extends BaseEntity {
             return false;
         }
         switch (newStatus) {
-            case TO_ORDER -> {
+            case TO_ORDER, QUOTE_REQUESTED, INFO_NEEDED, QUOTE_RECEIVED -> {
                 orderedOn = null;
                 arrivedOn = null;
             }
@@ -109,10 +110,24 @@ public class ShoppingItem extends BaseEntity {
                 arrivedOn = null;
             }
             case ARRIVED -> arrivedOn = today;
+            case CANCELLED -> arrivedOn = null;
         }
         status = newStatus;
         entries.add(ShoppingEntry.status(this, newStatus));
         return true;
+    }
+
+    /**
+     * Where we were up last – what undoing the to-do goes back to (FB-28): a Rückfrage ticked off is a
+     * Rückfrage again, an ordered quote a quote again; "to order" when we never were anywhere else.
+     */
+    public ShoppingStatus lastOurTurn() {
+        for (ShoppingEntry entry : entries.reversed()) {
+            if (entry.getKind() == ShoppingEntry.Kind.STATUS && entry.getStatus().isOurTurn()) {
+                return entry.getStatus();
+            }
+        }
+        return ShoppingStatus.TO_ORDER;
     }
 
     /** Someone else orders it – the to-do was given to them (FB-20); empty = nobody */

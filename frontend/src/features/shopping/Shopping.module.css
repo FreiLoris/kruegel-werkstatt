@@ -75,7 +75,7 @@
 }
 
 /* very narrow: one field per line */
-@container shopping-entry (max-width: 30rem) {
+@container shopping-entry (max-width: 34rem) {
   .entry > * {
     grid-column: 1 / -1;
   }
@@ -84,7 +84,7 @@
 /* room enough: all six in one row, the selects as wide as "nicht zugewiesen" */
 @container shopping-entry (min-width: 60rem) {
   .entry {
-    grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) minmax(4rem, 0.5fr) repeat(3, minmax(9.5rem, 1fr));
+    grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) minmax(4rem, 0.5fr) repeat(3, minmax(11.5rem, 1fr));
   }
 
   .entry > * {
@@ -159,7 +159,7 @@
   height: 1rem;
 }
 
-.arrived .itemLink {
+.closed .itemLink {
   color: var(--color-text-muted);
 }
 
@@ -180,16 +180,54 @@ span.status {
   align-items: center;
 }
 
+/* colours of the states (FB-28, as proposed by the workshop) */
 .TO_ORDER {
+  border-left-color: var(--color-text-muted);
+}
+
+.QUOTE_REQUESTED {
+  border-left-color: var(--color-info);
+}
+
+.INFO_NEEDED {
   border-left-color: var(--color-warning);
 }
 
+.QUOTE_RECEIVED {
+  border-left-color: var(--color-accent);
+}
+
 .ORDERED {
-  border-left-color: var(--color-info);
+  border-left-color: #a78bfa;
 }
 
 .ARRIVED {
   border-left-color: var(--color-success);
+}
+
+.CANCELLED {
+  border-left-color: var(--color-border-strong);
+}
+
+/* who is up, under the state */
+.turn {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.us {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.unanswered {
+  color: var(--color-warning);
+}
+
+.cancelled td:first-child a {
+  text-decoration: line-through;
 }
 
 .people {

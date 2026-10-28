@@ -1036,7 +1036,7 @@ export interface paths {
         };
         /**
          * Positions of the shopping list
-         * @description Not arrived yet (default): to order first, then ordered – each oldest first; `arrived=true`: the latest 200 arrived ones. `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks ("Ohne Termin").
+         * @description Open (default): not ordered yet first, then ordered – each oldest first; `arrived=true`: the latest 200 done ones (arrived or cancelled). `taskId`: all positions of that task, whatever their state; `taskIds`: those of several tasks ("Ohne Termin").
          */
         get: operations["list_6"];
         put?: never;
@@ -1110,7 +1110,7 @@ export interface paths {
         get?: never;
         /**
          * Change the state
-         * @description No version needed. The to-do of "Bestellen durch" is done once ordered.
+         * @description No version needed. The to-do of "Bestellen durch" is open while we are up (to order, Rückfrage, quote received) and done while the supplier is up or once ordered.
          */
         put: operations["changeStatus_1"];
         post?: never;
@@ -2836,7 +2836,7 @@ export interface components {
             courtesyDays: number;
             /** Format: int64 */
             shoppingItems: number;
-            /** @description Label = TO_ORDER, ORDERED or ARRIVED */
+            /** @description Label = a ShoppingStatus, e.g. TO_ORDER or ARRIVED */
             shoppingStatus: components["schemas"]["CountDto"][];
             /** @description Label = SPARE_PART, CONSUMABLE or TOOL */
             stockCategories: components["schemas"]["CountDto"][];
@@ -3142,7 +3142,7 @@ export interface components {
              * @description Only a change of state: the new one
              * @enum {string|null}
              */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED" | null;
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED" | null;
             /** @description Only a note */
             text: string | null;
         };
@@ -3174,7 +3174,7 @@ export interface components {
              */
             recordedById: string | null;
             /** @enum {string} */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
             /** Format: uuid */
             stockItemId: string | null;
             /** Format: uuid */
@@ -3212,7 +3212,9 @@ export interface components {
              * @description Missing = to order when new, unchanged when editing
              * @enum {string}
              */
-            status?: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status?: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
+            /** @description With a change of state: a note for the history, e.g. "Offerte per Mail angefragt" */
+            statusNote?: string | null;
             /** Format: uuid */
             stockItemId?: string | null;
             /** Format: uuid */
@@ -3233,7 +3235,7 @@ export interface components {
         };
         ShoppingStatusRequest: {
             /** @enum {string} */
-            status: "TO_ORDER" | "ORDERED" | "ARRIVED";
+            status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
         };
         StatisticsDto: {
             customers: components["schemas"]["CustomerStatisticsDto"];

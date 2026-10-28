@@ -1,4 +1,4 @@
-import type { ShoppingItem } from './shoppingApi'
+import { turnOf, type ShoppingItem } from './shoppingApi'
 
 type TaskRef = NonNullable<ShoppingItem['task']>
 
@@ -12,11 +12,11 @@ export function quantityText(item: Pick<ShoppingItem, 'quantity' | 'description'
   return item.quantity > 1 ? `${item.quantity}× ${item.description}` : item.description
 }
 
-/** "3 zu bestellen · 2 bestellt" – '' when nothing is open */
+/** "3 – wir sind dran · 2 – wartet auf Lieferant" (FB-28) – '' when nothing is open */
 export function openSummary(items: ShoppingItem[]): string {
-  const toOrder = items.filter((i) => i.status === 'TO_ORDER').length
-  const ordered = items.filter((i) => i.status === 'ORDERED').length
-  return [toOrder > 0 && `${toOrder} zu bestellen`, ordered > 0 && `${ordered} bestellt`].filter(Boolean).join(' · ')
+  const ours = items.filter((i) => turnOf(i.status) === 'us').length
+  const theirs = items.filter((i) => turnOf(i.status) === 'supplier').length
+  return [ours > 0 && `${ours} – wir sind dran`, theirs > 0 && `${theirs} – wartet auf Lieferant`].filter(Boolean).join(' · ')
 }
 
 /** Which positions: all, those for a task, those for the workshop (FB-20: filter "mit / ohne Auftrag") */

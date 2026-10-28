@@ -7,7 +7,7 @@ import java.util.List;
 /** Shopping list, stock and courtesy cars. */
 public record MaterialStatisticsDto(
         long shoppingItems,
-        @Schema(description = "Label = TO_ORDER, ORDERED or ARRIVED") List<CountDto> shoppingStatus,
+        @Schema(description = "Label = a ShoppingStatus, e.g. TO_ORDER or ARRIVED") List<CountDto> shoppingStatus,
         List<CountDto> suppliers,
         @Schema(types = {"number", "null"}, format = "double", description = "Average days from ordered to arrived, null if none arrived") Double averageDeliveryDays,
         long stockItems,
