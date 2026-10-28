@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -55,8 +55,7 @@ export function useSaveAbsence() {
 export function useSeriesPreview(request: AbsenceSeriesRequest | null) {
   return useQuery({
     queryKey: [TOPIC, 'series-preview', request],
-    queryFn: async ({ signal }) => dataOrThrow(await api.POST('/api/absences/series/preview', { body: request!, signal })),
-    enabled: request !== null,
+    queryFn: request ? async ({ signal }) => dataOrThrow(await api.POST('/api/absences/series/preview', { body: request, signal })) : skipToken,
     // while typing: keep showing the last count instead of flickering
     placeholderData: (previous) => previous,
   })

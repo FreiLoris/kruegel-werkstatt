@@ -2,13 +2,19 @@ import { formatDate } from '../../lib/format'
 import type { AbsenceCategory, AbsenceSeriesPlan, AbsenceSeriesRequest, SeriesScope, Weekday } from './absenceApi'
 
 /** The weekdays to choose for a series (FB-33) – the workshop works Monday to Friday */
-export const SERIES_WEEKDAYS: { value: Weekday; label: string }[] = [
-  { value: 'MONDAY', label: 'Mo' },
-  { value: 'TUESDAY', label: 'Di' },
-  { value: 'WEDNESDAY', label: 'Mi' },
-  { value: 'THURSDAY', label: 'Do' },
-  { value: 'FRIDAY', label: 'Fr' },
+export const SERIES_WEEKDAYS: { value: Weekday; label: string; name: string }[] = [
+  { value: 'MONDAY', label: 'Mo', name: 'Montag' },
+  { value: 'TUESDAY', label: 'Di', name: 'Dienstag' },
+  { value: 'WEDNESDAY', label: 'Mi', name: 'Mittwoch' },
+  { value: 'THURSDAY', label: 'Do', name: 'Donnerstag' },
+  { value: 'FRIDAY', label: 'Fr', name: 'Freitag' },
 ]
+
+/** A weekday switched on or off – the chosen ones always in the order of the week */
+export function withWeekday(chosen: Weekday[], day: Weekday): Weekday[] {
+  const on = chosen.includes(day) ? chosen.filter((d) => d !== day) : [...chosen, day]
+  return SERIES_WEEKDAYS.map((w) => w.value).filter((d) => on.includes(d))
+}
 
 export const SERIES_SCOPE: Record<SeriesScope, string> = {
   DAY: 'nur dieser Tag',
@@ -57,6 +63,12 @@ export function toSeriesRequest(values: SeriesValues): AbsenceSeriesRequest | nu
     endsNoon: vacation && values.endsNoon && !values.startsAfternoon,
     endTime: vacation ? null : values.endTime || null,
   }
+}
+
+/** What the preview needs – without company and note (they do not change the days); `null` while incomplete */
+export function toPlanRequest(values: SeriesValues): AbsenceSeriesRequest | null {
+  const request = toSeriesRequest({ ...values, company: 'x', note: '' })
+  return request && { ...request, company: undefined }
 }
 
 /** "Erstellt 39 Einträge vom 02.11.2026 bis 29.01.2027" */

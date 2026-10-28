@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
-import { ApiError } from '../../api/errors'
+import { ApiError, reasonOf } from '../../api/errors'
+import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { Checkbox, Select, TextField } from '../../components/ui/Fields'
@@ -21,11 +22,12 @@ import {
   type AbsenceCategory,
   type AbsenceRequest,
   type AbsenceSeriesPlan,
+  type AbsenceSeriesRequest,
   type SeriesScope,
   type Weekday,
 } from './absenceApi'
 import styles from './AbsenceDialog.module.css'
-import { planSummary, SERIES_SCOPE, SERIES_WEEKDAYS, skippedDays, toSeriesRequest } from './absenceSeries'
+import { planSummary, SERIES_SCOPE, SERIES_WEEKDAYS, skippedDays, toPlanRequest, toSeriesRequest, withWeekday } from './absenceSeries'
 import { CATEGORY_CLASS } from './categoryColors'
 
 /** Form state: dates as "2026-10-15", empty text = not set */
@@ -68,7 +70,9 @@ function initialValues(absence: Absence | undefined, fresh: NewAbsence | undefin
 }
 
 /** One day cannot be "only afternoon" AND "only morning" – then "only morning" does not count */
-const endsNoonCounts = (values: FormValues) => values.endsNoon && !(values.startDate === values.endDate && values.startsAfternoon)
+const endsNoonCounts = (values: FormValues, repeat = false) =>
+  // in a series every day is one day
+  values.endsNoon && !((repeat || values.startDate === values.endDate) && values.startsAfternoon)
 
 /**
  * FB-05: vacation in half days (the statistics count them), everything else with optional times –
@@ -127,11 +131,16 @@ export function AbsenceDialog({
   const [scope, setScope] = useState<SeriesScope>('DAY')
   const inSeries = !!absence?.seriesId
   const seriesRequest = !absence && repeat ? toSeriesRequest({ ...values, weekdays, everyOtherWeek }) : null
-  const preview = useSeriesPreview(seriesRequest)
+  // the preview asks once typing pauses – and only for what changes the days (not company and note)
+  const planText = useDebouncedValue(JSON.stringify(!absence && repeat ? toPlanRequest({ ...values, weekdays, everyOtherWeek }) : null))
+  const preview = useSeriesPreview(JSON.parse(planText) as AbsenceSeriesRequest | null)
 
   const nameOf = (id: string) => employees.find((e) => e.id === id)?.name ?? 'Unbekannt'
   const error = save.error ?? createSeries.error ?? updateSeries.error
-  const fieldError = (field: string) => (error instanceof ApiError ? error.messageForField(field) : undefined)
+  const messageFor = (field: string) => (error instanceof ApiError ? error.messageForField(field) : undefined)
+  // a series names its period "from"/"to" – shown at the same date fields
+  const fieldError = (field: string) =>
+    messageFor(field) ?? (field === 'startDate' ? messageFor('from') : field === 'endDate' ? messageFor('to') : undefined)
 
   function resetErrors() {
     // an old error message disappears as soon as something is corrected
@@ -146,7 +155,14 @@ export function AbsenceDialog({
   }
 
   function toggleWeekday(day: Weekday) {
-    setWeekdays((current) => (current.includes(day) ? current.filter((d) => d !== day) : SERIES_WEEKDAYS.map((w) => w.value).filter((d) => d === day || current.includes(d))))
+    setWeekdays((current) => withWeekday(current, day))
+    resetErrors()
+  }
+
+  /** For more days of a series each keeps its own dates – edited ones go back */
+  function chooseScope(value: SeriesScope) {
+    setScope(value)
+    if (absence && value !== 'DAY') setValues((current) => ({ ...current, startDate: absence.startDate, endDate: absence.endDate }))
     resetErrors()
   }
 
@@ -178,7 +194,7 @@ export function AbsenceDialog({
         { id: absence.id, scope, request: toRequest(values, absence.version) },
         {
           onSuccess: (days) => {
-            toast.success(`${nameOf(values.employeeId)}: ${days.length} Tage der Serie geändert`)
+            toast.success(`${nameOf(values.employeeId)}: ${days.length === 1 ? '1 Tag' : `${days.length} Tage`} der Serie geändert`)
             onClose()
           },
           onError: (error) => {
@@ -324,7 +340,7 @@ export function AbsenceDialog({
                   const startDate = e.target.value
                   // a start after the end moves the end along (one-day absences are the usual case)
                   setValues((current) => ({ ...current, startDate, endDate: current.endDate < startDate ? startDate : current.endDate }))
-                  if (save.error) save.reset()
+                  resetErrors()
                 }}
                 error={fieldError('startDate')}
               />
@@ -356,7 +372,7 @@ export function AbsenceDialog({
                 <>
                   <Checkbox
                     label={repeat ? 'jeweils nur bis Mittag' : 'nur bis Mittag'}
-                    checked={endsNoonCounts(values)}
+                    checked={endsNoonCounts(values, repeat)}
                     disabled={(repeat || values.startDate === values.endDate) && values.startsAfternoon}
                     onChange={(e) => set('endsNoon', e.target.checked)}
                   />
@@ -377,7 +393,14 @@ export function AbsenceDialog({
 
           {!absence && !readOnly && (
             <div className={styles.series}>
-              <Checkbox label="Wiederholen – an bestimmten Wochentagen" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
+              <Checkbox
+                label="Wiederholen – an bestimmten Wochentagen"
+                checked={repeat}
+                onChange={(e) => {
+                  setRepeat(e.target.checked)
+                  resetErrors()
+                }}
+              />
               {repeat && (
                 <>
                   <div role="group" aria-label="Wochentage" className={styles.weekdays}>
@@ -387,6 +410,7 @@ export function AbsenceDialog({
                         type="button"
                         className={styles.weekday}
                         aria-pressed={weekdays.includes(day.value)}
+                        aria-label={day.name}
                         onClick={() => toggleWeekday(day.value)}
                       >
                         {day.label}
@@ -394,23 +418,31 @@ export function AbsenceDialog({
                     ))}
                   </div>
                   {fieldError('weekdays') && <p className={styles.error}>{fieldError('weekdays')}</p>}
-                  <Checkbox label="nur jede 2. Woche" checked={everyOtherWeek} onChange={(e) => setEveryOtherWeek(e.target.checked)} />
-                  <SeriesPreview plan={seriesRequest ? preview.data : undefined} />
+                  <Checkbox
+                    label="nur jede 2. Woche"
+                    checked={everyOtherWeek}
+                    onChange={(e) => {
+                      setEveryOtherWeek(e.target.checked)
+                      resetErrors()
+                    }}
+                  />
+                  <SeriesPreview plan={planText !== 'null' ? preview.data : undefined} error={planText !== 'null' ? preview.error : null} />
                 </>
               )}
             </div>
           )}
 
           {inSeries && !readOnly && (
-            <div role="radiogroup" aria-label="Gilt für" className={styles.scope}>
-              <span className={styles.scopeLabel}>Gilt für</span>
+            <fieldset className={styles.scope}>
+              <legend className={styles.scopeLabel}>Gilt für</legend>
               {(Object.keys(SERIES_SCOPE) as SeriesScope[]).map((value) => (
                 <label key={value}>
-                  <input type="radio" name="scope" value={value} checked={scope === value} onChange={() => setScope(value)} />
+                  <input type="radio" name="scope" value={value} checked={scope === value} onChange={() => chooseScope(value)} />
                   {SERIES_SCOPE[value]}
                 </label>
               ))}
-            </div>
+              {scope !== 'DAY' && <p className="muted">Jeder Tag behält sein Datum.</p>}
+            </fieldset>
           )}
 
           <TextField
@@ -428,21 +460,31 @@ export function AbsenceDialog({
   )
 }
 
-/** "Erstellt 39 Einträge vom … bis …" and the days left out – before saving (FB-33) */
-function SeriesPreview({ plan }: { plan: AbsenceSeriesPlan | undefined }) {
-  if (!plan) return <p className="muted">Wochentage und Zeitraum wählen – dann steht hier, welche Tage entstehen.</p>
-  const skipped = skippedDays(plan)
+/**
+ * "Erstellt 39 Einträge vom … bis …" and the days left out – before saving (FB-33). The live region
+ * is always there, only its content changes – so a screen reader hears the first count too.
+ */
+function SeriesPreview({ plan, error }: { plan: AbsenceSeriesPlan | undefined; error: Error | null }) {
+  const skipped = plan ? skippedDays(plan) : []
   return (
     <div className={styles.preview} aria-live="polite">
-      <strong>{planSummary(plan)}</strong>
-      {skipped.length > 0 && (
+      {error ? (
+        <p className={styles.error}>Vorschau nicht möglich: {reasonOf(error)}</p>
+      ) : !plan ? (
+        <p className="muted">Wochentage und Zeitraum wählen – dann steht hier, welche Tage entstehen.</p>
+      ) : (
         <>
-          <span className="muted">Übersprungen:</span>
-          <ul>
-            {skipped.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+          <strong>{planSummary(plan)}</strong>
+          {skipped.length > 0 && (
+            <>
+              <span className="muted">Übersprungen:</span>
+              <ul>
+                {skipped.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </>
       )}
     </div>

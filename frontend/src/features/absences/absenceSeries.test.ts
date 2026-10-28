@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { planSummary, skippedDays, toSeriesRequest, type SeriesValues } from './absenceSeries'
+import { planSummary, skippedDays, toPlanRequest, toSeriesRequest, withWeekday, type SeriesValues } from './absenceSeries'
 
 // fictitious
 const values: SeriesValues = {
@@ -27,6 +27,16 @@ describe('absenceSeries (FB-33)', () => {
       startsAfternoon: true,
       endsNoon: false,
     })
+  })
+
+  it('weekdays switched on and off stay in the order of the week', () => {
+    expect(withWeekday(['THURSDAY'], 'MONDAY')).toEqual(['MONDAY', 'THURSDAY'])
+    expect(withWeekday(['MONDAY', 'THURSDAY'], 'MONDAY')).toEqual(['THURSDAY'])
+  })
+
+  it('the preview leaves out company and note – they do not change the days', () => {
+    expect(toPlanRequest({ ...values, company: '', note: 'Aushilfe' })).toMatchObject({ company: undefined, note: undefined, from: '2026-11-02' })
+    expect(toPlanRequest({ ...values, weekdays: [] })).toBeNull()
   })
 
   it('no request while something needed is missing', () => {

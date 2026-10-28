@@ -122,6 +122,15 @@
 .scope {
   display: grid;
   gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.scope legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
 }
 
 .scope label {

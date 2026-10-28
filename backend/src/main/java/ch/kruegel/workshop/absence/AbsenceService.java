@@ -90,7 +90,12 @@ public class AbsenceService {
 
     /** Entered by mistake – really deleted (it is history, not a message to archive). */
     public void delete(UUID id) {
-        repository.delete(find(id));
+        deleteAll(List.of(find(id)));
+    }
+
+    /** Deleted for good and told to the other devices – also days of a series (FB-33) */
+    void deleteAll(List<Absence> absences) {
+        repository.deleteAll(absences);
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
     }
@@ -179,12 +184,15 @@ public class AbsenceService {
     }
 
     private AbsenceDto saved(Absence absence) {
-        flush(absence.getEmployee());
+        flushAndAnnounce(absence.getEmployee());
         return AbsenceDto.of(absence);
     }
 
-    /** Flush here so the overlap constraint fires inside this method and gets a friendly message. */
-    void flush(Employee employee) {
+    /**
+     * Flush here so the overlap constraint fires inside this method and gets a friendly message – then
+     * tell the other devices.
+     */
+    void flushAndAnnounce(Employee employee) {
         try {
             repository.flush();
         } catch (DataIntegrityViolationException e) {

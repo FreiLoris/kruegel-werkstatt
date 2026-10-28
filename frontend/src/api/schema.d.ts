@@ -119,7 +119,7 @@ export interface paths {
         get?: never;
         /**
          * Change days of a series
-         * @description Category, company, note and times for the day (`DAY`, dates too), from it on (`FROM_HERE`) or the whole series (`ALL`) – each keeps its day. Needs the loaded `version` of the day clicked.
+         * @description Category, company, note and times for the day (`DAY`, dates too), from it on (`FROM_HERE`) or the whole series (`ALL`) – each keeps its days. Needs the loaded `version` of the day clicked – only that one is checked, the other days are changed as a whole. A day with something else entered changes nothing (field error).
          */
         put: operations["updateSeries"];
         post?: never;

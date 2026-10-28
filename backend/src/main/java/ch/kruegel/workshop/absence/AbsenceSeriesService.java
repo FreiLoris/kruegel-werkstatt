@@ -1,11 +1,9 @@
 package ch.kruegel.workshop.absence;
 
-import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +12,12 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Recurring absences (FB-33): e.g. three months of external work every Mon, Tue and Thu – entered in
@@ -33,22 +35,17 @@ public class AbsenceSeriesService {
     private final AbsenceRepository repository;
     private final AbsenceService absences;
     private final ZurichPublicHolidays holidays;
-    private final ApplicationEventPublisher events;
 
-    AbsenceSeriesService(AbsenceRepository repository, AbsenceService absences, ZurichPublicHolidays holidays,
-                         ApplicationEventPublisher events) {
+    AbsenceSeriesService(AbsenceRepository repository, AbsenceService absences, ZurichPublicHolidays holidays) {
         this.repository = repository;
         this.absences = absences;
         this.holidays = holidays;
-        this.events = events;
     }
 
-    /** What the series would make – nothing saved. */
+    /** What the series would make – nothing saved, company and note not needed (they do not change the days). */
     @Transactional(readOnly = true)
     public AbsenceSeriesPlanDto plan(AbsenceSeriesRequest request) {
-        Employee employee = absences.employee(request.employeeId(), null);
-        AbsenceService.company(request.category(), request.company());
-        return plan(request, employee);
+        return plan(request, absences.employee(request.employeeId(), null));
     }
 
     /** Every day of the plan as an entry of its own, all with one series ID. */
@@ -63,13 +60,15 @@ public class AbsenceSeriesService {
         for (LocalDate day : plan.days()) {
             repository.save(Absence.inSeries(seriesId, employee, request.category(), company, request.note(), period(request, day)));
         }
-        absences.flush(employee);
+        absences.flushAndAnnounce(employee);
         return plan;
     }
 
     /**
-     * Category, company, note and times for the days of the scope – each keeps its day. Only the day
-     * clicked needs its version (the others are changed as a whole, like a delete).
+     * Category, company, note and times for the days of the scope – each keeps its days. Only the day
+     * clicked needs its version (the others are changed as a whole, like a delete). Unlike entering a
+     * series, a day with something else entered is not skipped: nothing is changed then – the message
+     * names the day, which can be changed on its own.
      */
     public List<AbsenceDto> update(UUID id, SeriesScope scope, AbsenceRequest request) {
         Absence clicked = find(id);
@@ -83,24 +82,31 @@ public class AbsenceSeriesService {
         Employee employee = absences.employee(request.employeeId(), clicked.getEmployee());
         String company = AbsenceService.company(request.category(), request.company());
         List<Absence> days = days(clicked, scope);
+
+        // everything checked first, with one query – a day changed before would be flushed by the next query
+        Set<UUID> ofScope = days.stream().map(Absence::getId).collect(Collectors.toSet());
+        List<Absence> others = repository.touching(days.getFirst().getPeriod().startDate(), days.getLast().getPeriod().endDate(),
+                employee.getId()).stream().filter(a -> !ofScope.contains(a.getId())).toList();
+        Map<Absence, AbsencePeriod> periods = new LinkedHashMap<>();
         for (Absence day : days) {
-            LocalDate date = day.getPeriod().startDate();
-            AbsencePeriod period = AbsenceService.period(request.category(), date, request.startsAfternoon(), request.startTime(),
-                    date, request.endsNoon(), request.endTime());
-            absences.checkFree(employee, period, day.getId());
-            day.update(employee, request.category(), company, request.note(), period);
+            AbsencePeriod own = day.getPeriod();
+            AbsencePeriod period = AbsenceService.period(request.category(), own.startDate(), request.startsAfternoon(), request.startTime(),
+                    own.endDate(), request.endsNoon(), request.endTime());
+            others.stream().filter(other -> other.getPeriod().overlaps(period)).findFirst().ifPresent(other -> {
+                throw new InvalidInputException("startDate", "%s ist %s bereits als %s eingetragen – diesen Tag einzeln ändern".formatted(
+                        employee.getName(), AbsenceService.when(other.getPeriod()), AbsenceService.name(other.getCategory())));
+            });
+            periods.put(day, period);
         }
-        absences.flush(employee);
+        periods.forEach((day, period) -> day.update(employee, request.category(), company, request.note(), period));
+        absences.flushAndAnnounce(employee);
         return days.stream().map(AbsenceDto::of).toList();
     }
 
     /** The days of the scope – e.g. "ab hier" when someone is back earlier. */
     public void delete(UUID id, SeriesScope scope) {
         Absence clicked = find(id);
-        List<Absence> days = scope == SeriesScope.DAY || clicked.getSeriesId() == null ? List.of(clicked) : days(clicked, scope);
-        repository.deleteAll(days);
-        repository.flush();
-        events.publishEvent(new DataChanged(AbsenceService.TOPIC));
+        absences.deleteAll(scope == SeriesScope.DAY || clicked.getSeriesId() == null ? List.of(clicked) : days(clicked, scope));
     }
 
     private AbsenceSeriesPlanDto plan(AbsenceSeriesRequest request, Employee employee) {
