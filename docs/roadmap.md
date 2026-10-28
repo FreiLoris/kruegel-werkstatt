@@ -30,6 +30,7 @@ Sources: [`analysis/TIEFENANALYSE_NEUBAU.md`](analysis/TIEFENANALYSE_NEUBAU.md) 
 | 13 | Second test round | FB-01 … FB-10, tyre hotel (10/2026) |
 | 14 | Third test round | FB-11 … FB-21: shopping list, planning, tyres (10/2026) |
 | 15 | Extras | Wishes beyond the daily work (10/2026) |
+| 16 | Fourth test round | FB-22 … FB-33: import, shopping, absences, tyres, whiteboard (10/2026) |
 
 ---
 
@@ -779,6 +780,24 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
     the data allows.
   - Absences only as a team total – nobody's sick days on a page for everyone. Free text (make,
     colour, city) is counted case-insensitively.
+
+---
+
+## Phase 16 – Fourth test round of the workshop (10/2026)
+
+Rounds 4–6 of Reto's feedback (FB-22 … FB-33). Tickets that need an answer first (FB-22 whiteboard,
+FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for it.
+
+- [x] **16a – SwissGarage holders** (FB-27)
+  Done: 127 of 3693 vehicles of the export had no holder – the address list import takes only
+  "Garage-Kunde" that is not blocked, but SwissGarage has vehicles whose holder has an empty address
+  kind, is blocked/former or a supplier. Now a vehicle is always found with its SwissGarage holder:
+  the vehicle list import creates a holder it does not know from the address on the vehicle (same
+  address number = same customer, so two sites of a company stay two customers) and activates a
+  deactivated one; the address list import keeps holders of active vehicles whatever their kind,
+  updates them and never deactivates them. Vehicles still without holder (no address number, no
+  name) are listed one by one with the reason. A new holder was not seen as a change when the vehicle
+  had none ("unchanged") – saved right away now.
 
 ---
 

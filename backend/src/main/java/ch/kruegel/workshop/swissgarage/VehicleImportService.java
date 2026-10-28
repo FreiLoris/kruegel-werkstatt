@@ -4,6 +4,7 @@ import ch.kruegel.workshop.common.RecordSource;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.customer.Customer;
+import ch.kruegel.workshop.customer.CustomerDetails;
 import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.swissgarage.ExcelSheet.ExcelRow;
 import ch.kruegel.workshop.vehicle.Vehicle;
@@ -35,9 +36,11 @@ import java.util.function.Function;
  *   <li>Only rows with make or model ("Marke"/"Typ") – like the old app.</li>
  *   <li>Matched by SwissGarage internal number ("Int.Nr."); missing SwissGarage vehicles are
  *       deactivated, local vehicles are never touched.</li>
- *   <li>Holder by "Adressnummer" → the SwissGarage customer from the address list import. Unknown
- *       holder (address list not imported yet, customer blocked) → vehicle without holder, counted
- *       in the log. Import the address list first.</li>
+ *   <li>Holder by "Adressnummer" → the SwissGarage customer from the address list import. A holder
+ *       the address list skipped (address kind empty, blocked, supplier) is created from the address
+ *       on the vehicle itself – in SwissGarage a vehicle is always entered for a chosen customer, so
+ *       its address is that customer's (FB-27). A deactivated holder is activated again. Without
+ *       address number or name the vehicle stays without holder, each one listed with its reason.</li>
  *   <li>Invalid single values (e.g. an impossible date) do not stop the row: the field stays empty
  *       and the problem is logged.</li>
  * </ul>
@@ -79,8 +82,11 @@ public class VehicleImportService {
         vehicles.findBySource(RecordSource.SWISSGARAGE).forEach(v -> known.put(v.getSwissgarageNumber(), v));
         long knownActive = known.values().stream().filter(Vehicle::isActive).count();
 
-        int rowsRead = 0, skipped = 0, created = 0, updated = 0, unchanged = 0, withoutHolder = 0;
+        int rowsRead = 0, skipped = 0, created = 0, updated = 0, unchanged = 0;
         List<String> problems = new ArrayList<>();
+        List<String> withoutHolder = new ArrayList<>();
+        List<Customer> newHolders = new ArrayList<>();
+        List<Customer> activatedHolders = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         List<Vehicle> toSave = new ArrayList<>();
 
@@ -117,7 +123,16 @@ public class VehicleImportService {
             }
             Customer holder = holders.get(row.get(HOLDER));
             if (holder == null) {
-                withoutHolder++;
+                holder = newHolder(row, reason -> withoutHolder.add(where + "ohne Halter – " + reason));
+                if (holder != null) {
+                    // saved right away: with its ID, "same holder" below sees the change
+                    holder = customers.save(holder);
+                    holders.put(holder.getSwissgarageNumber(), holder);
+                    newHolders.add(holder);
+                }
+            } else if (!holder.isActive()) {
+                holder.activate();
+                activatedHolders.add(holder);
             }
 
             Vehicle existing = known.get(number);
@@ -135,9 +150,15 @@ public class VehicleImportService {
         if (seen.isEmpty()) {
             throw new InvalidInputException("file", "Die Datei enthält keine Fahrzeuge – nichts importiert.");
         }
-        if (withoutHolder > 0) {
-            problems.addFirst(withoutHolder + " Fahrzeuge ohne bekannten Halter – ihre Adressnummer ist nicht in der "
-                    + "importierten Adressliste. Adressliste zuerst importieren, dann Fahrzeugliste nochmals.");
+        if (!withoutHolder.isEmpty()) {
+            problems.addAll(0, withoutHolder);
+        }
+        if (!activatedHolders.isEmpty()) {
+            problems.addFirst(activatedHolders.size() + " frühere Kunden wieder aktiv – sie haben in SwissGarage noch ein Fahrzeug.");
+        }
+        if (!newHolders.isEmpty()) {
+            problems.addFirst(newHolders.size() + " Halter aus der Adresse beim Fahrzeug angelegt – in der Adressliste "
+                    + "sind sie nicht als Garage-Kunde geführt (Adressart leer, gesperrt oder Lieferant).");
         }
 
         List<Vehicle> missing = known.values().stream()
@@ -152,6 +173,9 @@ public class VehicleImportService {
                 new ImportCounts(rowsRead, skipped, created, updated, unchanged, missing.size(), problems)));
         runs.flush();
         events.publishEvent(new DataChanged("vehicles"));
+        if (!newHolders.isEmpty() || !activatedHolders.isEmpty()) {
+            events.publishEvent(new DataChanged("customers"));
+        }
         events.publishEvent(new DataChanged(SwissGarageImportController.TOPIC));
         return ImportRunDto.of(run);
     }
@@ -175,6 +199,26 @@ public class VehicleImportService {
         }
         return new VehicleDetails(row.get("Kennz"), row.get("Marke"), row.get("Typ"), row.get("Chassis-Nr."),
                 firstRegistration, year, mileage, lastMfk, row.get("Farbe"), row.get("Treibstoff"));
+    }
+
+    /**
+     * A holder the address list did not bring, from the address on the vehicle (same columns as the
+     * address list, phone as "Telefon 1"). {@code null} with the reason without number or name.
+     */
+    private static Customer newHolder(ExcelRow row, Consumer<String> missing) {
+        String number = row.get(HOLDER);
+        if (number.isEmpty()) {
+            missing.accept("keine Adressnummer beim Fahrzeug");
+            return null;
+        }
+        try {
+            return Customer.fromSwissGarage(number, new CustomerDetails(row.get("Anrede"), row.get("Vorname"),
+                    row.get("Name"), null, row.get("Zusatz"), row.get("Strasse"), row.get("PLZ"), row.get("Ort"),
+                    row.get("Telefon 1"), row.get("Handy"), row.get("E-Mail")));
+        } catch (IllegalArgumentException e) {
+            missing.accept("Halter Nr. " + number + " ohne Name oder mit ungültigen Angaben beim Fahrzeug");
+            return null;
+        }
     }
 
     private static <T> T convert(String value, Function<String, T> converter, String field,

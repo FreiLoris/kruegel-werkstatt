@@ -2,10 +2,12 @@ package ch.kruegel.workshop.vehicle;
 
 import ch.kruegel.workshop.common.RecordSource;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /** Database access for vehicles. Search: see {@code customersearch}. */
@@ -22,6 +24,15 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
     /** For the import page: active vehicles of this source whose holder is unknown. */
     long countBySourceAndActiveTrueAndCustomerIsNull(RecordSource source);
+
+    /**
+     * For the address list import: SwissGarage address numbers of the holders of active vehicles –
+     * they stay customers, whatever their address kind (FB-27).
+     */
+    @Query("""
+            SELECT DISTINCT v.customer.swissgarageNumber FROM Vehicle v
+            WHERE v.active AND v.customer.source = ch.kruegel.workshop.common.RecordSource.SWISSGARAGE""")
+    Set<String> findAddressNumbersOfActiveHolders();
 
     /** All vehicles of a holder, active ones first, then by plate. */
     List<Vehicle> findByCustomerIdOrderByActiveDescLicensePlateAsc(UUID customerId);

@@ -147,7 +147,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Ostersonntag | `EasterSunday` | basis for the moving holidays |
 | SwissGarage-Import | SwissGarage import | product name stays |
 | Adressliste / Fahrzeugliste (Export) | address list / vehicle list | `Adrliste.xlsx`, `Fahrzeug.xlsx` |
-| Adressart „Garage-Kunde“ / „gesperrt“ | address kind | only garage customers that are not blocked are imported |
+| Adressart „Garage-Kunde“ / „gesperrt“ | address kind | only garage customers that are not blocked are imported – and every holder of a vehicle (FB-27) |
 | Import-Protokoll | import log (`ImportRun`) | who, when, file, new/changed/unchanged/deactivated/skipped |
 | Kundensuche | customer search (`CustomerSearchService`) | wizard step 1; every word must occur |
 | Import-Seite | import page (`SwissGarageImportPage`) | under Einstellungen |

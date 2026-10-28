@@ -9,6 +9,9 @@ import ch.kruegel.workshop.customer.CustomerRepository;
 import ch.kruegel.workshop.customer.CustomerTestData;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.EmployeeTestData;
+import ch.kruegel.workshop.vehicle.Vehicle;
+import ch.kruegel.workshop.vehicle.VehicleDetails;
+import ch.kruegel.workshop.vehicle.VehicleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +46,9 @@ class CustomerImportApiTest {
 
     @Autowired
     private CustomerRepository customers;
+
+    @Autowired
+    private VehicleRepository vehicles;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -125,6 +132,32 @@ class CustomerImportApiTest {
 
         assertThat(upload(withWeg, "c.xlsx")).bodyJson().extractingPath("$.updated").isEqualTo(1);
         assertThat(customers.findBySwissgarageNumber("1003").orElseThrow().isActive()).isTrue();
+    }
+
+    @Test
+    void holdersOfActiveVehiclesStayCustomersWhateverTheirAddressKind() {
+        // FB-27: created by the vehicle list import – the address list must neither skip nor deactivate them
+        Customer empty = customers.save(CustomerTestData.swissGarage("2001", "Muster AG"));
+        Customer blocked = customers.save(CustomerTestData.swissGarage("2002", "Alt"));
+        Customer notInTheFile = customers.save(CustomerTestData.swissGarage("2003", "Fehlt"));
+        for (Customer holder : List.of(empty, blocked, notInTheFile)) {
+            vehicles.save(Vehicle.fromSwissGarage("v" + holder.getSwissgarageNumber(), holder,
+                    new VehicleDetails("SH " + holder.getSwissgarageNumber(), "VW", null, null, null, null, null, null, null, null)));
+        }
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
+                .row(null, null, "Muster AG", null, null, "Werkstrasse 1", 8413, "Neftenbach", null, null, null, 2001)
+                .row("Garage-Kunde gesperrt/ehemalig", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .row("Lieferant,Kreditor", null, "Ohne Fahrzeug AG", null, null, null, null, null, null, null, null, 3001)
+                .bytes(), "Adrliste.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.created").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.skipped").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.deactivated").isEqualTo(0);
+        assertThat(customers.findById(empty.getId()).orElseThrow().getDetails().city()).isEqualTo("Neftenbach");
+        assertThat(customers.findById(blocked.getId()).orElseThrow().isActive()).isTrue();
+        assertThat(customers.findById(notInTheFile.getId()).orElseThrow().isActive()).isTrue();
     }
 
     @Test
