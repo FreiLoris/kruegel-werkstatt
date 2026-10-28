@@ -848,8 +848,8 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   sender small (the company of the settings, our customer number with the supplier), RMA, delivery
   note or invoice, article, number and reason (falsch geliefert, defekt, Altteil, Pfand, sonstiges),
   all optional. On a whole A5 page for the parcel, on A4, or on one label of a sheet from the
-  settings with its start position. Says when no address is entered. Not built: the return noted in
-  the history of the position, a state "Retour" (FB-28 has none).
+  settings with its start position. Says when no address is entered. The return noted in the history:
+  16o; a state "Retour" is not built (FB-28 has none).
 - [x] **16h – Active person** (FB-29)
   Done: after some minutes without use (mouse, keyboard, finger) a device asks "Wer ist am Gerät?" –
   big name buttons, no password, the page stays as it is underneath (a half-typed task is still
@@ -900,6 +900,10 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   kept as text (V53), shown under its description; another supplier keeps it only if it has that
   way too. The shopping list filters by it ("Alle Versandarten", each one in use, "Ohne Versandart")
   and – the open ones – by who is up ("Wir sind dran", "Wartet auf Lieferant"); in the address.
+- [x] **16o – Return noted** (FB-31 follow-up)
+  Done: the return label of a position offers "Im Verlauf vermerken" – a note in its history "Retour
+  an Muster AG – RMA-Nr. 4711 · Grund: defekt" (once per visit). No state "Retour": the position
+  keeps its state, the note says what went back.
 
 ---
 

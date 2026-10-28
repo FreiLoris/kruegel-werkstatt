@@ -16,9 +16,14 @@ vi.mock('./supplierApi', async (original) => ({
 }))
 vi.mock('../company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Muster Garage', street: null, postalCode: null, city: null }, error: null }) }))
 vi.mock('../tire-hotel/tireHotelApi', () => ({ useLabelFormats: () => ({ data: [] }) }))
+const addNote = vi.fn()
 vi.mock('../shopping/shoppingApi', () => ({
   useShoppingItem: (id: string | undefined) => ({ data: id ? { id, description: 'Bremssattel', partNumber: '0986' } : undefined }),
+  useAddShoppingNote: () => ({ mutate: addNote, isPending: false }),
 }))
+const canEdit = vi.fn(() => true)
+vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit() }))
+vi.mock('../../components/ui/toastContext', () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn() }) }))
 
 const renderPage = (url: string) =>
   render(
@@ -55,5 +60,27 @@ describe('ReturnLabelPage (FB-31)', () => {
 
     expect(screen.getByText('Diesen Lieferanten gibt es nicht (mehr).')).toBeTruthy()
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Drucken' }).disabled).toBe(true)
+  })
+
+  it('notes the return in the history of the position (FB-31) – once', () => {
+    addNote.mockImplementation((_note, options: { onSuccess: () => void }) => options.onSuccess())
+    renderPage('/suppliers/s1/return-label?item=i1')
+    fireEvent.change(screen.getByLabelText('Grund'), { target: { value: 'defekt' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Im Verlauf vermerken' }))
+
+    expect(addNote).toHaveBeenCalledWith({ id: 'i1', text: 'Retour an Muster Teile AG – Grund: defekt' }, expect.anything())
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Im Verlauf vermerkt' }).disabled).toBe(true)
+  })
+
+  it('nothing to note without a position', () => {
+    renderPage('/suppliers/s1/return-label')
+    expect(screen.queryByRole('button', { name: 'Im Verlauf vermerken' })).toBeNull()
+  })
+
+  it('a device that only shows cannot note it', () => {
+    canEdit.mockReturnValue(false)
+    renderPage('/suppliers/s1/return-label?item=i1')
+    expect(screen.queryByRole('button', { name: 'Im Verlauf vermerken' })).toBeNull()
+    canEdit.mockReturnValue(true)
   })
 })
