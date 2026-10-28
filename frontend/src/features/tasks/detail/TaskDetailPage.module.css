@@ -187,3 +187,10 @@
   font-weight: 600;
   color: var(--color-warning);
 }
+
+/* FB-25: the new tyres are not here yet */
+.tiresMissing {
+  margin: 0 0 var(--space-2);
+  color: var(--color-warning);
+  font-weight: 600;
+}

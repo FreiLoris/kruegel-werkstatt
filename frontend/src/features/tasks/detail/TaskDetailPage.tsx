@@ -32,6 +32,8 @@ import { isPlanned, TASK_STATUS, useChangeTaskStatus, useDeleteTask, useRemoveAp
 import { TaskStatusBadge } from '../TaskStatusBadge'
 import { TIME_OPEN, timeRange, whenLabel } from '../taskTime'
 import { workItems } from '../workSummary'
+import { tiresNotDelivered } from '../newTires'
+import { useTaskShoppingItems } from '../../shopping/shoppingApi'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
 import { TaskVehicleLocation } from '../VehicleLocationSwitch'
@@ -72,6 +74,8 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const [askBooking, setAskBooking] = useState(false)
   const tires = useTaskTires(task.id, task.tireChange)
   const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
+  // FB-25: ordered new tyres – here yet? (the same query as "Ersatzteilbestellungen")
+  const { data: parts } = useTaskShoppingItems(task.tireChangeKind === 'NEW_TIRES' ? task.id : undefined)
 
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
   const employee = (id: string | null) => employees?.find((e) => e.id === id)
@@ -337,7 +341,12 @@ function TaskDetail({ task }: { task: AnyTask }) {
             ) : !tires.data ? (
               <p className="muted">Lade …</p>
             ) : (
-              <TaskTiresPanel tires={tires.data} fromHotel={fromHotel} newTires={task.tireChangeKind === 'NEW_TIRES'} />
+              <>
+                {parts && tiresNotDelivered(parts) && !tires.data.mounted && (
+                  <p className={styles.tiresMissing}>Reifen noch nicht geliefert – siehe Ersatzteilbestellungen.</p>
+                )}
+                <TaskTiresPanel tires={tires.data} fromHotel={fromHotel} newTires={task.tireChangeKind === 'NEW_TIRES'} />
+              </>
             )}
           </Card>
         )}
