@@ -169,6 +169,20 @@
           }
         }
 
+        /** Flexbox gap laid out for real: CSS.supports('gap') says yes for grid gap alone (Chromium 66–83) */
+        function flexGap() {
+          var box = document.createElement('div')
+          box.style.display = 'flex'
+          box.style.flexDirection = 'column'
+          box.style.rowGap = '1px'
+          box.appendChild(document.createElement('div'))
+          box.appendChild(document.createElement('div'))
+          document.body.appendChild(box)
+          var ok = box.scrollHeight === 1
+          document.body.removeChild(box)
+          return ok
+        }
+
         function feature(key, label, good) {
           results[key] = good
           row('features', label, good ? 'ja' : 'nein', good)
@@ -185,7 +199,7 @@
 
         // --- what the app needs
         feature('grid', 'CSS Grid', css('display', 'grid'))
-        feature('gap', 'Flexbox mit gap', css('gap', '1rem'))
+        feature('gap', 'Flexbox mit gap', flexGap())
         feature('has', 'CSS :has()', selector(':has(a)'))
         feature('cq', 'Container Queries', css('container-type', 'inline-size'))
         feature('dvh', 'Einheit dvh', css('height', '100dvh'))
@@ -214,19 +228,22 @@
         // --- server: health, then live updates
         var health = 'offen'
         var live = 'offen'
-        function serverRow(label, value, good) {
-          row('server', label, value, good)
-        }
         var xhr = new XMLHttpRequest()
         xhr.open('GET', '/api/health')
+        xhr.timeout = 8000
+        xhr.ontimeout = function () {
+          health = 'Zeitüberschreitung'
+          row('server', '/api/health', 'keine Antwort nach 8 s', false)
+          summary()
+        }
         xhr.onload = function () {
           health = xhr.status === 200 ? 'ok' : 'HTTP ' + xhr.status
-          serverRow('/api/health', health, xhr.status === 200)
+          row('server', '/api/health', health, xhr.status === 200)
           summary()
         }
         xhr.onerror = function () {
           health = 'Fehler'
-          serverRow('/api/health', 'nicht erreichbar', false)
+          row('server', '/api/health', 'nicht erreichbar', false)
           summary()
         }
         xhr.send()
@@ -235,19 +252,28 @@
           var source = new EventSource('/api/live')
           var timer = setTimeout(function () {
             live = 'Zeitüberschreitung'
-            serverRow('Live-Updates (/api/live)', 'keine Verbindung nach 8 s', false)
+            row('server', 'Live-Updates (/api/live)', 'keine Verbindung nach 8 s', false)
             source.close()
             summary()
           }, 8000)
+          source.onerror = function () {
+            // closed for good (e.g. 401/502) – not just reconnecting
+            if (source.readyState !== 2) return
+            clearTimeout(timer)
+            live = 'Fehler'
+            row('server', 'Live-Updates (/api/live)', 'Verbindung abgelehnt', false)
+            summary()
+          }
           source.onopen = function () {
             clearTimeout(timer)
             live = 'ok'
-            serverRow('Live-Updates (/api/live)', 'verbunden', true)
+            row('server', 'Live-Updates (/api/live)', 'verbunden', true)
             source.close()
             summary()
           }
         } else {
           live = 'fehlt'
+          row('server', 'Live-Updates (/api/live)', 'EventSource fehlt', false)
         }
 
         // --- touch: most fingers at once, longest hold
@@ -259,28 +285,33 @@
           touch.firstChild.nodeValue = 'Gleichzeitig: ' + most + ' Finger · längstes Halten: ' + (longest / 1000).toFixed(1) + ' s'
           summary()
         }
+        function lifted() {
+          if (down) longest = Math.max(longest, Date.now() - down)
+          down = 0
+          show()
+        }
         touch.addEventListener('touchstart', function (e) {
           e.preventDefault()
           most = Math.max(most, e.touches.length)
-          down = Date.now()
+          // held since the first finger
+          if (e.touches.length === 1) down = Date.now()
           show()
         })
-        touch.addEventListener('touchend', function (e) {
+        function touchUp(e) {
           e.preventDefault()
-          if (e.touches.length === 0 && down) longest = Math.max(longest, Date.now() - down)
-          show()
-        })
+          if (e.touches.length === 0) lifted()
+        }
+        touch.addEventListener('touchend', touchUp)
+        // the system may take a long press over – it was held until then
+        touch.addEventListener('touchcancel', touchUp)
         touch.addEventListener('mousedown', function () {
           most = Math.max(most, 1)
           down = Date.now()
           show()
         })
-        touch.addEventListener('mouseup', function () {
-          if (down) longest = Math.max(longest, Date.now() - down)
-          show()
-        })
+        touch.addEventListener('mouseup', lifted)
 
-        /** One line to photograph: viewport, pixel ratio, touch, then every feature 1/0 */
+        /** One line to photograph: viewport, pixel ratio, touch points, fingers at once, longest hold, then every feature 1/0 */
         function summary() {
           var flags = []
           for (var key in results) {
@@ -288,7 +319,7 @@
           }
           document.getElementById('summary').firstChild.nodeValue =
             'V' + window.innerWidth + 'x' + window.innerHeight + ' D' + dpr + ' T' + (navigator.maxTouchPoints || 0) +
-            ' F' + most + ' · ' + flags.join(' ') + ' · health ' + health + ' · live ' + live
+            ' F' + most + ' H' + (longest / 1000).toFixed(1) + ' · ' + flags.join(' ') + ' · health ' + health + ' · live ' + live
         }
         summary()
       })()
