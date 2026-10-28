@@ -118,8 +118,12 @@ class VehicleImportApiTest {
         Vehicle orphan = vehicles.save(Vehicle.fromSwissGarage("5001", null,
                 new VehicleDetails("SH 1", "VW", "Passat", null, null, null, null, null, null, null)));
 
-        upload(TestExcel.with(HEADERS).row(5001, "SH 1", "VW", "Passat", null, null, null, null, null, null, null, "Muster AG", 2001).bytes(), "b.xlsx");
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "SH 1", "VW", "Passat", null, null, null, null, null, null, null, "Muster AG", 2001).bytes(), "b.xlsx");
 
+        // before, the new holder had no ID yet – the vehicle without one counted as "unchanged"
+        assertThat(response).bodyJson().extractingPath("$.updated").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.unchanged").isEqualTo(0);
         transaction.executeWithoutResult(status -> assertThat(vehicles.findById(orphan.getId()).orElseThrow()
                 .getCustomer().getSwissgarageNumber()).isEqualTo("2001"));
     }
@@ -136,6 +140,41 @@ class VehicleImportApiTest {
                 .contains("Int.Nr. 5001").contains("ohne Halter – keine Adressnummer");
         transaction.executeWithoutResult(status ->
                 assertThat(vehicles.findBySwissgarageNumber("5001").orElseThrow().getCustomer()).isNull());
+    }
+
+    @Test
+    void holderWithoutNameIsNotCreatedAndListed() {
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, null, 2001)
+                .bytes(), "Fahrzeug.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString()
+                .contains("Int.Nr. 5001").contains("Halter Nr. 2001 ohne Name");
+        assertThat(customers.findBySwissgarageNumber("2001")).isEmpty();
+    }
+
+    @Test
+    void refusedImportLeavesNoNewHolderBehind() {
+        TestExcel full = TestExcel.with(HEADERS);
+        IntStream.rangeClosed(1, 30).forEach(i -> full.row(5000 + i, "ZH " + i, "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001));
+        upload(full.bytes(), "voll.xlsx");
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Muster AG", 2001).bytes(), "teil.xlsx");
+
+        assertThat(response).hasStatus(HttpStatus.CONFLICT);
+        assertThat(customers.findBySwissgarageNumber("2001")).isEmpty();
+    }
+
+    @Test
+    void withoutAddressListTheHintSaysToImportIt() {
+        TestDatabase.clear(jdbc);
+        chef = employees.save(EmployeeTestData.employee("Chef", 0)).getId().toString();
+
+        MvcTestResult response = upload(TestExcel.with(HEADERS)
+                .row(5001, "ZH 1", "VW", "Golf", null, null, null, null, null, null, null, "Huber", 1001).bytes(), "a.xlsx");
+
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").asString().contains("Adressliste ist noch nicht importiert");
     }
 
     @Test

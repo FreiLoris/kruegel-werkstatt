@@ -140,7 +140,8 @@ class CustomerImportApiTest {
         Customer empty = customers.save(CustomerTestData.swissGarage("2001", "Muster AG"));
         Customer blocked = customers.save(CustomerTestData.swissGarage("2002", "Alt"));
         Customer notInTheFile = customers.save(CustomerTestData.swissGarage("2003", "Fehlt"));
-        for (Customer holder : List.of(empty, blocked, notInTheFile)) {
+        Customer supplier = customers.save(CustomerTestData.swissGarage("2004", "Lieferant AG"));
+        for (Customer holder : List.of(empty, blocked, notInTheFile, supplier)) {
             vehicles.save(Vehicle.fromSwissGarage("v" + holder.getSwissgarageNumber(), holder,
                     new VehicleDetails("SH " + holder.getSwissgarageNumber(), "VW", null, null, null, null, null, null, null, null)));
         }
@@ -149,6 +150,7 @@ class CustomerImportApiTest {
                 .row("Garage-Kunde", null, "Huber", null, null, null, null, null, null, null, null, 1001)
                 .row(null, null, "Muster AG", null, null, "Werkstrasse 1", 8413, "Neftenbach", null, null, null, 2001)
                 .row("Garage-Kunde gesperrt/ehemalig", null, "Alt", null, null, null, null, null, null, null, null, 2002)
+                .row("Lieferant,Kreditor", null, "Lieferant AG", null, null, null, null, null, null, null, null, 2004)
                 .row("Lieferant,Kreditor", null, "Ohne Fahrzeug AG", null, null, null, null, null, null, null, null, 3001)
                 .bytes(), "Adrliste.xlsx");
 
@@ -158,6 +160,8 @@ class CustomerImportApiTest {
         assertThat(customers.findById(empty.getId()).orElseThrow().getDetails().city()).isEqualTo("Neftenbach");
         assertThat(customers.findById(blocked.getId()).orElseThrow().isActive()).isTrue();
         assertThat(customers.findById(notInTheFile.getId()).orElseThrow().isActive()).isTrue();
+        assertThat(customers.findById(supplier.getId()).orElseThrow().isActive()).isTrue();
+        assertThat(customers.findBySwissgarageNumber("3001")).isEmpty();
     }
 
     @Test

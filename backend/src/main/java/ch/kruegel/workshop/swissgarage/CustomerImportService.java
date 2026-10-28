@@ -68,8 +68,11 @@ public class CustomerImportService {
 
         Map<String, Customer> known = new HashMap<>();
         customers.findBySource(RecordSource.SWISSGARAGE).forEach(c -> known.put(c.getSwissgarageNumber(), c));
-        long knownActive = known.values().stream().filter(Customer::isActive).count();
-        Set<String> holders = vehicles.findAddressNumbersOfActiveHolders();
+        Set<String> holderNumbers = vehicles.findAddressNumbersOfActiveHolders(RecordSource.SWISSGARAGE);
+        // holders are never deactivated – they do not count for the guard against a partial file
+        long knownActive = known.values().stream()
+                .filter(c -> c.isActive() && !holderNumbers.contains(c.getSwissgarageNumber()))
+                .count();
 
         int rowsRead = 0, skipped = 0, created = 0, updated = 0, unchanged = 0;
         List<String> problems = new ArrayList<>();
@@ -81,7 +84,7 @@ public class CustomerImportService {
                 continue;
             }
             rowsRead++;
-            if (!isGarageCustomer(row) && !holders.contains(row.get(NUMBER))) {
+            if (!isGarageCustomer(row) && !holderNumbers.contains(row.get(NUMBER))) {
                 skipped++;
                 continue;
             }
@@ -124,7 +127,7 @@ public class CustomerImportService {
 
         List<Customer> missing = known.values().stream()
                 .filter(c -> c.isActive() && !seen.contains(c.getSwissgarageNumber())
-                        && !holders.contains(c.getSwissgarageNumber()))
+                        && !holderNumbers.contains(c.getSwissgarageNumber()))
                 .toList();
         ImportGuard.checkDeactivations(knownActive, missing.size(), "Kunden");
         missing.forEach(Customer::deactivate);
@@ -145,8 +148,12 @@ public class CustomerImportService {
         return kind.contains("garage-kunde") && !kind.contains("gesperrt");
     }
 
-    /** Throws IllegalArgumentException without a name (rule of {@link CustomerDetails}). */
-    private static CustomerDetails details(ExcelRow row) {
+    /**
+     * The address of a row – of the address list, or the holder's on a row of the vehicle list (same
+     * columns there, the phone as "Telefon 1"). Throws IllegalArgumentException without a name (rule
+     * of {@link CustomerDetails}).
+     */
+    static CustomerDetails details(ExcelRow row) {
         return new CustomerDetails(
                 row.get("Anrede"),
                 row.get("Vorname"),

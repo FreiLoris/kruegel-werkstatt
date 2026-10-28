@@ -26,13 +26,14 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
     long countBySourceAndActiveTrueAndCustomerIsNull(RecordSource source);
 
     /**
-     * For the address list import: SwissGarage address numbers of the holders of active vehicles –
-     * they stay customers, whatever their address kind (FB-27).
+     * For the address list import: SwissGarage address numbers of the holders (of this source) of
+     * active vehicles – they stay customers, whatever their address kind (FB-27). A local vehicle
+     * counts too: its holder is still needed.
      */
     @Query("""
             SELECT DISTINCT v.customer.swissgarageNumber FROM Vehicle v
-            WHERE v.active AND v.customer.source = ch.kruegel.workshop.common.RecordSource.SWISSGARAGE""")
-    Set<String> findAddressNumbersOfActiveHolders();
+            WHERE v.active AND v.customer.source = :source""")
+    Set<String> findAddressNumbersOfActiveHolders(RecordSource source);
 
     /** All vehicles of a holder, active ones first, then by plate. */
     List<Vehicle> findByCustomerIdOrderByActiveDescLicensePlateAsc(UUID customerId);
