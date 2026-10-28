@@ -1,10 +1,12 @@
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft, History, Printer } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
 import { useCompany, type Company } from '../company/companyApi'
-import { useShoppingItem } from '../shopping/shoppingApi'
+import { useAddShoppingNote, useShoppingItem } from '../shopping/shoppingApi'
+import { useCanEdit } from '../../app/person/useDevicePerson'
+import { useToast } from '../../components/ui/toastContext'
 import { spots, spotsFrom, startPositions } from '../tire-hotel/labelSheet'
 import { useLabelFormats, type LabelFormat } from '../tire-hotel/tireHotelApi'
 import {
@@ -15,6 +17,7 @@ import {
   labelFontSize,
   recipientLines,
   RETURN_REASONS,
+  returnNote,
   senderLines,
   type ReturnDetails,
 } from './returnLabel'
@@ -56,6 +59,11 @@ export function ReturnLabelPage() {
   const formats = useLabelFormats()
   const item = useShoppingItem(search.get('item') ?? undefined)
   const supplier = suppliers.data?.find((s) => s.id === id)
+  const canEdit = useCanEdit()
+  const toast = useToast()
+  const addNote = useAddShoppingNote()
+  // noted once – a second click would note it twice
+  const [noted, setNoted] = useState(false)
 
   const [paper, setPaper] = useState<Paper>(rememberedPaper)
   const [start, setStart] = useState(1)
@@ -116,6 +124,28 @@ export function ReturnLabelPage() {
         <Button variant="primary" icon={Printer} disabled={!supplier || !company.data} onClick={() => window.print()}>
           Drucken
         </Button>
+        {/* FB-31: the return in the history of the position – what goes back, why, under which number */}
+        {item.data && supplier && canEdit && (
+          <Button
+            icon={History}
+            disabled={noted}
+            loading={addNote.isPending}
+            onClick={() =>
+              addNote.mutate(
+                { id: item.data!.id, text: returnNote(supplier.name, details) },
+                {
+                  onSuccess: () => {
+                    setNoted(true)
+                    toast.success('Retour im Verlauf der Position vermerkt')
+                  },
+                  onError: (error) => toast.error(`Nicht vermerkt: ${error.message}`),
+                },
+              )
+            }
+          >
+            {noted ? 'Im Verlauf vermerkt' : 'Im Verlauf vermerken'}
+          </Button>
+        )}
       </div>
       <div className={styles.fields}>
         <TextField label="RMA- / Rücksende-Nr." maxLength={40} value={details.rmaNumber} onChange={(e) => set('rmaNumber', e.target.value)} />

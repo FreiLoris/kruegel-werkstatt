@@ -55,6 +55,15 @@ export function senderLines(company: Company, customerNumber: string | null): st
   )
 }
 
+/**
+ * The return noted in the history of the position (FB-31): "Retour an Muster AG – RMA-Nr. 4711 ·
+ * Grund: defekt" – the article is the position itself, so it is left out.
+ */
+export function returnNote(supplierName: string, d: ReturnDetails): string {
+  const lines = detailLines({ ...d, article: '', articleNumber: '' })
+  return [`Retour an ${supplierName}`, lines.join(' · ')].filter(Boolean).join(' – ')
+}
+
 /** "RMA-Nr. 4711", "Lieferschein / Rechnung 12345", "Artikel: Bremssattel (Nr. 0986)", "Grund: defekt" – only what was typed */
 export function detailLines(d: ReturnDetails): string[] {
   const article = [d.article.trim(), d.articleNumber.trim() && `(Nr. ${d.articleNumber.trim()})`].filter(Boolean).join(' ')

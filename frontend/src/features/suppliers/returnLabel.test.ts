@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Company } from '../company/companyApi'
-import { addressLine, detailLines, EMPTY_RETURN, hasRecipientAddress, isSmallLabel, labelFontSize, recipientLines, senderLines } from './returnLabel'
+import { addressLine, detailLines, EMPTY_RETURN, hasRecipientAddress, isSmallLabel, labelFontSize, recipientLines, returnNote, senderLines } from './returnLabel'
 import type { Supplier } from './supplierApi'
 
 // fictitious
@@ -49,5 +49,14 @@ describe('returnLabel (FB-31)', () => {
       'Artikel: Bremssattel (Nr. 0986)',
       'Grund: defekt',
     ])
+  })
+})
+
+describe('returnNote (FB-31)', () => {
+  it('to whom, with number and reason – the article is the position itself', () => {
+    expect(returnNote('Muster AG', { ...EMPTY_RETURN, rmaNumber: '4711', article: 'Bremssattel', reason: 'defekt' })).toBe(
+      'Retour an Muster AG – RMA-Nr. 4711 · Grund: defekt',
+    )
+    expect(returnNote('Muster AG', EMPTY_RETURN)).toBe('Retour an Muster AG')
   })
 })
