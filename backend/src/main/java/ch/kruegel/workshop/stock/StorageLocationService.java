@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -53,7 +52,7 @@ public class StorageLocationService {
         checkNameFree(all, request.parentId(), name, null);
         checkCodeFree(all, request.code(), null);
         StorageLocation location = new StorageLocation(name, request.parentId(), nextSortOrder(all, request.parentId()));
-        location.label(request.code());
+        location.changeCode(request.code());
         return saved(repository.save(location));
     }
 
@@ -70,7 +69,7 @@ public class StorageLocationService {
         }
         checkCodeFree(all, request.code(), id);
         location.rename(name);
-        location.label(request.code());
+        location.changeCode(request.code());
         return saved(location);
     }
 
@@ -174,10 +173,10 @@ public class StorageLocationService {
 
     /** FB-23: a code once on the premises – also one of a place not in use any more (its label may still hang there) */
     private static void checkCodeFree(List<StorageLocation> all, String code, UUID self) {
-        if (code == null || code.isBlank()) {
+        String wanted = StorageLocation.normalizeCode(code);
+        if (wanted == null) {
             return;
         }
-        String wanted = code.strip().toUpperCase(Locale.ROOT);
         all.stream().filter(l -> wanted.equals(l.getCode()) && !l.getId().equals(self)).findFirst().ifPresent(other -> {
             // User-facing message, hence German
             throw new InvalidInputException("code", wanted + " hat schon " + other.getName() + (other.isActive() ? "" : " (nicht mehr verwendet)"));

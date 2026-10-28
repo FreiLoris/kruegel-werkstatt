@@ -26,7 +26,7 @@ const lookup: StockLookup = {
     ['office', 'Büro'],
   ]),
   locationSearch: new Map([
-    [shelfA, 'KA01 · Keller Keller'],
+    [shelfA, 'KA01 Keller'],
     [shelfB, 'Büro › Regal B'],
     ['office', 'Büro'],
   ]),
@@ -69,6 +69,10 @@ describe('filterStock', () => {
     expect(names(filterStock(all, { ...nothing, query: 'werkzeug' }, lookup))).toEqual(['Drehmomentschlüssel'])
     expect(names(filterStock(all, { ...nothing, query: 'beispiel' }, lookup))).toEqual(['Bremsreiniger'])
     expect(names(filterStock(all, { ...nothing, query: 'mt-77' }, lookup))).toEqual(['Ölfilter'])
+  })
+
+  it('finds a place by its code (FB-23)', () => {
+    expect(names(filterStock(all, { ...nothing, query: 'ka01' }, lookup))).toEqual(['Bremsreiniger'])
   })
 
   it('filters by category and place, also "without place"', () => {

@@ -74,16 +74,22 @@ public class StorageLocation extends BaseEntity implements Sortable {
         this.name = cleaned;
     }
 
+    /** As stored: upper case, without surrounding spaces; null when empty */
+    static String normalizeCode(String code) {
+        String cleaned = code == null ? "" : code.strip().toUpperCase(Locale.ROOT);
+        return cleaned.isEmpty() ? null : cleaned;
+    }
+
     /**
-     * The label (FB-23) – upper case, without spaces; empty = none. Unique on the premises (the
-     * service checks it, the database too).
+     * What is written on the shelf (FB-23); empty = none. Unique on the premises (the service checks
+     * it, the database too).
      */
-    public void label(String newCode) {
-        String cleaned = newCode == null ? "" : newCode.strip().toUpperCase(Locale.ROOT);
-        if (!cleaned.isEmpty() && !cleaned.matches(CODE_PATTERN)) {
+    public void changeCode(String newCode) {
+        String cleaned = normalizeCode(newCode);
+        if (cleaned != null && !cleaned.matches(CODE_PATTERN)) {
             throw new IllegalArgumentException("Code must be like KA01: '" + cleaned + "'");
         }
-        this.code = cleaned.isEmpty() ? null : cleaned;
+        this.code = cleaned;
     }
 
     /** @param with the place being cleared out – this one or one it lies in */

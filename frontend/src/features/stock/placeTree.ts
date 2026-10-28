@@ -14,6 +14,8 @@ export interface Place {
    * code of the nearest place above it – "KA01 › oberes Fach"; no code anywhere above: the path
    */
   label: string
+  /** the code it shows: its own, else the nearest one above; undefined = none */
+  shownCode?: string
 }
 
 /**
@@ -38,7 +40,7 @@ export function placeTree(locations: StorageLocation[]): Place[] {
       const own = location.code ? { code: location.code, below: '' } : null
       const inherited = coded && { code: coded.code, below: coded.below + PATH_SEPARATOR + location.name }
       const label = own ? `${own.code} · ${path}` : inherited ? inherited.code + inherited.below : path
-      result.push({ location, depth, path, label })
+      result.push({ location, depth, path, label, shownCode: (own ?? inherited)?.code })
       visit(location.id, depth + 1, path + PATH_SEPARATOR, own ?? inherited)
     }
   }

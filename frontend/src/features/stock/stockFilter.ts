@@ -20,6 +20,7 @@ export interface StockFilter {
 /** Names and order of places and suppliers – the article only has their IDs */
 export interface StockLookup {
   /** the path of each place, e.g. "Büro › Regal 2" */
+  /** what is shown for each place – its code and path (placeTree's label) */
   locationNames: Map<string, string>
   /** what the search finds a place by – its code and its names (FB-23) */
   locationSearch: Map<string, string>

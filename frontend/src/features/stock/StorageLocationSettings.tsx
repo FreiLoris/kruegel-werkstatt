@@ -40,18 +40,12 @@ export function StorageLocationSettings() {
   const [dialog, setDialog] = useState<Dialog>(null)
   // FB-23: every code on the premises (also of places no longer in use – their label may still hang there)
   const usedCodes = useMemo(() => (all ?? []).flatMap((l) => (l.code ? [l.code] : [])), [all])
-  /** The code a place inside `parentId` shows when it has none – the nearest one above */
-  const inheritedCode = (parentId: string | null): string | undefined => {
-    const byId = new Map((all ?? []).map((l) => [l.id, l]))
-    for (let id = parentId; id; id = byId.get(id)?.parentId ?? null) {
-      const code = byId.get(id)?.code
-      if (code) return code
-    }
-    return undefined
-  }
 
   const active = useMemo(() => placeTree((all ?? []).filter((l) => l.active)), [all])
   const inactive = useMemo(() => placeTree(all ?? []).filter((p) => !p.location.active), [all])
+  /** The code a place inside `parentId` shows when it has none – what the place above shows (placeTree) */
+  const shownCodes = useMemo(() => new Map([...active, ...inactive].map((p) => [p.location.id, p.shownCode])), [active, inactive])
+  const inheritedCode = (parentId: string | null) => (parentId ? shownCodes.get(parentId) : undefined)
 
   if (isPending) return <p className="muted">Lade Lagerorte …</p>
   if (error) {

@@ -35,12 +35,16 @@ export function StorageLocationDialog({ title, initial, inheritedCode, usedCodes
 
   const typed = normalizeCode(code)
   const codeInvalid = typed !== '' && !CODE_PATTERN.test(typed)
+  // "K" typed to get the proposal is still typing – said only when saving
+  const [triedToSave, setTriedToSave] = useState(false)
   // the place above gives its letters when nothing is typed: a drawer in KA01 gets KA02
   const others = usedCodes.filter((c) => c !== initial?.code)
-  const proposal = suggestCode(typed || (inheritedCode ?? '').slice(0, 2), others)
+  // a complete code not taken is left alone – a labelled shelf is not renumbered
+  const proposal = CODE_PATTERN.test(typed) && !others.includes(typed) ? null : suggestCode(typed || (inheritedCode ?? '').slice(0, 2), others)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    setTriedToSave(true)
     if (codeInvalid) return
     setLoading(true)
     try {
@@ -107,7 +111,7 @@ export function StorageLocationDialog({ title, initial, inheritedCode, usedCodes
               setCode(e.target.value.toUpperCase())
               setErrors({ ...errors, code: undefined })
             }}
-            error={codeInvalid ? '2 Buchstaben und 2 Ziffern, z. B. KA01' : errors.code}
+            error={codeInvalid && triedToSave ? '2 Buchstaben und 2 Ziffern, z. B. KA01' : errors.code}
           />
           {proposal && proposal !== typed && (
             <Button small onClick={() => setCode(proposal)}>
