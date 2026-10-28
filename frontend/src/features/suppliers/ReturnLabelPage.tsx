@@ -1,6 +1,7 @@
 import { ArrowLeft, History, Printer } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
 import { useCompany, type Company } from '../company/companyApi'
@@ -64,6 +65,20 @@ export function ReturnLabelPage() {
   const addNote = useAddShoppingNote()
   // noted once – a second click would note it twice
   const [noted, setNoted] = useState(false)
+  const itemId = item.data?.id
+
+  function noteReturn(id: string, to: Supplier) {
+    addNote.mutate(
+      { id, text: returnNote(to.name, details) },
+      {
+        onSuccess: () => {
+          setNoted(true)
+          toast.success('Retour im Verlauf der Position vermerkt')
+        },
+        onError: (error) => toast.error(`Nicht vermerkt: ${reasonOf(error)}`),
+      },
+    )
+  }
 
   const [paper, setPaper] = useState<Paper>(rememberedPaper)
   const [start, setStart] = useState(1)
@@ -125,24 +140,8 @@ export function ReturnLabelPage() {
           Drucken
         </Button>
         {/* FB-31: the return in the history of the position – what goes back, why, under which number */}
-        {item.data && supplier && canEdit && (
-          <Button
-            icon={History}
-            disabled={noted}
-            loading={addNote.isPending}
-            onClick={() =>
-              addNote.mutate(
-                { id: item.data!.id, text: returnNote(supplier.name, details) },
-                {
-                  onSuccess: () => {
-                    setNoted(true)
-                    toast.success('Retour im Verlauf der Position vermerkt')
-                  },
-                  onError: (error) => toast.error(`Nicht vermerkt: ${error.message}`),
-                },
-              )
-            }
-          >
+        {itemId && supplier && canEdit && (
+          <Button icon={History} disabled={noted} loading={addNote.isPending} onClick={() => noteReturn(itemId, supplier)}>
             {noted ? 'Im Verlauf vermerkt' : 'Im Verlauf vermerken'}
           </Button>
         )}
