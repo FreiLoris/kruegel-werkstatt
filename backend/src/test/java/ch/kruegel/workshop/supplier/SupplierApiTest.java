@@ -101,6 +101,23 @@ class SupplierApiTest {
     }
 
     @Test
+    void anAddressAndOneForReturns() {
+        // FB-31: for return labels – the return address only when another one
+        MvcTestResult response = send("POST", "/api/suppliers", """
+                { "name": "Muster Teile AG", "address": { "name": "ignoriert", "street": "Industriestrasse 1", "postalCode": "6000", "city": "Luzern" },
+                  "returnAddress": { "name": "Zentrallager Retouren", "street": "Lagerweg 5", "postalCode": "6030", "city": "Ebikon" } }""");
+
+        assertThat(response).hasStatus(HttpStatus.CREATED);
+        assertThat(response).bodyJson().extractingPath("$.address.city").isEqualTo("Luzern");
+        assertThat(response).bodyJson().extractingPath("$.address.name").isNull();
+        assertThat(response).bodyJson().extractingPath("$.returnAddress.name").isEqualTo("Zentrallager Retouren");
+
+        MvcTestResult without = send("POST", "/api/suppliers", "{ \"name\": \"Ohne Adresse AG\" }");
+        assertThat(without).bodyJson().extractingPath("$.address.street").isNull();
+        assertThat(without).bodyJson().extractingPath("$.returnAddress").isNull();
+    }
+
+    @Test
     void anEmptyContactOrADeliveryWithoutKindIsAFieldError() {
         assertThat(send("POST", "/api/suppliers", """
                 { "name": "Muster Teile AG", "contacts": [ { "department": " ", "remark": "nur Bemerkung" } ] }"""))

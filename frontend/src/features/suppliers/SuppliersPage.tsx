@@ -78,6 +78,9 @@ export function SuppliersPage() {
                   {supplier.orderChannel && <span className={styles.channel}>{ORDER_CHANNEL_LABEL[supplier.orderChannel]}</span>}
                 </div>
                 {deadline && <p className={styles.next}>{deadline}</p>}
+                {(supplier.address.street || supplier.address.city) && (
+                  <p className="muted">{[supplier.address.street, [supplier.address.postalCode, supplier.address.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
+                )}
                 <ul className={styles.contact}>
                   {supplier.phone && (
                     <li>
@@ -157,6 +160,7 @@ export function SuppliersPage() {
                   <span className={styles.links}>
                     <Link to={`/stock?supplier=${supplier.id}`}>{count === 1 ? '1 Artikel im Lager' : `${count} Artikel im Lager`}</Link>
                     {open > 0 && <Link to="/shopping">{open} auf der Einkaufsliste</Link>}
+                    <Link to={`/suppliers/${supplier.id}/return-label`}>Rücksende-Etikett</Link>
                   </span>
                   {canEdit && (
                     <Button small icon={Pencil} onClick={() => setDialog({ kind: 'edit', supplier })} aria-label={`${supplier.name} bearbeiten`}>

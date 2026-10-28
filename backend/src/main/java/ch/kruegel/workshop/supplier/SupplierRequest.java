@@ -25,5 +25,7 @@ public record SupplierRequest(
         @Size(max = Supplier.REMARK_MAX) String remark,
         @Size(max = 20) @Schema(description = "Departments and people (FB-30); missing = none") List<@Valid SupplierContactDto> contacts,
         @Size(max = 20) @Schema(description = "Ways it delivers (FB-30); missing = none") List<@Valid SupplierDeliveryDto> deliveries,
+        @Valid @Schema(types = {"object", "null"}, description = "Its postal address (FB-31); the name is not used") SupplierAddressDto address,
+        @Valid @Schema(types = {"object", "null"}, description = "Where returns go when not to the address (FB-31)") SupplierAddressDto returnAddress,
         @Schema(description = "Only needed when editing") Long version) {
 }

@@ -1,0 +1,179 @@
+/* On screen: the paper lies on a desk, the choices above it */
+.desk {
+  min-height: 100vh;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  background: var(--color-background);
+}
+
+.toolbar,
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-3);
+  max-width: 72rem;
+  margin: 0 auto var(--space-4);
+}
+
+.message {
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.warning {
+  max-width: 40rem;
+  margin: 0 auto var(--space-4);
+  text-align: center;
+  color: var(--color-warning);
+}
+
+/*
+ * The whole page for the parcel (FB-31) – white with black text also in the dark app; mm on purpose
+ * (physical paper). Named pages: the other print views keep their own size and margins.
+ */
+@page returnA5 {
+  size: A5;
+  margin: 0;
+}
+
+@page returnA4 {
+  size: A4;
+  margin: 0;
+}
+
+@page returnSheet {
+  size: A4;
+  margin: 0;
+}
+
+.a5,
+.a4 {
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 12mm;
+  background: var(--color-paper);
+  color: var(--color-paper-text);
+  box-shadow: var(--shadow);
+}
+
+.a5 {
+  page: returnA5;
+  width: 148mm;
+  height: 210mm;
+  font-size: 5mm;
+}
+
+.a4 {
+  page: returnA4;
+  width: 210mm;
+  height: 297mm;
+  font-size: 7mm;
+}
+
+/* one label of a sheet from the settings */
+.sheet {
+  page: returnSheet;
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--color-paper);
+  color: var(--color-paper-text);
+  box-shadow: var(--shadow);
+  font-size: 2.6mm;
+}
+
+.empty {
+  position: absolute;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--color-paper-line);
+  border-radius: 1.5mm;
+  background: transparent;
+  color: var(--color-paper-line);
+  font: inherit;
+  cursor: pointer;
+}
+
+.empty:hover {
+  border-style: solid;
+  color: inherit;
+}
+
+.onSheet {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 1.5mm 2.5mm;
+  overflow: hidden;
+  border: 1px solid var(--color-paper-line);
+  border-radius: 1.5mm;
+}
+
+/* sender small above, recipient big, details below */
+.label {
+  display: grid;
+  align-content: start;
+  gap: 1.2em;
+  height: 100%;
+  line-height: 1.25;
+}
+
+.label p {
+  display: grid;
+  margin: 0;
+}
+
+.caption {
+  font-size: 0.6em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-paper-line);
+}
+
+.sender {
+  font-size: 0.75em;
+}
+
+.recipient {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.details {
+  padding-top: 0.6em;
+  border-top: 0.3mm solid currentcolor;
+}
+
+@media print {
+  :global(body) {
+    background: var(--color-paper);
+  }
+
+  .desk {
+    min-height: 0;
+    padding: 0;
+    background: none;
+  }
+
+  .toolbar,
+  .fields,
+  .warning,
+  .empty {
+    display: none;
+  }
+
+  .a5,
+  .a4,
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+  }
+
+  /* the cut of the sheet is the edge – no frame on paper */
+  .onSheet {
+    border-color: transparent;
+  }
+}

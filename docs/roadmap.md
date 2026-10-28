@@ -840,6 +840,16 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   one of the next working day), contacts and ways of delivery fold out with phone and mail links; the
   position of the shopping list says it under the supplier too. Not built: a way of delivery stored
   with the order (proposal, can follow).
+- [x] **16g – Return labels** (FB-31)
+  Done: a supplier has an address and, if returns go elsewhere (a central warehouse), a return
+  address with a name (V50). "Rücksende-Etikett" on its card – and "Rücksende-Etikett drucken" on a
+  position of the shopping list with a supplier, its article and number filled in – opens a print
+  view: recipient big (the return address, else the address, always under the supplier's name),
+  sender small (the company of the settings, our customer number with the supplier), RMA, delivery
+  note or invoice, article, number and reason (falsch geliefert, defekt, Altteil, Pfand, sonstiges),
+  all optional. On a whole A5 page for the parcel, on A4, or on one label of a sheet from the
+  settings with its start position. Says when no address is entered. Not built: the return noted in
+  the history of the position, a state "Retour" (FB-28 has none).
 
 ---
 

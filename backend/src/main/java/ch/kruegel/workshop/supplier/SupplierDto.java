@@ -20,6 +20,8 @@ public record SupplierDto(
         @Schema(types = {"string", "null"}) String remark,
         List<SupplierContactDto> contacts,
         List<SupplierDeliveryDto> deliveries,
+        @Schema(description = "Its postal address (FB-31); fields empty when not known") SupplierAddressDto address,
+        @Schema(types = {"object", "null"}, description = "Where returns go when not to the address; empty = there") SupplierAddressDto returnAddress,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last") UUID updatedBy) {
 
@@ -28,6 +30,8 @@ public record SupplierDto(
                 s.getWebshopUrl(), s.getCustomerNumber(), s.getOrderChannel(), s.getDelivery(), s.getRemark(),
                 s.getContacts().stream().map(SupplierContactDto::of).toList(),
                 s.getDeliveries().stream().map(SupplierDeliveryDto::of).toList(),
+                SupplierAddressDto.of(s.getAddress()),
+                s.getReturnAddress().isEmpty() ? null : SupplierAddressDto.of(s.getReturnAddress()),
                 s.getUpdatedAt(), s.getUpdatedBy());
     }
 }

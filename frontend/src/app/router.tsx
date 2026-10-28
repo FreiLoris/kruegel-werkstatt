@@ -22,6 +22,7 @@ import { SystemPage } from '../features/system/SystemPage'
 import { TireHotelPage } from '../features/tire-hotel/TireHotelPage'
 import { TireLabelsPage } from '../features/tire-hotel/TireLabelsPage'
 import { TireReceiptPage } from '../features/tire-hotel/TireReceiptPage'
+import { ReturnLabelPage } from '../features/suppliers/ReturnLabelPage'
 import { TireSetEditPage } from '../features/tire-hotel/TireSetEditPage'
 import { TireSetPage } from '../features/tire-hotel/TireSetPage'
 import { TireStorePage } from '../features/tire-hotel/TireStorePage'
@@ -86,4 +87,6 @@ export const router = createBrowserRouter([
   // FB-07: the labels of a set and the storage receipt for the customer
   { path: '/tires/:id/labels', element: <TireLabelsPage />, errorElement: <CrashPage /> },
   { path: '/tires/:id/receipt', element: <TireReceiptPage />, errorElement: <CrashPage /> },
+  // FB-31: a return label for a supplier (`?item=` a position of the shopping list)
+  { path: '/suppliers/:id/return-label', element: <ReturnLabelPage />, errorElement: <CrashPage /> },
 ])

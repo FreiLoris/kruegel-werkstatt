@@ -15,10 +15,12 @@ import java.util.Locale;
  * @param delivery       delivery times or rounds as free text, e.g. "2× täglich" – a remark since the deliveries (FB-30)
  * @param contacts       departments and people; phone and e-mail are the main line
  * @param deliveries     ways it delivers, with order deadline, tour and arrival
+ * @param address        its postal address (FB-31)
+ * @param returnAddress  where returns go when not to {@code address}, e.g. a central warehouse
  */
 public record SupplierDetails(String name, String phone, String email, String webshopUrl, String customerNumber,
                               OrderChannel orderChannel, String delivery, String remark, List<SupplierContact> contacts,
-                              List<SupplierDelivery> deliveries) {
+                              List<SupplierDelivery> deliveries, SupplierAddress address, SupplierAddress returnAddress) {
 
     public SupplierDetails {
         name = Texts.checkMaxLength(Texts.emptyToNull(name), Supplier.NAME_MAX, "Name");
@@ -33,6 +35,9 @@ public record SupplierDetails(String name, String phone, String email, String we
         remark = Texts.checkMaxLength(Texts.emptyToNull(remark), Supplier.REMARK_MAX, "Remark");
         contacts = contacts == null ? List.of() : List.copyOf(contacts);
         deliveries = deliveries == null ? List.of() : List.copyOf(deliveries);
+        // its own address has no name of its own – the supplier's
+        address = address == null ? SupplierAddress.NONE : new SupplierAddress(null, address.street(), address.postalCode(), address.city());
+        returnAddress = returnAddress == null ? SupplierAddress.NONE : returnAddress;
     }
 
     /** Typed without "https://" → added; any other scheme (javascript:, ftp:, …) is refused. */

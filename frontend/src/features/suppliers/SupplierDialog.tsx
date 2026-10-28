@@ -3,24 +3,27 @@ import { useId, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
-import { Select, TextArea, TextField } from '../../components/ui/Fields'
+import { Checkbox, Select, TextArea, TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
 import styles from './SupplierDialog.module.css'
 import {
+  addressForm,
   contactForm,
   deliveryForm,
   deliveryProblems,
   filledContacts,
   filledDeliveries,
+  toAddress,
   toContacts,
   toDeliveries,
+  type AddressForm,
   type ContactForm,
   type DeliveryForm,
   type DeliveryProblems,
 } from './supplierForm'
-import { ContactsEditor, DeliveriesEditor } from './SupplierLists'
+import { AddressFields, ContactsEditor, DeliveriesEditor } from './SupplierLists'
 import { ORDER_CHANNEL_LABEL, useDeleteSupplier, useSaveSupplier, type OrderChannel, type Supplier, type SupplierRequest } from './supplierApi'
 
 const FIELDS = ['name', 'phone', 'email', 'webshopUrl', 'customerNumber', 'orderChannel', 'delivery', 'remark'] as const
@@ -30,7 +33,13 @@ function initialValues(supplier?: Supplier): FormValues {
   return Object.fromEntries(FIELDS.map((field) => [field, supplier?.[field] ?? ''])) as FormValues
 }
 
-function toRequest(values: FormValues, contacts: ContactForm[], deliveries: DeliveryForm[], version?: number): SupplierRequest {
+interface Addresses {
+  address: AddressForm
+  /** null = returns go to the address */
+  returnAddress: AddressForm | null
+}
+
+function toRequest(values: FormValues, contacts: ContactForm[], deliveries: DeliveryForm[], addresses: Addresses, version?: number): SupplierRequest {
   const text = (field: keyof FormValues) => values[field].trim() || undefined
   return {
     name: values.name.trim(),
@@ -43,6 +52,8 @@ function toRequest(values: FormValues, contacts: ContactForm[], deliveries: Deli
     remark: text('remark'),
     contacts: toContacts(contacts),
     deliveries: toDeliveries(deliveries),
+    address: toAddress(addresses.address),
+    returnAddress: addresses.returnAddress && toAddress(addresses.returnAddress),
     version,
   }
 }
@@ -58,6 +69,10 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
   const [values, setValues] = useState(() => initialValues(supplier))
   const [contacts, setContacts] = useState<ContactForm[]>(() => supplier?.contacts.map(contactForm) ?? [])
   const [deliveries, setDeliveries] = useState<DeliveryForm[]>(() => supplier?.deliveries.map(deliveryForm) ?? [])
+  const [addresses, setAddresses] = useState<Addresses>(() => ({
+    address: addressForm(supplier?.address),
+    returnAddress: supplier?.returnAddress ? addressForm(supplier.returnAddress) : null,
+  }))
   // checked before sending (FB-30): a way of delivery without kind, a postage that is no amount
   const [problems, setProblems] = useState<Map<number, DeliveryProblems>>(new Map())
 
@@ -91,7 +106,7 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
     if (found.size > 0) return
     once((done) =>
       save.mutate(
-        { id: supplier?.id, request: toRequest(values, sentContacts, sentDeliveries, supplier?.version) },
+        { id: supplier?.id, request: toRequest(values, sentContacts, sentDeliveries, addresses, supplier?.version) },
         {
           onSettled: done,
           onSuccess: (saved) => {
@@ -163,6 +178,18 @@ export function SupplierDialog({ supplier, articleCount, onClose }: { supplier?:
       <form id={formId} className={styles.form} onSubmit={submit}>
         {field('name', 'Firma', { required: true, maxLength: 100, placeholder: 'z. B. Muster Teile AG' })}
         {field('customerNumber', 'Unsere Kundennummer', { maxLength: 60, hint: 'Unsere Nummer beim Lieferanten' })}
+        <fieldset className={styles.list}>
+          <legend>Adresse</legend>
+          <AddressFields address={addresses.address} onChange={(address) => setAddresses({ ...addresses, address })} />
+          <Checkbox
+            label="Rücksendungen an eine andere Adresse (z. B. Zentrallager)"
+            checked={addresses.returnAddress !== null}
+            onChange={(e) => setAddresses({ ...addresses, returnAddress: e.target.checked ? addressForm(null) : null })}
+          />
+          {addresses.returnAddress && (
+            <AddressFields address={addresses.returnAddress} withName onChange={(returnAddress) => setAddresses({ ...addresses, returnAddress })} />
+          )}
+        </fieldset>
         <div className={styles.row}>
           {field('phone', 'Telefon Zentrale', { type: 'tel', maxLength: 40 })}
           {field('email', 'E-Mail Zentrale', { type: 'email', maxLength: 100 })}

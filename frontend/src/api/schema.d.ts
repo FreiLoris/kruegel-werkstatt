@@ -3455,6 +3455,13 @@ export interface components {
              */
             version?: number;
         };
+        SupplierAddressDto: {
+            city: string | null;
+            /** @description Only for the return address, e.g. "Zentrallager" */
+            name: string | null;
+            postalCode: string | null;
+            street: string | null;
+        };
         SupplierContactDto: {
             /** @example Verkauf Innendienst */
             department: string | null;
@@ -3489,6 +3496,8 @@ export interface components {
             tour: string | null;
         };
         SupplierDto: {
+            /** @description Its postal address (FB-31); fields empty when not known */
+            address: components["schemas"]["SupplierAddressDto"];
             contacts: components["schemas"]["SupplierContactDto"][];
             /** @description Our customer number with the supplier */
             customerNumber: string | null;
@@ -3503,6 +3512,8 @@ export interface components {
             orderChannel: "WEBSHOP" | "PHONE" | "EMAIL" | null;
             phone: string | null;
             remark: string | null;
+            /** @description Where returns go when not to the address; empty = there */
+            returnAddress: components["schemas"]["SupplierAddressDto"] | null;
             /** Format: date-time */
             updatedAt: string;
             /**
@@ -3521,6 +3532,8 @@ export interface components {
             supplierId: string;
         };
         SupplierRequest: {
+            /** @description Its postal address (FB-31); the name is not used */
+            address?: components["schemas"]["SupplierAddressDto"] | null;
             /** @description Departments and people (FB-30); missing = none */
             contacts?: components["schemas"]["SupplierContactDto"][];
             customerNumber?: string;
@@ -3535,6 +3548,8 @@ export interface components {
             orderChannel?: "WEBSHOP" | "PHONE" | "EMAIL" | null;
             phone?: string;
             remark?: string;
+            /** @description Where returns go when not to the address (FB-31) */
+            returnAddress?: components["schemas"]["SupplierAddressDto"] | null;
             /**
              * Format: int64
              * @description Only needed when editing
