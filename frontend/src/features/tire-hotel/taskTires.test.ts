@@ -137,6 +137,14 @@ describe('booking', () => {
     expect(sheetTires(tires(), false, true).mount).toBeUndefined()
   })
 
+  it('new tyres, only a set at home known: it goes into the hotel – never a hidden "entsorgen"', () => {
+    const own = set('o', { season: 'SUMMER', state: 'WITH_CUSTOMER', storedOn: null })
+    expect(initialBooking(tires({ inHotel: [], outside: [own] }), false, today, { dimension: null })).toMatchObject({
+      removedChoice: 'o',
+      removedTo: 'hotel',
+    })
+  })
+
   it('a set already with the customer goes into the hotel – not home again', () => {
     const own = set('o', { season: 'SUMMER', state: 'WITH_CUSTOMER', storedOn: null })
     const form = { ...initialBooking(tires(), false, today), removedTo: 'customer' as const }

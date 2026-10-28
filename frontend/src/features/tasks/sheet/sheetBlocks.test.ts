@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { Task } from '../taskApi'
 import { sheetBlocks } from './sheetBlocks'
 
-const task = (more: Partial<Pick<Task, 'tireChange' | 'tireChangeKind' | 'mfk' | 'insuranceId'>> = {}) => ({
+const task = (more: Partial<Pick<Task, 'tireChange' | 'tireChangeKind' | 'newTiresCount' | 'newTiresDimension' | 'mfk' | 'insuranceId'>> = {}) => ({
   tireChange: false,
   tireChangeKind: null,
+  newTiresCount: null,
+  newTiresDimension: null,
   mfk: false,
   insuranceId: null,
   ...more,
@@ -23,7 +25,7 @@ describe('sheetBlocks', () => {
   })
 
   it('new tires (FB-25): only tires, with what was ordered', () => {
-    expect(sheetBlocks({ ...task({ tireChange: true, tireChangeKind: 'NEW_TIRES' }), newTiresCount: 2, newTiresDimension: '205/55 R16 91H' })).toEqual([
+    expect(sheetBlocks(task({ tireChange: true, tireChangeKind: 'NEW_TIRES', newTiresCount: 2, newTiresDimension: '205/55 R16 91H' }))).toEqual([
       { kind: 'tires', stored: false, wheels: false, newTires: { count: 2, dimension: '205/55 R16 91H' } },
     ])
   })

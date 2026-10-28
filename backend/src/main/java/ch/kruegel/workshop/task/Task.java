@@ -211,7 +211,7 @@ public class Task extends BaseEntity {
         }
         int tyres = count == null ? NEW_TIRES_COUNT_DEFAULT : count;
         if (tyres < 1 || tyres > NEW_TIRES_COUNT_MAX) {
-            throw new IllegalArgumentException("New tyres: " + tyres);
+            throw new IllegalArgumentException("New tyres count must be 1.." + NEW_TIRES_COUNT_MAX + ": " + tyres);
         }
         this.newTiresDimension = text;
         this.newTiresCount = tyres;

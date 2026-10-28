@@ -122,19 +122,17 @@ public class TireSet extends BaseEntity {
      * @param state {@link TireSetState#MOUNTED}, {@link TireSetState#WITH_CUSTOMER} or {@link TireSetState#DISPOSED}
      */
     public static TireSet recorded(TireSetDetails details, TreadDepths depths, LocalDate day, TireSetState state, String note, Task task) {
-        if (state == TireSetState.IN_HOTEL) {
-            throw new IllegalArgumentException("Into the hotel it is stored, not recorded");
-        }
+        TireSetEventKind kind = switch (state) {
+            case MOUNTED -> TireSetEventKind.MOUNTED;
+            case WITH_CUSTOMER -> TireSetEventKind.TAKEN_HOME;
+            case DISPOSED -> TireSetEventKind.DISPOSED;
+            case IN_HOTEL -> throw new IllegalArgumentException("Into the hotel it is stored, not recorded");
+        };
         TireSet set = new TireSet();
         set.apply(details);
         set.depths = Objects.requireNonNull(depths, "depths");
         set.state = state;
         set.events.add(new TireSetEvent(set, TireSetEventKind.RECORDED, day, depths, null, note, task));
-        TireSetEventKind kind = switch (state) {
-            case MOUNTED -> TireSetEventKind.MOUNTED;
-            case DISPOSED -> TireSetEventKind.DISPOSED;
-            default -> TireSetEventKind.TAKEN_HOME;
-        };
         set.events.add(new TireSetEvent(set, kind, day, depths, null, note, task));
         return set;
     }

@@ -1,4 +1,5 @@
 import type { Task } from '../taskApi'
+import { NEW_TIRES_DEFAULT_COUNT } from '../wizard/appointmentForm'
 
 /** The tire change: wheels or only tires, from the tire hotel or brought by the customer. */
 export interface TiresBlock {
@@ -30,7 +31,7 @@ export type SheetBlock = TiresBlock | MfkBlock | InsuranceBlock
  * one more kind here and one more component on the sheet.
  */
 export function sheetBlocks(
-  task: Pick<Task, 'tireChange' | 'tireChangeKind' | 'mfk' | 'insuranceId'> & Partial<Pick<Task, 'newTiresCount' | 'newTiresDimension'>>,
+  task: Pick<Task, 'tireChange' | 'tireChangeKind' | 'newTiresCount' | 'newTiresDimension' | 'mfk' | 'insuranceId'>,
 ): SheetBlock[] {
   const blocks: SheetBlock[] = []
   if (task.tireChange) {
@@ -39,7 +40,7 @@ export function sheetBlocks(
       kind: 'tires',
       stored: kind === 'WHEELS_STORED' || kind === 'TIRES_STORED',
       wheels: kind !== 'TIRES_STORED' && kind !== 'TIRES_BROUGHT' && kind !== 'NEW_TIRES',
-      ...(kind === 'NEW_TIRES' && { newTires: { count: task.newTiresCount ?? 4, dimension: task.newTiresDimension ?? null } }),
+      ...(kind === 'NEW_TIRES' && { newTires: { count: task.newTiresCount ?? NEW_TIRES_DEFAULT_COUNT, dimension: task.newTiresDimension } }),
     })
   }
   if (task.mfk) blocks.push({ kind: 'mfk' })

@@ -81,8 +81,8 @@ export const MFK_DEFAULT_MINUTES = 60
 /** New tyres (FB-25): a set of four unless said otherwise – like the backend default */
 export const NEW_TIRES_DEFAULT_COUNT = 4
 
-/** New tyres: how many to choose from – the most the server takes (Task.NEW_TIRES_COUNT_MAX) is 8 */
-export const NEW_TIRES_COUNTS = [1, 2, 3, 4, 5, 6, 8]
+/** New tyres: how many to choose from – up to the most the server takes (Task.NEW_TIRES_COUNT_MAX) */
+export const NEW_TIRES_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 /** Like a tyre set's dimension on the server */
 export const NEW_TIRES_DIMENSION_MAX = 40

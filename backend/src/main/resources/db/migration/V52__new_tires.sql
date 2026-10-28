@@ -1,4 +1,4 @@
--- New tyres ordered for the customer (FB-25): a fourth kind of tyre change with what to order –
+-- New tyres ordered for the customer (FB-25): a fifth kind of tyre change with what to order –
 -- the dimension (may be open) and how many. The order position itself is on the shopping list.
 ALTER TABLE task
     DROP CONSTRAINT task_tire_change_kind_check,

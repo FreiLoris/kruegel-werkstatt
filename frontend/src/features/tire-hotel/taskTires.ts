@@ -130,7 +130,7 @@ export function initialBooking(tires: TaskTires, fromHotel: boolean, today: stri
     mountedChoice: tires.mounted ? 'none' : (mount?.id ?? (fromHotel ? 'none' : 'new')),
     mounted,
     removedChoice: tires.removed ? 'none' : (takeOff?.id ?? 'new'),
-    removedTo: newTires ? 'disposal' : fromHotel ? 'hotel' : 'customer',
+    removedTo: removedToFor(takeOff, newTires ? 'disposal' : fromHotel ? 'hotel' : 'customer'),
     removed: { ...empty, season: removedSeason, ...mountingProposal(setsOf(tires), removedSeason) },
   }
 }
@@ -186,8 +186,13 @@ export function withChoice(form: BookingForm, which: 'mounted' | 'removed', choi
     ...form,
     removedChoice: choice,
     removed: set ? { ...form.removed, season: set.season } : form.removed,
-    removedTo: set?.state === 'WITH_CUSTOMER' ? 'hotel' : form.removedTo,
+    removedTo: removedToFor(set, form.removedTo),
   }
+}
+
+/** A set already with the customer can only go into the hotel – not home again, not disposed of (FB-12, FB-25) */
+function removedToFor(set: TireSet | undefined, wanted: RemovedTo): RemovedTo {
+  return set?.state === 'WITH_CUSTOMER' ? 'hotel' : wanted
 }
 
 /** A known set or a new one, with the depths */
