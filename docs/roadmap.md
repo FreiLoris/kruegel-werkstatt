@@ -878,6 +878,13 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   CSS/JS features the app uses (grid, :has(), container queries, ES modules, ?. …), /api/health and
   the live updates, fingers at once and how long one was held, font sizes to judge from 1–2 m – and
   one summary line to photograph. The board views follow once Reto sent it.
+- [x] **16k – Backup before an update**
+  Done: an update with a database change backs the database up right before Flyway changes it –
+  pg_dump in the backend image, into `Datensicherung/werkstatt/vor-update`, named with the time and
+  the version it goes to; the latest 10 stay. Updates without a migration and a fresh database make
+  none. No backup, no migration: if it cannot be written the backend does not start and the
+  database stays as it was. The backup container prepares the folder (the backend is not root).
+  Needs the new `deploy/compose.yaml` on the NAS once (Watchtower does not change it).
 
 ---
 

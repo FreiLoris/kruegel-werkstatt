@@ -20,6 +20,10 @@ RUN --mount=type=cache,target=/root/.m2 ./mvnw -q package -DskipTests \
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
+# pg_dump for the backup before a database change (MigrationConfig) – the same major version as
+# the database (postgres:18 in compose.yaml), else pg_dump refuses.
+RUN apk add --no-cache postgresql18-client
+
 # Do not run as root.
 RUN addgroup -S app && adduser -S app -G app
 USER app
