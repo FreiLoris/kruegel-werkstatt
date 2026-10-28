@@ -33,6 +33,7 @@ import { CarriedOver } from './CarriedOver'
 import {
   blockingIn,
   draggedTo,
+  durationOf,
   isCompleteSlot,
   minutesOf,
   movedTo,
@@ -57,6 +58,12 @@ const NO_TASKS: Task[] = []
 const NO_MFK: MfkSlot[] = []
 
 const DAY_MINUTES = 24 * 60
+
+/** Where the pointer was when a drag began – mouse or finger; the keyboard has none (0: the top of the grid) */
+function pointerY(event: Event): number {
+  if ('touches' in event && (event as TouchEvent).touches.length > 0) return (event as TouchEvent).touches[0].clientY
+  return 'clientY' in event ? (event as MouseEvent).clientY : 0
+}
 
 /** Drop where the pointer is; for the keyboard (no pointer) the closest column */
 const dropTarget: CollisionDetection = (args) => {
@@ -156,12 +163,16 @@ export function DayGrid({
   )
   const placedByColumn = useMemo(() => new Map([...layout].map(([id, placed]) => [id, placed.tasks])), [layout])
   const byId = useMemo(() => new Map(shown.map((task) => [task.id, task])), [shown])
+  // FB-14: a carried-over task can be dragged onto a lift too – it is not one of the day's blocks
+  const carriedById = useMemo(() => new Map(carriedOver.map((task) => [task.id, task])), [carriedOver])
+  const taskOf = (id: string) => byId.get(id) ?? carriedById.get(id)
   const range = useMemo(() => visibleRange(shown, date, mfkSlots), [shown, date, mfkSlots])
   const clock = useClock()
   // the "now" line only on today – it moves every minute (one clock for the app, 10c)
   const now = date === clock.today ? minutesOf(clock.time) : null
 
-  const [dragging, setDragging] = useState<{ id: string; columnId: string; start: number } | null>(null)
+  // carried: where the pointer was picked up – a carried-over task has no time on this day to move from
+  const [dragging, setDragging] = useState<{ id: string; columnId: string; start: number; carriedFromY?: number } | null>(null)
   const [resizing, setResizing] = useState<{ id: string; end: number } | null>(null)
   const [creating, setCreating] = useState<Creating | null>(null)
   const scroller = useRef<HTMLDivElement>(null)
@@ -208,7 +219,8 @@ export function DayGrid({
   )
 
   function save(task: Task, newPlace: Schedule) {
-    const arranged = withSchedule(shown, task.id, newPlace)
+    // a carried-over task joins the day's blocks
+    const arranged = withSchedule(byId.has(task.id) ? shown : [...shown, task], task.id, newPlace)
     setPending({ tasks: arranged, basedOn: tasks })
     schedule.mutate(
       { id: task.id, schedule: newPlace, arranged },
@@ -225,32 +237,49 @@ export function DayGrid({
 
   // ── moving a block ──────────────────────────────────────────────
 
-  function onDragStart(id: string) {
+  function onDragStart(id: string, activator: Event) {
+    const body = scroller.current?.querySelector('[data-grid-body]')
+    columnWidth.current = body?.getBoundingClientRect().width ?? 0
+    const carried = carriedById.get(id)
+    if (carried) {
+      // the keyboard has no pointer: from the top of the grid
+      setDragging({ id, columnId: NO_LIFT, start: range.start, carriedFromY: pointerY(activator) || (body?.getBoundingClientRect().top ?? 0) })
+      return
+    }
     const task = byId.get(id)!
-    columnWidth.current = scroller.current?.querySelector('[data-grid-body]')?.getBoundingClientRect().width ?? 0
     setDragging({ id, columnId: task.liftId ?? NO_LIFT, start: spanOn(task, date).start })
+  }
+
+  /** Where the pointer is now, in minutes of the day – for a carried-over task (it has no time here) */
+  function carriedStart(fromY: number, deltaY: number): number {
+    const body = scroller.current?.querySelector('[data-grid-body]')
+    return body ? snap(minutesAt(fromY + deltaY, body)) : range.start
   }
 
   function onDragMove({ active, over, delta }: DragMoveEvent) {
     // deleted or moved to another day on another device while dragging
-    const task = byId.get(String(active.id))
+    const task = taskOf(String(active.id))
     if (!task) return
     const span = spanOn(task, date)
-    const start = Math.min(Math.max(snap(span.start + delta.y / scale), 0), DAY_MINUTES - SNAP_MINUTES)
+    const wanted = dragging?.carriedFromY !== undefined ? carriedStart(dragging.carriedFromY, delta.y) : snap(span.start + delta.y / scale)
+    const start = Math.min(Math.max(wanted, 0), DAY_MINUTES - SNAP_MINUTES)
     const columnId = over ? String(over.id) : (dragging?.columnId ?? '')
-    if (dragging?.start !== start || dragging.columnId !== columnId) setDragging({ id: task.id, columnId, start })
+    if (dragging?.start !== start || dragging.columnId !== columnId) setDragging({ ...dragging, id: task.id, columnId, start })
   }
 
-  function onDragEnd({ active }: DragEndEvent) {
+  function onDragEnd({ active, over }: DragEndEvent) {
     const target = dragging
     setDragging(null)
     if (!target) return
-    const task = byId.get(String(active.id))
+    const task = taskOf(String(active.id))
     if (!task) return
+    const carried = target.carriedFromY !== undefined
+    // a carried-over task let go outside the grid stays where it is
+    if (carried && !over) return
     const column = columns.find((c) => c.id === target.columnId)
     if (!column) return
-    const span = spanOn(task, date)
-    if (column.liftId === task.liftId && target.start === span.start) return
+    const span = carried ? { start: target.start, end: target.start + durationOf(task) } : spanOn(task, date)
+    if (!carried && column.liftId === task.liftId && target.start === span.start) return
     // visibly taken: say so right away instead of letting the block jump there and back
     const end = target.start + span.end - span.start
     const blocking = column.liftId && blockingIn(placedByColumn.get(column.id) ?? [], target.start, end, task.id)
@@ -342,13 +371,13 @@ export function DayGrid({
     setCreating(null)
   }
 
-  const activeTask = dragging ? byId.get(dragging.id) : undefined
+  const activeTask = dragging ? taskOf(dragging.id) : undefined
 
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={dropTarget}
-      onDragStart={({ active }) => onDragStart(String(active.id))}
+      onDragStart={({ active, activatorEvent }) => onDragStart(String(active.id), activatorEvent)}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       onDragCancel={() => setDragging(null)}
@@ -359,7 +388,7 @@ export function DayGrid({
             'Leertaste zum Ablegen. Umschalt+Pfeiltasten verschieben das Ende.',
         },
         announcements: {
-          onDragStart: ({ active }) => `${byId.get(String(active.id))?.customer.displayName} aufgenommen.`,
+          onDragStart: ({ active }) => `${taskOf(String(active.id))?.customer.displayName} aufgenommen.`,
           onDragOver: () => '',
           onDragMove: () => (dragging ? `${timeOf(dragging.start)}, ${columns.find((c) => c.id === dragging.columnId)?.title}.` : ''),
           onDragEnd: () => 'Abgelegt.',
@@ -382,7 +411,7 @@ export function DayGrid({
               <div className={styles.carriedCorner} />
               {columns.map((column) => (
                 <div key={`carried-${column.id}`} className={styles.carried}>
-                  {column.id === NO_LIFT && <CarriedOver tasks={carriedOver} />}
+                  {column.id === NO_LIFT && <CarriedOver tasks={carriedOver} draggable={planning} draggingId={dragging?.id} />}
                 </div>
               ))}
             </>
@@ -489,10 +518,12 @@ export function DayGrid({
   function ghostIn(column: DayColumn, placed: Placed[]): { start: number; end: number; collides: boolean } | null {
     const check = (start: number, end: number, exceptId?: string) =>
       ({ start, end, collides: column.liftId !== null && blockingIn(placed, start, end, exceptId) !== undefined })
-    const draggedTask = dragging ? byId.get(dragging.id) : undefined
+    const draggedTask = dragging ? taskOf(dragging.id) : undefined
     if (dragging && draggedTask && dragging.columnId === column.id) {
+      // a carried-over task keeps its duration – it has no span on this day
       const span = spanOn(draggedTask, date)
-      return check(dragging.start, Math.min(dragging.start + span.end - span.start, DAY_MINUTES), dragging.id)
+      const length = dragging.carriedFromY !== undefined ? durationOf(draggedTask) : span.end - span.start
+      return check(dragging.start, Math.min(dragging.start + length, DAY_MINUTES), dragging.id)
     }
     if (creating && creating.held && creating.columnId === column.id) {
       const { time, endAt } = selection(date, creating.from, creating.to)
