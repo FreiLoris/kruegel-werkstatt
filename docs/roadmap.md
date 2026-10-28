@@ -885,6 +885,10 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   none. No backup, no migration: if it cannot be written the backend does not start and the
   database stays as it was. The backup container prepares the folder (the backend is not root).
   Needs the new `deploy/compose.yaml` on the NAS once (Watchtower does not change it).
+- [x] **16l – "Reifen fehlen"** (FB-25, Reto's proposal)
+  Done: as long as the ordered new tyres of a task are neither delivered nor cancelled, its block in
+  the day view says "Reifen fehlen" and the task "Reifen noch nicht geliefert" above the tyre change
+  (until it is booked). Only tasks with new tyres ask the shopping list.
 
 ---
 
