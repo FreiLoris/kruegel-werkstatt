@@ -3,12 +3,19 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import { DoneFilter } from '../../components/ui/DoneFilter'
 import { MaterialTabs } from '../stock/MaterialTabs'
-import { useShoppingItems } from './shoppingApi'
+import { useShoppingItems, type Turn } from './shoppingApi'
 import { ShoppingBySupplier } from './ShoppingBySupplier'
 import { ShoppingEntryForm } from './ShoppingEntryForm'
 import { ShoppingTable } from './ShoppingTable'
-import { byTask, openSummary, type TaskFilter } from './shoppingText'
+import { ALL_DELIVERIES, byDelivery, byTask, byTurn, deliveriesOf, deliveryFilter, NO_DELIVERY, openSummary, type TaskFilter } from './shoppingText'
 import styles from './Shopping.module.css'
+
+/** FB-28: who is up – what we have to do, what we wait for */
+const TURN_FILTERS: [Turn | 'all', string][] = [
+  ['all', 'Alle'],
+  ['us', 'Wir sind dran'],
+  ['supplier', 'Wartet auf Lieferant'],
+]
 
 const TASK_FILTERS: [TaskFilter, string][] = [
   ['all', 'Alle'],
@@ -31,9 +38,14 @@ export function ShoppingListPage() {
   const open = useShoppingItems(false)
   const arrived = useShoppingItems(true)
   const list = showDone ? arrived : open
-  const items = list.data && byTask(list.data, taskFilter)
+  // FB-30: what goes with the Tagesexpress – only offered when some positions say how they are ordered
+  const deliveries = deliveriesOf(list.data ?? [])
+  const delivery = deliveryFilter(params.get('via'), deliveries)
+  // only the open ones have someone up
+  const turn: Turn | 'all' = showDone ? 'all' : params.get('turn') === 'us' ? 'us' : params.get('turn') === 'supplier' ? 'supplier' : 'all'
+  const items = list.data && byTurn(byDelivery(byTask(list.data, taskFilter), delivery), turn)
 
-  function change(key: 'done' | 'view' | 'for', value: string) {
+  function change(key: 'done' | 'view' | 'for' | 'via' | 'turn', value: string) {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
     else next.delete(key)
@@ -56,6 +68,28 @@ export function ShoppingListPage() {
             </Button>
           ))}
         </div>
+        {!showDone && (
+          <div role="group" aria-label="Wer ist dran">
+            {TURN_FILTERS.map(([value, label]) => (
+              <Button key={value} small variant={turn === value ? 'primary' : 'secondary'} aria-pressed={turn === value} onClick={() => change('turn', value === 'all' ? '' : value)}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
+        {deliveries.length > 0 && (
+          <div role="group" aria-label="Versandart">
+            {[
+              [ALL_DELIVERIES, 'Alle Versandarten'],
+              ...deliveries.map((d) => [d, d]),
+              [NO_DELIVERY, 'Ohne Versandart'],
+            ].map(([value, label]) => (
+              <Button key={value} small variant={delivery === value ? 'primary' : 'secondary'} aria-pressed={delivery === value} onClick={() => change('via', value)}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
         {!showDone && (
           <div role="group" aria-label="Ansicht">
             <Button small variant={bySupplier ? 'secondary' : 'primary'} aria-pressed={!bySupplier} onClick={() => change('view', '')}>
@@ -81,7 +115,9 @@ export function ShoppingListPage() {
         <p className="muted">Lade …</p>
       ) : items.length === 0 ? (
         <section className={styles.card}>
-          <p className="muted">{showDone ? 'Noch nichts erledigt.' : 'Nichts auf der Einkaufsliste.'}</p>
+          <p className="muted">
+            {list.data && list.data.length > 0 ? 'Keine Positionen mit diesem Filter.' : showDone ? 'Noch nichts erledigt.' : 'Nichts auf der Einkaufsliste.'}
+          </p>
         </section>
       ) : bySupplier && !showDone ? (
         <ShoppingBySupplier items={items} canEdit={canEdit} />

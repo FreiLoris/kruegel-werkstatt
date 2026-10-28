@@ -3309,6 +3309,8 @@ export interface components {
             createdAt: string;
             /** Format: uuid */
             createdBy: string | null;
+            /** @description How it is ordered – a supplier's way of delivery */
+            delivery: string | null;
             description: string;
             /** Format: date */
             expectedOn: string | null;
@@ -3341,6 +3343,11 @@ export interface components {
             version: number;
         };
         ShoppingItemRequest: {
+            /**
+             * @description How it is ordered – one of the supplier's ways of delivery
+             * @example Tagesexpress
+             */
+            delivery?: string | null;
             /** @example Bremsscheiben vorne */
             description: string;
             /** Format: date */

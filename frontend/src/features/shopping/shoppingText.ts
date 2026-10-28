@@ -1,4 +1,4 @@
-import { turnOf, type ShoppingItem } from './shoppingApi'
+import { turnOf, type ShoppingItem, type Turn } from './shoppingApi'
 
 type TaskRef = NonNullable<ShoppingItem['task']>
 
@@ -19,8 +19,36 @@ export function openSummary(items: ShoppingItem[]): string {
   return [ours > 0 && `${ours} – wir sind dran`, theirs > 0 && `${theirs} – wartet auf Lieferant`].filter(Boolean).join(' · ')
 }
 
+/** Only the positions where we are up – or the supplier (FB-28); 'all' = every one */
+export function byTurn<T extends Pick<ShoppingItem, 'status'>>(items: T[], turn: Turn | 'all'): T[] {
+  return turn === 'all' ? items : items.filter((i) => turnOf(i.status) === turn)
+}
+
 /** Which positions: all, those for a task, those for the workshop (FB-20: filter "mit / ohne Auftrag") */
 export type TaskFilter = 'all' | 'task' | 'workshop'
+
+/** The ways of delivery the positions are ordered with (FB-30), sorted – for the filter */
+export function deliveriesOf(items: Pick<ShoppingItem, 'delivery'>[]): string[] {
+  return [...new Set(items.flatMap((i) => (i.delivery ? [i.delivery] : [])))].sort((a, b) => a.localeCompare(b, 'de'))
+}
+
+/** Without a filter for the way of delivery – empty, so the address has no "via" */
+export const ALL_DELIVERIES = ''
+/** The filter for positions without a way of delivery – a supplier's kind is never just "-" in practice */
+export const NO_DELIVERY = '-'
+
+/**
+ * The filter from the address – one not in use any more (an old link, the last Nachtexpress
+ * arrived) shows all instead of an empty list that looks like "nothing to order"
+ */
+export const deliveryFilter = (param: string | null, deliveries: string[]) =>
+  param === NO_DELIVERY || (param !== null && deliveries.includes(param)) ? param : ALL_DELIVERIES
+
+/** Only the positions ordered with that way of delivery – {@link NO_DELIVERY}: those without one */
+export function byDelivery<T extends Pick<ShoppingItem, 'delivery'>>(items: T[], delivery: string): T[] {
+  if (delivery === ALL_DELIVERIES) return items
+  return items.filter((i) => (delivery === NO_DELIVERY ? !i.delivery : i.delivery === delivery))
+}
 
 export function byTask(items: ShoppingItem[], filter: TaskFilter): ShoppingItem[] {
   if (filter === 'all') return items

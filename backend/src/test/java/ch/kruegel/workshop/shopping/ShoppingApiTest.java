@@ -97,6 +97,13 @@ class ShoppingApiTest {
     }
 
     @Test
+    void theWayOfDeliveryIsKeptAsText() {
+        String item = idOf(create("\"description\": \"Ölfilter\", \"delivery\": \" Tagesexpress \""));
+        assertThat(get(item)).bodyJson().extractingPath("$.delivery").isEqualTo("Tagesexpress");
+        assertFieldError(create("\"description\": \"Ölfilter\", \"delivery\": \"%s\"".formatted("x".repeat(41))), "delivery");
+    }
+
+    @Test
     void orderedTicksTheTodoOffAndBackOpensIt() {
         String item = idOf(create("\"description\": \"Ölfilter\", \"orderById\": \"%s\"".formatted(erich)));
 

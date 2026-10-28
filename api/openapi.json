@@ -15395,6 +15395,10 @@
             "type" : [ "string", "null" ],
             "format" : "uuid"
           },
+          "delivery" : {
+            "type" : [ "string", "null" ],
+            "description" : "How it is ordered – a supplier's way of delivery"
+          },
           "description" : {
             "type" : "string"
           },
@@ -15452,11 +15456,18 @@
             "format" : "int64"
           }
         },
-        "required" : [ "arrivedOn", "createdAt", "createdBy", "description", "expectedOn", "id", "orderById", "orderedOn", "partNumber", "quantity", "recordedById", "status", "stockItemId", "supplierId", "task", "version" ]
+        "required" : [ "arrivedOn", "createdAt", "createdBy", "delivery", "description", "expectedOn", "id", "orderById", "orderedOn", "partNumber", "quantity", "recordedById", "status", "stockItemId", "supplierId", "task", "version" ]
       },
       "ShoppingItemRequest" : {
         "type" : "object",
         "properties" : {
+          "delivery" : {
+            "type" : [ "string", "null" ],
+            "description" : "How it is ordered – one of the supplier's ways of delivery",
+            "example" : "Tagesexpress",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
           "description" : {
             "type" : "string",
             "example" : "Bremsscheiben vorne",

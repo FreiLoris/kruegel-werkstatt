@@ -67,6 +67,7 @@ export function toShoppingRequest(form: ShoppingForm, taskId: string | undefined
     supplierId: item?.supplierId ?? undefined,
     orderedOn: item?.orderedOn ?? undefined,
     expectedOn: item?.expectedOn ?? undefined,
+    delivery: item?.delivery ?? undefined,
     version: form.version,
   }
 }
@@ -78,6 +79,8 @@ export interface ShoppingDetailForm extends ShoppingForm {
   /** yyyy-mm-dd; '' = empty */
   orderedOn: string
   expectedOn: string
+  /** how it is ordered – one of the supplier's ways of delivery (FB-30); '' = not said */
+  delivery: string
 }
 
 export function detailFormFromItem(item: ShoppingItem, fallbackRecordedBy: string | undefined): ShoppingDetailForm {
@@ -87,6 +90,7 @@ export function detailFormFromItem(item: ShoppingItem, fallbackRecordedBy: strin
     supplierId: item.supplierId ?? '',
     orderedOn: item.orderedOn ?? '',
     expectedOn: item.expectedOn ?? '',
+    delivery: item.delivery ?? '',
   }
 }
 
@@ -98,5 +102,19 @@ export function toShoppingDetailRequest(form: ShoppingDetailForm, item: Shopping
     supplierId: form.supplierId || undefined,
     orderedOn: form.orderedOn || undefined,
     expectedOn: form.expectedOn || undefined,
+    delivery: form.delivery || undefined,
   }
 }
+
+/**
+ * Another supplier chosen: its way of delivery stays only if the new one has it too – "Tagesexpress"
+ * of one supplier is not the other's.
+ */
+export function withSupplier(form: ShoppingDetailForm, supplierId: string, deliveryKinds: (id: string) => string[]): ShoppingDetailForm {
+  // the same supplier: one saved earlier and no longer in its list stays
+  if (supplierId === form.supplierId) return form
+  return { ...form, supplierId, delivery: deliveryKinds(supplierId).includes(form.delivery) ? form.delivery : '' }
+}
+
+/** The ways of delivery to choose from – the supplier's, and the one saved, even if it is not among them any more */
+export const deliveryChoices = (kinds: string[], current: string) => [...new Set([...kinds, ...(current ? [current] : [])])]

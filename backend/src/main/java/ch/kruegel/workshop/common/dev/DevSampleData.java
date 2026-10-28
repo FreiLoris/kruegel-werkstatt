@@ -205,7 +205,7 @@ class DevSampleData implements ApplicationRunner {
         log.info("Dev sample data created: {} to-dos", sample.size());
 
         // the shopping list (FB-20): coffee for the workshop, not assigned yet
-        shoppingItems.save(new ShoppingItem(new ShoppingItemDetails("Kaffee und Milch", null, 1, person.apply(0), null, null, null, null, null, null),
+        shoppingItems.save(new ShoppingItem(new ShoppingItemDetails("Kaffee und Milch", null, 1, person.apply(0), null, null, null, null, null, null, null),
                 ShoppingStatus.TO_ORDER, today));
     }
 
@@ -346,8 +346,8 @@ class DevSampleData implements ApplicationRunner {
         // their parts on the shopping list (FB-19): ordered yesterday, and one still to order
         shoppingItems.saveAll(List.of(
                 new ShoppingItem(new ShoppingItemDetails("Bremsscheiben vorne", null, 2, acceptedBy, null, waiting, null, null,
-                        today.minusDays(1), null), ShoppingStatus.ORDERED, today),
-                new ShoppingItem(new ShoppingItemDetails("Kupplungssatz", null, 1, acceptedBy, null, clutch, null, null, null, null),
+                        today.minusDays(1), null, null), ShoppingStatus.ORDERED, today),
+                new ShoppingItem(new ShoppingItemDetails("Kupplungssatz", null, 1, acceptedBy, null, clutch, null, null, null, null, null),
                         ShoppingStatus.TO_ORDER, today)));
     }
 

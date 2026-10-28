@@ -98,7 +98,7 @@ export function ShoppingTable({ items, canEdit, showTask = false, label, detailO
                   {item.description}
                 </Link>
                 <span className={styles.sub}>
-                  {[item.partNumber && `Nr. ${item.partNumber}`, detail].filter(Boolean).join(' · ')}
+                  {[item.partNumber && `Nr. ${item.partNumber}`, item.delivery, detail].filter(Boolean).join(' · ')}
                   {showTask && item.task && (
                     <Link to={`/tasks/${item.task.id}`} className={styles.task}>
                       <ClipboardList aria-hidden /> {taskLabel(item.task)}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { turnOf, type ShoppingItem } from './shoppingApi'
-import { byTask, openSummary, quantityText, taskLabel } from './shoppingText'
+import { ALL_DELIVERIES, byDelivery, byTurn, deliveriesOf, deliveryFilter, NO_DELIVERY, byTask, openSummary, quantityText, taskLabel } from './shoppingText'
 
 // fictitious
 const task = { id: 't1', date: null, time: null, timeOpen: false, customerName: 'Muster AG', taskNumber: '26-0007', licensePlate: 'ZH 123456' }
@@ -35,5 +35,37 @@ describe('shoppingText', () => {
     expect(byTask(items, 'all').map((i) => i.id)).toEqual(['a', 'b'])
     expect(byTask(items, 'task').map((i) => i.id)).toEqual(['a'])
     expect(byTask(items, 'workshop').map((i) => i.id)).toEqual(['b'])
+  })
+})
+
+describe('ways of delivery (FB-30)', () => {
+  const via = (delivery: string | null) => ({ delivery })
+  const items = [via('Tagesexpress'), via(null), via('Nachtexpress'), via('Tagesexpress')]
+
+  it('the ones in use, sorted, each once', () => {
+    expect(deliveriesOf(items)).toEqual(['Nachtexpress', 'Tagesexpress'])
+  })
+
+  it('filters by one – or those without, or all', () => {
+    expect(byDelivery(items, 'Tagesexpress')).toHaveLength(2)
+    expect(byDelivery(items, NO_DELIVERY)).toEqual([via(null)])
+    expect(byDelivery(items, ALL_DELIVERIES)).toBe(items)
+  })
+
+  it('a filter from the address not in use any more shows all', () => {
+    expect(deliveryFilter('Nachtexpress', ['Tagesexpress'])).toBe(ALL_DELIVERIES)
+    expect(deliveryFilter('Tagesexpress', ['Tagesexpress'])).toBe('Tagesexpress')
+    expect(deliveryFilter(NO_DELIVERY, [])).toBe(NO_DELIVERY)
+    expect(deliveryFilter(null, ['Tagesexpress'])).toBe(ALL_DELIVERIES)
+  })
+})
+
+describe('byTurn (FB-28)', () => {
+  const items = [{ status: 'TO_ORDER' as const }, { status: 'ORDERED' as const }, { status: 'QUOTE_REQUESTED' as const }]
+
+  it('we are up, or the supplier – or all', () => {
+    expect(byTurn(items, 'us')).toEqual([{ status: 'TO_ORDER' }])
+    expect(byTurn(items, 'supplier')).toEqual([{ status: 'ORDERED' }, { status: 'QUOTE_REQUESTED' }])
+    expect(byTurn(items, 'all')).toBe(items)
   })
 })
