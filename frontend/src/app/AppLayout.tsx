@@ -38,13 +38,16 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const { data: active = [] } = useActiveEmployees()
   const { data: company } = useCompany()
-  const kiosk = device.kind === 'viewOnly' && pathname === '/'
-  useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
+  const idleMode = useIdleMode()
+  // "Nur ansehen" on the shared workshop tablet (FB-29) is no TV: header with the person to switch to,
+  // no kiosk, and it stays on its page (a half-typed task is not thrown away by going back)
+  const tv = device.kind === 'viewOnly' && idleMode !== 'viewOnly'
+  const kiosk = tv && pathname === '/'
+  useBackToDashboard(tv && pathname !== '/')
   const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
   // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen");
   // the shared workshop tablet falls back to "Nur ansehen" silently instead, as set per device
   const { data: lockSettings, isError: lockSettingsMissing } = useScreenLockSettings()
-  const idleMode = useIdleMode()
   // not loaded: the 5 minutes of the workshop rather than never
   const lock = useIdleLock(lockSettings?.lockMinutes ?? (lockSettingsMissing ? 5 : 0), device.kind === 'person' && idleMode !== 'never')
   useEffect(() => {

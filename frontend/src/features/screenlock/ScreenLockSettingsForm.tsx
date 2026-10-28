@@ -4,7 +4,7 @@ import { useCanEdit } from '../../app/person/useDevicePerson'
 import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
-import { IDLE_MODES, setIdleMode, useIdleMode, type IdleMode } from '../../lib/deviceIdleMode'
+import { IDLE_MODES, isIdleMode, setIdleMode, useIdleMode, type IdleMode } from '../../lib/deviceIdleMode'
 import { useToast } from '../../components/ui/toastContext'
 import styles from '../tire-hotel/TireHotel.module.css'
 import { useSaveScreenLockSettings, useScreenLockSettings, type ScreenLockSettings } from './screenLockApi'
@@ -15,9 +15,18 @@ const MAX_LOCK_MINUTES = 120
 /** After how many minutes without use a device asks who is at it (FB-29) – one setting for all devices. */
 export function ScreenLockSettingsForm() {
   const { data: settings, error } = useScreenLockSettings()
-  if (!settings) return <p className="muted">{error ? `Einstellung konnte nicht geladen werden: ${error.message}` : 'Lade …'}</p>
-  // not the version as key: a change from another device would remount the form and throw away the input
-  return <MinutesForm settings={settings} />
+  return (
+    <>
+      {/* not the version as key: a change from another device would remount the form and throw away the input */}
+      {settings ? (
+        <MinutesForm settings={settings} />
+      ) : (
+        <p className="muted">{error ? `Einstellung konnte nicht geladen werden: ${error.message}` : 'Lade …'}</p>
+      )}
+      {/* stored on the device – also without the server */}
+      <DeviceIdleMode />
+    </>
+  )
 }
 
 function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
@@ -58,7 +67,7 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
       <p className="muted">
         Nach so vielen Minuten ohne Bedienung fragt ein Gerät wieder, wer am Gerät ist – angefangene Eingaben bleiben erhalten. Nicht auf
         Geräten «Nur ansehen» (Werkstatt-TV). 0 = nie. Was das einzelne Gerät dann tut, steht darunter – das Werkstatt-Tablet fällt still
-        auf «Nur ansehen» zurück.
+        auf «Nur ansehen» zurück (Angefangenes bleibt stehen, gespeichert wird nach dem Wechsel auf die eigene Person).
       </p>
       <form id={formId} className={styles.row} onSubmit={submit}>
         <TextField
@@ -78,20 +87,20 @@ function MinutesForm({ settings }: { settings: ScreenLockSettings }) {
           </Button>
         </div>
       )}
-      <DeviceIdleMode />
     </>
   )
 }
 
 /**
  * Per device (FB-29): the office PC locks, the shared workshop tablet falls back to "Nur ansehen"
- * silently. Stored on the device itself – also changeable on a device that only shows.
+ * silently. Stored on the device itself. A device on "Nur ansehen" has no "Einstellungen" in its menu –
+ * it is set while a person is chosen, or via /settings.
  */
 function DeviceIdleMode() {
   const mode = useIdleMode()
   return (
     <div className={styles.row}>
-      <Select label="Dieses Gerät nach der Zeit ohne Bedienung" value={mode} onChange={(e) => setIdleMode(e.target.value as IdleMode)}>
+      <Select label="Dieses Gerät nach der Zeit ohne Bedienung" value={mode} onChange={(e) => isIdleMode(e.target.value) && setIdleMode(e.target.value)}>
         {(Object.keys(IDLE_MODES) as IdleMode[]).map((value) => (
           <option key={value} value={value}>
             {IDLE_MODES[value]}

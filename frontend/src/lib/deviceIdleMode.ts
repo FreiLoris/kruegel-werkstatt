@@ -20,9 +20,11 @@ export const IDLE_MODES: Record<IdleMode, string> = {
 const STORAGE_KEY = 'workshop.idleMode'
 const listeners = new Set<() => void>()
 
+export const isIdleMode = (value: string | null): value is IdleMode => value !== null && Object.hasOwn(IDLE_MODES, value)
+
 export function idleMode(): IdleMode {
   const text = read()
-  return text === 'viewOnly' || text === 'never' ? text : 'lock'
+  return isIdleMode(text) ? text : 'lock'
 }
 
 export function setIdleMode(mode: IdleMode): void {
