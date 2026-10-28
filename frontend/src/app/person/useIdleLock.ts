@@ -35,6 +35,13 @@ export function useIdleLock(minutes: number, enabled: boolean): { locked: boolea
 
   // chosen in another tab (or here) – that is someone at the device
   useEffect(() => subscribe(() => setLocked(false)), [])
+  // switched off (e.g. "Nie" set in another tab): unlocked – switched on again, it waits its minutes
+  // (adjusted while rendering, not in an effect: no extra render)
+  const [wasEnabled, setWasEnabled] = useState(enabled)
+  if (wasEnabled !== enabled) {
+    setWasEnabled(enabled)
+    if (!enabled) setLocked(false)
+  }
 
   useEffect(() => {
     if (!enabled || minutes <= 0 || locked) return

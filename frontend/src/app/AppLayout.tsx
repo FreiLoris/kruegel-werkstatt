@@ -16,6 +16,8 @@ import { LockScreen } from './person/LockScreen'
 import { PersonMenu } from './person/PersonMenu'
 import { PersonPicker } from './person/PersonPicker'
 import { useDevicePerson } from './person/useDevicePerson'
+import { useIdleMode } from '../lib/deviceIdleMode'
+import { choose } from '../lib/devicePerson'
 import { useIdleLock } from './person/useIdleLock'
 import { UnsavedChangesGuard } from './UnsavedChangesGuard'
 
@@ -36,13 +38,21 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const { data: active = [] } = useActiveEmployees()
   const { data: company } = useCompany()
-  const kiosk = device.kind === 'viewOnly' && pathname === '/'
-  useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
+  const idleMode = useIdleMode()
+  // "Nur ansehen" on the shared workshop tablet (FB-29) is no TV: header with the person to switch to,
+  // no kiosk, and it stays on its page (a half-typed task is not thrown away by going back)
+  const tv = device.kind === 'viewOnly' && idleMode !== 'viewOnly'
+  const kiosk = tv && pathname === '/'
+  useBackToDashboard(tv && pathname !== '/')
   const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
-  // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen")
+  // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen");
+  // the shared workshop tablet falls back to "Nur ansehen" silently instead, as set per device
   const { data: lockSettings, isError: lockSettingsMissing } = useScreenLockSettings()
   // not loaded: the 5 minutes of the workshop rather than never
-  const lock = useIdleLock(lockSettings?.lockMinutes ?? (lockSettingsMissing ? 5 : 0), device.kind === 'person')
+  const lock = useIdleLock(lockSettings?.lockMinutes ?? (lockSettingsMissing ? 5 : 0), device.kind === 'person' && idleMode !== 'never')
+  useEffect(() => {
+    if (lock.locked && idleMode === 'viewOnly') choose({ kind: 'viewOnly' })
+  }, [lock.locked, idleMode])
 
   // Browser tab and bookmarks carry the page and the workshop's name: "Pneuhotel – Garage Muster"
   useEffect(() => {
@@ -93,7 +103,7 @@ export function AppLayout() {
         {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>
       <UnsavedChangesGuard />
-      {lock.locked && <LockScreen active={active} onChosen={lock.unlock} />}
+      {lock.locked && idleMode === 'lock' && <LockScreen active={active} onChosen={lock.unlock} />}
       {/* a new page starts at its top (or at #section), back returns to where one was – by path:
           a filter or a search typed into the address must not jump to the top */}
       <ScrollRestoration getKey={(location) => location.pathname} />

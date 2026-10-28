@@ -915,6 +915,13 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   call tapped by mistake within half an hour (the others' stay). Per customer (V54 `customer_call`):
   a call is a call, whatever it was about; the latest of each customer of the last half year in one
   list, live on every device, so nobody calls twice.
+- [x] **16r – Lock per device** (FB-29, Reto's answer 2026-10-28; FB-22)
+  Done: each device says what happens after the minutes without use (Einstellungen →
+  Bildschirmsperre → "Dieses Gerät", stored on the device): lock and ask who is at it (office PCs, the
+  default), fall back to "Nur ansehen" silently (the shared workshop tablet – anyone switches to
+  themselves in the header to edit, nobody stays signed in by mistake – the tablet at rest is no TV:
+  it keeps its header and its page), or never. `/board-test` serves the test page of the whiteboard
+  too.
 
 ---
 

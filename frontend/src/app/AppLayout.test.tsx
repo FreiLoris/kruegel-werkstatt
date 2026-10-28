@@ -8,6 +8,9 @@ import type { DeviceStatus } from './person/deviceStatus'
 
 let device: DeviceStatus = { kind: 'viewOnly' }
 
+import { setIdleMode } from '../lib/deviceIdleMode'
+import { deviceChoice } from '../lib/devicePerson'
+
 vi.mock('./live/useLiveUpdates', () => ({ useLiveUpdates: () => 'connected' }))
 vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useCanEdit: () => false }))
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
@@ -154,6 +157,36 @@ describe('AppLayout', () => {
     fireEvent.keyDown(window, { key: 'a' })
     act(() => vi.advanceTimersByTime(2 * 60_000))
     expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
+  })
+
+  it('the shared workshop tablet falls back to "Nur ansehen" silently (FB-29)', () => {
+    vi.useFakeTimers()
+    setIdleMode('viewOnly')
+    device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
+    renderAt('/tasks')
+    act(() => vi.advanceTimersByTime(5 * 60_000 + 5_000))
+
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
+    expect(deviceChoice()).toEqual({ kind: 'viewOnly' })
+    setIdleMode('lock')
+  })
+
+  it('a device set to "Nie" is never locked', () => {
+    vi.useFakeTimers()
+    setIdleMode('never')
+    device = { kind: 'person', person: { id: 'r', name: 'Reto' } } as DeviceStatus
+    renderAt('/tasks')
+    act(() => vi.advanceTimersByTime(30 * 60_000))
+    expect(screen.queryByText('Wer ist am Gerät?')).toBeNull()
+    setIdleMode('lock')
+  })
+
+  it('the tablet at rest on "Nur ansehen" is no TV: the header stays, also on the start page', () => {
+    setIdleMode('viewOnly')
+    device = { kind: 'viewOnly' }
+    renderAt('/')
+    expect(screen.getByRole('banner')).toBeTruthy()
+    setIdleMode('lock')
   })
 
   it('the TV is never locked', () => {
