@@ -904,6 +904,10 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   Done: the return label of a position offers "Im Verlauf vermerken" – a note in its history "Retour
   an Muster AG – RMA-Nr. 4711 · Grund: defekt" (once per visit). No state "Retour": the position
   keeps its state, the note says what went back.
+- [x] **16p – Drag a carried-over task onto a lift** (FB-14 follow-up)
+  Done: in the day view the tasks carried over ("Übertrag") can be held and dragged onto a lift and a
+  time like a block – with their duration, the outline shows where they land and a taken lift is
+  refused right away; let go outside the grid nothing happens. A tap still opens the task.
 
 ---
 
