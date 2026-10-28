@@ -2279,6 +2279,162 @@
         "tags" : [ "Courtesy cars" ]
       }
     },
+    "/api/customer-calls/latest" : {
+      "get" : {
+        "description" : "Customers never called are left out.",
+        "operationId" : "latest",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "customerIds",
+          "required" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CustomerCallDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The latest call of each customer",
+        "tags" : [ "Customer calls" ]
+      }
+    },
+    "/api/customer-calls/{id}" : {
+      "delete" : {
+        "operationId" : "delete_9",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Delete a call noted by mistake",
+        "tags" : [ "Customer calls" ]
+      }
+    },
     "/api/customer-search" : {
       "get" : {
         "description" : "Every word must occur (name, company, address, phone, e-mail, plate, make, VIN, SwissGarage number). Plates also without space. At least 2 characters. Only active customers and vehicles.",
@@ -2516,6 +2672,95 @@
         },
         "summary" : "Local customers no longer used",
         "tags" : [ "Customers" ]
+      }
+    },
+    "/api/customers/{customerId}/calls" : {
+      "post" : {
+        "description" : "When and who: now and the person of the device.",
+        "operationId" : "call",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "customerId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CustomerCallRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerCallDto"
+                }
+              }
+            },
+            "description" : "Created"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Note a call to the customer",
+        "tags" : [ "Customer calls" ]
       }
     },
     "/api/customers/{id}" : {
@@ -13928,6 +14173,52 @@
           }
         },
         "required" : [ "name" ]
+      },
+      "CustomerCallDto" : {
+        "type" : "object",
+        "properties" : {
+          "calledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "calledBy" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid",
+            "description" : "Who called"
+          },
+          "customerId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "note" : {
+            "type" : [ "string", "null" ]
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "REACHED", "NOT_REACHED", "CALLBACK" ]
+          }
+        },
+        "required" : [ "calledAt", "calledBy", "customerId", "id", "note", "outcome" ]
+      },
+      "CustomerCallRequest" : {
+        "type" : "object",
+        "properties" : {
+          "note" : {
+            "type" : [ "string", "null" ],
+            "example" : "ab 17 Uhr erreichbar",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "REACHED", "NOT_REACHED", "CALLBACK" ]
+          }
+        },
+        "required" : [ "outcome" ]
       },
       "CustomerDto" : {
         "type" : "object",

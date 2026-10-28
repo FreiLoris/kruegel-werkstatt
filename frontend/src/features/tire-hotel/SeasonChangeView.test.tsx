@@ -27,6 +27,13 @@ vi.mock('./tireSeasonApi', () => ({
   useAcknowledge: () => ({ mutate: vi.fn(), isPending: false }),
   useUndoAcknowledge: () => ({ mutate: vi.fn(), isPending: false }),
 }))
+vi.mock('../customer-calls/customerCallApi', async (original) => ({
+  ...(await original<typeof import('../customer-calls/customerCallApi')>()),
+  useLatestCalls: () => ({ data: new Map() }),
+  useNoteCall: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteCall: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+vi.mock('../customer-calls/CallLog', () => ({ CallLog: () => <span>Anrufliste</span> }))
 vi.mock('../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [] }) }))
 vi.mock('../../lib/clock', () => ({ useToday: () => '2026-10-23' }))
 

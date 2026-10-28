@@ -42,6 +42,13 @@ vi.mock('../../shopping/shoppingApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../shopping/shoppingApi')>()),
   useTasksShoppingItems: () => ({ data: parts, error: null }),
 }))
+vi.mock('../../customer-calls/customerCallApi', async (original) => ({
+  ...(await original<typeof import('../../customer-calls/customerCallApi')>()),
+  useLatestCalls: () => ({ data: new Map() }),
+  useNoteCall: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteCall: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+vi.mock('../../customer-calls/CallLog', () => ({ CallLog: () => <span>Anrufliste</span> }))
 vi.mock('../VehicleLocationSwitch', () => ({ TaskVehicleLocation: ({ task }: { task: AnyTask }) => <span>Standort {task.vehicleLocation}</span> }))
 vi.mock('../../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit }))
 vi.mock('../../employees/employeeApi', () => ({ useAllEmployees: () => ({ data: [{ id: 'm1', name: 'Döme', color: '#9fdfaa' }] }) }))

@@ -16,6 +16,8 @@ import { byLocation, callInNow, locationFilterOf, unplannedTotal, type LocationF
 import { useUnplanned } from './useUnplanned'
 import styles from './UnplannedView.module.css'
 import { PhoneLinks } from '../../../components/ui/PhoneLinks'
+import { CallLog } from '../../customer-calls/CallLog'
+import { useLatestCalls } from '../../customer-calls/customerCallApi'
 
 /**
  * "Ohne Termin" (12d-3): orders that are taken but not planned – new ones without a day, and
@@ -84,6 +86,8 @@ function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string
   const canEdit = useCanEdit()
   const navigate = useNavigate()
   const names = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
+  // FB-16: who called whom – only those to call in
+  const { data: calls } = useLatestCalls(tasks.filter((t) => t.vehicleLocation === 'AT_CUSTOMER').map((t) => t.customer.id))
 
   return (
     <ul className={styles.list} aria-label={label}>
@@ -118,6 +122,7 @@ function TaskList({ tasks, parts, label }: { tasks: AnyTask[]; parts: Map<string
               <TaskVehicleLocation task={task} canEdit={canEdit} />
               {/* those to call in: the number right there, a tap on the tablet (FB-16) */}
               {atCustomer && <PhoneLinks mobile={task.customer.mobile} phone={task.customer.phone} />}
+              {atCustomer && <CallLog customerId={task.customer.id} latest={calls?.get(task.customer.id)} canEdit={canEdit} />}
               {mechanic && <NameBadge name={mechanic.name} color={mechanic.color} />}
               {task.date ? (
                 <span className="muted">Termin war {formatDate(task.date)}</span>
