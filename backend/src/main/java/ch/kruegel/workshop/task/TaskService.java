@@ -214,7 +214,8 @@ public class TaskService {
     private void orderNewTires(Task task, NewTires before) {
         NewTires now = NewTires.of(task);
         if (now != null && !now.equals(before)) {
-            events.publishEvent(new NewTiresChosen(task.getId(), now.dimension(), now.count(), task.getAcceptedBy().getId()));
+            events.publishEvent(new NewTiresChosen(task.getId(), now.dimension(), now.count(), task.getAcceptedBy().getId(), before == null,
+                    before == null ? null : before.dimension(), before == null ? null : before.count()));
         }
     }
 

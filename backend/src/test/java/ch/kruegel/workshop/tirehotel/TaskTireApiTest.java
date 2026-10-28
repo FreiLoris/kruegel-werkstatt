@@ -26,6 +26,8 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -277,16 +279,12 @@ class TaskTireApiTest {
         assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$").asArray().hasSize(1);
 
         // ordered already: nothing changed behind the back – a note to check
-        long itemVersion = ((Number) JsonPath.read(body(mvc.get().uri("/api/shopping-items/" + position).exchange()), "$.version")).longValue();
-        assertThat(send("PUT", "/api/shopping-items/" + position, """
-                { "description": "Reifen 205/55 R16 91H", "quantity": 2, "status": "ORDERED", "recordedById": "%s", "taskId": "%s", "version": %d }"""
-                .formatted(chef, task, itemVersion))).hasStatusOk();
+        editPosition(position, task, "Reifen 205/55 R16 91H", "ORDERED");
         assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"225/45 R17\", \"newTiresCount\": 2, \"version\": 3")))
                 .hasStatusOk();
-        MvcTestResult ordered = mvc.get().uri("/api/shopping-items/" + position).exchange();
-        assertThat(ordered).bodyJson().extractingPath("$.description").isEqualTo("Reifen 205/55 R16 91H");
-        assertThat(mvc.get().uri("/api/shopping-items/" + position + "/entries").exchange()).bodyJson().extractingPath("$[*].text").asArray()
-                .contains("Auftrag geändert auf 2× Reifen 225/45 R17 – bitte prüfen");
+        assertThat(mvc.get().uri("/api/shopping-items/" + position).exchange()).bodyJson().extractingPath("$.description")
+                .isEqualTo("Reifen 205/55 R16 91H");
+        assertThat(notes(position)).contains("Auftrag geändert auf 2× Reifen 225/45 R17 – bitte prüfen");
 
         // chosen later: ordered then, the dimension still open
         String later = idOf(send("POST", "/api/tasks", task(true)));
@@ -336,6 +334,46 @@ class TaskTireApiTest {
         assertThat(unknown).bodyJson().extractingPath("$.removed.state").isEqualTo("DISPOSED");
         assertThat(mvc.get().uri("/api/tire-sets/" + read(unknown, "$.removed.id") + "/history").exchange()).bodyJson()
                 .extractingPath("$[*].kind").asArray().containsExactly("RECORDED", "DISPOSED");
+    }
+
+    @Test
+    void aPositionChangedByHandOrArrivedIsNotOverwrittenNorOrderedTwice() {
+        String task = idOf(send("POST", "/api/tasks", newTyresTask("\"newTiresDimension\": \"205/55 R16\"")));
+        String position = read(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange(), "$[0].id");
+
+        // renamed by hand, still to order: kept, a note – and no second position
+        editPosition(position, task, "Michelin Primacy 205/55 R16", "TO_ORDER");
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"205/55 R16\", \"newTiresCount\": 2, \"version\": 0")))
+                .hasStatusOk();
+        assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$[*].description").asArray()
+                .containsExactly("Michelin Primacy 205/55 R16");
+
+        // a position starting with "Reifen" but changed by hand, then arrived: a note too
+        editPosition(position, task, "Reifen 205/55 R16 Michelin", "ARRIVED");
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"205/55 R16\", \"newTiresCount\": 4, \"version\": 1")))
+                .hasStatusOk();
+        assertThat(mvc.get().uri("/api/shopping-items/" + position).exchange()).bodyJson().extractingPath("$.quantity").isEqualTo(4);
+        assertThat(notes(position)).contains("Auftrag geändert auf 4× Reifen 205/55 R16 – bitte prüfen");
+        assertThat(mvc.get().uri("/api/shopping-items?taskId=" + task).exchange()).bodyJson().extractingPath("$").asArray().hasSize(1);
+
+        // saved again unchanged: nothing more
+        int before = notes(position).size();
+        assertThat(send("PUT", "/api/tasks/" + task, newTyresTask("\"newTiresDimension\": \"205/55 R16\", \"newTiresCount\": 4, \"version\": 2")))
+                .hasStatusOk();
+        assertThat(notes(position)).hasSize(before);
+    }
+
+    /** Description and state of a position changed on the list (quantity 4) */
+    private void editPosition(String position, String task, String description, String status) {
+        long version = ((Number) JsonPath.read(body(mvc.get().uri("/api/shopping-items/" + position).exchange()), "$.version")).longValue();
+        assertThat(send("PUT", "/api/shopping-items/" + position, """
+                { "description": "%s", "quantity": 4, "status": "%s", "recordedById": "%s", "taskId": "%s", "version": %d }"""
+                .formatted(description, status, chef, task, version))).hasStatusOk();
+    }
+
+    private List<String> notes(String position) {
+        List<String> texts = JsonPath.read(body(mvc.get().uri("/api/shopping-items/" + position + "/entries").exchange()), "$[*].text");
+        return texts.stream().filter(Objects::nonNull).toList();
     }
 
     private static String body(MvcTestResult response) {

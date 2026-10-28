@@ -891,8 +891,10 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   nothing any more, carried-over ones show no flags.
 - [x] **16m – The order follows the task** (FB-25)
   Done: dimension or count of the new tyres changed on the task – the position on the shopping list
-  follows while it is still to order (with a note "Vom Auftrag übernommen"); asked for or ordered
-  already, it keeps what was ordered and gets the note "Auftrag geändert auf … – bitte prüfen".
+  follows while it is still to order and as the task left it (no number or article chosen, not
+  renamed; noted "Vom Auftrag übernommen"). Otherwise – changed by hand, asked for, ordered, arrived –
+  it keeps what it says and gets the note "Auftrag geändert auf … – bitte prüfen"; a renamed one is
+  never ordered twice. Known limit: the position is recognised by its text "Reifen …".
 
 ---
 
