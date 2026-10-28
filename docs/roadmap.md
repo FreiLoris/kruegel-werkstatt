@@ -872,6 +872,12 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   Open (FB-25b): "nur 2 Reifen" with the axle, data per wheel; the hint "Reifen noch nicht geliefert";
   disposing of worn tyres of a set lying in the hotel (only a set on the car can be disposed of now);
   a change of dimension or count after the first save is not carried over to the order position.
+- [x] **16j – Test page for the whiteboard** (FB-22, first step)
+  Done: `/board-test.html`, a plain page in old JavaScript (ES5, no build) that the Flip's Tizen
+  browser shows even if the app would not start there: viewport, pixel ratio, touch points, the
+  CSS/JS features the app uses (grid, :has(), container queries, ES modules, ?. …), /api/health and
+  the live updates, fingers at once and how long one was held, font sizes to judge from 1–2 m – and
+  one summary line to photograph. The board views follow once Reto sent it.
 
 ---
 
