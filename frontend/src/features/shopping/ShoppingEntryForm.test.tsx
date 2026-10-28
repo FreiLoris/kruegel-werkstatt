@@ -12,14 +12,27 @@ vi.mock('./shoppingApi', async (original) => ({
 vi.mock('../employees/employeeApi', () => {
   const team = [
     { id: 'reto', name: 'Reto', selectableForTodos: true },
+    { id: 'mora', name: 'Mora', selectableForTodos: true },
     { id: 'noser', name: 'Noser', selectableForTodos: false },
   ]
   return { useActiveEmployees: () => ({ data: team }), useAllEmployees: () => ({ data: team }) }
 })
-vi.mock('../../app/person/useDevicePerson', () => ({ useMyEmployeeId: () => 'reto' }))
+let me = 'reto'
+vi.mock('../../app/person/useDevicePerson', () => ({ useMyEmployeeId: () => me }))
 vi.mock('../../components/ui/toastContext', () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn() }) }))
 
 describe('ShoppingEntryForm', () => {
+  it('"Erfasst von" follows when another person takes over the device (FB-29)', () => {
+    me = 'reto'
+    const { rerender } = render(<ShoppingEntryForm taskId="t1" />)
+
+    me = 'mora'
+    rerender(<ShoppingEntryForm taskId="t1" />)
+
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Erfasst von' }).value).toBe('mora')
+    me = 'reto'
+  })
+
   it('six fields, recorded by the person of the device, Enter saves it for the task (FB-19)', () => {
     render(<ShoppingEntryForm taskId="t1" />)
 

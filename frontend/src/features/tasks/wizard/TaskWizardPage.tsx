@@ -26,6 +26,8 @@ import styles from './TaskWizardPage.module.css'
 import { clearDraft, loadDraft, storeDraft, type WizardDraft } from './wizardDraft'
 import type { CustomerStepValue } from './wizardState'
 import { scrollToFirstError } from '../../../lib/scrollToFirstError'
+import { useMyEmployeeId } from '../../../app/person/useDevicePerson'
+import { followed, useFollowPerson } from '../../../app/person/useFollowPerson'
 
 const STEPS = ['Kunde & Fahrzeug', 'Termin & Arbeiten', 'Prüfen & speichern']
 
@@ -79,12 +81,20 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
   const [customerStep, setCustomerStep] = useState<CustomerStepValue>(startCustomerStep)
   const [params] = useSearchParams()
   // dragged open in the day view → date, time, end and lift are already there
+  // FB-29: "Angenommen von" is the person at the device – changeable, and it follows a switch
+  const me = useMyEmployeeId()
+  const emptyAppointment = { ...EMPTY_APPOINTMENT, acceptedById: me ?? '' }
   const [startAppointment, setStartAppointment] = useState<AppointmentForm>(() => {
     const slot = slotFromUrl(params)
-    const start = tireSet ? { ...EMPTY_APPOINTMENT, tireChange: true, tireChangeKind: tireChangeKindOf(tireSet) } : EMPTY_APPOINTMENT
+    const start = tireSet ? { ...emptyAppointment, tireChange: true, tireChangeKind: tireChangeKindOf(tireSet) } : emptyAppointment
     return slot ? withSlot(start, slot, new Set()) : start
   })
   const [appointment, setAppointment] = useState<AppointmentForm>(startAppointment)
+  useFollowPerson(me, (previous, next) => {
+    const follow = (form: AppointmentForm) => ({ ...form, acceptedById: followed(form.acceptedById, previous, next) })
+    setStartAppointment(follow)
+    setAppointment(follow)
+  })
   // a task started before a reload – offered, not filled in by itself: it may be someone else's
   const [draft, setDraft] = useState<WizardDraft | null>(loadDraft)
   const [showRequired, setShowRequired] = useState(false)
@@ -194,9 +204,9 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
 
   function startOver() {
     setStartCustomerStep(EMPTY_CUSTOMER_STEP)
-    setStartAppointment(EMPTY_APPOINTMENT)
+    setStartAppointment(emptyAppointment)
     setCustomerStep(EMPTY_CUSTOMER_STEP)
-    setAppointment(EMPTY_APPOINTMENT)
+    setAppointment(emptyAppointment)
     setCourtesyCar(NO_COURTESY_CAR)
     setShowRequired(false)
     setServerErrors([])

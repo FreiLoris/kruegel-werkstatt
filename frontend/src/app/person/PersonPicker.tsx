@@ -22,8 +22,8 @@ export function PersonPicker({ active, noLongerActive }: { active: Employee[]; n
   )
 }
 
-/** The people and "Nur ansehen" – also in the dialog "Person wechseln" over the page. */
-export function PersonChoices({ active, onChosen }: { active: Employee[]; onChosen?: () => void }) {
+/** The people and "Nur ansehen" – also on the lock screen (without "Nur ansehen", FB-29). */
+export function PersonChoices({ active, onChosen, withViewOnly = true }: { active: Employee[]; onChosen?: () => void; withViewOnly?: boolean }) {
   function pick(choice: Parameters<typeof choose>[0]) {
     choose(choice)
     onChosen?.()
@@ -41,13 +41,15 @@ export function PersonChoices({ active, onChosen }: { active: Employee[]; onChos
         ))}
       </ul>
 
-      <button type="button" className={styles.viewOnly} onClick={() => pick({ kind: 'viewOnly' })}>
-        <Eye aria-hidden />
-        <span>
-          <strong>Nur ansehen</strong>
-          <span className="muted"> – z. B. Werkstatt-TV, kann nichts ändern</span>
-        </span>
-      </button>
+      {withViewOnly && (
+        <button type="button" className={styles.viewOnly} onClick={() => pick({ kind: 'viewOnly' })}>
+          <Eye aria-hidden />
+          <span>
+            <strong>Nur ansehen</strong>
+            <span className="muted"> – z. B. Werkstatt-TV, kann nichts ändern</span>
+          </span>
+        </button>
+      )}
     </div>
   )
 }

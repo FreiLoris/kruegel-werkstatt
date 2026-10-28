@@ -1,6 +1,7 @@
 import { Plus, Save } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useMyEmployeeId } from '../../app/person/useDevicePerson'
+import { followed, useFollowPerson } from '../../app/person/useFollowPerson'
 import { reasonOf } from '../../api/errors'
 import { Button } from '../../components/ui/Button'
 import { Select, TextField } from '../../components/ui/Fields'
@@ -33,6 +34,10 @@ export function ShoppingEntryForm({ item, taskId, onSaved, onCancel }: ShoppingE
   const toast = useToast()
   const once = useSingleFlight()
   const [form, setForm] = useState<ShoppingForm>(() => (item ? formFromItem(item, me) : emptyShoppingForm(me)))
+  // FB-29: "Erfasst von" of a new part follows when another person takes over the device
+  useFollowPerson(me, (previous, next) => {
+    if (!item) setForm((current) => ({ ...current, recordedById: followed(current.recordedById, previous, next) }))
+  })
   const [showErrors, setShowErrors] = useState(false)
   const errors = shoppingErrors(form)
 

@@ -11,9 +11,12 @@ import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation, pageTitle, viewOnlyNavigation, type NavEntry } from './navigation'
+import { useScreenLockSettings } from '../features/screenlock/screenLockApi'
+import { LockScreen } from './person/LockScreen'
 import { PersonMenu } from './person/PersonMenu'
 import { PersonPicker } from './person/PersonPicker'
 import { useDevicePerson } from './person/useDevicePerson'
+import { useIdleLock } from './person/useIdleLock'
 import { UnsavedChangesGuard } from './UnsavedChangesGuard'
 
 /**
@@ -36,6 +39,10 @@ export function AppLayout() {
   const kiosk = device.kind === 'viewOnly' && pathname === '/'
   useBackToDashboard(device.kind === 'viewOnly' && pathname !== '/')
   const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
+  // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen")
+  const { data: lockSettings, isError: lockSettingsMissing } = useScreenLockSettings()
+  // not loaded: the 5 minutes of the workshop rather than never
+  const lock = useIdleLock(lockSettings?.lockMinutes ?? (lockSettingsMissing ? 5 : 0), device.kind === 'person')
 
   // Browser tab and bookmarks carry the page and the workshop's name: "Pneuhotel – Garage Muster"
   useEffect(() => {
@@ -86,6 +93,7 @@ export function AppLayout() {
         {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
       </main>
       <UnsavedChangesGuard />
+      {lock.locked && <LockScreen active={active} onChosen={lock.unlock} />}
       {/* a new page starts at its top (or at #section), back returns to where one was – by path:
           a filter or a search typed into the address must not jump to the top */}
       <ScrollRestoration getKey={(location) => location.pathname} />

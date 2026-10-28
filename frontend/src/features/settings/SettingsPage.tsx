@@ -6,6 +6,7 @@ import { InactiveCustomers } from '../customers/CustomerSettings'
 import { InspectionStationSettings } from '../inspection-stations/InspectionStationSettings'
 import { InsuranceSettings } from '../insurances/InsuranceSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
+import { ScreenLockSettingsForm } from '../screenlock/ScreenLockSettingsForm'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
 import { StorageLocationSettings } from '../stock/StorageLocationSettings'
 import { LabelFormatSettings } from '../tire-hotel/LabelFormatSettings'
@@ -27,6 +28,7 @@ const SECTIONS: { id: string; title: string; content: ReactNode }[] = [
   { id: 'profilgrenzen', title: 'Profilgrenzen', content: <TreadLimitsSettings /> },
   { id: 'stichtage', title: 'Stichtage Saisonwechsel', content: <SeasonDeadlineSettings /> },
   { id: 'etiketten', title: 'Etiketten', content: <LabelFormatSettings /> },
+  { id: 'bildschirmsperre', title: 'Bildschirmsperre', content: <ScreenLockSettingsForm /> },
   {
     id: 'kunden',
     title: 'Kunden und Fahrzeuge',
