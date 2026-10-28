@@ -25,6 +25,11 @@ const lookup: StockLookup = {
     [shelfB, 'Büro › Regal B'],
     ['office', 'Büro'],
   ]),
+  locationSearch: new Map([
+    [shelfA, 'KA01 · Keller Keller'],
+    [shelfB, 'Büro › Regal B'],
+    ['office', 'Büro'],
+  ]),
   locationsWithin: new Map([
     [shelfA, new Set([shelfA])],
     [shelfB, new Set([shelfB])],

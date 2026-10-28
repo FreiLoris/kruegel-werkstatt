@@ -21,10 +21,23 @@ export function useAllStorageLocations() {
 export function useSaveStorageLocation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, name, parentId, version }: { id?: string; name: string; parentId?: string | null; version?: number }) =>
+    mutationFn: async ({
+      id,
+      name,
+      code,
+      parentId,
+      version,
+    }: {
+      id?: string
+      name: string
+      /** FB-23: what is written on the shelf; null = none */
+      code: string | null
+      parentId?: string | null
+      version?: number
+    }) =>
       id
-        ? dataOrThrow(await api.PUT('/api/storage-locations/{id}', { params: { path: { id } }, body: { name, version } }))
-        : dataOrThrow(await api.POST('/api/storage-locations', { body: { name, parentId: parentId ?? null } })),
+        ? dataOrThrow(await api.PUT('/api/storage-locations/{id}', { params: { path: { id } }, body: { name, code, version } }))
+        : dataOrThrow(await api.POST('/api/storage-locations', { body: { name, code, parentId: parentId ?? null } })),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }

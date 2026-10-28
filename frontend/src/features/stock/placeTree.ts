@@ -9,6 +9,11 @@ export interface Place {
   depth: number
   /** names from the top level down, e.g. "Büro › Regal 2" */
   path: string
+  /**
+   * What is shown (FB-23): its code in front – "KA01 · Keller › Treppe"; one without a code shows the
+   * code of the nearest place above it – "KA01 › oberes Fach"; no code anywhere above: the path
+   */
+  label: string
 }
 
 /**
@@ -26,14 +31,18 @@ export function placeTree(locations: StorageLocation[]): Place[] {
     else children.set(parent, [location])
   }
   const result: Place[] = []
-  const visit = (parent: string | null, depth: number, prefix: string) => {
+  /** @param coded the nearest place above with a code, and the names below it */
+  const visit = (parent: string | null, depth: number, prefix: string, coded: { code: string; below: string } | null) => {
     for (const location of children.get(parent) ?? []) {
       const path = prefix + location.name
-      result.push({ location, depth, path })
-      visit(location.id, depth + 1, path + PATH_SEPARATOR)
+      const own = location.code ? { code: location.code, below: '' } : null
+      const inherited = coded && { code: coded.code, below: coded.below + PATH_SEPARATOR + location.name }
+      const label = own ? `${own.code} · ${path}` : inherited ? inherited.code + inherited.below : path
+      result.push({ location, depth, path, label })
+      visit(location.id, depth + 1, path + PATH_SEPARATOR, own ?? inherited)
     }
   }
-  visit(null, 0, '')
+  visit(null, 0, '', null)
   return result
 }
 
