@@ -7,6 +7,8 @@ import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { PhoneLinks } from '../../components/ui/PhoneLinks'
+import { CallLog } from '../customer-calls/CallLog'
+import { useLatestCalls, type CustomerCall } from '../customer-calls/customerCallApi'
 import { useToast } from '../../components/ui/toastContext'
 import { useToday } from '../../lib/clock'
 import { formatDate, formatTimestamp } from '../../lib/format'
@@ -38,6 +40,8 @@ export function SeasonChangeView({ query, limits, canEdit }: SeasonChangeViewPro
   const change = useSeasonChange()
   const today = useToday()
   const [acknowledging, setAcknowledging] = useState<SeasonEntry | null>(null)
+  // FB-21: who called whom – only the customers to call
+  const { data: calls } = useLatestCalls()
 
   if (change.error) return <p className="muted">Saisonwechsel konnte nicht geladen werden: {change.error.message}</p>
   if (!change.data) return <p className="muted">Lade …</p>
@@ -67,7 +71,14 @@ export function SeasonChangeView({ query, limits, canEdit }: SeasonChangeViewPro
           const list = (
             <ul className={styles.seasonList}>
               {inGroup.map((entry) => (
-                <SeasonRow key={`${entry.group}-${entry.set.id}`} entry={entry} limits={limits} canEdit={canEdit} onAcknowledge={() => setAcknowledging(entry)} />
+                <SeasonRow
+                  key={`${entry.group}-${entry.set.id}`}
+                  entry={entry}
+                  limits={limits}
+                  canEdit={canEdit}
+                  latestCall={calls?.get(entry.set.customer.id)}
+                  onAcknowledge={() => setAcknowledging(entry)}
+                />
               ))}
             </ul>
           )
@@ -92,15 +103,21 @@ export function SeasonChangeView({ query, limits, canEdit }: SeasonChangeViewPro
   )
 }
 
+/** Still to be called in: open, or lying in the hotel for longer */
+const isToCall = (entry: Pick<SeasonEntry, 'group'>) => entry.group === 'OPEN' || entry.group === 'LONG_STORED'
+
 function SeasonRow({
   entry,
   limits,
   canEdit,
+  latestCall,
   onAcknowledge,
 }: {
   entry: SeasonEntry
   limits?: TreadLimits
   canEdit: boolean
+  /** the latest call to its customer (FB-21) */
+  latestCall?: CustomerCall
   onAcknowledge: () => void
 }) {
   const navigate = useNavigate()
@@ -108,7 +125,7 @@ function SeasonRow({
   const undo = useUndoAcknowledge()
   const { data: employees } = useAllEmployees()
   const { set } = entry
-  const toCall = entry.group === 'OPEN' || entry.group === 'LONG_STORED'
+  const toCall = isToCall(entry)
 
   function undoAcknowledge(id: string) {
     undo.mutate(id, { onError: (error) => toast.error(`Nicht rückgängig gemacht: ${reasonOf(error)}`) })
@@ -156,6 +173,7 @@ function SeasonRow({
           </span>
         )}
         {toCall && <PhoneLinks mobile={set.customer.mobile} phone={set.customer.phone} />}
+        {toCall && <CallLog customerId={set.customer.id} latest={latestCall} canEdit={canEdit} />}
       </div>
       {canEdit && (
         <div className={styles.seasonActions}>

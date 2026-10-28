@@ -1,0 +1,35 @@
+/* FB-16, FB-21: the latest call and the buttons to note one – wraps under the phone number when narrow */
+.log {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.latest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.remove {
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.remove svg {
+  width: 1em;
+  height: 1em;
+}
+
+.buttons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

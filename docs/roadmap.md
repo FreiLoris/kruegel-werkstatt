@@ -739,7 +739,7 @@ Order: small ones first, then the P1 shopping list, planning, tyres.
   change), Länger nicht abgeholt (in the hotel through a deadline of its own season), Quittiert
   (`tire_season_ack`: reason, who, when – for that deadline only, undoable), Gewechselt (folded).
   Counters at the top, "Beide Sätze eingelagert – prüfen", all-season sets left out, the hotel's
-  search narrows it. Not built: the call log ("angerufen am … / Rückruf").
+  search narrows it. The call log ("angerufen am … / Rückruf") came with 16q.
 - [x] **14k – UX pass on laptop, tablet and TV** (wish of the user, 2026-10-23)
   Done: every page and dialog checked at 1366×768, 1024×768 and 1920×1080 (TV).
   - TV dashboard fills the screen without scrolling: the lists show what fits (`FittingList`, "+ n
@@ -908,6 +908,13 @@ FB-23 storage codes, FB-24 parts in step 2, FB-29 lock on the tablet) wait for i
   Done: in the day view the tasks carried over ("Übertrag") can be held and dragged onto a lift and a
   time like a block – with their duration, the outline shows where they land and a taken lift is
   refused right away; let go outside the grid nothing happens. A tap still opens the task.
+- [x] **16q – Call log** (FB-16, FB-21)
+  Done: next to the phone number in "Ohne Termin – Beim Kunden" and in the season change (open,
+  stored for longer) one tap notes how the call went – "erreicht", "nicht erreicht", "Rückruf" –
+  with time and person ("Angerufen 28.10.2026 14:05 · nicht erreicht · Reto"); ✕ deletes one's own
+  call tapped by mistake within half an hour (the others' stay). Per customer (V54 `customer_call`):
+  a call is a call, whatever it was about; the latest of each customer of the last half year in one
+  list, live on every device, so nobody calls twice.
 
 ---
 
