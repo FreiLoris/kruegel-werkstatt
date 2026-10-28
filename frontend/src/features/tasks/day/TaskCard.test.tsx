@@ -52,6 +52,15 @@ describe('TaskCard', () => {
     expect(screen.getByText(/bis Fr 16\.10\. 12:00/)).toBeTruthy()
   })
 
+  it('new tyres not delivered yet (FB-25): "Reifen fehlen"', () => {
+    render(
+      <MemoryRouter>
+        <TaskCard task={task} mechanic={undefined} serviceItemNames={new Map()} tiresMissing />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTitle('Die bestellten Reifen sind noch nicht geliefert').textContent).toContain('Reifen fehlen')
+  })
+
   it('a short block shortens customer and vehicle with "…" – the tooltip has the whole text', () => {
     const long = {
       ...task,

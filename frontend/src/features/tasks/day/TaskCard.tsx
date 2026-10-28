@@ -1,4 +1,4 @@
-import { CarFront, ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
+import { CarFront, CircleDot, ClipboardCheck, Clock, Hourglass, Printer } from 'lucide-react'
 import type { HTMLAttributes, Ref } from 'react'
 import { useNavigate } from 'react-router'
 import { LicensePlate } from '../../../components/licenseplate/LicensePlate'
@@ -19,6 +19,8 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
   dragging?: boolean
   /** name of the courtesy car the customer has for this task */
   courtesyCar?: string
+  /** its new tyres are not delivered yet (FB-25) */
+  tiresMissing?: boolean
   ref?: Ref<HTMLDivElement>
 }
 
@@ -27,7 +29,7 @@ interface TaskCardProps extends HTMLAttributes<HTMLDivElement> {
  * and all work in readable contrast. Click or Enter opens the task; the rest of the props make it
  * draggable (keyboard: space picks it up).
  */
-export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, courtesyCar, className, onKeyDown, ...rest }: TaskCardProps) {
+export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, courtesyCar, tiresMissing = false, className, onKeyDown, ...rest }: TaskCardProps) {
   const navigate = useNavigate()
   const work = workSummary(task, serviceItemNames)
   const open = () => navigate(`/tasks/${task.id}`)
@@ -89,6 +91,11 @@ export function TaskCard({ task, mechanic, serviceItemNames, dragging = false, c
           {task.waitingCustomer && (
             <span className={styles.flag} title="Wartekunde – Kunde wartet vor Ort">
               <Hourglass aria-hidden /> Wartet
+            </span>
+          )}
+          {tiresMissing && (
+            <span className={styles.flag} title="Die bestellten Reifen sind noch nicht geliefert">
+              <CircleDot aria-hidden /> Reifen fehlen
             </span>
           )}
           {task.mfk && (

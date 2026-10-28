@@ -16,6 +16,8 @@ import styles from './DayView.module.css'
 import { startLabel } from '../taskTime'
 import { useToday } from '../../../lib/clock'
 import { showsCarriedOver } from '../carriedOver'
+import { newTiresTaskIds, tasksWaitingForTires } from '../newTires'
+import { useTasksShoppingItems } from '../../shopping/shoppingApi'
 
 /** Pixels per minute in the day view – one hour = 90 px, enough for customer, vehicle and work */
 const SCALE = 1.5
@@ -36,6 +38,10 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
   const canEdit = useCanEdit()
   const navigate = useNavigate()
   const courtesyCars = useCourtesyCarsByTask(`${date}T00:00`, `${addDays(date, 1)}T00:00`)
+  // FB-25: new tyres not delivered yet – only the tasks of the day with new tyres ask the shopping list
+  // (carried-over ones show no flags)
+  const { data: tireItems } = useTasksShoppingItems(newTiresTaskIds(tasks.data ?? []))
+  const waitingForTires = useMemo(() => tasksWaitingForTires(tireItems ?? []), [tireItems])
 
   const serviceItemNames = useMemo(() => new Map((serviceItems ?? []).map((s) => [s.id, s.name])), [serviceItems])
 
@@ -58,6 +64,7 @@ export function DayView({ date, onGo }: { date: string; onGo: (date: string) => 
         employees={employees}
         serviceItemNames={serviceItemNames}
         courtesyCars={courtesyCars}
+        waitingForTires={waitingForTires}
         mfkSlots={mfkSlots}
         carriedOver={carriedOver}
       />

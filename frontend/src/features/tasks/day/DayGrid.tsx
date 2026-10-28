@@ -88,6 +88,8 @@ interface DayGridProps {
   serviceItemNames?: ReadonlyMap<string, string>
   /** task ID → courtesy car name, shown on the blocks */
   courtesyCars?: ReadonlyMap<string, string>
+  /** tasks whose new tyres are not delivered yet (FB-25) – a hint on their blocks */
+  waitingForTires?: ReadonlySet<string>
   /** plan: the MFK appointments of the day – hints in "Ohne Lift", they take no time of anybody (FB-10) */
   mfkSlots?: MfkSlot[]
   /** not finished on their day (FB-14) – in "Ohne Lift" above its time, without time and duration */
@@ -128,6 +130,7 @@ export function DayGrid({
   employees = [],
   serviceItemNames = new Map(),
   courtesyCars,
+  waitingForTires,
   mfkSlots = NO_MFK,
   carriedOver = NO_TASKS,
 }: DayGridProps) {
@@ -425,6 +428,7 @@ export function DayGrid({
                       mechanic={employees.find((e) => e.id === p.task.mechanicId)}
                       serviceItemNames={serviceItemNames}
                       courtesyCar={courtesyCars?.get(p.task.id)}
+                      tiresMissing={waitingForTires?.has(p.task.id) ?? false}
                       onResizeStart={(e) => startResize(e, p.task)}
                       onResizeMove={(e) => moveResize(e, p.task)}
                       onResizeEnd={() => endResize(p.task)}
@@ -472,6 +476,7 @@ export function DayGrid({
             mechanic={employees.find((e) => e.id === activeTask.mechanicId)}
             serviceItemNames={serviceItemNames}
             courtesyCar={courtesyCars?.get(activeTask.id)}
+            tiresMissing={waitingForTires?.has(activeTask.id) ?? false}
             className={styles.overlay}
             dragging
           />
@@ -564,6 +569,7 @@ function Block({
   mechanic,
   serviceItemNames,
   courtesyCar,
+  tiresMissing,
   onResizeStart,
   onResizeMove,
   onResizeEnd,
@@ -578,6 +584,7 @@ function Block({
   mechanic: Employee | undefined
   serviceItemNames: ReadonlyMap<string, string>
   courtesyCar: string | undefined
+  tiresMissing: boolean
   onResizeStart: (e: PointerEvent<HTMLDivElement>) => void
   onResizeMove: (e: PointerEvent<HTMLDivElement>) => void
   onResizeEnd: () => void
@@ -597,6 +604,7 @@ function Block({
         mechanic={mechanic}
         serviceItemNames={serviceItemNames}
         courtesyCar={courtesyCar}
+        tiresMissing={tiresMissing}
         className={[styles.card, movable && styles.movable].filter(Boolean).join(' ')}
         {...attributes}
         {...listeners}
