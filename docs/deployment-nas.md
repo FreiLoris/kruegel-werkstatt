@@ -107,6 +107,15 @@ Synology share the folder rights may not take): *Container → backend → Termi
 `touch /dumps/vor-update/.probe && rm /dumps/vor-update/.probe` – no message = fine. Else give the
 folder `Datensicherung/werkstatt/vor-update` write access for everyone in File Station.
 
+### SMS reminders (17c)
+
+Customers get an SMS the working day before their appointment (*Einstellungen → Kundenerinnerungen*,
+off until turned on there). The SMS go out by the workshop's ASPSMS account: in the NAS's `.env`
+`ASPSMS_USERKEY` and `ASPSMS_PASSWORD` (aspsms.com → Userkey, API password), and the `compose.yaml`
+from 17c on (it hands them to the backend – take it over as above). The settings then say
+*SMS: eingerichtet*. Credit runs out: the reminder says «Kein Guthaben bei ASPSMS» – top up on
+aspsms.com. A test instance (`APP_VERSION=dev`) never sends SMS, even with the access in its `.env`.
+
 ### Switching an older NAS project to Watchtower
 
 Projects set up before 11f (four containers, no watchtower) once: replace

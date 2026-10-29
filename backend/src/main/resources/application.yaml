@@ -69,6 +69,14 @@ springdoc:
 # (tests, development). Installed instances set it in compose.yaml.
 workshop:
   backup-before-migration-dir: ${BACKUP_BEFORE_MIGRATION_DIR:}
+  # SMS reminders by ASPSMS (17c): the workshop's access – only on the NAS; empty = SMS only logged.
+  # The sender shown on the phone: up to 11 letters.
+  aspsms:
+    user-key: ${ASPSMS_USERKEY:}
+    password: ${ASPSMS_PASSWORD:}
+    originator: ${ASPSMS_ORIGINATOR:Kruegel}
+  # Which version runs (compose.yaml): "dev" = a test instance – it sends no SMS
+  app-version: ${APP_VERSION:}
 
 # Actuator: operational endpoints of Spring Boot.
 # We only publish "health" and put it under /api,
