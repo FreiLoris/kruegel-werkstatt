@@ -53,6 +53,6 @@ public class ReminderSettingsService {
 
     private ReminderSettingsDto dto(ReminderSettings s) {
         return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(),
-                ready.contains(ReminderChannel.SMS), ready.contains(ReminderChannel.EMAIL));
+                ready.contains(ReminderChannel.SMS));
     }
 }

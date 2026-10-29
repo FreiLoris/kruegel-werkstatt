@@ -1,28 +1,26 @@
 import type { Customer } from '../customers/customerSearchApi'
+import { formatTimestamp } from '../../lib/format'
+import type { Reminder, ReminderOutcome } from './reminderApi'
 
 /** What of a customer says how they are reminded */
-type Reachable = Pick<Customer, 'noReminders' | 'reminderChannel' | 'email' | 'source'>
+type Reachable = Pick<Customer, 'noReminders' | 'reminderChannel' | 'source'>
 
 /**
  * What a reminder of the appointment can do for a customer (17a) – the server decides the same way
- * (ReminderContact): an SMS to a mobile number, else an e-mail, else nothing; or the customer wants none.
+ * (ReminderContact): an SMS to a mobile number, else nothing (no e-mail for now, decided 2026-10-29);
+ * or the customer wants none.
  */
-export type ReminderReach =
-  | { kind: 'sms' }
-  | { kind: 'email'; to: string }
-  | { kind: 'refused' }
-  | { kind: 'noContact'; source: Customer['source'] }
+export type ReminderReach = { kind: 'sms' } | { kind: 'refused' } | { kind: 'noContact'; source: Customer['source'] }
 
 export function reminderReach(customer: Reachable): ReminderReach {
   if (customer.noReminders) return { kind: 'refused' }
   if (customer.reminderChannel === 'SMS') return { kind: 'sms' }
-  if (customer.reminderChannel === 'EMAIL' && customer.email) return { kind: 'email', to: customer.email }
   return { kind: 'noContact', source: customer.source }
 }
 
 /** Whether the tick can do anything – without a way to reach them it stays off */
 export function canRemind(reach: ReminderReach): boolean {
-  return reach.kind === 'sms' || reach.kind === 'email'
+  return reach.kind === 'sms'
 }
 
 /** For the task's facts: "am Vortag per SMS ans Handy", "nein", or why it cannot be */
@@ -43,13 +41,30 @@ export function reminderHint(reach: ReminderReach): string {
   switch (reach.kind) {
     case 'sms':
       return 'per SMS ans Handy'
-    case 'email':
-      return `per E-Mail an ${reach.to} – keine Handynummer`
     case 'refused':
       return 'Der Kunde möchte keine Erinnerungen (auf der Kundenseite umstellbar).'
     case 'noContact':
-      return `Keine Handynummer und keine E-Mail – bitte am Vortag anrufen. ${
+      return `Keine Handynummer – bitte am Vortag anrufen. ${
         reach.source === 'SWISSGARAGE' ? 'Handynummer in SwissGarage ergänzen, dann gilt sie nach dem nächsten Import.' : 'Handynummer beim Kunden ergänzen.'
       }`
   }
+}
+
+/** Why a customer is on the day's call list (17d) */
+export function missedReason(outcome: Exclude<ReminderOutcome, 'SENT'>, error: string | null): string {
+  switch (outcome) {
+    case 'NO_CONTACT':
+      return 'keine Handynummer'
+    case 'FAILED':
+      return `SMS fehlgeschlagen${error ? `: ${error}` : ''}`
+    case 'LOGGED':
+      return 'SMS auf diesem Server nicht eingerichtet'
+  }
+}
+
+/** What happened with a task's reminder – "SMS gesendet am 29.10.2026 16:00" or why someone calls */
+export function reminderOutcomeText(reminder: Pick<Reminder, 'outcome' | 'error' | 'remindedAt'>): string {
+  return reminder.outcome === 'SENT'
+    ? `SMS gesendet am ${formatTimestamp(reminder.remindedAt)}`
+    : `${missedReason(reminder.outcome, reminder.error)} – bitte anrufen`
 }

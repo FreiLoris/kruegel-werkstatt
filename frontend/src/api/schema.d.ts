@@ -222,7 +222,7 @@ export interface paths {
             cookie?: never;
         };
         /** Bookings of a task */
-        get: operations["ofTask"];
+        get: operations["ofTask_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1093,6 +1093,46 @@ export interface paths {
          * @description Time 08:00–19:00. Needs the loaded `version`.
          */
         put: operations["update_9"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The reminder of a task for its current drop-off day
+         * @description Empty before the run the working day before – or when the task is not to be reminded.
+         */
+        get: operations["ofTask"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reminders/to-call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Whom to call for a day
+         * @description Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up – and who are still to come.
+         */
+        get: operations["toCall"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -2776,10 +2816,10 @@ export interface components {
             phone: string | null;
             postalCode: string | null;
             /**
-             * @description 17a: how a reminder would reach them – empty: no mobile number and no e-mail
+             * @description 17a: how a reminder would reach them – empty: no mobile number, to be called
              * @enum {string|null}
              */
-            reminderChannel: "SMS" | "EMAIL" | null;
+            reminderChannel: "SMS" | null;
             salutation: string | null;
             /** @enum {string} */
             source: "SWISSGARAGE" | "LOCAL";
@@ -3274,9 +3314,30 @@ export interface components {
             date: string;
             name: string;
         };
+        ReminderDto: {
+            /**
+             * @description Empty when there was no mobile number
+             * @enum {string|null}
+             */
+            channel: "SMS" | null;
+            /**
+             * Format: date
+             * @description The day the car is to be brought – the reminder went out the working day before
+             */
+            dropOffDate: string;
+            /** @description Why it failed, in the workshop's words */
+            error: string | null;
+            /** @enum {string} */
+            outcome: "SENT" | "LOGGED" | "FAILED" | "NO_CONTACT";
+            /**
+             * Format: date-time
+             * @description When the run reminded – or found it could not
+             */
+            remindedAt: string;
+            /** Format: uuid */
+            taskId: string;
+        };
         ReminderSettingsDto: {
-            /** @description This installation can send e-mails – the mail account is set up */
-            emailReady: boolean;
             /** @description Customers are reminded the working day before */
             enabled: boolean;
             /**
@@ -4472,6 +4533,23 @@ export interface components {
             sets: number;
             /** @description Label = IN_HOTEL, MOUNTED, WITH_CUSTOMER or DISPOSED */
             states: components["schemas"]["CountDto"][];
+        };
+        ToCallDto: {
+            /** Format: uuid */
+            customerId: string;
+            customerName: string;
+            /** @description Why the SMS failed */
+            error: string | null;
+            mobile: string | null;
+            /**
+             * @description Never SENT
+             * @enum {string}
+             */
+            outcome: "SENT" | "LOGGED" | "FAILED" | "NO_CONTACT";
+            phone: string | null;
+            /** Format: uuid */
+            taskId: string;
+            taskNumber: string | null;
         };
         TodoAssigneeRequest: {
             /** Format: uuid */
@@ -5824,7 +5902,7 @@ export interface operations {
             };
         };
     };
-    ofTask: {
+    ofTask_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -9997,6 +10075,140 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReminderSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    ofTask: {
+        parameters: {
+            query: {
+                taskId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReminderDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    toCall: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ToCallDto"][];
                 };
             };
             /** @description Bad Request */

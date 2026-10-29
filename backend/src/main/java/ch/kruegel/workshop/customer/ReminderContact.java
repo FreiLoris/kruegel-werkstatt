@@ -4,28 +4,22 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Where a reminder of the appointment goes (17a): an SMS to a mobile number, else an e-mail. A Swiss
- * number must be a mobile one (07x) – "Telefon" often holds one too; a foreign number counts only
- * in "Mobile", there it is the customer's mobile.
+ * Where a reminder of the appointment goes (17a): an SMS to a mobile number – no e-mail for now
+ * (decided 2026-10-29). A Swiss number must be a mobile one (07x) – "Telefon" often holds one too; a
+ * foreign number counts only in "Mobile", there it is the customer's mobile.
  *
- * @param recipient the number as "+41791234567", or the e-mail address
+ * @param recipient the number as "+41791234567"
  */
 public record ReminderContact(ReminderChannel channel, String recipient) {
 
     private static final Pattern SWISS_MOBILE = Pattern.compile("\\+417[5-9]\\d{7}");
     private static final Pattern FOREIGN = Pattern.compile("\\+(?!41)[1-9]\\d{7,14}");
-    private static final Pattern EMAIL = Pattern.compile("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
 
-    /** Empty: neither a mobile number nor an e-mail – the customer has to be called. */
+    /** Empty: no mobile number – the customer has to be called. */
     public static Optional<ReminderContact> of(CustomerDetails customer) {
-        Optional<String> mobile = textableNumber(customer.mobile(), true).or(() -> textableNumber(customer.phone(), false));
-        if (mobile.isPresent()) {
-            return Optional.of(new ReminderContact(ReminderChannel.SMS, mobile.get()));
-        }
-        String email = customer.email();
-        return email != null && EMAIL.matcher(email).matches()
-                ? Optional.of(new ReminderContact(ReminderChannel.EMAIL, email))
-                : Optional.empty();
+        return textableNumber(customer.mobile(), true)
+                .or(() -> textableNumber(customer.phone(), false))
+                .map(number -> new ReminderContact(ReminderChannel.SMS, number));
     }
 
     /** "079 123 45 67", "0041 79 …", "+41 (0)79 …" → "+41791234567"; empty for a landline or no number */

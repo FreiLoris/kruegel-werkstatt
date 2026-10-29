@@ -50,7 +50,7 @@ record ReminderText(CustomerDetails customer, String plate, LocalDate day, Local
         }
         text.append("\n\n").append(companyPhone == null ? "Bei Verhinderung bitte kurz melden." : "Bei Verhinderung bitte melden:\n" + companyPhone)
                 .append("\n\nFreundliche Grüsse\n").append(company);
-        return new ReminderMessage("Terminerinnerung: " + company, text.toString());
+        return new ReminderMessage(text.toString());
     }
 
     /** "Guten Tag Herr Huber" – a company or an unknown salutation: "Guten Tag" */

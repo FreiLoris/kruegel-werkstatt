@@ -31,15 +31,14 @@ class ReminderContactTest {
     }
 
     @Test
-    void smsFirstThenEMailElseNothing() {
+    void anSmsToTheMobileElseNothing() {
         assertThat(ReminderContact.of(customer("052 000 00 00", "079 123 45 67", "a@b.ch")))
                 .contains(new ReminderContact(ReminderChannel.SMS, "+41791234567"));
         // a mobile number in the phone field counts too
         assertThat(ReminderContact.of(customer("076 123 45 67", null, "a@b.ch")))
                 .contains(new ReminderContact(ReminderChannel.SMS, "+41761234567"));
-        assertThat(ReminderContact.of(customer("052 000 00 00", null, "a@b.ch")))
-                .contains(new ReminderContact(ReminderChannel.EMAIL, "a@b.ch"));
-        assertThat(ReminderContact.of(customer("052 000 00 00", null, "keine"))).isEqualTo(Optional.empty());
+        // no e-mail for now: to be called
+        assertThat(ReminderContact.of(customer("052 000 00 00", null, "a@b.ch"))).isEqualTo(Optional.empty());
         assertThat(ReminderContact.of(customer(null, null, null))).isEmpty();
     }
 
