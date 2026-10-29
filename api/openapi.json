@@ -1393,7 +1393,7 @@
     },
     "/api/courtesy-car-bookings/task/{taskId}" : {
       "get" : {
-        "operationId" : "ofTask",
+        "operationId" : "ofTask_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "taskId",
@@ -6377,6 +6377,169 @@
           }
         },
         "summary" : "Turn the reminders on or off, change the time",
+        "tags" : [ "Reminders" ]
+      }
+    },
+    "/api/reminders" : {
+      "get" : {
+        "operationId" : "ofTask",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "taskId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ReminderDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The reminders of a task, the latest first",
+        "tags" : [ "Reminders" ]
+      }
+    },
+    "/api/reminders/to-call" : {
+      "get" : {
+        "description" : "Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up. Known from the run the working day before.",
+        "operationId" : "toCall",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "date",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ToCallDto"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Whom to call for a day",
         "tags" : [ "Reminders" ]
       }
     },
@@ -14499,8 +14662,8 @@
           },
           "reminderChannel" : {
             "type" : [ "string", "null" ],
-            "description" : "17a: how a reminder would reach them – empty: no mobile number and no e-mail",
-            "enum" : [ "SMS", "EMAIL" ]
+            "description" : "17a: how a reminder would reach them – empty: no mobile number, to be called",
+            "enum" : [ "SMS" ]
           },
           "salutation" : {
             "type" : [ "string", "null" ]
@@ -15612,13 +15775,42 @@
         },
         "required" : [ "date", "name" ]
       },
+      "ReminderDto" : {
+        "type" : "object",
+        "properties" : {
+          "at" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When"
+          },
+          "channel" : {
+            "type" : [ "string", "null" ],
+            "description" : "Empty when there was no mobile number",
+            "enum" : [ "SMS" ]
+          },
+          "dropOffDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "The day the car is to be brought – the reminder went out the working day before"
+          },
+          "error" : {
+            "type" : [ "string", "null" ],
+            "description" : "Why it failed, in the workshop's words"
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "SENT", "LOGGED", "FAILED", "NO_CONTACT" ]
+          },
+          "taskId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "at", "channel", "dropOffDate", "error", "outcome", "taskId" ]
+      },
       "ReminderSettingsDto" : {
         "type" : "object",
         "properties" : {
-          "emailReady" : {
-            "type" : "boolean",
-            "description" : "This installation can send e-mails – the mail account is set up"
-          },
           "enabled" : {
             "type" : "boolean",
             "description" : "Customers are reminded the working day before"
@@ -15637,7 +15829,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "emailReady", "enabled", "sendTime", "smsReady", "version" ]
+        "required" : [ "enabled", "sendTime", "smsReady", "version" ]
       },
       "ReminderSettingsRequest" : {
         "type" : "object",
@@ -17905,6 +18097,38 @@
           }
         },
         "required" : [ "averageDepthMm", "brands", "dimensions", "eventsThisYear", "kinds", "oldestYear", "seasons", "sets", "states" ]
+      },
+      "ToCallDto" : {
+        "type" : "object",
+        "properties" : {
+          "customerId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "customerName" : {
+            "type" : "string"
+          },
+          "error" : {
+            "type" : [ "string", "null" ],
+            "description" : "Why the SMS failed"
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "SENT", "LOGGED", "FAILED", "NO_CONTACT" ]
+          },
+          "phone" : {
+            "type" : [ "string", "null" ],
+            "description" : "Mobile, else phone – empty: none known"
+          },
+          "taskId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "taskNumber" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "customerId", "customerName", "error", "outcome", "phone", "taskId", "taskNumber" ]
       },
       "TodoAssigneeRequest" : {
         "type" : "object",

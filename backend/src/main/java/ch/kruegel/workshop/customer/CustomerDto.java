@@ -28,7 +28,7 @@ public record CustomerDto(
         boolean active,
         @Schema(description = "FB-27: blocked or former in SwissGarage, kept as the holder of a vehicle – shown greyed") boolean former,
         @Schema(description = "17a: wants no reminders of appointments") boolean noReminders,
-        @Schema(types = {"string", "null"}, description = "17a: how a reminder would reach them – empty: no mobile number and no e-mail")
+        @Schema(types = {"string", "null"}, description = "17a: how a reminder would reach them – empty: no mobile number, to be called")
         ReminderChannel reminderChannel,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last (empty: import/sample data)") UUID updatedBy) {

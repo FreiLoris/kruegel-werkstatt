@@ -56,9 +56,9 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
     <>
       <h2>Kundenerinnerungen</h2>
       <p className="muted">
-        Am Werktag vor dem Termin bekommt der Kunde ab der eingestellten Zeit eine SMS – ohne Handynummer eine E-Mail. Am Freitag gleich
-        für Samstag bis Montag. Nicht erinnert wird, wer keine will, wessen Auftrag «nicht erinnern» hat, wessen Fahrzeug schon hier ist
-        und wer den Termin erst heute bekommen hat. Hat ein Kunde weder Handy noch E-Mail, sagt es der Auftrag schon beim Erfassen: dann bitte am Vortag anrufen.
+        Am Werktag vor dem Termin bekommt der Kunde ab der eingestellten Zeit eine SMS – am Freitag gleich für Samstag bis Montag. Nicht
+        erinnert wird, wer keine will, wessen Auftrag «nicht erinnern» hat, wessen Fahrzeug schon hier ist und wer den Termin erst heute
+        bekommen hat. Wer keine SMS bekam (keine Handynummer, SMS fehlgeschlagen), steht am Tag in der Tagesansicht unter «Bitte anrufen».
       </p>
       <form id={formId} onSubmit={submit}>
         <Checkbox label="Kunden am Vortag erinnern" disabled={!canEdit} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
@@ -74,10 +74,7 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
           />
         </div>
       </form>
-      <ul className="muted">
-        <li>SMS: {settings.smsReady ? 'eingerichtet' : 'auf diesem Server nicht eingerichtet – SMS werden nur protokolliert'}</li>
-        <li>E-Mail: {settings.emailReady ? 'eingerichtet' : 'auf diesem Server nicht eingerichtet – E-Mails werden nur protokolliert'}</li>
-      </ul>
+      <p className="muted">SMS: {settings.smsReady ? 'eingerichtet' : 'auf diesem Server nicht eingerichtet – SMS werden nur protokolliert'}</p>
       {canEdit && (
         <div className={styles.formActions}>
           <Button variant="primary" type="submit" form={formId} disabled={!changed} loading={save.isPending}>

@@ -11,4 +11,6 @@ public interface TaskReminderRepository extends JpaRepository<TaskReminder, UUID
 
     /** Who was reminded already for these days – one query for the whole run */
     List<TaskReminder> findByDropOffDateBetween(LocalDate first, LocalDate last);
+
+    List<TaskReminder> findByTaskIdOrderByCreatedAtDesc(UUID taskId);
 }

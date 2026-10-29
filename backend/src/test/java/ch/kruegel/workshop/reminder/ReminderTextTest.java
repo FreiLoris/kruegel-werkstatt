@@ -29,7 +29,6 @@ class ReminderTextTest {
 
                 Freundliche Grüsse
                 Krügel Fahrzeugtechnik""");
-        assertThat(message.subject()).isEqualTo("Terminerinnerung: Krügel Fahrzeugtechnik");
     }
 
     @Test

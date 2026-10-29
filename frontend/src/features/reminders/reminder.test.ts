@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { canRemind, customerReminderLabel, reminderReach, reminderSummary } from './reminder'
+import { canRemind, customerReminderLabel, missedReason, reminderOutcomeText, reminderReach, reminderSummary } from './reminder'
 
-const huber = { noReminders: false, reminderChannel: 'SMS' as const, email: null, source: 'SWISSGARAGE' as const }
+const huber = { noReminders: false, reminderChannel: 'SMS' as const, source: 'SWISSGARAGE' as const }
 
 describe('reminder (17a)', () => {
-  it('by SMS, else by e-mail', () => {
+  it('by SMS', () => {
     expect(reminderSummary(huber, true)).toBe('am Vortag per SMS ans Handy')
-    expect(reminderSummary({ ...huber, reminderChannel: 'EMAIL', email: 'a@b.ch' }, true)).toBe('am Vortag per E-Mail an a@b.ch – keine Handynummer')
     expect(reminderSummary(huber, false)).toBe('nein')
   })
 
-  it('without mobile and e-mail someone calls – and says where to add the number', () => {
+  it('without a mobile number someone calls – and says where to add the number', () => {
     const reach = reminderReach({ ...huber, reminderChannel: null })
     expect(canRemind(reach)).toBe(false)
     expect(reminderSummary({ ...huber, reminderChannel: null }, true)).toContain('bitte am Vortag anrufen. Handynummer in SwissGarage ergänzen')
@@ -22,12 +21,19 @@ describe('reminder (17a)', () => {
     expect(reminderSummary({ ...huber, noReminders: true }, true)).toContain('möchte keine Erinnerungen')
   })
 
-  it('an e-mail channel without an address counts as no contact', () => {
-    expect(reminderReach({ ...huber, reminderChannel: 'EMAIL', email: null }).kind).toBe('noContact')
-  })
-
   it('on the customer page', () => {
     expect(customerReminderLabel(reminderReach(huber))).toBe('am Vortag per SMS ans Handy')
     expect(customerReminderLabel(reminderReach({ ...huber, noReminders: true }))).toBe('möchte keine')
+  })
+})
+
+describe('what happened (17d)', () => {
+  it('sent – or why someone calls', () => {
+    expect(reminderOutcomeText({ outcome: 'SENT', error: null, at: '2026-10-29T15:00:00Z' })).toMatch(/^SMS gesendet am 29\.10\.2026/)
+    expect(reminderOutcomeText({ outcome: 'FAILED', error: 'Kein Guthaben bei ASPSMS – bitte aufladen', at: '2026-10-29T15:00:00Z' })).toBe(
+      'SMS fehlgeschlagen: Kein Guthaben bei ASPSMS – bitte aufladen – bitte anrufen',
+    )
+    expect(missedReason('NO_CONTACT', null)).toBe('keine Handynummer')
+    expect(missedReason('LOGGED', null)).toBe('SMS auf diesem Server nicht eingerichtet')
   })
 })

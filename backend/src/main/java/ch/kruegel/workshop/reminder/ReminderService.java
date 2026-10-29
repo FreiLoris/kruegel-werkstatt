@@ -1,5 +1,6 @@
 package ch.kruegel.workshop.reminder;
 
+import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.company.CompanyDto;
 import ch.kruegel.workshop.company.CompanyService;
 import ch.kruegel.workshop.customer.Customer;
@@ -11,6 +12,7 @@ import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -31,8 +33,8 @@ import java.util.stream.Collectors;
 /**
  * Reminds customers of their appointments (17a): on a working day, from the set time on, every
  * customer who is to bring the car before the next working day – on Friday also for Saturday to
- * Monday. An SMS, else an e-mail; once per task and day. What happened is kept with the task, also
- * when nothing could be sent – then someone has to call (shown with the task from 17d on).
+ * Monday. An SMS; once per task and day. What happened is kept with the task, also when nothing
+ * could be sent – then someone has to call (shown with the task and on the day).
  *
  * <p>Not reminded: a task taken off ("nicht erinnern"), a customer who wants none, a car already
  * here or a task started or done ({@link TaskRepository#toRemind}), and a task taken today – the
@@ -40,6 +42,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ReminderService {
+
+    /** Topic of the live updates – the reminders of the tasks */
+    public static final String TOPIC = "reminders";
 
     /** Not later in the evening – a task planned after that is not reminded */
     static final LocalTime SEND_UNTIL = LocalTime.of(20, 0);
@@ -53,11 +58,12 @@ public class ReminderService {
     private final CompanyService company;
     private final Map<ReminderChannel, ReminderSender> senders = new EnumMap<>(ReminderChannel.class);
     private final TransactionTemplate transaction;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
 
     ReminderService(ReminderSettingsService settings, TaskReminderRepository reminders, TaskRepository tasks,
                     ZurichPublicHolidays holidays, CompanyService company, List<ReminderSender> senders,
-                    PlatformTransactionManager transactions, Clock clock) {
+                    PlatformTransactionManager transactions, ApplicationEventPublisher events, Clock clock) {
         this.settings = settings;
         this.reminders = reminders;
         this.tasks = tasks;
@@ -65,6 +71,7 @@ public class ReminderService {
         this.company = company;
         senders.forEach(sender -> this.senders.put(sender.channel(), sender));
         this.transaction = new TransactionTemplate(transactions);
+        this.events = events;
         this.clock = clock;
     }
 
@@ -75,13 +82,18 @@ public class ReminderService {
 
     void remindDue(LocalDateTime now) {
         // read in one go; each one sent and kept on its own – one that fails stops nothing else
-        for (Due due : transaction.execute(status -> due(now))) {
+        List<Due> toSend = transaction.execute(status -> due(now));
+        for (Due due : toSend) {
             try {
                 remind(due);
             } catch (RuntimeException e) {
                 // sent, but not kept (database gone): the next run sends it again – rather twice than not at all
                 log.error("Reminder of task {} not kept", due.taskNumber(), e);
             }
+        }
+        if (!toSend.isEmpty()) {
+            // the task pages and the day's "Bitte anrufen" show it right away
+            events.publishEvent(new DataChanged(TOPIC));
         }
     }
 
@@ -122,7 +134,7 @@ public class ReminderService {
 
     private void remind(Due due) {
         if (due.contact().isEmpty()) {
-            log.info("Reminder of task {}: no mobile number and no e-mail – to be called", due.taskNumber());
+            log.info("Reminder of task {}: no mobile number – to be called", due.taskNumber());
             reminders.save(new TaskReminder(due.taskId(), due.day(), null, ReminderOutcome.NO_CONTACT, null));
             return;
         }
@@ -149,12 +161,8 @@ public class ReminderService {
         reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), outcome, error));
     }
 
-    /** For the log: "+4179*****67", "h***@example.ch" – enough to tell, not a customer's data */
+    /** For the log: "+4179*****67" – enough to tell, not a customer's data */
     static String masked(String recipient) {
-        int at = recipient.indexOf('@');
-        if (at > 0) {
-            return recipient.charAt(0) + "***" + recipient.substring(at);
-        }
         return recipient.length() <= 7 ? "***" : recipient.substring(0, 5) + "*".repeat(recipient.length() - 7) + recipient.substring(recipient.length() - 2);
     }
 

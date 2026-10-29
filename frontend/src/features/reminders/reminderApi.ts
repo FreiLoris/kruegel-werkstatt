@@ -24,3 +24,23 @@ export function useSaveReminderSettings() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
   })
 }
+
+export type Reminder = components['schemas']['ReminderDto']
+export type ReminderOutcome = Reminder['outcome']
+export type ToCall = components['schemas']['ToCallDto']
+
+/** The reminders of a task, the latest first (17d) */
+export function useTaskReminders(taskId: string) {
+  return useQuery({
+    queryKey: ['reminders', taskId],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/reminders', { params: { query: { taskId } }, signal })),
+  })
+}
+
+/** Customers to bring their car that day who got no SMS – to be called (17d) */
+export function useToCall(date: string) {
+  return useQuery({
+    queryKey: ['reminders', 'to-call', date],
+    queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/reminders/to-call', { params: { query: { date } }, signal })),
+  })
+}

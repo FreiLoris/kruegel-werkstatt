@@ -30,6 +30,7 @@ vi.mock('../../absences/absenceApi', async (importOriginal) => ({
   useAbsences: () => ({ data: absences }),
 }))
 vi.mock('../../todos/todoApi', () => ({ useTodos: () => ({ data: todos }) }))
+vi.mock('../../reminders/ToCallList', () => ({ ToCallList: () => null }))
 vi.mock('../../todos/TodoItem', () => ({ TodoItem: ({ todo: t }: { todo: Todo }) => <li>{t.text}</li> }))
 vi.mock('../../absences/AbsenceDialog', () => ({
   AbsenceDialog: (props: { fresh?: NewAbsence; absence?: Absence }) => {

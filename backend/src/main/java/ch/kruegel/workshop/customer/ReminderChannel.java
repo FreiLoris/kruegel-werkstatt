@@ -1,9 +1,7 @@
 package ch.kruegel.workshop.customer;
 
-/** How a customer is reminded of an appointment (17a). */
+/** How a customer is reminded of an appointment (17a) – only by SMS for now (decided 2026-10-29); e-mail may follow. */
 public enum ReminderChannel {
-    /** To a mobile number – preferred */
-    SMS,
-    /** When there is no mobile number */
-    EMAIL
+    /** To a mobile number */
+    SMS
 }

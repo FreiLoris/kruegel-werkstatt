@@ -9,6 +9,7 @@ import { AbsenceDialog } from '../../absences/AbsenceDialog'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useTodos } from '../../todos/todoApi'
 import { TodoItem } from '../../todos/TodoItem'
+import { ToCallList } from '../../reminders/ToCallList'
 import styles from './DayInfo.module.css'
 
 /** All open to-dos – the same query as the to-do list, so it is loaded once */
@@ -58,6 +59,9 @@ export function DayInfo({ date }: { date: string }) {
           </Button>
         )}
       </div>
+
+      {/* 17d: no SMS reminder reached them – someone calls */}
+      <ToCallList date={date} />
 
       {due.length > 0 && (
         <ul className={styles.todos} aria-label="To-dos an diesem Tag">

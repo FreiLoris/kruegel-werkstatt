@@ -103,7 +103,6 @@ class ReminderApiTest {
         assertThat(settings).bodyJson().extractingPath("$.enabled").isEqualTo(false);
         assertThat(settings).bodyJson().extractingPath("$.sendTime").isEqualTo("16:00:00");
         assertThat(settings).bodyJson().extractingPath("$.smsReady").isEqualTo(true);
-        assertThat(settings).bodyJson().extractingPath("$.emailReady").isEqualTo(false);
 
         task(withMobile("079 123 45 67"), "2026-12-04", null);
         service.remindDue(THURSDAY);
@@ -114,7 +113,7 @@ class ReminderApiTest {
     }
 
     @Test
-    void theDayBeforeBySmsElseByEMailElseSomeoneCalls() {
+    void theDayBeforeBySmsElseSomeoneCalls() {
         turnOn();
         String bySms = task(withMobile("079 123 45 67"), "2026-12-04", null);
         String byMail = task(customer("052 000 00 00", null, "huber@example.ch"), "2026-12-04", null);
@@ -128,12 +127,36 @@ class ReminderApiTest {
         service.remindDue(THURSDAY);
         assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\n"
                 + "Bei Verhinderung bitte kurz melden.\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
-        // no mail account here: only logged
-        assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", byMail, "LOGGED", noContact, "NO_CONTACT"));
+        // no e-mail for now: to be called like one without any contact
+        assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", byMail, "NO_CONTACT", noContact, "NO_CONTACT"));
 
         // ten minutes later: nothing twice
         service.remindDue(THURSDAY.plusMinutes(10));
         assertThat(sms.sent).hasSize(1);
+    }
+
+    @Test
+    void whatHappenedPerTaskAndWhomToCall() {
+        turnOn();
+        String bySms = task(withMobile("079 123 45 67"), "2026-12-04", null);
+        String noContact = task(customer("052 000 00 00", null, null), "2026-12-04", null);
+        String failing = task(withMobile("079 222 22 22"), "2026-12-07", null);
+        service.remindDue(THURSDAY);
+        sms.failing = true;
+        service.remindDue(THURSDAY.plusDays(1));
+
+        MvcTestResult ofTask = mvc.get().uri("/api/reminders?taskId=" + bySms).exchange();
+        assertThat(ofTask).bodyJson().extractingPath("$[0].outcome").isEqualTo("SENT");
+        assertThat(ofTask).bodyJson().extractingPath("$[0].dropOffDate").isEqualTo("2026-12-04");
+
+        MvcTestResult friday = mvc.get().uri("/api/reminders/to-call?date=2026-12-04").exchange();
+        assertThat(friday).bodyJson().extractingPath("$[*].taskId").asArray().containsExactly(noContact);
+        assertThat(friday).bodyJson().extractingPath("$[0].phone").isEqualTo("052 000 00 00");
+        assertThat(friday).bodyJson().extractingPath("$[0].outcome").isEqualTo("NO_CONTACT");
+
+        MvcTestResult monday = mvc.get().uri("/api/reminders/to-call?date=2026-12-07").exchange();
+        assertThat(monday).bodyJson().extractingPath("$[0].taskId").isEqualTo(failing);
+        assertThat(monday).bodyJson().extractingPath("$[0].error").isEqualTo("Kein Guthaben");
     }
 
     @Test
@@ -229,7 +252,6 @@ class ReminderApiTest {
     @Test
     void theRecipientMaskedInTheLog() {
         assertThat(ReminderService.masked("+41791234567")).isEqualTo("+4179*****67");
-        assertThat(ReminderService.masked("huber@example.ch")).isEqualTo("h***@example.ch");
     }
 
     private void turnOn() {

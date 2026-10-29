@@ -21,7 +21,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class AspsmsSenderTest {
 
     private static final ReminderContact HUBER = new ReminderContact(ReminderChannel.SMS, "+41791234567");
-    private static final ReminderMessage MESSAGE = new ReminderMessage("Terminerinnerung", "Guten Tag Herr Huber, …");
+    private static final ReminderMessage MESSAGE = new ReminderMessage("Guten Tag Herr Huber, …");
 
     private MockRestServiceServer aspsms;
     private AspsmsSender sender;
