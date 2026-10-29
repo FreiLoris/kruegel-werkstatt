@@ -1,0 +1,35 @@
+package ch.kruegel.workshop.reminder;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/** REST API of the reminder settings (17a). */
+@RestController
+@RequestMapping("/api/reminder-settings")
+@Tag(name = "Reminders")
+class ReminderSettingsController {
+
+    private final ReminderService service;
+
+    ReminderSettingsController(ReminderService service) {
+        this.service = service;
+    }
+
+    @Operation(summary = "Whether and when customers are reminded of their appointments")
+    @GetMapping
+    ReminderSettingsDto settings() {
+        return service.settings();
+    }
+
+    @Operation(summary = "Turn the reminders on or off, change the time", description = "Time 08:00–19:00. Needs the loaded `version`.")
+    @PutMapping
+    ReminderSettingsDto update(@Valid @RequestBody ReminderSettingsRequest request) {
+        return service.updateSettings(request);
+    }
+}

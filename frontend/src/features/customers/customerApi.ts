@@ -59,3 +59,13 @@ export function useSetCustomerActive() {
   })
 }
 
+
+/** "Keine Erinnerungen" (17a) – for every customer, SwissGarage does not know it */
+export function useSetNoReminders() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, noReminders }: { id: string; noReminders: boolean }) =>
+      dataOrThrow(await api.PUT('/api/customers/{id}/no-reminders', { params: { path: { id } }, body: { noReminders } })),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+  })
+}

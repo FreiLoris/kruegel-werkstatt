@@ -100,7 +100,7 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_18"];
+        put: operations["update_19"];
         post?: never;
         /** Delete absence */
         delete: operations["delete_8"];
@@ -146,7 +146,7 @@ export interface paths {
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_17"];
+        put: operations["update_18"];
         post?: never;
         delete?: never;
         options?: never;
@@ -243,7 +243,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_16"];
+        put: operations["update_17"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -320,7 +320,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_15"];
+        put: operations["update_16"];
         post?: never;
         delete?: never;
         options?: never;
@@ -489,7 +489,7 @@ export interface paths {
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_14"];
+        put: operations["update_15"];
         post?: never;
         delete?: never;
         options?: never;
@@ -525,6 +525,26 @@ export interface paths {
         put?: never;
         /** Deactivate local customer (instead of delete) */
         post: operations["deactivate_7"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customers/{id}/no-reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Wants no reminders of appointments (17a)
+         * @description Also for SwissGarage customers – SwissGarage does not know it.
+         */
+        put: operations["noReminders"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -579,7 +599,7 @@ export interface paths {
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         delete?: never;
         options?: never;
@@ -651,7 +671,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         delete?: never;
         options?: never;
@@ -740,7 +760,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_11"];
+        put: operations["update_12"];
         post?: never;
         delete?: never;
         options?: never;
@@ -815,7 +835,7 @@ export interface paths {
          * Edit a label sheet format
          * @description Needs the loaded `version`.
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         /** Delete a label sheet format */
         delete: operations["delete_7"];
@@ -970,7 +990,7 @@ export interface paths {
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_9"];
+        put: operations["update_10"];
         post?: never;
         /**
          * Delete note
@@ -1052,6 +1072,27 @@ export interface paths {
         /** Public holidays of the canton of Zurich from `from` to `to` (both inclusive, max. 3 years) */
         get: operations["between_2"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reminder-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether and when customers are reminded of their appointments */
+        get: operations["settings_3"];
+        /**
+         * Turn the reminders on or off, change the time
+         * @description Time 08:00–19:00. Needs the loaded `version`.
+         */
+        put: operations["update_9"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2730,8 +2771,15 @@ export interface components {
             id: string;
             lastName: string | null;
             mobile: string | null;
+            /** @description 17a: wants no reminders of appointments */
+            noReminders: boolean;
             phone: string | null;
             postalCode: string | null;
+            /**
+             * @description 17a: how a reminder would reach them – empty: no mobile number and no e-mail
+             * @enum {string|null}
+             */
+            reminderChannel: "SMS" | "EMAIL" | null;
             salutation: string | null;
             /** @enum {string} */
             source: "SWISSGARAGE" | "LOCAL";
@@ -3125,6 +3173,9 @@ export interface components {
             /** Format: int32 */
             year?: number;
         };
+        NoRemindersRequest: {
+            noReminders: boolean;
+        };
         NoteArchivedRequest: {
             archived: boolean;
         };
@@ -3222,6 +3273,28 @@ export interface components {
             /** Format: date */
             date: string;
             name: string;
+        };
+        ReminderSettingsDto: {
+            /** @description This installation can send e-mails – the mail account is set up */
+            emailReady: boolean;
+            /** @description Customers are reminded the working day before */
+            enabled: boolean;
+            /**
+             * @description From when on the day before
+             * @example 16:00
+             */
+            sendTime: string;
+            /** @description This installation can send SMS – the access to the SMS provider is set up */
+            smsReady: boolean;
+            /** Format: int64 */
+            version: number;
+        };
+        ReminderSettingsRequest: {
+            enabled: boolean;
+            /** @example 16:00 */
+            sendTime: string;
+            /** Format: int64 */
+            version: number;
         };
         RemovedSet: {
             /** @description As noted on the task sheet */
@@ -3791,6 +3864,8 @@ export interface components {
              * @example 2026-10-15T16:30:00
              */
             readyBy: string | null;
+            /** @description Remind the customer the working day before (17a) */
+            remindCustomer: boolean;
             /** @description Ticked service items, in the order of the service item list */
             serviceItemIds: string[];
             /** @enum {string} */
@@ -3924,6 +3999,8 @@ export interface components {
              * @example 2026-10-15T16:30
              */
             readyBy?: string;
+            /** @description Remind the customer the working day before (17a); missing = yes when new, unchanged when editing */
+            remindCustomer?: boolean;
             serviceItemIds?: string[];
             /**
              * @description Required with a date
@@ -4929,7 +5006,7 @@ export interface operations {
             };
         };
     };
-    update_18: {
+    update_19: {
         parameters: {
             query?: never;
             header?: never;
@@ -5270,7 +5347,7 @@ export interface operations {
             };
         };
     };
-    update_17: {
+    update_18: {
         parameters: {
             query?: never;
             header?: never;
@@ -5814,7 +5891,7 @@ export interface operations {
             };
         };
     };
-    update_16: {
+    update_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -6293,7 +6370,7 @@ export interface operations {
             };
         };
     };
-    update_15: {
+    update_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -6968,7 +7045,7 @@ export interface operations {
             };
         };
     };
-    update_14: {
+    update_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -7116,6 +7193,77 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    noReminders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoRemindersRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -7445,7 +7593,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -7784,7 +7932,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -8190,7 +8338,7 @@ export interface operations {
             };
         };
     };
-    update_11: {
+    update_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -8529,7 +8677,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -9347,7 +9495,7 @@ export interface operations {
             };
         };
     };
-    update_9: {
+    update_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -9715,6 +9863,140 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PublicHolidayDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    settings_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReminderSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_9: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReminderSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReminderSettingsDto"];
                 };
             };
             /** @description Bad Request */

@@ -29,6 +29,8 @@ export interface AppointmentForm {
   readyByDate: string
   readyByTime: string
   waitingCustomer: boolean
+  /** "Kunde am Vortag erinnern" (17a) – ticked unless taken off */
+  remindCustomer: boolean
   /** where the vehicle is (FB-16) – a new task: with the customer */
   vehicleLocation: VehicleLocation
   /** '' = still open */
@@ -105,6 +107,7 @@ export const EMPTY_APPOINTMENT: AppointmentForm = {
   readyByDate: '',
   readyByTime: READY_BY_TIME,
   waitingCustomer: false,
+  remindCustomer: true,
   vehicleLocation: 'AT_CUSTOMER',
   mechanicId: '',
   liftId: '',
@@ -337,6 +340,7 @@ export function toTaskRequest(step1: CustomerStepValue, form: AppointmentForm, v
     arrivesEarlier: planned && form.arrivesEarlier ? `${form.arrivesEarlierDate}T${form.arrivesEarlierTime}` : undefined,
     readyBy: planned && form.readyBy ? `${form.readyByDate}T${form.readyByTime}` : undefined,
     waitingCustomer: planned && form.waitingCustomer,
+    remindCustomer: form.remindCustomer,
     vehicleLocation: form.vehicleLocation,
     mechanicId: form.mechanicId || undefined,
     liftId: planned ? form.liftId || undefined : undefined,
@@ -390,6 +394,7 @@ export function formFromTask(task: AnyTask): AppointmentForm {
     readyByDate,
     readyByTime: readyByTime || READY_BY_TIME,
     waitingCustomer: task.waitingCustomer,
+    remindCustomer: task.remindCustomer,
     vehicleLocation: task.vehicleLocation,
     mechanicId: task.mechanicId ?? '',
     liftId: task.liftId ?? '',

@@ -55,6 +55,8 @@ public record TaskRequest(
         @Size(max = Task.CLAIM_NUMBER_MAX) @Schema(description = "The insurance's claim number – only with an insurance, may still be open") String claimNumber,
         @Schema(description = "Where the vehicle is (FB-16); missing = with the customer when new, unchanged when editing")
         VehicleLocation vehicleLocation,
+        @Schema(description = "Remind the customer the working day before (17a); missing = yes when new, unchanged when editing")
+        Boolean remindCustomer,
         @Schema(description = "Only needed when editing") Long version) {
 
     public TaskRequest {

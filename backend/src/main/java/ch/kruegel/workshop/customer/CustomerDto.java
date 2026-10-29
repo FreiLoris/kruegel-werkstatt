@@ -27,6 +27,9 @@ public record CustomerDto(
         @Schema(description = "False for SwissGarage customers – they are changed in SwissGarage") boolean editable,
         boolean active,
         @Schema(description = "FB-27: blocked or former in SwissGarage, kept as the holder of a vehicle – shown greyed") boolean former,
+        @Schema(description = "17a: wants no reminders of appointments") boolean noReminders,
+        @Schema(types = {"string", "null"}, description = "17a: how a reminder would reach them – empty: no mobile number and no e-mail")
+        ReminderChannel reminderChannel,
         Instant updatedAt,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Who changed it last (empty: import/sample data)") UUID updatedBy) {
 
@@ -35,6 +38,7 @@ public record CustomerDto(
         return new CustomerDto(c.getId(), c.getVersion(), c.getSource(), c.getSwissgarageNumber(), d.displayName(),
                 d.salutation(), d.firstName(), d.lastName(), d.company(), d.addition(), d.street(), d.postalCode(),
                 d.city(), d.phone(), d.mobile(), d.email(), !c.isFromSwissGarage(), c.isActive(), c.isFormer(),
+                c.isNoReminders(), ReminderContact.of(d).map(ReminderContact::channel).orElse(null),
                 c.getUpdatedAt(), c.getUpdatedBy());
     }
 }

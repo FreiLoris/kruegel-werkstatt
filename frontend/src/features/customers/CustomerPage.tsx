@@ -16,6 +16,7 @@ import styles from './CustomerPage.module.css'
 import { FormerBadge } from './FormerBadge'
 import type { Customer } from './customerSearchApi'
 import { VehicleTires } from '../tire-hotel/VehicleTires'
+import { CustomerReminder } from '../reminders/CustomerReminder'
 
 /**
  * A customer at a glance (UX G-05): how to reach them, their vehicles, the last tasks and what lies in
@@ -89,6 +90,7 @@ function CustomerView({ customer }: { customer: Customer }) {
                 ['Handy', tel(customer.mobile)],
                 ['Telefon', tel(customer.phone)],
                 ['E-Mail', customer.email && <a key="email" href={`mailto:${customer.email}`}>{customer.email}</a>],
+                ['Erinnerung', <CustomerReminder key="reminder" customer={customer} />],
                 ['Herkunft', customer.source === 'SWISSGARAGE' ? `SwissGarage${customer.swissgarageNumber ? ` (Nr. ${customer.swissgarageNumber})` : ''}` : 'Laufkunde (in der App erfasst)'],
               ]}
             />

@@ -50,6 +50,7 @@ public record TaskDto(
         @Schema(types = {"string", "null"}, description = "Internal notes") String notes,
         @Schema(types = {"string", "null"}, format = "uuid", description = "Insurance case: the insurance; empty = none") UUID insuranceId,
         @Schema(types = {"string", "null"}, description = "The insurance's claim number") String claimNumber,
+        @Schema(description = "Remind the customer the working day before (17a)") boolean remindCustomer,
         Instant createdAt,
         @Schema(types = {"string", "null"}, format = "uuid") UUID createdBy,
         Instant updatedAt,
@@ -73,7 +74,7 @@ public record TaskDto(
                 CustomerDto.of(task.getCustomer()), task.getVehicle() == null ? null : VehicleDto.of(task.getVehicle()),
                 a.date(), a.time(), a.end(), a.timeOpen(), a.arrivesEarlier(), a.readyBy(), a.waitingCustomer(), mechanicId, liftId, acceptedById,
                 w.tireChange(), w.tireChangeKind(), task.getNewTiresDimension(), task.getNewTiresCount(), w.mfk(), w.mfkAppointment(), task.getMfkMinutes(), mfkDriverId, mfkStationId, serviceItemIds,
-                w.description(), task.getNotes(), insuranceId, task.getClaimNumber(),
+                w.description(), task.getNotes(), insuranceId, task.getClaimNumber(), task.isRemindCustomer(),
                 task.getCreatedAt(), task.getCreatedBy(), task.getUpdatedAt(), task.getUpdatedBy());
     }
 }

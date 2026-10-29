@@ -190,6 +190,7 @@ describe('toTaskRequest', () => {
       arrivesEarlier: '2026-10-14T17:00',
       readyBy: undefined,
       waitingCustomer: false,
+      remindCustomer: true,
       vehicleLocation: 'AT_CUSTOMER',
       mechanicId: undefined,
       liftId: 'l1',

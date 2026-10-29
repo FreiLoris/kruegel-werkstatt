@@ -65,6 +65,13 @@ public class CustomerService {
         return saved(customer);
     }
 
+    /** 17a: for every customer – the app's own mark, SwissGarage does not know it */
+    public CustomerDto noReminders(UUID id, boolean none) {
+        Customer customer = find(id);
+        customer.markNoReminders(none);
+        return saved(customer);
+    }
+
     public CustomerDto activate(UUID id) {
         Customer customer = findLocal(id);
         customer.activate();

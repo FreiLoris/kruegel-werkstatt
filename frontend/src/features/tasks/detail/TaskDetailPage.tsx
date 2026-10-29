@@ -37,6 +37,7 @@ import { useTaskShoppingItems } from '../../shopping/shoppingApi'
 import styles from './TaskDetailPage.module.css'
 import { TaskNumberEditor } from './TaskNumberEditor'
 import { TaskVehicleLocation } from '../VehicleLocationSwitch'
+import { reminderSummary } from '../../reminders/reminder'
 
 /**
  * A task as readable text (UI review: the old view looked like a form but nothing could be typed).
@@ -295,6 +296,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
               ['Kommt früher', task.arrivesEarlier && formatLocalDateTime(task.arrivesEarlier)],
               ['Fertig bis', task.readyBy && formatLocalDateTime(task.readyBy)],
               ['Wartekunde', task.waitingCustomer && 'Ja – Kunde wartet vor Ort'],
+              ['Erinnerung', task.date && reminderSummary(task.customer, task.remindCustomer)],
               ['Fahrzeug', <TaskVehicleLocation key="l" task={task} canEdit={canEdit} />],
               // UI review: the old view called the mechanic "Termin erstellt von"
               ['Mechaniker', <PersonOrOpen key="m" employee={employee(task.mechanicId)} />],
