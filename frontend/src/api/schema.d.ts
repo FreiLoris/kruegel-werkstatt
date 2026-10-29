@@ -1089,11 +1089,31 @@ export interface paths {
         /** Whether and when customers are reminded of their appointments */
         get: operations["settings_3"];
         /**
-         * Turn the reminders on or off, change the time
-         * @description Time 08:00–19:00. Needs the loaded `version`.
+         * Turn the reminders on or off, change the time and the wording
+         * @description Time 08:00–19:00; unknown placeholders are refused. Needs the loaded `version`.
          */
         put: operations["update_9"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reminder-settings/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A wording as an example customer gets it
+         * @description With its length in SMS – nothing is saved.
+         */
+        post: operations["preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3340,6 +3360,16 @@ export interface components {
         ReminderSettingsDto: {
             /** @description Customers are reminded the working day before */
             enabled: boolean;
+            /** @description 17e: the workshop changed the wording */
+            ownTemplate: boolean;
+            /**
+             * @description 17e: the placeholders, without braces
+             * @example [
+             *       "Anrede",
+             *       "Termin"
+             *     ]
+             */
+            placeholders: string[];
             /**
              * @description From when on the day before
              * @example 16:00
@@ -3347,6 +3377,10 @@ export interface components {
             sendTime: string;
             /** @description This installation can send SMS – the access to the SMS provider is set up */
             smsReady: boolean;
+            /** @description 17e: the wording sent – the workshop's own or the standard */
+            smsTemplate: string;
+            /** @description 17e: the app's standard wording */
+            standardTemplate: string;
             /** Format: int64 */
             version: number;
         };
@@ -3354,6 +3388,8 @@ export interface components {
             enabled: boolean;
             /** @example 16:00 */
             sendTime: string;
+            /** @description 17e: the wording with placeholders; empty = the standard text */
+            smsTemplate?: string;
             /** Format: int64 */
             version: number;
         };
@@ -3614,6 +3650,27 @@ export interface components {
         ShoppingStatusRequest: {
             /** @enum {string} */
             status: "TO_ORDER" | "QUOTE_REQUESTED" | "INFO_NEEDED" | "QUOTE_RECEIVED" | "ORDERED" | "ARRIVED" | "CANCELLED";
+        };
+        SmsPreviewDto: {
+            /**
+             * Format: int32
+             * @description Characters as the SMS counts them
+             */
+            characters: number;
+            /**
+             * Format: int32
+             * @description SMS it takes – each one is paid
+             */
+            parts: number;
+            /** @description Characters outside the SMS alphabet – replaced on the way */
+            replaced: string[];
+            /** @description For Herr Muster, SH 12345, tomorrow at 08:00 */
+            text: string;
+            /** @description Placeholders the app does not know – saving refuses them */
+            unknown: string[];
+        };
+        SmsPreviewRequest: {
+            smsTemplate: string;
         };
         StatisticsDto: {
             customers: components["schemas"]["CustomerStatisticsDto"];
@@ -10075,6 +10132,75 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReminderSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsPreviewDto"];
                 };
             };
             /** @description Bad Request */

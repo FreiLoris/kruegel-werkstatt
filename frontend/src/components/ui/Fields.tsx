@@ -73,7 +73,15 @@ export function TextField({
   )
 }
 
-export function TextArea({ label, hint, error, required, className, rows = 4, ...rest }: FieldFrameProps & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({
+  label,
+  hint,
+  error,
+  required,
+  className,
+  rows = 4,
+  ...rest
+}: FieldFrameProps & TextareaHTMLAttributes<HTMLTextAreaElement> & { ref?: Ref<HTMLTextAreaElement> }) {
   const id = useId()
   return (
     <FieldFrame id={id} label={label} hint={hint} error={error} required={required}>

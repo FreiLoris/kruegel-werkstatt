@@ -126,7 +126,7 @@ public class ReminderService {
             String plate = task.getVehicle() == null ? null : task.getVehicle().getDetails().licensePlate();
             LocalTime at = appointment.timeOpen() && !earlier ? null : dropOff.toLocalTime();
             ReminderMessage message = new ReminderText(customer.getDetails(), plate, day, at, earlier)
-                    .message(today, workshop.name(), workshop.phone());
+                    .message(today, workshop.name(), workshop.phone(), current.getSmsTemplate());
             result.add(new Due(task.getId(), task.getTaskNumber(), day, ReminderContact.of(customer.getDetails()), message));
         }
         return result;

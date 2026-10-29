@@ -125,8 +125,7 @@ class ReminderApiTest {
         assertThat(sms.sent).isEmpty();
 
         service.remindDue(THURSDAY);
-        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\n"
-                + "Bei Verhinderung bitte kurz melden.\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
+        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\nBei Verhinderung bitte melden:\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
         // no e-mail for now: to be called like one without any contact
         assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", onlyEmail, "NO_CONTACT", noContact, "NO_CONTACT"));
 
@@ -232,7 +231,7 @@ class ReminderApiTest {
         task(withMobile("079 123 45 67"), "2026-12-21", "\"arrivesEarlier\": \"2026-12-04T17:00\"");
         service.remindDue(THURSDAY);
         assertThat(sms.sent).singleElement().asString()
-                .contains("Bitte bringen Sie Ihr Fahrzeug:\nMorgen, Fr 4.12., 17:00 Uhr");
+                .contains("Morgen, Fr 4.12., 17:00 Uhr (bitte Fahrzeug bringen)");
     }
 
     @Test
@@ -271,6 +270,31 @@ class ReminderApiTest {
     @Test
     void theRecipientMaskedInTheLog() {
         assertThat(ReminderService.masked("+41791234567")).isEqualTo("+4179*****67");
+    }
+
+    @Test
+    void theWorkshopsOwnWording_seenBeforeSaved_unknownPlaceholdersRefused() throws UnsupportedEncodingException {
+        MvcTestResult preview = send("POST", "/api/reminder-settings/preview", "{ \"smsTemplate\": \"{Anrede}, {Termin}. {Datum}\" }");
+        assertThat(preview).hasStatusOk().bodyJson().extractingPath("$.unknown").asArray().containsExactly("{Datum}");
+        assertThat(preview).bodyJson().extractingPath("$.text").asString().startsWith("Guten Tag Herr Muster, Morgen, ");
+        assertThat(preview).bodyJson().extractingPath("$.parts").isEqualTo(1);
+
+        MvcTestResult refused = send("PUT", "/api/reminder-settings",
+                "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \"{Datum}\", \"version\": 0 }");
+        assertThat(refused).hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("smsTemplate");
+
+        MvcTestResult own = send("PUT", "/api/reminder-settings",
+                "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \"{Anrede}, bis {Termin}! {Firma}\", \"version\": 0 }");
+        assertThat(own).hasStatusOk().bodyJson().extractingPath("$.ownTemplate").isEqualTo(true);
+
+        task(withMobile("079 123 45 67"), "2026-12-04", null);
+        service.remindDue(THURSDAY);
+        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber, bis Morgen, Fr 4.12., 08:00 Uhr! Krügel Fahrzeugtechnik");
+
+        // back to the standard: empty
+        MvcTestResult standard = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \" \", \"version\": 1 }");
+        assertThat(standard).bodyJson().extractingPath("$.ownTemplate").isEqualTo(false);
+        assertThat(standard).bodyJson().extractingPath("$.smsTemplate").asString().startsWith("{Anrede}");
     }
 
     private void turnOn() {

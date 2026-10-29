@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { dataOrThrow } from '../../api/errors'
 import type { components } from '../../api/schema'
@@ -42,5 +42,17 @@ export function useToCall(date: string) {
   return useQuery({
     queryKey: ['reminders', 'to-call', date],
     queryFn: async ({ signal }) => dataOrThrow(await api.GET('/api/reminders/to-call', { params: { query: { date } }, signal })),
+  })
+}
+
+export type SmsPreview = components['schemas']['SmsPreviewDto']
+
+/** The wording as an example customer gets it, and how many SMS it takes (17e) – nothing is saved */
+export function useSmsPreview(smsTemplate: string) {
+  return useQuery({
+    queryKey: [TOPIC, 'preview', smsTemplate],
+    queryFn: async () => dataOrThrow(await api.POST('/api/reminder-settings/preview', { body: { smsTemplate } })),
+    // typing: the last preview stays until the new one is there
+    placeholderData: keepPreviousData,
   })
 }
