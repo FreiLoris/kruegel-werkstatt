@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /** The reminder settings (17a): read by the job and the settings page, changed in the settings. */
 @Service
@@ -40,7 +41,13 @@ public class ReminderSettingsService {
         if (!ReminderSettings.isValidSendTime(request.sendTime())) {
             throw new InvalidInputException("sendTime", "muss zwischen %s und %s liegen".formatted(ReminderSettings.EARLIEST, ReminderSettings.LATEST));
         }
-        settings.update(request.enabled(), request.sendTime());
+        if (request.smsTemplate() != null) {
+            List<String> unknown = SmsTemplate.unknownPlaceholders(request.smsTemplate());
+            if (!unknown.isEmpty()) {
+                throw new InvalidInputException("smsTemplate", "unbekannt: %s – möglich sind %s".formatted(String.join(", ", unknown), known()));
+            }
+        }
+        settings.update(request.enabled(), request.sendTime(), request.smsTemplate());
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
         return dto(settings);
@@ -51,8 +58,12 @@ public class ReminderSettingsService {
                 .orElseThrow(() -> new IllegalStateException("Reminder settings missing – migration V57 creates them"));
     }
 
+    private static String known() {
+        return SmsTemplate.PLACEHOLDERS.stream().map(p -> "{" + p + "}").collect(Collectors.joining(", "));
+    }
+
     private ReminderSettingsDto dto(ReminderSettings s) {
-        return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(),
-                ready.contains(ReminderChannel.SMS));
+        return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(), ready.contains(ReminderChannel.SMS),
+                s.getSmsTemplate(), s.hasOwnTemplate(), SmsTemplate.STANDARD, SmsTemplate.PLACEHOLDERS);
     }
 }

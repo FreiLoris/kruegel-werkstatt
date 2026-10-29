@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { Checkbox, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import styles from '../tire-hotel/TireHotel.module.css'
+import { SmsTemplateField } from './SmsTemplateField'
 import { useReminderSettings, useSaveReminderSettings, type ReminderSettings } from './reminderApi'
 
 /** Customers reminded of their appointment the working day before (17a) – one setting for all devices. */
@@ -28,22 +29,24 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
   const [openedVersion, setOpenedVersion] = useState(settings.version)
   const [enabled, setEnabled] = useState(settings.enabled)
   const [sendTime, setSendTime] = useState(settings.sendTime.slice(0, 5))
+  const [smsTemplate, setSmsTemplate] = useState(settings.smsTemplate)
 
   const invalid = !/^\d{2}:\d{2}$/.test(sendTime) || sendTime < '08:00' || sendTime > '19:00'
-  const changed = enabled !== settings.enabled || sendTime !== settings.sendTime.slice(0, 5)
+  const changed = enabled !== settings.enabled || sendTime !== settings.sendTime.slice(0, 5) || smsTemplate !== settings.smsTemplate
   useUnsavedChanges(changed)
 
   function submit(event: FormEvent) {
     event.preventDefault()
     if (invalid) return
     save.mutate(
-      { enabled, sendTime, version: openedVersion },
+      { enabled, sendTime, smsTemplate, version: openedVersion },
       {
         onSuccess: (saved) => {
           setOpenedVersion(saved.version)
           setEnabled(saved.enabled)
           setSendTime(saved.sendTime.slice(0, 5))
-          toast.success(saved.enabled ? 'Erinnerungen eingeschaltet' : 'Erinnerungen ausgeschaltet')
+          setSmsTemplate(saved.smsTemplate)
+          toast.success(saved.enabled ? 'Kundenerinnerungen gespeichert – eingeschaltet' : 'Kundenerinnerungen gespeichert – ausgeschaltet')
         },
         onError: (error) => {
           if (!(error instanceof ApiError && (error.problem.errors?.length ?? 0) > 0)) toast.error(`Nicht gespeichert: ${reasonOf(error)}`)
@@ -73,6 +76,13 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
             error={invalid ? 'zwischen 08:00 und 19:00' : save.error instanceof ApiError ? save.error.messageForField('sendTime') : undefined}
           />
         </div>
+        <SmsTemplateField
+          value={smsTemplate}
+          onChange={setSmsTemplate}
+          settings={settings}
+          disabled={!canEdit}
+          error={save.error instanceof ApiError ? save.error.messageForField('smsTemplate') : undefined}
+        />
       </form>
       <p className="muted">SMS: {settings.smsReady ? 'eingerichtet' : 'auf diesem Server nicht eingerichtet – SMS werden nur protokolliert'}</p>
       {canEdit && (

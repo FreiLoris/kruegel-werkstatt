@@ -6302,7 +6302,7 @@
         "tags" : [ "Reminders" ]
       },
       "put" : {
-        "description" : "Time 08:00–19:00. Needs the loaded `version`.",
+        "description" : "Time 08:00–19:00; unknown placeholders are refused. Needs the loaded `version`.",
         "operationId" : "update_9",
         "requestBody" : {
           "content" : {
@@ -6376,7 +6376,87 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Turn the reminders on or off, change the time",
+        "summary" : "Turn the reminders on or off, change the time and the wording",
+        "tags" : [ "Reminders" ]
+      }
+    },
+    "/api/reminder-settings/preview" : {
+      "post" : {
+        "description" : "With its length in SMS – nothing is saved.",
+        "operationId" : "preview",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SmsPreviewRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SmsPreviewDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "A wording as an example customer gets it",
         "tags" : [ "Reminders" ]
       }
     },
@@ -15816,6 +15896,18 @@
             "type" : "boolean",
             "description" : "Customers are reminded the working day before"
           },
+          "ownTemplate" : {
+            "type" : "boolean",
+            "description" : "17e: the workshop changed the wording"
+          },
+          "placeholders" : {
+            "type" : "array",
+            "description" : "17e: the placeholders, without braces",
+            "example" : [ "Anrede", "Termin" ],
+            "items" : {
+              "type" : "string"
+            }
+          },
           "sendTime" : {
             "type" : "string",
             "description" : "From when on the day before",
@@ -15825,12 +15917,20 @@
             "type" : "boolean",
             "description" : "This installation can send SMS – the access to the SMS provider is set up"
           },
+          "smsTemplate" : {
+            "type" : "string",
+            "description" : "17e: the wording sent – the workshop's own or the standard"
+          },
+          "standardTemplate" : {
+            "type" : "string",
+            "description" : "17e: the app's standard wording"
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "enabled", "sendTime", "smsReady", "version" ]
+        "required" : [ "enabled", "ownTemplate", "placeholders", "sendTime", "smsReady", "smsTemplate", "standardTemplate", "version" ]
       },
       "ReminderSettingsRequest" : {
         "type" : "object",
@@ -15841,6 +15941,12 @@
           "sendTime" : {
             "type" : "string",
             "example" : "16:00"
+          },
+          "smsTemplate" : {
+            "type" : "string",
+            "description" : "17e: the wording with placeholders; empty = the standard text, missing = unchanged",
+            "maxLength" : 600,
+            "minLength" : 0
           },
           "version" : {
             "type" : "integer",
@@ -16331,6 +16437,51 @@
           }
         },
         "required" : [ "status" ]
+      },
+      "SmsPreviewDto" : {
+        "type" : "object",
+        "properties" : {
+          "characters" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Characters as the SMS counts them"
+          },
+          "parts" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "SMS it takes – each one is paid"
+          },
+          "replaced" : {
+            "type" : "array",
+            "description" : "Characters outside the SMS alphabet – replaced on the way",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "text" : {
+            "type" : "string",
+            "description" : "For Herr Muster, SH 12345, tomorrow at 08:00"
+          },
+          "unknown" : {
+            "type" : "array",
+            "description" : "Placeholders the app does not know – saving refuses them",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "required" : [ "characters", "parts", "replaced", "text", "unknown" ]
+      },
+      "SmsPreviewRequest" : {
+        "type" : "object",
+        "properties" : {
+          "smsTemplate" : {
+            "type" : "string",
+            "maxLength" : 600,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "smsTemplate" ]
       },
       "StatisticsDto" : {
         "type" : "object",

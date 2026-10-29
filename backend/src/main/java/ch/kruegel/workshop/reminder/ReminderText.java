@@ -6,11 +6,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
- * The reminder's wording (17a) – in short lines, the day on a line of its own (feedback 2026-10-29:
- * one block read badly on the phone):
+ * The reminder for one task (17a): the workshop's template ({@link SmsTemplate}, 17e) with this
+ * task's values – by default:
  * <pre>
  * Guten Tag Herr Huber
  *
@@ -24,8 +26,6 @@ import java.util.Locale;
  * Freundliche Grüsse
  * Krügel Fahrzeugtechnik
  * </pre>
- * The fixed wording only in characters of the SMS alphabet (GSM 7-bit) – one dash or guillemet would
- * make every SMS cost more than twice as much.
  *
  * @param customer     who is greeted
  * @param plate        the car's licence plate; may be open
@@ -38,19 +38,22 @@ record ReminderText(CustomerDetails customer, String plate, LocalDate day, Local
     private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("d.M.");
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm");
 
-    ReminderMessage message(LocalDate today, String company, String companyPhone) {
+    ReminderMessage message(LocalDate today, String company, String companyPhone, String template) {
+        Map<String, String> values = new HashMap<>();
+        values.put(SmsTemplate.GREETING, greeting());
+        values.put(SmsTemplate.WHEN, when(today));
+        values.put(SmsTemplate.PLATE, plate);
+        values.put(SmsTemplate.PHONE, companyPhone);
+        values.put(SmsTemplate.COMPANY, company);
+        return new ReminderMessage(SmsTemplate.fill(template, values));
+    }
+
+    /** "Morgen, Fr 30.10., 08:00 Uhr" – "Mo 2.11." when the time is open */
+    private String when(LocalDate today) {
         String weekday = day.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.GERMAN).replace(".", "");
-        String when = (day.equals(today.plusDays(1)) ? "Morgen, " : "") + weekday + " " + DAY_MONTH.format(day)
-                + (time == null ? "" : ", " + CLOCK.format(time) + " Uhr");
-        StringBuilder text = new StringBuilder(greeting()).append("\n\n")
-                .append(bringEarlier ? "Wir erinnern Sie an Ihren Termin. Bitte bringen Sie Ihr Fahrzeug:" : "Wir erinnern Sie an Ihren Termin:")
-                .append('\n').append(when);
-        if (plate != null) {
-            text.append("\nFahrzeug ").append(plate);
-        }
-        text.append("\n\n").append(companyPhone == null ? "Bei Verhinderung bitte kurz melden." : "Bei Verhinderung bitte melden:\n" + companyPhone)
-                .append("\n\nFreundliche Grüsse\n").append(company);
-        return new ReminderMessage(text.toString());
+        return (day.equals(today.plusDays(1)) ? "Morgen, " : "") + weekday + " " + DAY_MONTH.format(day)
+                + (time == null ? "" : ", " + CLOCK.format(time) + " Uhr")
+                + (bringEarlier ? " (bitte Fahrzeug bringen)" : "");
     }
 
     /** "Guten Tag Herr Huber" – a company or an unknown salutation: "Guten Tag" */
