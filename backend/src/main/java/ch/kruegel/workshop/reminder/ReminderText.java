@@ -48,7 +48,7 @@ record ReminderText(CustomerDetails customer, String plate, LocalDate day, Local
         if (plate != null) {
             text.append("\nFahrzeug ").append(plate);
         }
-        text.append("\n\n").append(companyPhone == null ? "Bei Verhinderung bitte kurz melden." : "Bei Verhinderung bitte melden:" + (char) 10 + companyPhone)
+        text.append("\n\n").append(companyPhone == null ? "Bei Verhinderung bitte kurz melden." : "Bei Verhinderung bitte melden:\n" + companyPhone)
                 .append("\n\nFreundliche Grüsse\n").append(company);
         return new ReminderMessage("Terminerinnerung " + company, text.toString());
     }
