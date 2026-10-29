@@ -67,7 +67,7 @@ class CustomerController {
     @Operation(summary = "Wants no reminders of appointments (17a)", description = "Also for SwissGarage customers – SwissGarage does not know it.")
     @PutMapping("/{id}/no-reminders")
     CustomerDto noReminders(@PathVariable UUID id, @Valid @RequestBody NoRemindersRequest request) {
-        return service.noReminders(id, request.noReminders());
+        return service.markNoReminders(id, request.noReminders());
     }
 
     @Operation(summary = "Activate local customer again")

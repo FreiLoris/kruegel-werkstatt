@@ -16,7 +16,7 @@ export type ReminderReach =
 export function reminderReach(customer: Reachable): ReminderReach {
   if (customer.noReminders) return { kind: 'refused' }
   if (customer.reminderChannel === 'SMS') return { kind: 'sms' }
-  if (customer.reminderChannel === 'EMAIL') return { kind: 'email', to: customer.email ?? '' }
+  if (customer.reminderChannel === 'EMAIL' && customer.email) return { kind: 'email', to: customer.email }
   return { kind: 'noContact', source: customer.source }
 }
 
@@ -30,6 +30,12 @@ export function reminderSummary(customer: Reachable, remind: boolean): string {
   const reach = reminderReach(customer)
   if (!canRemind(reach)) return reminderHint(reach)
   return remind ? `am Vortag ${reminderHint(reach)}` : 'nein'
+}
+
+/** On the customer page: how they are reminded, or why not */
+export function customerReminderLabel(reach: ReminderReach): string {
+  if (reach.kind === 'refused') return 'möchte keine'
+  return reach.kind === 'noContact' ? reminderHint(reach) : `am Vortag ${reminderHint(reach)}`
 }
 
 /** The line under the tick: how, or why not and what to do instead */

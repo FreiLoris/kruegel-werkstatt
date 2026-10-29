@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +105,7 @@ class ReminderApiTest {
         assertThat(settings).bodyJson().extractingPath("$.smsReady").isEqualTo(true);
         assertThat(settings).bodyJson().extractingPath("$.emailReady").isEqualTo(false);
 
-        task(customer("079 123 45 67", null), "2026-12-04", null);
+        task(withMobile("079 123 45 67"), "2026-12-04", null);
         service.remindDue(THURSDAY);
         assertThat(sms.sent).isEmpty();
 
@@ -115,11 +116,11 @@ class ReminderApiTest {
     @Test
     void theDayBeforeBySmsElseByEMailElseSomeoneCalls() {
         turnOn();
-        String bySms = task(customer("079 123 45 67", null), "2026-12-04", null);
-        String byMail = task(customer("052 000 00 00", "huber@example.ch"), "2026-12-04", null);
-        String noContact = task(customer("052 000 00 00", null), "2026-12-04", null);
-        task(customer("079 999 99 99", null), "2026-12-04", "\"remindCustomer\": false");
-        task(customer("079 888 88 88", null), "2026-12-07", null);
+        String bySms = task(withMobile("079 123 45 67"), "2026-12-04", null);
+        String byMail = task(customer("052 000 00 00", null, "huber@example.ch"), "2026-12-04", null);
+        String noContact = task(customer("052 000 00 00", null, null), "2026-12-04", null);
+        task(withMobile("079 999 99 99"), "2026-12-04", "\"remindCustomer\": false");
+        task(withMobile("079 888 88 88"), "2026-12-07", null);
 
         service.remindDue(THURSDAY.withHour(15).withMinute(55));
         assertThat(sms.sent).isEmpty();
@@ -138,7 +139,7 @@ class ReminderApiTest {
     @Test
     void onFridayAlsoForMondayButNotAtNight() {
         turnOn();
-        task(customer("079 123 45 67", null), "2026-12-07", null);
+        task(withMobile("079 123 45 67"), "2026-12-07", null);
         service.remindDue(LocalDateTime.of(2026, 12, 4, 20, 0));
         assertThat(sms.sent).isEmpty();
         service.remindDue(LocalDateTime.of(2026, 12, 4, 16, 0));
@@ -148,9 +149,9 @@ class ReminderApiTest {
     @Test
     void notWhenTheCustomerWantsNoneOrTheCarIsHere() {
         turnOn();
-        Customer huber = customer("079 123 45 67", null);
+        Customer huber = withMobile("079 123 45 67");
         task(huber, "2026-12-04", null);
-        task(customer("079 222 22 22", null), "2026-12-04", "\"vehicleLocation\": \"AT_WORKSHOP\"");
+        task(withMobile("079 222 22 22"), "2026-12-04", "\"vehicleLocation\": \"AT_WORKSHOP\"");
 
         MvcTestResult none = send("PUT", "/api/customers/" + huber.getId() + "/no-reminders", "{ \"noReminders\": true }");
         assertThat(none).hasStatusOk().bodyJson().extractingPath("$.noReminders").isEqualTo(true);
@@ -163,7 +164,7 @@ class ReminderApiTest {
     @Test
     void aFailureIsKeptForSomeoneToCall() {
         turnOn();
-        String task = task(customer("079 123 45 67", null), "2026-12-04", null);
+        String task = task(withMobile("079 123 45 67"), "2026-12-04", null);
         sms.failing = true;
         service.remindDue(THURSDAY);
         assertThat(outcomes()).containsExactlyEntriesOf(Map.of(task, "FAILED"));
@@ -172,7 +173,7 @@ class ReminderApiTest {
 
     @Test
     void ticked_unlessTakenOff_andKeptWhenEditedWithoutIt() throws UnsupportedEncodingException {
-        Customer huber = customer("079 123 45 67", null);
+        Customer huber = withMobile("079 123 45 67");
         MvcTestResult created = send("POST", "/api/tasks", taskBody(huber, "2026-12-04", null));
         assertThat(created).bodyJson().extractingPath("$.remindCustomer").isEqualTo(true);
         String id = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
@@ -183,6 +184,54 @@ class ReminderApiTest {
                 .bodyJson().extractingPath("$.remindCustomer").isEqualTo(false);
     }
 
+    @Test
+    void aCarThatComesEarlierIsRemindedForThatDay_evenLongBefore() {
+        turnOn();
+        task(withMobile("079 123 45 67"), "2026-12-21", "\"arrivesEarlier\": \"2026-12-04T17:00\"");
+        service.remindDue(THURSDAY);
+        assertThat(sms.sent).singleElement().asString()
+                .contains("wir erinnern Sie an Ihren Termin: Bitte bringen Sie Ihr Fahrzeug morgen, Fr 4.12., um 17:00.");
+    }
+
+    @Test
+    void anOpenTimeIsNotNamed() {
+        turnOn();
+        task(withMobile("079 123 45 67"), "2026-12-04", "\"timeOpen\": true");
+        service.remindDue(THURSDAY);
+        assertThat(sms.sent).singleElement().asString().contains("Ihren Termin morgen, Fr 4.12. Bei Verhinderung");
+    }
+
+    @Test
+    void waitingForPartsYes_doneNo_takenTodayNo() {
+        turnOn();
+        String waiting = task(withMobile("079 111 11 11"), "2026-12-04", null);
+        String done = task(withMobile("079 222 22 22"), "2026-12-04", null);
+        String today = task(withMobile("079 333 33 33"), "2026-12-04", null);
+        assertThat(send("PUT", "/api/tasks/" + waiting + "/status", "{ \"status\": \"WAITING_FOR_PARTS\" }")).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + done + "/status", "{ \"status\": \"DONE\" }")).hasStatusOk();
+        jdbc.update("UPDATE task SET created_at = '2026-12-03T09:00:00+01' WHERE id = ?::uuid", today);
+
+        service.remindDue(THURSDAY);
+        assertThat(outcomes()).containsOnlyKeys(waiting);
+    }
+
+    @Test
+    void beforeAHolidayAlsoForTheDayAfter() {
+        turnOn();
+        // Ascension 2027 is Thursday, 6 May: on Wednesday the reminders for Friday go out too
+        task(withMobile("079 123 45 67"), "2027-05-07", null);
+        service.remindDue(LocalDateTime.of(2027, 5, 6, 16, 5));
+        assertThat(sms.sent).isEmpty();
+        service.remindDue(LocalDateTime.of(2027, 5, 5, 16, 5));
+        assertThat(sms.sent).singleElement().asString().contains("am Fr 7.5. um 08:00");
+    }
+
+    @Test
+    void theRecipientMaskedInTheLog() {
+        assertThat(ReminderService.masked("+41791234567")).isEqualTo("+4179*****67");
+        assertThat(ReminderService.masked("huber@example.ch")).isEqualTo("h***@example.ch");
+    }
+
     private void turnOn() {
         assertThat(send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"version\": 0 }")).hasStatusOk();
     }
@@ -190,7 +239,7 @@ class ReminderApiTest {
     private Map<String, String> outcomes() {
         return Map.copyOf(jdbc.query("SELECT task_id, outcome FROM task_reminder",
                 rs -> {
-                    var result = new java.util.HashMap<String, String>();
+                    Map<String, String> result = new HashMap<>();
                     while (rs.next()) {
                         result.put(rs.getString(1), rs.getString(2));
                     }
@@ -198,10 +247,13 @@ class ReminderApiTest {
                 }));
     }
 
-    private Customer customer(String phone, String email) {
-        boolean mobile = phone.startsWith("07");
+    private Customer withMobile(String mobile) {
+        return customer(null, mobile, null);
+    }
+
+    private Customer customer(String phone, String mobile, String email) {
         return customers.save(Customer.local(new CustomerDetails("Herr", "Peter", "Huber", null, null, null, null, null,
-                mobile ? null : phone, mobile ? phone : null, email)));
+                phone, mobile, email)));
     }
 
     private String task(Customer customer, String date, String moreFields) {

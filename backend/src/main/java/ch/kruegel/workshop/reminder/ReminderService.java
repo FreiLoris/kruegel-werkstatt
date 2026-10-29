@@ -1,7 +1,5 @@
 package ch.kruegel.workshop.reminder;
 
-import ch.kruegel.workshop.common.live.DataChanged;
-import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.company.CompanyDto;
 import ch.kruegel.workshop.company.CompanyService;
 import ch.kruegel.workshop.customer.Customer;
@@ -11,15 +9,10 @@ import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
 import ch.kruegel.workshop.task.Appointment;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
-import ch.kruegel.workshop.task.TaskStatus;
-import ch.kruegel.workshop.task.VehicleLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Clock;
@@ -31,70 +24,48 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Reminds customers of their appointments (17a): on a working day, from the set time on, every
  * customer who is to bring the car before the next working day – on Friday also for Saturday to
- * Monday. An SMS, else an e-mail; once per task and day. Nothing could be sent: that is kept too,
- * someone has to call.
+ * Monday. An SMS, else an e-mail; once per task and day. What happened is kept with the task, also
+ * when nothing could be sent – then someone has to call (shown with the task from 17d on).
  *
  * <p>Not reminded: a task taken off ("nicht erinnern"), a customer who wants none, a car already
- * here or a task started or done, and a task taken today – the customer just spoke to us.
+ * here or a task started or done ({@link TaskRepository#toRemind}), and a task taken today – the
+ * customer just spoke to us.
  */
 @Service
 public class ReminderService {
 
-    public static final String TOPIC = "reminder-settings";
-
     /** Not later in the evening – a task planned after that is not reminded */
     static final LocalTime SEND_UNTIL = LocalTime.of(20, 0);
 
-    /** A car that comes earlier comes at most this many days before its appointment */
-    private static final int EARLIER_DAYS = 7;
-
     private static final Logger log = LoggerFactory.getLogger(ReminderService.class);
 
-    private final ReminderSettingsRepository settings;
+    private final ReminderSettingsService settings;
     private final TaskReminderRepository reminders;
     private final TaskRepository tasks;
     private final ZurichPublicHolidays holidays;
     private final CompanyService company;
     private final Map<ReminderChannel, ReminderSender> senders = new EnumMap<>(ReminderChannel.class);
-    private final ApplicationEventPublisher events;
     private final TransactionTemplate transaction;
     private final Clock clock;
 
-    ReminderService(ReminderSettingsRepository settings, TaskReminderRepository reminders, TaskRepository tasks,
+    ReminderService(ReminderSettingsService settings, TaskReminderRepository reminders, TaskRepository tasks,
                     ZurichPublicHolidays holidays, CompanyService company, List<ReminderSender> senders,
-                    ApplicationEventPublisher events, PlatformTransactionManager transactions, Clock clock) {
+                    PlatformTransactionManager transactions, Clock clock) {
         this.settings = settings;
         this.reminders = reminders;
         this.tasks = tasks;
         this.holidays = holidays;
         this.company = company;
         senders.forEach(sender -> this.senders.put(sender.channel(), sender));
-        this.events = events;
         this.transaction = new TransactionTemplate(transactions);
         this.clock = clock;
-    }
-
-    @Transactional(readOnly = true)
-    public ReminderSettingsDto settings() {
-        return dto(theSettings());
-    }
-
-    @Transactional
-    public ReminderSettingsDto updateSettings(ReminderSettingsRequest request) {
-        ReminderSettings current = theSettings();
-        current.checkVersion(request.version());
-        if (request.sendTime().isBefore(ReminderSettings.EARLIEST) || request.sendTime().isAfter(ReminderSettings.LATEST)) {
-            throw new InvalidInputException("sendTime", "muss zwischen 08:00 und 19:00 liegen");
-        }
-        current.update(request.enabled(), request.sendTime());
-        settings.flush();
-        events.publishEvent(new DataChanged(TOPIC));
-        return dto(current);
     }
 
     /** Called by {@link ReminderJob} every few minutes: whoever is due now is reminded. */
@@ -103,13 +74,19 @@ public class ReminderService {
     }
 
     void remindDue(LocalDateTime now) {
-        // read in one go; each one sent and kept on its own – a provider that fails stops nothing else
-        List<Due> due = transaction.execute(status -> due(now));
-        due.forEach(this::remind);
+        // read in one go; each one sent and kept on its own – one that fails stops nothing else
+        for (Due due : transaction.execute(status -> due(now))) {
+            try {
+                remind(due);
+            } catch (RuntimeException e) {
+                // sent, but not kept (database gone): the next run sends it again – rather twice than not at all
+                log.error("Reminder of task {} not kept", due.taskNumber(), e);
+            }
+        }
     }
 
     private List<Due> due(LocalDateTime now) {
-        ReminderSettings current = theSettings();
+        ReminderSettings current = settings.theSettings();
         LocalDate today = now.toLocalDate();
         LocalTime time = now.toLocalTime();
         if (!current.isEnabled() || !holidays.isWorkingDay(today) || time.isBefore(current.getSendTime()) || !time.isBefore(SEND_UNTIL)) {
@@ -120,14 +97,17 @@ public class ReminderService {
         while (!holidays.isWorkingDay(last)) {
             last = last.plusDays(1);
         }
+        Set<Reminded> done = reminders.findByDropOffDateBetween(first, last).stream()
+                .map(r -> new Reminded(r.getTaskId(), r.getDropOffDate()))
+                .collect(Collectors.toSet());
         CompanyDto workshop = company.get();
         List<Due> result = new ArrayList<>();
-        for (Task task : tasks.findByAppointmentDateBetween(first, last.plusDays(EARLIER_DAYS), Sort.unsorted())) {
+        for (Task task : tasks.toRemind(first, last)) {
             Appointment appointment = task.getAppointment();
             boolean earlier = appointment.arrivesEarlier() != null;
             LocalDateTime dropOff = earlier ? appointment.arrivesEarlier() : appointment.date().atTime(appointment.time());
             LocalDate day = dropOff.toLocalDate();
-            if (day.isBefore(first) || day.isAfter(last) || !toRemind(task, today) || reminders.existsByTaskIdAndDropOffDate(task.getId(), day)) {
+            if (LocalDate.ofInstant(task.getCreatedAt(), clock.getZone()).equals(today) || done.contains(new Reminded(task.getId(), day))) {
                 continue;
             }
             Customer customer = task.getCustomer();
@@ -138,14 +118,6 @@ public class ReminderService {
             result.add(new Due(task.getId(), task.getTaskNumber(), day, ReminderContact.of(customer.getDetails()), message));
         }
         return result;
-    }
-
-    private boolean toRemind(Task task, LocalDate today) {
-        return task.isRemindCustomer()
-                && !task.getCustomer().isNoReminders()
-                && (task.getStatus() == TaskStatus.RECEIVED || task.getStatus() == TaskStatus.WAITING_FOR_PARTS)
-                && task.getVehicleLocation() == VehicleLocation.AT_CUSTOMER
-                && !LocalDate.ofInstant(task.getCreatedAt(), clock.getZone()).equals(today);
     }
 
     private void remind(Due due) {
@@ -163,14 +135,18 @@ public class ReminderService {
             reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), ReminderOutcome.LOGGED, null));
             return;
         }
+        ReminderOutcome outcome;
+        String error = null;
         try {
             sender.send(to, due.message());
+            outcome = ReminderOutcome.SENT;
             log.info("Reminder of task {} sent by {} to {}", due.taskNumber(), to.channel(), masked(to.recipient()));
-            reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), ReminderOutcome.SENT, null));
         } catch (RuntimeException e) {
-            log.warn("Reminder of task {} by {} failed: {}", due.taskNumber(), to.channel(), e.getMessage());
-            reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), ReminderOutcome.FAILED, e.getMessage()));
+            outcome = ReminderOutcome.FAILED;
+            error = e.getMessage() == null ? e.toString() : e.getMessage();
+            log.warn("Reminder of task {} by {} failed", due.taskNumber(), to.channel(), e);
         }
+        reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), outcome, error));
     }
 
     /** For the log: "+4179*****67", "h***@example.ch" – enough to tell, not a customer's data */
@@ -182,17 +158,10 @@ public class ReminderService {
         return recipient.length() <= 7 ? "***" : recipient.substring(0, 5) + "*".repeat(recipient.length() - 7) + recipient.substring(recipient.length() - 2);
     }
 
-    private ReminderSettingsDto dto(ReminderSettings s) {
-        return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(),
-                senders.containsKey(ReminderChannel.SMS), senders.containsKey(ReminderChannel.EMAIL));
-    }
-
-    private ReminderSettings theSettings() {
-        return settings.findAll().stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Reminder settings missing – migration V57 creates them"));
-    }
-
     /** A reminder to send: read in the transaction, sent after it */
     private record Due(UUID taskId, String taskNumber, LocalDate day, Optional<ReminderContact> contact, ReminderMessage message) {
+    }
+
+    private record Reminded(UUID taskId, LocalDate day) {
     }
 }

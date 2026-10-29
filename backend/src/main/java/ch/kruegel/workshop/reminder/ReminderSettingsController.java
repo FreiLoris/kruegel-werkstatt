@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Reminders")
 class ReminderSettingsController {
 
-    private final ReminderService service;
+    private final ReminderSettingsService service;
 
-    ReminderSettingsController(ReminderService service) {
+    ReminderSettingsController(ReminderSettingsService service) {
         this.service = service;
     }
 
@@ -30,6 +30,6 @@ class ReminderSettingsController {
     @Operation(summary = "Turn the reminders on or off, change the time", description = "Time 08:00–19:00. Needs the loaded `version`.")
     @PutMapping
     ReminderSettingsDto update(@Valid @RequestBody ReminderSettingsRequest request) {
-        return service.updateSettings(request);
+        return service.update(request);
     }
 }

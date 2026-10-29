@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button'
 import { useToast } from '../../components/ui/toastContext'
 import { useSetNoReminders } from '../customers/customerApi'
 import type { Customer } from '../customers/customerSearchApi'
-import { reminderHint, reminderReach } from './reminder'
+import { customerReminderLabel, reminderReach } from './reminder'
 
 /**
  * On the customer page (17a): how they are reminded of appointments – and "keine Erinnerungen" for a
@@ -14,7 +14,6 @@ export function CustomerReminder({ customer }: { customer: Customer }) {
   const canEdit = useCanEdit()
   const toast = useToast()
   const setNoReminders = useSetNoReminders()
-  const reach = reminderReach(customer)
 
   function toggle() {
     setNoReminders.mutate(
@@ -25,7 +24,7 @@ export function CustomerReminder({ customer }: { customer: Customer }) {
 
   return (
     <span>
-      {reach.kind === 'refused' ? 'möchte keine' : reach.kind === 'noContact' ? reminderHint(reach) : `am Vortag ${reminderHint(reach)}`}{' '}
+      {customerReminderLabel(reminderReach(customer))}{' '}
       {canEdit && (
         <Button small variant="ghost" onClick={toggle} loading={setNoReminders.isPending}>
           {customer.noReminders ? 'Wieder erinnern' : 'Keine Erinnerungen'}

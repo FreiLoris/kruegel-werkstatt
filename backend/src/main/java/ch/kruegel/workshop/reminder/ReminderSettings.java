@@ -27,9 +27,14 @@ public class ReminderSettings extends BaseEntity {
         // for JPA
     }
 
+    /** {@link #EARLIEST} to {@link #LATEST} */
+    static boolean isValidSendTime(LocalTime sendTime) {
+        return !sendTime.isBefore(EARLIEST) && !sendTime.isAfter(LATEST);
+    }
+
     public void update(boolean enabled, LocalTime sendTime) {
         Objects.requireNonNull(sendTime, "sendTime");
-        if (sendTime.isBefore(EARLIEST) || sendTime.isAfter(LATEST)) {
+        if (!isValidSendTime(sendTime)) {
             throw new IllegalArgumentException("Send time must be " + EARLIEST + "–" + LATEST + ": " + sendTime);
         }
         this.enabled = enabled;

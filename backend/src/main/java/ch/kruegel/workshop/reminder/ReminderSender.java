@@ -12,7 +12,7 @@ public interface ReminderSender {
     ReminderChannel channel();
 
     /**
-     * @throws RuntimeException when it did not go out – the message says why (shown to the workshop)
+     * @throws RuntimeException when it did not go out – the message says why (kept with the reminder)
      */
     void send(ReminderContact to, ReminderMessage message);
 }

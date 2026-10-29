@@ -109,6 +109,25 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findByIdIn(Collection<UUID> ids);
 
     /**
+     * The tasks to remind of (17a): the car is to be brought between {@code first} and {@code last} – at
+     * the appointment, or when it comes earlier – it is still at the customer's, the task is open and
+     * ticked, the customer wants reminders. With customer and vehicle, for the text.
+     */
+    @EntityGraph(attributePaths = {"customer", "vehicle"})
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.remindCustomer = true AND t.customer.noReminders = false
+              AND t.status IN (ch.kruegel.workshop.task.TaskStatus.RECEIVED, ch.kruegel.workshop.task.TaskStatus.WAITING_FOR_PARTS)
+              AND t.vehicleLocation = ch.kruegel.workshop.task.VehicleLocation.AT_CUSTOMER
+              AND ((t.appointment.arrivesEarlier >= :fromTime AND t.appointment.arrivesEarlier < :untilTime)
+                OR (t.appointment.arrivesEarlier IS NULL AND t.appointment.date >= :from AND t.appointment.date < :until))""")
+    List<Task> toRemind(LocalDateTime fromTime, LocalDateTime untilTime, LocalDate from, LocalDate until);
+
+    default List<Task> toRemind(LocalDate first, LocalDate last) {
+        return toRemind(first.atStartOfDay(), last.plusDays(1).atStartOfDay(), first, last.plusDays(1));
+    }
+
+    /**
      * The open tyre changes with a vehicle from that day on – "Termin geplant" of the season change
      * (FB-21); without appointment: taken from then on. One left open from an earlier season does not count.
      */

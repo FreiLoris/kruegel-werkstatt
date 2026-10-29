@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canRemind, reminderReach, reminderSummary } from './reminder'
+import { canRemind, customerReminderLabel, reminderReach, reminderSummary } from './reminder'
 
 const huber = { noReminders: false, reminderChannel: 'SMS' as const, email: null, source: 'SWISSGARAGE' as const }
 
@@ -20,5 +20,14 @@ describe('reminder (17a)', () => {
   it('a customer who wants none is not reminded, ticked or not', () => {
     expect(canRemind(reminderReach({ ...huber, noReminders: true }))).toBe(false)
     expect(reminderSummary({ ...huber, noReminders: true }, true)).toContain('möchte keine Erinnerungen')
+  })
+
+  it('an e-mail channel without an address counts as no contact', () => {
+    expect(reminderReach({ ...huber, reminderChannel: 'EMAIL', email: null }).kind).toBe('noContact')
+  })
+
+  it('on the customer page', () => {
+    expect(customerReminderLabel(reminderReach(huber))).toBe('am Vortag per SMS ans Handy')
+    expect(customerReminderLabel(reminderReach({ ...huber, noReminders: true }))).toBe('möchte keine')
   })
 })

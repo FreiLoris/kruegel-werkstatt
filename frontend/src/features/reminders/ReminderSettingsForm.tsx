@@ -58,7 +58,7 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
       <p className="muted">
         Am Werktag vor dem Termin bekommt der Kunde ab der eingestellten Zeit eine SMS – ohne Handynummer eine E-Mail. Am Freitag gleich
         für Samstag bis Montag. Nicht erinnert wird, wer keine will, wessen Auftrag «nicht erinnern» hat, wessen Fahrzeug schon hier ist
-        und wer den Termin erst heute bekommen hat. Hat ein Kunde weder Handy noch E-Mail, steht es im Auftrag: dann bitte anrufen.
+        und wer den Termin erst heute bekommen hat. Hat ein Kunde weder Handy noch E-Mail, sagt es der Auftrag schon beim Erfassen: dann bitte am Vortag anrufen.
       </p>
       <form id={formId} onSubmit={submit}>
         <Checkbox label="Kunden am Vortag erinnern" disabled={!canEdit} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
