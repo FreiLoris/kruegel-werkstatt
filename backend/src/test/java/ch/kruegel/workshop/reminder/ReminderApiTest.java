@@ -126,8 +126,8 @@ class ReminderApiTest {
         assertThat(sms.sent).isEmpty();
 
         service.remindDue(THURSDAY);
-        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber, wir erinnern Sie an Ihren Termin morgen, Fr 4.12., um 08:00. "
-                + "Bei Verhinderung bitte kurz melden. Freundliche Grüsse, Krügel Fahrzeugtechnik");
+        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\n"
+                + "Bei Verhinderung bitte kurz melden.\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
         // no mail account here: only logged
         assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", byMail, "LOGGED", noContact, "NO_CONTACT"));
 
@@ -143,7 +143,7 @@ class ReminderApiTest {
         service.remindDue(LocalDateTime.of(2026, 12, 4, 20, 0));
         assertThat(sms.sent).isEmpty();
         service.remindDue(LocalDateTime.of(2026, 12, 4, 16, 0));
-        assertThat(sms.sent).singleElement().asString().contains("am Mo 7.12. um 08:00");
+        assertThat(sms.sent).singleElement().asString().contains("Mo 7.12., 08:00 Uhr");
     }
 
     @Test
@@ -190,7 +190,7 @@ class ReminderApiTest {
         task(withMobile("079 123 45 67"), "2026-12-21", "\"arrivesEarlier\": \"2026-12-04T17:00\"");
         service.remindDue(THURSDAY);
         assertThat(sms.sent).singleElement().asString()
-                .contains("wir erinnern Sie an Ihren Termin: Bitte bringen Sie Ihr Fahrzeug morgen, Fr 4.12., um 17:00.");
+                .contains("Bitte bringen Sie Ihr Fahrzeug:\nMorgen, Fr 4.12., 17:00 Uhr");
     }
 
     @Test
@@ -198,7 +198,7 @@ class ReminderApiTest {
         turnOn();
         task(withMobile("079 123 45 67"), "2026-12-04", "\"timeOpen\": true");
         service.remindDue(THURSDAY);
-        assertThat(sms.sent).singleElement().asString().contains("Ihren Termin morgen, Fr 4.12. Bei Verhinderung");
+        assertThat(sms.sent).singleElement().asString().contains("Ihren Termin:\nMorgen, Fr 4.12.\n\nBei Verhinderung");
     }
 
     @Test
@@ -223,7 +223,7 @@ class ReminderApiTest {
         service.remindDue(LocalDateTime.of(2027, 5, 6, 16, 5));
         assertThat(sms.sent).isEmpty();
         service.remindDue(LocalDateTime.of(2027, 5, 5, 16, 5));
-        assertThat(sms.sent).singleElement().asString().contains("am Fr 7.5. um 08:00");
+        assertThat(sms.sent).singleElement().asString().contains("Fr 7.5., 08:00 Uhr");
     }
 
     @Test
