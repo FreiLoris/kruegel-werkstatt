@@ -51,8 +51,8 @@ services:
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50 -XX:+UseSerialGC
       # an update with a database change backs it up first (prepared by the backup container)
       BACKUP_BEFORE_MIGRATION_DIR: /dumps/vor-update
-      # SMS reminders (17c): the workshop's ASPSMS access – set in the NAS's .env only. A test
-      # instance (APP_VERSION=dev) never sends SMS, even with them.
+      # SMS reminders (17c): the workshop's ASPSMS access – set in the NAS's .env only. Only a release
+      # sends SMS; a test instance (APP_VERSION=dev) never does, even with them.
       ASPSMS_USERKEY: ${ASPSMS_USERKEY:-}
       ASPSMS_PASSWORD: ${ASPSMS_PASSWORD:-}
       APP_VERSION: ${APP_VERSION}

@@ -30,7 +30,7 @@ class AspsmsSenderTest {
     void start() {
         RestClient.Builder http = RestClient.builder();
         aspsms = MockRestServiceServer.bindTo(http).build();
-        sender = new AspsmsSender(http, "KEY", "secret", "Kruegel");
+        sender = new AspsmsSender(http, "KEY", "secret");
     }
 
     @Test
@@ -39,7 +39,7 @@ class AspsmsSenderTest {
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().json("""
                         { "UserName": "KEY", "Password": "secret", "Originator": "Kruegel",
-                          "Recipients": ["+41791234567"], "MessageText": "Guten Tag Herr Huber, …" }""", true))
+                          "Recipients": ["+41791234567"], "MessageText": "Guten Tag Herr Huber, …", "ForceGSM7bit": true }""", true))
                 .andRespond(withSuccess("{ \"StatusCode\": \"1\", \"StatusInfo\": \"OK\" }", MediaType.APPLICATION_JSON));
 
         assertThatCode(() -> sender.send(HUBER, MESSAGE)).doesNotThrowAnyException();
@@ -54,6 +54,19 @@ class AspsmsSenderTest {
     }
 
     @Test
+    void aWrongAccessSaysWhereToLook() {
+        aspsms.expect(requestTo("https://json.aspsms.com/SendSimpleTextSMS"))
+                .andRespond(withSuccess("{ \"StatusCode\": \"9\", \"StatusInfo\": \"Invalid Password.\" }", MediaType.APPLICATION_JSON));
+        assertThatThrownBy(() -> sender.send(HUBER, MESSAGE)).hasMessage("ASPSMS-Zugang falsch – Userkey und Passwort in der .env prüfen");
+    }
+
+    @Test
+    void anEmptyAnswer() {
+        aspsms.expect(requestTo("https://json.aspsms.com/SendSimpleTextSMS")).andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+        assertThatThrownBy(() -> sender.send(HUBER, MESSAGE)).hasMessage("ASPSMS: keine Antwort");
+    }
+
+    @Test
     void anotherRefusalWithItsCode() {
         aspsms.expect(requestTo("https://json.aspsms.com/SendSimpleTextSMS"))
                 .andRespond(withSuccess("{ \"StatusCode\": \"10\", \"StatusInfo\": \"Invalid originator.\" }", MediaType.APPLICATION_JSON));
@@ -61,8 +74,8 @@ class AspsmsSenderTest {
     }
 
     @Test
-    void notReachable() {
+    void anErrorOfTheirs() {
         aspsms.expect(requestTo("https://json.aspsms.com/SendSimpleTextSMS")).andRespond(withServerError());
-        assertThatThrownBy(() -> sender.send(HUBER, MESSAGE)).hasMessageStartingWith("ASPSMS nicht erreichbar");
+        assertThatThrownBy(() -> sender.send(HUBER, MESSAGE)).hasMessageStartingWith("ASPSMS antwortet mit Fehler");
     }
 }

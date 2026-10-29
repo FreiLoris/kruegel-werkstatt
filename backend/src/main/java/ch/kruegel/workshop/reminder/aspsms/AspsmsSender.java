@@ -6,6 +6,7 @@ import ch.kruegel.workshop.reminder.ReminderMessage;
 import ch.kruegel.workshop.reminder.ReminderSender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -15,11 +16,16 @@ import java.util.Objects;
 /**
  * Sends reminders as SMS by ASPSMS (17c), a Swiss provider – its JSON API (https://json.aspsms.com).
  * A bean only when the workshop's access is set up ({@link AspsmsConfig}). The workshop's name as the
- * sender ("Kruegel": up to 11 letters, needs no unlocking).
+ * sender ({@link #ORIGINATOR}: up to 11 letters, needs no unlocking). Characters beyond the SMS alphabet
+ * (a name with "č") are replaced by ASPSMS – one would make every part of the SMS cost more than double.
+ * "OK" means taken by ASPSMS, not yet on the phone.
  */
 class AspsmsSender implements ReminderSender {
 
     static final String BASE_URL = "https://json.aspsms.com";
+
+    /** Shown on the phone as the sender */
+    static final String ORIGINATOR = "Kruegel";
 
     /** ASPSMS's "OK" – everything else says what went wrong (ListAllStatusCodes) */
     private static final String OK = "1";
@@ -29,13 +35,11 @@ class AspsmsSender implements ReminderSender {
     private final RestClient http;
     private final String userKey;
     private final String password;
-    private final String originator;
 
-    AspsmsSender(RestClient.Builder http, String userKey, String password, String originator) {
+    AspsmsSender(RestClient.Builder http, String userKey, String password) {
         this.http = http.baseUrl(BASE_URL).build();
         this.userKey = Objects.requireNonNull(userKey, "userKey");
         this.password = Objects.requireNonNull(password, "password");
-        this.originator = Objects.requireNonNull(originator, "originator");
     }
 
     @Override
@@ -50,11 +54,13 @@ class AspsmsSender implements ReminderSender {
             response = http.post()
                     .uri("/SendSimpleTextSMS")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new AspsmsMessage(userKey, password, originator, List.of(to.recipient()), message.text()))
+                    .body(new AspsmsMessage(userKey, password, ORIGINATOR, List.of(to.recipient()), message.text(), true))
                     .retrieve()
                     .body(AspsmsAnswer.class);
-        } catch (RestClientException e) {
+        } catch (ResourceAccessException e) {
             throw new IllegalStateException("ASPSMS nicht erreichbar: " + e.getMessage(), e);
+        } catch (RestClientException e) {
+            throw new IllegalStateException("ASPSMS antwortet mit Fehler: " + e.getMessage(), e);
         }
         if (response == null || !OK.equals(response.statusCode())) {
             throw new IllegalStateException(reason(response));
@@ -63,7 +69,7 @@ class AspsmsSender implements ReminderSender {
 
     /** What the workshop is told – the two that happen in practice in its words */
     private static String reason(AspsmsAnswer response) {
-        if (response == null) {
+        if (response == null || response.statusCode() == null) {
             return "ASPSMS: keine Antwort";
         }
         if (NO_CREDITS.equals(response.statusCode())) {
@@ -72,7 +78,7 @@ class AspsmsSender implements ReminderSender {
         if (WRONG_ACCESS.contains(response.statusCode())) {
             return "ASPSMS-Zugang falsch – Userkey und Passwort in der .env prüfen";
         }
-        return "ASPSMS: " + response.statusInfo() + " (" + response.statusCode() + ")";
+        return "ASPSMS: " + Objects.requireNonNullElse(response.statusInfo(), "Fehler") + " (" + response.statusCode() + ")";
     }
 
     record AspsmsMessage(
@@ -80,7 +86,8 @@ class AspsmsSender implements ReminderSender {
             @JsonProperty("Password") String password,
             @JsonProperty("Originator") String originator,
             @JsonProperty("Recipients") List<String> recipients,
-            @JsonProperty("MessageText") String messageText) {
+            @JsonProperty("MessageText") String messageText,
+            @JsonProperty("ForceGSM7bit") boolean forceGsm7bit) {
     }
 
     record AspsmsAnswer(@JsonProperty("StatusCode") String statusCode, @JsonProperty("StatusInfo") String statusInfo) {

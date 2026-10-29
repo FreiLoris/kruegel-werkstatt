@@ -8,8 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AspsmsConfigTest {
 
     private final ApplicationContextRunner context = new ApplicationContextRunner()
-            .withUserConfiguration(AspsmsConfig.class)
-            .withPropertyValues("workshop.aspsms.originator=Kruegel");
+            .withUserConfiguration(AspsmsConfig.class);
 
     @Test
     void sendsWithTheAccess() {
@@ -25,7 +24,13 @@ class AspsmsConfigTest {
 
     @Test
     void neverOnATestInstance() {
-        context.withPropertyValues("workshop.aspsms.user-key=KEY", "workshop.aspsms.password=pw", "workshop.app-version=dev")
+        context.withPropertyValues("workshop.aspsms.user-key=KEY", "workshop.aspsms.password=pw", "workshop.app-version=Dev")
+                .run(c -> assertThat(c).doesNotHaveBean(AspsmsSender.class));
+    }
+
+    @Test
+    void norWithoutAVersion() {
+        context.withPropertyValues("workshop.aspsms.user-key=KEY", "workshop.aspsms.password=pw", "workshop.app-version=")
                 .run(c -> assertThat(c).doesNotHaveBean(AspsmsSender.class));
     }
 }

@@ -24,8 +24,8 @@ import java.util.Locale;
  * Freundliche Grüsse
  * Krügel Fahrzeugtechnik
  * </pre>
- * Only characters of the SMS alphabet (GSM 7-bit) – one dash or guillemet would make every SMS cost
- * more than twice as much.
+ * The fixed wording only in characters of the SMS alphabet (GSM 7-bit) – one dash or guillemet would
+ * make every SMS cost more than twice as much.
  *
  * @param customer     who is greeted
  * @param plate        the car's licence plate; may be open
@@ -50,7 +50,7 @@ record ReminderText(CustomerDetails customer, String plate, LocalDate day, Local
         }
         text.append("\n\n").append(companyPhone == null ? "Bei Verhinderung bitte kurz melden." : "Bei Verhinderung bitte melden:\n" + companyPhone)
                 .append("\n\nFreundliche Grüsse\n").append(company);
-        return new ReminderMessage("Terminerinnerung " + company, text.toString());
+        return new ReminderMessage("Terminerinnerung: " + company, text.toString());
     }
 
     /** "Guten Tag Herr Huber" – a company or an unknown salutation: "Guten Tag" */
