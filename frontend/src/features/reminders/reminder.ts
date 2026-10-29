@@ -51,7 +51,7 @@ export function reminderHint(reach: ReminderReach): string {
 }
 
 /** Why a customer is on the day's call list (17d) */
-export function missedReason(outcome: ReminderOutcome, error: string | null): string {
+export function missedReason(outcome: Exclude<ReminderOutcome, 'SENT'>, error: string | null): string {
   switch (outcome) {
     case 'NO_CONTACT':
       return 'keine Handynummer'
@@ -59,14 +59,12 @@ export function missedReason(outcome: ReminderOutcome, error: string | null): st
       return `SMS fehlgeschlagen${error ? `: ${error}` : ''}`
     case 'LOGGED':
       return 'SMS auf diesem Server nicht eingerichtet'
-    case 'SENT':
-      return ''
   }
 }
 
 /** What happened with a task's reminder – "SMS gesendet am 29.10.2026 16:00" or why someone calls */
-export function reminderOutcomeText(reminder: Pick<Reminder, 'outcome' | 'error' | 'at'>): string {
+export function reminderOutcomeText(reminder: Pick<Reminder, 'outcome' | 'error' | 'remindedAt'>): string {
   return reminder.outcome === 'SENT'
-    ? `SMS gesendet am ${formatTimestamp(reminder.at)}`
+    ? `SMS gesendet am ${formatTimestamp(reminder.remindedAt)}`
     : `${missedReason(reminder.outcome, reminder.error)} – bitte anrufen`
 }

@@ -6382,6 +6382,7 @@
     },
     "/api/reminders" : {
       "get" : {
+        "description" : "Empty before the run the working day before – or when the task is not to be reminded.",
         "operationId" : "ofTask",
         "parameters" : [ {
           "in" : "query",
@@ -6457,13 +6458,13 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "The reminders of a task, the latest first",
+        "summary" : "The reminder of a task for its current drop-off day",
         "tags" : [ "Reminders" ]
       }
     },
     "/api/reminders/to-call" : {
       "get" : {
-        "description" : "Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up. Known from the run the working day before.",
+        "description" : "Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up – and who are still to come.",
         "operationId" : "toCall",
         "parameters" : [ {
           "in" : "query",
@@ -15778,11 +15779,6 @@
       "ReminderDto" : {
         "type" : "object",
         "properties" : {
-          "at" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "When"
-          },
           "channel" : {
             "type" : [ "string", "null" ],
             "description" : "Empty when there was no mobile number",
@@ -15801,12 +15797,17 @@
             "type" : "string",
             "enum" : [ "SENT", "LOGGED", "FAILED", "NO_CONTACT" ]
           },
+          "remindedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When the run reminded – or found it could not"
+          },
           "taskId" : {
             "type" : "string",
             "format" : "uuid"
           }
         },
-        "required" : [ "at", "channel", "dropOffDate", "error", "outcome", "taskId" ]
+        "required" : [ "channel", "dropOffDate", "error", "outcome", "remindedAt", "taskId" ]
       },
       "ReminderSettingsDto" : {
         "type" : "object",
@@ -18112,13 +18113,16 @@
             "type" : [ "string", "null" ],
             "description" : "Why the SMS failed"
           },
+          "mobile" : {
+            "type" : [ "string", "null" ]
+          },
           "outcome" : {
             "type" : "string",
+            "description" : "Never SENT",
             "enum" : [ "SENT", "LOGGED", "FAILED", "NO_CONTACT" ]
           },
           "phone" : {
-            "type" : [ "string", "null" ],
-            "description" : "Mobile, else phone – empty: none known"
+            "type" : [ "string", "null" ]
           },
           "taskId" : {
             "type" : "string",
@@ -18128,7 +18132,7 @@
             "type" : [ "string", "null" ]
           }
         },
-        "required" : [ "customerId", "customerName", "error", "outcome", "phone", "taskId", "taskNumber" ]
+        "required" : [ "customerId", "customerName", "error", "mobile", "outcome", "phone", "taskId", "taskNumber" ]
       },
       "TodoAssigneeRequest" : {
         "type" : "object",

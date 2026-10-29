@@ -1107,7 +1107,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The reminders of a task, the latest first */
+        /**
+         * The reminder of a task for its current drop-off day
+         * @description Empty before the run the working day before – or when the task is not to be reminded.
+         */
         get: operations["ofTask"];
         put?: never;
         post?: never;
@@ -1126,7 +1129,7 @@ export interface paths {
         };
         /**
          * Whom to call for a day
-         * @description Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up. Known from the run the working day before.
+         * @description Customers to bring their car that day who got no SMS: no mobile number, the SMS failed, or SMS not set up – and who are still to come.
          */
         get: operations["toCall"];
         put?: never;
@@ -3313,11 +3316,6 @@ export interface components {
         };
         ReminderDto: {
             /**
-             * Format: date-time
-             * @description When
-             */
-            at: string;
-            /**
              * @description Empty when there was no mobile number
              * @enum {string|null}
              */
@@ -3331,6 +3329,11 @@ export interface components {
             error: string | null;
             /** @enum {string} */
             outcome: "SENT" | "LOGGED" | "FAILED" | "NO_CONTACT";
+            /**
+             * Format: date-time
+             * @description When the run reminded – or found it could not
+             */
+            remindedAt: string;
             /** Format: uuid */
             taskId: string;
         };
@@ -4537,9 +4540,12 @@ export interface components {
             customerName: string;
             /** @description Why the SMS failed */
             error: string | null;
-            /** @enum {string} */
+            mobile: string | null;
+            /**
+             * @description Never SENT
+             * @enum {string}
+             */
             outcome: "SENT" | "LOGGED" | "FAILED" | "NO_CONTACT";
-            /** @description Mobile, else phone – empty: none known */
             phone: string | null;
             /** Format: uuid */
             taskId: string;

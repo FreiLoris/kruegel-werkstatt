@@ -1,5 +1,6 @@
 import { PhoneCall } from 'lucide-react'
 import { Link } from 'react-router'
+import { PhoneLinks } from '../../components/ui/PhoneLinks'
 import { missedReason } from './reminder'
 import { useToCall } from './reminderApi'
 import styles from './ToCallList.module.css'
@@ -19,9 +20,8 @@ export function ToCallList({ date }: { date: string }) {
       <ul>
         {toCall.map((entry) => (
           <li key={entry.taskId}>
-            <Link to={`/tasks/${entry.taskId}`}>{entry.customerName}</Link>{' '}
-            {entry.phone && <a href={`tel:${entry.phone.replace(/\s/g, '')}`}>{entry.phone}</a>}{' '}
-            <span className="muted">· {missedReason(entry.outcome, entry.error)}</span>
+            <Link to={`/tasks/${entry.taskId}`}>{entry.customerName}</Link> <PhoneLinks mobile={entry.mobile} phone={entry.phone} />{' '}
+            {entry.outcome !== 'SENT' && <span className="muted">· {missedReason(entry.outcome, entry.error)}</span>}
           </li>
         ))}
       </ul>

@@ -10,7 +10,8 @@ public record ToCallDto(
         @Schema(types = {"string", "null"}) String taskNumber,
         UUID customerId,
         String customerName,
-        @Schema(types = {"string", "null"}, description = "Mobile, else phone – empty: none known") String phone,
-        ReminderOutcome outcome,
+        @Schema(types = {"string", "null"}) String mobile,
+        @Schema(types = {"string", "null"}) String phone,
+        @Schema(description = "Never SENT") ReminderOutcome outcome,
         @Schema(types = {"string", "null"}, description = "Why the SMS failed") String error) {
 }

@@ -14,7 +14,7 @@ public record ReminderDto(
         @Schema(types = {"string", "null"}, description = "Empty when there was no mobile number") ReminderChannel channel,
         ReminderOutcome outcome,
         @Schema(types = {"string", "null"}, description = "Why it failed, in the workshop's words") String error,
-        @Schema(description = "When") Instant at) {
+        @Schema(description = "When the run reminded – or found it could not") Instant remindedAt) {
 
     static ReminderDto of(TaskReminder r) {
         return new ReminderDto(r.getTaskId(), r.getDropOffDate(), r.getChannel(), r.getOutcome(), r.getError(), r.getCreatedAt());

@@ -117,7 +117,7 @@ public class ReminderService {
         for (Task task : tasks.toRemind(first, last)) {
             Appointment appointment = task.getAppointment();
             boolean earlier = appointment.arrivesEarlier() != null;
-            LocalDateTime dropOff = earlier ? appointment.arrivesEarlier() : appointment.date().atTime(appointment.time());
+            LocalDateTime dropOff = dropOff(appointment);
             LocalDate day = dropOff.toLocalDate();
             if (LocalDate.ofInstant(task.getCreatedAt(), clock.getZone()).equals(today) || done.contains(new Reminded(task.getId(), day))) {
                 continue;
@@ -159,6 +159,11 @@ public class ReminderService {
             log.warn("Reminder of task {} by {} failed", due.taskNumber(), to.channel(), e);
         }
         reminders.save(new TaskReminder(due.taskId(), due.day(), to.channel(), outcome, error));
+    }
+
+    /** When the car is to be brought: when it comes earlier, else at the appointment – planned only */
+    static LocalDateTime dropOff(Appointment appointment) {
+        return appointment.arrivesEarlier() != null ? appointment.arrivesEarlier() : appointment.date().atTime(appointment.time());
     }
 
     /** For the log: "+4179*****67" – enough to tell, not a customer's data */

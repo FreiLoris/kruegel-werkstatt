@@ -6,7 +6,7 @@ import type { components } from '../../api/schema'
 export type ReminderSettings = components['schemas']['ReminderSettingsDto']
 export type ReminderSettingsRequest = components['schemas']['ReminderSettingsRequest']
 
-/** Topic for query keys and live updates – same text as in the backend (ReminderService.TOPIC). */
+/** Topic for query keys and live updates – same text as in the backend (ReminderSettingsService.TOPIC). */
 const TOPIC = 'reminder-settings'
 
 /** Whether and from when customers are reminded the working day before (17a) */

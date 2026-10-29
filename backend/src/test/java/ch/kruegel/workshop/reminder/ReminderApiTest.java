@@ -116,7 +116,7 @@ class ReminderApiTest {
     void theDayBeforeBySmsElseSomeoneCalls() {
         turnOn();
         String bySms = task(withMobile("079 123 45 67"), "2026-12-04", null);
-        String byMail = task(customer("052 000 00 00", null, "huber@example.ch"), "2026-12-04", null);
+        String onlyEmail = task(customer("052 000 00 00", null, "huber@example.ch"), "2026-12-04", null);
         String noContact = task(customer("052 000 00 00", null, null), "2026-12-04", null);
         task(withMobile("079 999 99 99"), "2026-12-04", "\"remindCustomer\": false");
         task(withMobile("079 888 88 88"), "2026-12-07", null);
@@ -128,7 +128,7 @@ class ReminderApiTest {
         assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\n"
                 + "Bei Verhinderung bitte kurz melden.\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
         // no e-mail for now: to be called like one without any contact
-        assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", byMail, "NO_CONTACT", noContact, "NO_CONTACT"));
+        assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", onlyEmail, "NO_CONTACT", noContact, "NO_CONTACT"));
 
         // ten minutes later: nothing twice
         service.remindDue(THURSDAY.plusMinutes(10));
@@ -159,6 +159,25 @@ class ReminderApiTest {
         assertThat(monday).bodyJson().extractingPath("$[0].error").isEqualTo("Kein Guthaben");
     }
 
+
+    @Test
+    void theCallListAndTheTaskFollowTheTaskAsItIsNow() {
+        turnOn();
+        Customer huber = customer("052 000 00 00", null, null);
+        String moved = task(huber, "2026-12-04", null);
+        String done = task(customer("052 111 11 11", null, null), "2026-12-04", null);
+        String arrived = task(customer("052 222 22 22", null, null), "2026-12-04", null);
+        service.remindDue(THURSDAY);
+        assertThat(mvc.get().uri("/api/reminders?taskId=" + moved).exchange()).bodyJson().extractingPath("$[0].outcome").isEqualTo("NO_CONTACT");
+
+        assertThat(send("PUT", "/api/tasks/" + moved, taskBody(huber, "2026-12-11", "\"version\": 0"))).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + done + "/status", "{ \"status\": \"DONE\" }")).hasStatusOk();
+        assertThat(send("PUT", "/api/tasks/" + arrived + "/vehicle-location", "{ \"location\": \"AT_WORKSHOP\" }")).hasStatusOk();
+
+        assertThat(mvc.get().uri("/api/reminders/to-call?date=2026-12-04").exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+        // moved: the old day's reminder is not this appointment's
+        assertThat(mvc.get().uri("/api/reminders?taskId=" + moved).exchange()).bodyJson().extractingPath("$").asArray().isEmpty();
+    }
     @Test
     void onFridayAlsoForMondayButNotAtNight() {
         turnOn();

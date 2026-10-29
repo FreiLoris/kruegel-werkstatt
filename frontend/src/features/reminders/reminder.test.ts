@@ -29,8 +29,8 @@ describe('reminder (17a)', () => {
 
 describe('what happened (17d)', () => {
   it('sent – or why someone calls', () => {
-    expect(reminderOutcomeText({ outcome: 'SENT', error: null, at: '2026-10-29T15:00:00Z' })).toMatch(/^SMS gesendet am 29\.10\.2026/)
-    expect(reminderOutcomeText({ outcome: 'FAILED', error: 'Kein Guthaben bei ASPSMS – bitte aufladen', at: '2026-10-29T15:00:00Z' })).toBe(
+    expect(reminderOutcomeText({ outcome: 'SENT', error: null, remindedAt: '2026-10-29T15:00:00Z' })).toMatch(/^SMS gesendet am 29\.10\.2026/)
+    expect(reminderOutcomeText({ outcome: 'FAILED', error: 'Kein Guthaben bei ASPSMS – bitte aufladen', remindedAt: '2026-10-29T15:00:00Z' })).toBe(
       'SMS fehlgeschlagen: Kein Guthaben bei ASPSMS – bitte aufladen – bitte anrufen',
     )
     expect(missedReason('NO_CONTACT', null)).toBe('keine Handynummer')
