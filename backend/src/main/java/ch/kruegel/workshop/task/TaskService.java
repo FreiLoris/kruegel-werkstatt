@@ -173,6 +173,9 @@ public class TaskService {
         if (request.vehicleLocation() != null) {
             task.moveVehicle(request.vehicleLocation());
         }
+        if (request.remindCustomer() != null) {
+            task.remindCustomer(request.remindCustomer());
+        }
         // last, after all checks: the number is only taken when the task is really saved
         task.assignTaskNumber(numbers.next());
         Task created = repository.save(task);
@@ -201,6 +204,9 @@ public class TaskService {
         task.newTires(request.newTiresDimension(), request.newTiresCount());
         if (request.vehicleLocation() != null) {
             task.moveVehicle(request.vehicleLocation());
+        }
+        if (request.remindCustomer() != null) {
+            task.remindCustomer(request.remindCustomer());
         }
         orderNewTires(task, tiresBefore);
         return saved(task);

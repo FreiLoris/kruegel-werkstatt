@@ -265,6 +265,7 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
             showRequired={showRequired}
             vehicleId={customerStep.vehicle?.kind === 'vehicle' ? customerStep.vehicle.vehicle.id : undefined}
             customerId={customerStep.customer?.id}
+            customer={customerStep.customer}
           >
             {/* a courtesy car is booked for a period – without an appointment there is none yet */}
             {!appointment.noAppointment && (

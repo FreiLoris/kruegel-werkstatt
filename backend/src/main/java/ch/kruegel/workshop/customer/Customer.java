@@ -43,6 +43,9 @@ public class Customer extends BaseEntity {
     /** Blocked or former in SwissGarage, kept as the holder of a vehicle (FB-27) – set by the import */
     private boolean former;
 
+    /** Wants no reminders of appointments (17a) – also a SwissGarage customer, SwissGarage does not know it */
+    private boolean noReminders;
+
     protected Customer() {
         // for JPA
     }
@@ -134,6 +137,15 @@ public class Customer extends BaseEntity {
 
     public boolean isFormer() {
         return former;
+    }
+
+    /** 17a: no reminders at all – the app's own mark, so for every customer */
+    public void markNoReminders(boolean none) {
+        this.noReminders = none;
+    }
+
+    public boolean isNoReminders() {
+        return noReminders;
     }
 
     public boolean isActive() {

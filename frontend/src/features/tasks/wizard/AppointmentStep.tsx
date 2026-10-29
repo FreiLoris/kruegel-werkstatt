@@ -33,6 +33,8 @@ import { VehicleLocationSwitch } from '../VehicleLocationSwitch'
 import { VehicleTires } from '../../tire-hotel/VehicleTires'
 import { useVehicleTireSets } from '../../tire-hotel/tireHotelApi'
 import { proposedDimension } from './tireAppointment'
+import { ReminderTick } from '../../reminders/ReminderTick'
+import type { Customer } from '../../customers/customerSearchApi'
 
 interface AppointmentStepProps {
   value: AppointmentForm
@@ -47,6 +49,8 @@ interface AppointmentStepProps {
   vehicleId?: string
   /** its customer – for the hint that a tyre change is planned already (FB-18) */
   customerId?: string
+  /** the customer itself – whether and how they can be reminded (17a) */
+  customer?: Customer | null
   /** more sections below the form, e.g. the courtesy car in the wizard */
   children?: ReactNode
 }
@@ -57,7 +61,7 @@ interface AppointmentStepProps {
  * day of the appointment at opening time (the evening before for an appointment at opening time),
  * "fertig bis" = the same evening.
  */
-export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, customerId, children }: AppointmentStepProps) {
+export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, customerId, customer, children }: AppointmentStepProps) {
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -185,6 +189,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
                 checked={form.waitingCustomer}
                 onChange={(e) => set('waitingCustomer', e.target.checked)}
               />
+              {customer && <ReminderTick customer={customer} checked={form.remindCustomer} onChange={(on) => set('remindCustomer', on)} />}
               <Checkbox
                 label="Fahrzeug kommt früher"
                 checked={form.arrivesEarlier}

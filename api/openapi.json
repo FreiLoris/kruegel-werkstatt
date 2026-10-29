@@ -495,7 +495,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_18",
+        "operationId" : "update_19",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -829,7 +829,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_17",
+        "operationId" : "update_18",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1544,7 +1544,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_16",
+        "operationId" : "update_17",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2037,7 +2037,7 @@
     "/api/courtesy-cars/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409.",
-        "operationId" : "update_15",
+        "operationId" : "update_16",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2830,7 +2830,7 @@
       },
       "put" : {
         "description" : "SwissGarage customers → 409. Needs the loaded `version`.",
-        "operationId" : "update_14",
+        "operationId" : "update_15",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3069,6 +3069,95 @@
           }
         },
         "summary" : "Deactivate local customer (instead of delete)",
+        "tags" : [ "Customers" ]
+      }
+    },
+    "/api/customers/{id}/no-reminders" : {
+      "put" : {
+        "description" : "Also for SwissGarage customers – SwissGarage does not know it.",
+        "operationId" : "noReminders",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NoRemindersRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Wants no reminders of appointments (17a)",
         "tags" : [ "Customers" ]
       }
     },
@@ -3391,7 +3480,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409 if changed in the meantime.",
-        "operationId" : "update_13",
+        "operationId" : "update_14",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3785,7 +3874,7 @@
     "/api/inspection-stations/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_12",
+        "operationId" : "update_13",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4257,7 +4346,7 @@
     "/api/insurances/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_11",
+        "operationId" : "update_12",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4721,7 +4810,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_10",
+        "operationId" : "update_11",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5702,7 +5791,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_9",
+        "operationId" : "update_10",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6142,6 +6231,153 @@
         },
         "summary" : "Public holidays of the canton of Zurich from `from` to `to` (both inclusive, max. 3 years)",
         "tags" : [ "Public holidays" ]
+      }
+    },
+    "/api/reminder-settings" : {
+      "get" : {
+        "operationId" : "settings_3",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReminderSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Whether and when customers are reminded of their appointments",
+        "tags" : [ "Reminders" ]
+      },
+      "put" : {
+        "description" : "Time 08:00–19:00. Needs the loaded `version`.",
+        "operationId" : "update_9",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReminderSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReminderSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Turn the reminders on or off, change the time",
+        "tags" : [ "Reminders" ]
       }
     },
     "/api/screen-lock-settings" : {
@@ -14251,11 +14487,20 @@
           "mobile" : {
             "type" : [ "string", "null" ]
           },
+          "noReminders" : {
+            "type" : "boolean",
+            "description" : "17a: wants no reminders of appointments"
+          },
           "phone" : {
             "type" : [ "string", "null" ]
           },
           "postalCode" : {
             "type" : [ "string", "null" ]
+          },
+          "reminderChannel" : {
+            "type" : [ "string", "null" ],
+            "description" : "17a: how a reminder would reach them – empty: no mobile number and no e-mail",
+            "enum" : [ "SMS", "EMAIL" ]
           },
           "salutation" : {
             "type" : [ "string", "null" ]
@@ -14285,7 +14530,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "active", "addition", "city", "company", "displayName", "editable", "email", "firstName", "former", "id", "lastName", "mobile", "phone", "postalCode", "salutation", "source", "street", "swissgarageNumber", "updatedAt", "updatedBy", "version" ]
+        "required" : [ "active", "addition", "city", "company", "displayName", "editable", "email", "firstName", "former", "id", "lastName", "mobile", "noReminders", "phone", "postalCode", "reminderChannel", "salutation", "source", "street", "swissgarageNumber", "updatedAt", "updatedBy", "version" ]
       },
       "CustomerRequest" : {
         "type" : "object",
@@ -15151,6 +15396,15 @@
           }
         }
       },
+      "NoRemindersRequest" : {
+        "type" : "object",
+        "properties" : {
+          "noReminders" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "noReminders" ]
+      },
       "NoteArchivedRequest" : {
         "type" : "object",
         "properties" : {
@@ -15357,6 +15611,50 @@
           }
         },
         "required" : [ "date", "name" ]
+      },
+      "ReminderSettingsDto" : {
+        "type" : "object",
+        "properties" : {
+          "emailReady" : {
+            "type" : "boolean",
+            "description" : "This installation can send e-mails – the mail account is set up"
+          },
+          "enabled" : {
+            "type" : "boolean",
+            "description" : "Customers are reminded the working day before"
+          },
+          "sendTime" : {
+            "type" : "string",
+            "description" : "From when on the day before",
+            "example" : "16:00"
+          },
+          "smsReady" : {
+            "type" : "boolean",
+            "description" : "This installation can send SMS – the access to the SMS provider is set up"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "emailReady", "enabled", "sendTime", "smsReady", "version" ]
+      },
+      "ReminderSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "sendTime" : {
+            "type" : "string",
+            "example" : "16:00"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "enabled", "sendTime", "version" ]
       },
       "RemovedSet" : {
         "type" : "object",
@@ -16488,6 +16786,10 @@
             "description" : "fertig bis",
             "example" : "2026-10-15T16:30:00"
           },
+          "remindCustomer" : {
+            "type" : "boolean",
+            "description" : "Remind the customer the working day before (17a)"
+          },
           "serviceItemIds" : {
             "type" : "array",
             "description" : "Ticked service items, in the order of the service item list",
@@ -16555,7 +16857,7 @@
             "description" : "Further work as free text"
           }
         },
-        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "newTiresCount", "newTiresDimension", "notes", "readyBy", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "vehicleLocation", "version", "waitingCustomer", "workDescription" ]
+        "required" : [ "acceptedById", "arrivesEarlier", "claimNumber", "createdAt", "createdBy", "customer", "date", "endAt", "id", "insuranceId", "liftId", "mechanicId", "mfk", "mfkAppointment", "mfkDriverId", "mfkMinutes", "mfkStationId", "newTiresCount", "newTiresDimension", "notes", "readyBy", "remindCustomer", "serviceItemIds", "status", "taskNumber", "time", "timeOpen", "tireChange", "tireChangeKind", "updatedAt", "updatedBy", "vehicle", "vehicleLocation", "version", "waitingCustomer", "workDescription" ]
       },
       "TaskNumberRequest" : {
         "type" : "object",
@@ -16697,6 +16999,10 @@
             "type" : "string",
             "format" : "date-time",
             "example" : "2026-10-15T16:30"
+          },
+          "remindCustomer" : {
+            "type" : "boolean",
+            "description" : "Remind the customer the working day before (17a); missing = yes when new, unchanged when editing"
           },
           "serviceItemIds" : {
             "type" : "array",

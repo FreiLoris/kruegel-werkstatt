@@ -174,6 +174,7 @@ function TaskEditForm({ task: current, onReload, latest }: { task: AnyTask; onRe
         taskId={task.id}
         vehicleId={vehicle?.id}
         customerId={customerStep.customer?.id}
+        customer={customerStep.customer}
       />
 
       <StickyFooterSpacer />

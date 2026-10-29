@@ -123,6 +123,9 @@ public class Task extends BaseEntity {
     /** The insurance's claim number ("Schadennummer") – only in an insurance case, may still be open */
     private String claimNumber;
 
+    /** Remind the customer the working day before (17a) – ticked unless taken off */
+    private boolean remindCustomer = true;
+
     protected Task() {
         // for JPA
     }
@@ -215,6 +218,15 @@ public class Task extends BaseEntity {
         }
         this.newTiresDimension = text;
         this.newTiresCount = tyres;
+    }
+
+    /** 17a: remind the customer the working day before – like the insurance case set apart from the details. */
+    public void remindCustomer(boolean remind) {
+        this.remindCustomer = remind;
+    }
+
+    public boolean isRemindCustomer() {
+        return remindCustomer;
     }
 
     /** Sets the task number; empty removes it. Uniqueness is checked by the service/database. */
