@@ -10,6 +10,6 @@ import java.time.LocalTime;
 public record ReminderSettingsRequest(
         @NotNull Boolean enabled,
         @NotNull @Schema(type = "string", example = "16:00") LocalTime sendTime,
-        @Size(max = SmsTemplate.MAX) @Schema(description = "17e: the wording with placeholders; empty = the standard text") String smsTemplate,
+        @Size(max = SmsTemplate.MAX) @Schema(description = "17e: the wording with placeholders; empty = the standard text, missing = unchanged") String smsTemplate,
         @NotNull Long version) {
 }

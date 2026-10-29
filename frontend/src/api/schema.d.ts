@@ -3388,7 +3388,7 @@ export interface components {
             enabled: boolean;
             /** @example 16:00 */
             sendTime: string;
-            /** @description 17e: the wording with placeholders; empty = the standard text */
+            /** @description 17e: the wording with placeholders; empty = the standard text, missing = unchanged */
             smsTemplate?: string;
             /** Format: int64 */
             version: number;

@@ -47,7 +47,10 @@ final class SmsTemplate {
     private SmsTemplate() {
     }
 
-    /** The template's placeholders the app does not know – a typo like "{Datum}" */
+    /**
+     * What the template has that the app does not know – a typo like "{Datum}", or a brace without its
+     * partner ("{Anrede" would reach the customer as it is).
+     */
     static List<String> unknownPlaceholders(String template) {
         Set<String> unknown = new LinkedHashSet<>();
         Matcher matcher = PLACEHOLDER.matcher(template);
@@ -56,12 +59,17 @@ final class SmsTemplate {
                 unknown.add(matcher.group(0));
             }
         }
+        String rest = matcher.replaceAll("");
+        if (rest.contains("{") || rest.contains("}")) {
+            unknown.add("Klammer ohne Gegenstück");
+        }
         return List.copyOf(unknown);
     }
 
     /**
-     * The text for one task: placeholders filled, lines with an empty one left out. One the app does
-     * not know stays as it is – the preview shows the typo where it is.
+     * The text for one task: placeholders filled, lines with an empty one left out – and a line ending
+     * in ":" right before it, it introduced the missing value ("Bei Verhinderung bitte melden:" without
+     * a phone). One the app does not know stays as it is – the preview shows the typo where it is.
      */
     static String fill(String template, Map<String, String> values) {
         List<String> lines = new ArrayList<>();
@@ -78,6 +86,8 @@ final class SmsTemplate {
             matcher.appendTail(filled);
             if (!empty) {
                 lines.add(filled.toString().stripTrailing());
+            } else if (!lines.isEmpty() && lines.getLast().endsWith(":")) {
+                lines.removeLast();
             }
         }
         // a left-out line must not leave two blank lines behind

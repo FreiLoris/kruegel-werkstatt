@@ -50,8 +50,9 @@ export type SmsPreview = components['schemas']['SmsPreviewDto']
 /** The wording as an example customer gets it, and how many SMS it takes (17e) – nothing is saved */
 export function useSmsPreview(smsTemplate: string) {
   return useQuery({
-    queryKey: [TOPIC, 'preview', smsTemplate],
-    queryFn: async () => dataOrThrow(await api.POST('/api/reminder-settings/preview', { body: { smsTemplate } })),
+    // a root of its own: saving the settings does not need a new preview
+    queryKey: ['reminder-preview', smsTemplate],
+    queryFn: async ({ signal }) => dataOrThrow(await api.POST('/api/reminder-settings/preview', { body: { smsTemplate }, signal })),
     // typing: the last preview stays until the new one is there
     placeholderData: keepPreviousData,
   })

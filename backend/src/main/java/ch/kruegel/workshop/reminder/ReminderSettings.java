@@ -40,11 +40,17 @@ public class ReminderSettings extends BaseEntity {
         if (!isValidSendTime(sendTime)) {
             throw new IllegalArgumentException("Send time must be " + EARLIEST + "–" + LATEST + ": " + sendTime);
         }
+        if (smsTemplate != null && !SmsTemplate.unknownPlaceholders(smsTemplate).isEmpty()) {
+            throw new IllegalArgumentException("Unknown placeholders: " + SmsTemplate.unknownPlaceholders(smsTemplate));
+        }
         this.enabled = enabled;
         this.sendTime = sendTime;
-        // the standard text is kept as "none" – a later better standard then reaches the workshop too
-        String template = smsTemplate == null ? "" : smsTemplate.strip();
-        this.smsTemplate = template.isEmpty() || template.equals(SmsTemplate.STANDARD) ? null : template;
+        // null: unchanged (a device with an older app does not send it). The standard text is kept as
+        // "none" – a later better standard then reaches the workshop too.
+        if (smsTemplate != null) {
+            String template = smsTemplate.strip();
+            this.smsTemplate = template.isEmpty() || template.equals(SmsTemplate.STANDARD) ? null : template;
+        }
     }
 
     /** The wording to send – the workshop's own, else the standard */

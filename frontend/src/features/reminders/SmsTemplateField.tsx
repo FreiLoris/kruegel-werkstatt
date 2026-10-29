@@ -5,6 +5,9 @@ import { useDebouncedValue } from '../../lib/useDebouncedValue'
 import { useSmsPreview, type ReminderSettings } from './reminderApi'
 import styles from './SmsTemplateField.module.css'
 
+/** The longest wording the server takes (SmsTemplate.MAX) */
+const SMS_TEMPLATE_MAX = 600
+
 interface SmsTemplateFieldProps {
   value: string
   onChange: (value: string) => void
@@ -19,7 +22,7 @@ interface SmsTemplateFieldProps {
  */
 export function SmsTemplateField({ value, onChange, settings, disabled, error }: SmsTemplateFieldProps) {
   const area = useRef<HTMLTextAreaElement>(null)
-  const { data: preview } = useSmsPreview(useDebouncedValue(value, 400))
+  const { data: preview, error: previewError } = useSmsPreview(useDebouncedValue(value, 400))
 
   function insert(placeholder: string) {
     const field = area.current
@@ -41,7 +44,7 @@ export function SmsTemplateField({ value, onChange, settings, disabled, error }:
           ref={area}
           label="SMS-Text"
           rows={12}
-          maxLength={600}
+          maxLength={SMS_TEMPLATE_MAX}
           disabled={disabled}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -63,7 +66,7 @@ export function SmsTemplateField({ value, onChange, settings, disabled, error }:
       </div>
       <div>
         <span className={styles.label}>So kommt sie an (Beispiel)</span>
-        <div className={styles.bubble}>{preview?.text ?? '…'}</div>
+        <div className={styles.bubble}>{preview?.text ?? (previewError ? 'Vorschau nicht verfügbar' : '…')}</div>
         {preview && (
           <p className="muted">
             {preview.characters} Zeichen = {preview.parts === 1 ? '1 SMS' : `${preview.parts} SMS (jede wird bezahlt)`}

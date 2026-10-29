@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 class ReminderSettingsController {
 
     private final ReminderSettingsService service;
+    private final SmsPreviewService preview;
 
-    ReminderSettingsController(ReminderSettingsService service) {
+    ReminderSettingsController(ReminderSettingsService service, SmsPreviewService preview) {
         this.service = service;
+        this.preview = preview;
     }
 
     @Operation(summary = "Whether and when customers are reminded of their appointments")
@@ -38,6 +40,6 @@ class ReminderSettingsController {
     @Operation(summary = "A wording as an example customer gets it", description = "With its length in SMS – nothing is saved.")
     @PostMapping("/preview")
     SmsPreviewDto preview(@Valid @RequestBody SmsPreviewRequest request) {
-        return service.preview(request);
+        return preview.preview(request);
     }
 }

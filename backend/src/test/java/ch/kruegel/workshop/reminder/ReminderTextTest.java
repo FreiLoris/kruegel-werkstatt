@@ -53,6 +53,20 @@ class ReminderTextTest {
     }
 
     @Test
+    void withoutAPhoneOfTheWorkshopTheLineThatAsksForItGoesToo() {
+        ReminderMessage message = new ReminderText(HUBER, null, WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
+                .message(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
+        assertThat(message.text()).isEqualTo("""
+                Guten Tag Herr Huber
+
+                Wir erinnern Sie an Ihren Termin:
+                Morgen, Do 29.10., 08:00 Uhr
+
+                Freundliche Grüsse
+                Garage""");
+    }
+
+    @Test
     void aCarThatComesEarlierIsToBeBroughtThen() {
         ReminderMessage message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(17, 0), true)
                 .message(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
@@ -77,6 +91,12 @@ class ReminderTextTest {
     void unknownPlaceholdersAreFound() {
         assertThat(SmsTemplate.unknownPlaceholders("{Anrede} am {Datum} {Datum} {Firma} {}")).containsExactly("{Datum}", "{}");
         assertThat(SmsTemplate.unknownPlaceholders(SmsTemplate.STANDARD)).isEmpty();
+        assertThat(SmsTemplate.unknownPlaceholders("{Anrede, bis {Termin}")).containsExactly("Klammer ohne Gegenstück");
+    }
+
+    @Test
+    void windowsLineBreaksAsWell() {
+        assertThat(SmsTemplate.fill("A\r\n{Firma}", Map.of("Firma", "B"))).isEqualTo("A\nB");
     }
 
     @Test

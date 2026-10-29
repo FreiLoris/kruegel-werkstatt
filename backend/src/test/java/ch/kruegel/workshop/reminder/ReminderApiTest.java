@@ -125,7 +125,7 @@ class ReminderApiTest {
         assertThat(sms.sent).isEmpty();
 
         service.remindDue(THURSDAY);
-        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\nBei Verhinderung bitte melden:\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
+        assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber\n\nWir erinnern Sie an Ihren Termin:\nMorgen, Fr 4.12., 08:00 Uhr\n\nFreundliche Grüsse\nKrügel Fahrzeugtechnik");
         // no e-mail for now: to be called like one without any contact
         assertThat(outcomes()).containsExactlyInAnyOrderEntriesOf(Map.of(bySms, "SENT", onlyEmail, "NO_CONTACT", noContact, "NO_CONTACT"));
 
@@ -239,7 +239,7 @@ class ReminderApiTest {
         turnOn();
         task(withMobile("079 123 45 67"), "2026-12-04", "\"timeOpen\": true");
         service.remindDue(THURSDAY);
-        assertThat(sms.sent).singleElement().asString().contains("Ihren Termin:\nMorgen, Fr 4.12.\n\nBei Verhinderung");
+        assertThat(sms.sent).singleElement().asString().contains("Ihren Termin:\nMorgen, Fr 4.12.\n\nFreundliche Grüsse");
     }
 
     @Test
@@ -274,6 +274,9 @@ class ReminderApiTest {
 
     @Test
     void theWorkshopsOwnWording_seenBeforeSaved_unknownPlaceholdersRefused() throws UnsupportedEncodingException {
+        MvcTestResult blank = send("POST", "/api/reminder-settings/preview", "{ \"smsTemplate\": \"\" }");
+        assertThat(blank).bodyJson().extractingPath("$.text").asString().startsWith("Guten Tag Herr Muster\n\nWir erinnern Sie");
+
         MvcTestResult preview = send("POST", "/api/reminder-settings/preview", "{ \"smsTemplate\": \"{Anrede}, {Termin}. {Datum}\" }");
         assertThat(preview).hasStatusOk().bodyJson().extractingPath("$.unknown").asArray().containsExactly("{Datum}");
         assertThat(preview).bodyJson().extractingPath("$.text").asString().startsWith("Guten Tag Herr Muster, Morgen, ");
@@ -291,8 +294,12 @@ class ReminderApiTest {
         service.remindDue(THURSDAY);
         assertThat(sms.sent).containsExactly("+41791234567: Guten Tag Herr Huber, bis Morgen, Fr 4.12., 08:00 Uhr! Krügel Fahrzeugtechnik");
 
+        // a device with an older app sends no wording: the workshop's own stays
+        MvcTestResult older = send("PUT", "/api/reminder-settings", "{ \"enabled\": false, \"sendTime\": \"16:00\", \"version\": 1 }");
+        assertThat(older).bodyJson().extractingPath("$.ownTemplate").isEqualTo(true);
+
         // back to the standard: empty
-        MvcTestResult standard = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \" \", \"version\": 1 }");
+        MvcTestResult standard = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \" \", \"version\": 2 }");
         assertThat(standard).bodyJson().extractingPath("$.ownTemplate").isEqualTo(false);
         assertThat(standard).bodyJson().extractingPath("$.smsTemplate").asString().startsWith("{Anrede}");
     }

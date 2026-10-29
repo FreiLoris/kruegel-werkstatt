@@ -15944,7 +15944,7 @@
           },
           "smsTemplate" : {
             "type" : "string",
-            "description" : "17e: the wording with placeholders; empty = the standard text",
+            "description" : "17e: the wording with placeholders; empty = the standard text, missing = unchanged",
             "maxLength" : 600,
             "minLength" : 0
           },
