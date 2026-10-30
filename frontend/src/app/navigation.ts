@@ -1,3 +1,5 @@
+import type { AppModule } from '../features/modules/moduleApi'
+
 /**
  * Entries of the main navigation. New pages (appointments, …) are added here once they
  * exist – no placeholders for modules that are not built yet.
@@ -8,6 +10,8 @@ export interface NavEntry {
   title: string
   /** Further pages under this entry – it is marked as active on them too */
   pages?: NavEntry[]
+  /** Part of a module the workshop may switch off (neutral 3) – then it is not in the menu */
+  module?: AppModule
 }
 
 /** Shopping list, stock list (FB-08) and suppliers (FB-09) – tabs above the pages (`MaterialTabs`) */
@@ -21,14 +25,14 @@ export const navigation: NavEntry[] = [
   { path: '/', title: 'Start' },
   { path: '/tasks', title: 'Termine' },
   { path: '/tasks/new', title: 'Neuer Auftrag' },
-  { path: '/courtesy-cars', title: 'Ersatzwagen' },
-  { path: '/tires', title: 'Pneuhotel' },
-  { path: '/pinboard', title: 'Pinnwand' },
-  { path: '/todos', title: 'To-dos' },
+  { path: '/courtesy-cars', title: 'Ersatzwagen', module: 'COURTESY_CARS' },
+  { path: '/tires', title: 'Pneuhotel', module: 'TIRE_HOTEL' },
+  { path: '/pinboard', title: 'Pinnwand', module: 'BOARD' },
+  { path: '/todos', title: 'To-dos', module: 'BOARD' },
   // "Material" alone read like the shopping list only – stock and suppliers are behind it too (UX M-15)
-  { path: '/shopping', title: 'Material & Lager', pages: materialPages },
+  { path: '/shopping', title: 'Material & Lager', pages: materialPages, module: 'MATERIAL' },
   { path: '/employees', title: 'Mitarbeiter' },
-  { path: '/statistics', title: 'Statistik' },
+  { path: '/statistics', title: 'Statistik', module: 'STATISTICS' },
   // "System" is for the one who looks after the app – a tile in the settings, not a main entry
   {
     path: '/settings',

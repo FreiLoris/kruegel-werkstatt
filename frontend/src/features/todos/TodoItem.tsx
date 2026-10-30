@@ -14,6 +14,7 @@ import { dueLabel, dueState } from './todoDue'
 import { TodoForm } from './TodoForm'
 import styles from './TodoItem.module.css'
 import { whenLabel } from '../tasks/taskTime'
+import { useModuleOn } from '../modules/moduleApi'
 
 interface TodoItemProps {
   todo: Todo
@@ -44,6 +45,7 @@ export function TodoItem({
   style,
   ref,
 }: TodoItemProps) {
+  const materialOn = useModuleOn('MATERIAL')
   const navigate = useNavigate()
   const setDone = useSetTodoDone()
   const remove = useDeleteTodo()
@@ -124,7 +126,7 @@ export function TodoItem({
             <StickyNote aria-hidden /> Notiz
           </button>
         )}
-        {todo.shoppingItemId && (
+        {todo.shoppingItemId && materialOn && (
           // the order of a position of the shopping list (FB-20) – all about the part is there
           <button type="button" className={styles.fromNote} title="Position der Einkaufsliste öffnen" onClick={() => navigate(`/shopping/${todo.shoppingItemId}`)}>
             <ShoppingCart aria-hidden /> Einkaufsliste

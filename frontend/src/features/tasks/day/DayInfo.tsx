@@ -6,6 +6,7 @@ import { useAbsences, type Absence } from '../../absences/absenceApi'
 import { AbsenceChip } from '../../absences/AbsenceChip'
 import { absencesOn } from '../../absences/absenceDays'
 import { AbsenceDialog } from '../../absences/AbsenceDialog'
+import { useModuleOn } from '../../modules/moduleApi'
 import { useAllEmployees } from '../../employees/employeeApi'
 import { useTodos } from '../../todos/todoApi'
 import { TodoItem } from '../../todos/TodoItem'
@@ -31,6 +32,7 @@ export function DayInfo({ date }: { date: string }) {
 
   const me = device.kind === 'person' ? device.person : undefined
   const canEdit = useCanEdit()
+  const todosOn = useModuleOn('BOARD')
   const team = absencesOn(absences ?? [], date)
   const due = (todos ?? []).filter((todo) => todo.dueDate === date)
   const nameOf = (id: string) => employees?.find((e) => e.id === id)?.name ?? ''
@@ -63,7 +65,7 @@ export function DayInfo({ date }: { date: string }) {
       {/* 17d: no SMS reminder reached them – someone calls */}
       <ToCallList date={date} />
 
-      {due.length > 0 && (
+      {due.length > 0 && todosOn && (
         <ul className={styles.todos} aria-label="To-dos an diesem Tag">
           {due.map((todo) => (
             <TodoItem key={todo.id} todo={todo} canEdit={canEdit} showTask />

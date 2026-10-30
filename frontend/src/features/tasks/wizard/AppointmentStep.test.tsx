@@ -1,10 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EMPTY_APPOINTMENT, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
+import { modulesOff } from '../../../test/allModulesOn'
 
 // fictitious
+// neutral 3: all modules on, as the app was before
+vi.mock('../../modules/moduleApi', () => import('../../../test/allModulesOn'))
 vi.mock('../../employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../../lifts/liftApi', () => ({ useAllLifts: () => ({ data: [] }) }))
 vi.mock('../../inspection-stations/inspectionStationApi', () => ({ useInspectionStations: () => ({ data: [] }) }))
@@ -132,5 +135,25 @@ describe('AppointmentStep – Neue Reifen (FB-25)', () => {
     const seen = renderStep({ ...THURSDAY, tireChange: true, newTiresDimension: '195/65 R15' })
     fireEvent.change(screen.getByLabelText('Art'), { target: { value: 'NEW_TIRES' } })
     expect(seen.form.newTiresDimension).toBe('195/65 R15')
+  })
+})
+
+describe('AppointmentStep – modules switched off (neutral 3)', () => {
+  afterEach(() => modulesOff.clear())
+
+  it('without the tyre hotel nothing can be stored, without MFK there is no MFK', () => {
+    modulesOff.add('TIRE_HOTEL')
+    modulesOff.add('MFK')
+    renderStep({ ...THURSDAY, tireChange: true })
+
+    const kinds = screen.getAllByRole('option').map((option) => option.textContent)
+    expect(kinds.some((kind) => /eingelagert/i.test(kind ?? ''))).toBe(false)
+    expect(screen.queryByRole('checkbox', { name: 'MFK' })).toBeNull()
+  })
+
+  it('a task that already has an MFK keeps it', () => {
+    modulesOff.add('MFK')
+    renderStep({ ...THURSDAY, mfk: true })
+    expect(tick('MFK').checked).toBe(true)
   })
 })

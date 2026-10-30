@@ -17,6 +17,8 @@ import { CourtesyCarPanel } from '../../bookings/CourtesyCarPanel'
 import { CustomerDialog } from '../../customers/CustomerDialog'
 import { useAllEmployees, type Employee } from '../../employees/employeeApi'
 import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
+import { ModuleGate } from '../../modules/ModuleGate'
+import { useModulesOn } from '../../modules/moduleApi'
 import { NameBadge } from '../../employees/NameBadge'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
@@ -60,6 +62,8 @@ export function TaskDetailPage() {
 }
 
 function TaskDetail({ task }: { task: AnyTask }) {
+  // neutral 3: the parts of the modules the workshop switched off are not shown
+  const moduleOn = useModulesOn()
   const navigate = useNavigate()
   const canEdit = useCanEdit()
   const confirm = useConfirm()
@@ -74,7 +78,8 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const [dialog, setDialog] = useState<'customer' | 'vehicle' | null>(null)
   const [askBooking, setAskBooking] = useState(false)
   const tires = useTaskTires(task.id, task.tireChange)
-  const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
+  // the tyre hotel switched off (neutral 3): nothing to book out – its page is gone
+  const fromHotel = moduleOn('TIRE_HOTEL') && (task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED')
   // FB-25: ordered new tyres – here yet? (the same query as "Ersatzteilbestellungen")
   const { data: parts } = useTaskShoppingItems(task.tireChangeKind === 'NEW_TIRES' ? task.id : undefined)
 
@@ -305,9 +310,11 @@ function TaskDetail({ task }: { task: AnyTask }) {
           />
         </Card>
 
-        <Card title="Ersatzwagen">
-          <CourtesyCarPanel task={task} canEdit={canEdit} />
-        </Card>
+        <ModuleGate module="COURTESY_CARS">
+          <Card title="Ersatzwagen">
+            <CourtesyCarPanel task={task} canEdit={canEdit} />
+          </Card>
+        </ModuleGate>
 
         <Card title="Arbeiten">
           {items.length === 0 && !task.workDescription ? (
@@ -325,7 +332,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
           {task.workDescription && <p className={styles.freeText}>{task.workDescription}</p>}
         </Card>
 
-        {task.tireChange && (
+        {task.tireChange && moduleOn('TIRE_HOTEL') && (
           <Card
             title="Pneuhotel"
             action={
@@ -355,9 +362,11 @@ function TaskDetail({ task }: { task: AnyTask }) {
         )}
 
         {/* FB-19: its parts right here – entered, changed and ordered without "Bearbeiten" */}
-        <Card title="Ersatzteilbestellungen" wide>
-          <TaskParts taskId={task.id} canEdit={canEdit} />
-        </Card>
+        <ModuleGate module="MATERIAL">
+          <Card title="Ersatzteilbestellungen" wide>
+            <TaskParts taskId={task.id} canEdit={canEdit} />
+          </Card>
+        </ModuleGate>
 
         {task.insuranceId && (
           <Card title="Versicherungsfall">
@@ -365,9 +374,11 @@ function TaskDetail({ task }: { task: AnyTask }) {
           </Card>
         )}
 
-        <Card title="Pinnwand & To-dos">
-          <TaskPinboard taskId={task.id} canEdit={canEdit} />
-        </Card>
+        {moduleOn('BOARD') && (
+          <Card title="Pinnwand & To-dos">
+            <TaskPinboard taskId={task.id} canEdit={canEdit} />
+          </Card>
+        )}
 
         <Card title="Auftragsnummer">
           <TaskNumberEditor task={task} canEdit={canEdit} />

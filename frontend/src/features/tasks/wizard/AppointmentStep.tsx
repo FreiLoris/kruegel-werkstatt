@@ -3,6 +3,7 @@ import { Checkbox, Select, TextArea, TextField } from '../../../components/ui/Fi
 import { formatDuration } from '../../../lib/format'
 import { useActiveEmployees } from '../../employees/employeeApi'
 import { useInspectionStations } from '../../inspection-stations/inspectionStationApi'
+import { useModuleOn } from '../../modules/moduleApi'
 import { useInsurances } from '../../insurances/insuranceApi'
 import { useAllLifts } from '../../lifts/liftApi'
 import { useAllServiceItems } from '../../service-items/serviceItemApi'
@@ -61,7 +62,13 @@ interface AppointmentStepProps {
  * day of the appointment at opening time (the evening before for an appointment at opening time),
  * "fertig bis" = the same evening.
  */
+/** The kinds of a tyre change that store something in the tyre hotel */
+const STORED_KINDS: readonly string[] = ['WHEELS_STORED', 'TIRES_STORED']
+
 export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, customerId, customer, children }: AppointmentStepProps) {
+  const tireHotelOn = useModuleOn('TIRE_HOTEL')
+  const mfkOn = useModuleOn('MFK')
+  const materialOn = useModuleOn('MATERIAL')
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -271,7 +278,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
 
         <Section title="Arbeiten">
           {/* FB-12: the car's tyres – still good? – while the customer is on the phone */}
-          {vehicleId && <VehicleTires vehicleId={vehicleId} title="Reifen dieses Fahrzeugs" />}
+          {vehicleId && tireHotelOn && <VehicleTires vehicleId={vehicleId} title="Reifen dieses Fahrzeugs" />}
           <Checkbox
             label="Radwechsel"
             checked={form.tireChange}
@@ -281,11 +288,14 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             <div className={`${styles.row} ${styles.indented}`}>
               <Select label="Art" value={form.tireChangeKind} onChange={(e) => chooseTireChangeKind(e.target.value as TireChangeKind | '')}>
                 <option value="">noch offen</option>
-                {Object.entries(TIRE_CHANGE_KINDS).map(([kind, label]) => (
-                  <option key={kind} value={kind}>
-                    {label}
-                  </option>
-                ))}
+                {Object.entries(TIRE_CHANGE_KINDS)
+                  // without the tyre hotel nothing is stored – unless this task already says so
+                  .filter(([kind]) => tireHotelOn || !STORED_KINDS.includes(kind) || kind === form.tireChangeKind)
+                  .map(([kind, label]) => (
+                    <option key={kind} value={kind}>
+                      {label}
+                    </option>
+                  ))}
               </Select>
               {form.tireChangeKind === 'NEW_TIRES' && (
                 <>
@@ -307,7 +317,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
               )}
             </div>
           )}
-          {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && (
+          {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && materialOn && (
             <p className={`muted ${styles.indented}`}>
               Die Dimension ist vom Reifensatz des Fahrzeugs übernommen, wenn bekannt – bitte prüfen. Beim ersten Speichern mit dieser Art kommt
               die Bestellposition «Reifen …» auf die Einkaufsliste. Spätere Änderungen übernimmt sie, solange sie noch zu bestellen ist – sonst bekommt sie einen Vermerk.
@@ -316,7 +326,10 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
           {form.tireChange && vehicleId && customerId && (
             <TireChangeHint customerId={customerId} vehicleId={vehicleId} date={form.noAppointment ? '' : form.date} taskId={taskId} />
           )}
-          <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked, standardStation))} />
+          {/* neutral 3: switched off, a task that has one still shows it */}
+          {(mfkOn || form.mfk) && (
+            <Checkbox label="MFK" checked={form.mfk} onChange={(e) => onChange(withMfk(form, e.target.checked, standardStation))} />
+          )}
           {form.mfk && (
             <div className={styles.indented}>
               <div className={styles.row}>

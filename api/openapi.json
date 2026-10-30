@@ -495,7 +495,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_20",
+        "operationId" : "update_21",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -829,7 +829,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_19",
+        "operationId" : "update_20",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1544,7 +1544,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_18",
+        "operationId" : "update_19",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2037,7 +2037,7 @@
     "/api/courtesy-cars/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409.",
-        "operationId" : "update_17",
+        "operationId" : "update_18",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -2830,7 +2830,7 @@
       },
       "put" : {
         "description" : "SwissGarage customers → 409. Needs the loaded `version`.",
-        "operationId" : "update_16",
+        "operationId" : "update_17",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3480,7 +3480,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version` – otherwise 409 if changed in the meantime.",
-        "operationId" : "update_15",
+        "operationId" : "update_16",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3874,7 +3874,7 @@
     "/api/inspection-stations/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_14",
+        "operationId" : "update_15",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4346,7 +4346,7 @@
     "/api/insurances/{id}" : {
       "put" : {
         "description" : "Needs the loaded `version` (409 if someone else changed it).",
-        "operationId" : "update_13",
+        "operationId" : "update_14",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4810,7 +4810,7 @@
       },
       "put" : {
         "description" : "Needs the loaded `version`.",
-        "operationId" : "update_12",
+        "operationId" : "update_13",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5449,6 +5449,154 @@
         },
         "summary" : "Live connection for changes (Server-Sent Events)",
         "tags" : [ "live-controller" ]
+      }
+    },
+    "/api/modules" : {
+      "get" : {
+        "description" : "Read by every device for its menu. All on until switched off.",
+        "operationId" : "settings_5",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModuleSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The parts of the app and which ones the workshop uses",
+        "tags" : [ "Modules" ]
+      },
+      "put" : {
+        "description" : "The ones off – every other one is on. Only hides them; their data stays. Needs the loaded `version`.",
+        "operationId" : "update_12",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModuleSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModuleSettingsDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Switch parts of the app off or on",
+        "tags" : [ "Modules" ]
       }
     },
     "/api/notes" : {
@@ -15677,6 +15825,63 @@
           }
         },
         "required" : [ "depths" ]
+      },
+      "ModuleDto" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "example" : "Eingelagerte Räder, Saisonwechsel, Etiketten"
+          },
+          "module" : {
+            "type" : "string",
+            "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "BOARD", "MATERIAL", "STATISTICS" ]
+          },
+          "on" : {
+            "type" : "boolean"
+          },
+          "title" : {
+            "type" : "string",
+            "example" : "Pneuhotel"
+          }
+        },
+        "required" : [ "description", "module", "on", "title" ]
+      },
+      "ModuleSettingsDto" : {
+        "type" : "object",
+        "properties" : {
+          "modules" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ModuleDto"
+            }
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "modules", "version" ]
+      },
+      "ModuleSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "off" : {
+            "type" : "array",
+            "example" : [ "TIRE_HOTEL" ],
+            "items" : {
+              "type" : "string",
+              "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "BOARD", "MATERIAL", "STATISTICS" ]
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "off", "version" ]
       },
       "MountedSet" : {
         "type" : "object",

@@ -11,6 +11,7 @@ import { ConnectionLost } from './live/ConnectionLost'
 import { LiveIndicator } from './live/LiveIndicator'
 import { useLiveUpdates } from './live/useLiveUpdates'
 import { navigation, pageTitle, viewOnlyNavigation, type NavEntry } from './navigation'
+import { useModulesOn } from '../features/modules/moduleApi'
 import { useScreenLockSettings } from '../features/screenlock/screenLockApi'
 import { LockScreen } from './person/LockScreen'
 import { PersonMenu } from './person/PersonMenu'
@@ -44,7 +45,9 @@ export function AppLayout() {
   const tv = device.kind === 'viewOnly' && idleMode !== 'viewOnly'
   const kiosk = tv && pathname === '/'
   useBackToDashboard(tv && pathname !== '/')
-  const links = device.kind === 'viewOnly' ? viewOnlyNavigation : navigation
+  const moduleOn = useModulesOn()
+  // neutral 3: the parts the workshop switched off are not in the menu
+  const links = (device.kind === 'viewOnly' ? viewOnlyNavigation : navigation).filter((entry) => moduleOn(entry.module))
   // FB-29: after some minutes without use the device asks who is at it – not the TV ("Nur ansehen");
   // the shared workshop tablet falls back to "Nur ansehen" silently instead, as set per device
   const { data: lockSettings, isError: lockSettingsMissing } = useScreenLockSettings()

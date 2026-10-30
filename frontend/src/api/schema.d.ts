@@ -100,7 +100,7 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_20"];
+        put: operations["update_21"];
         post?: never;
         /** Delete absence */
         delete: operations["delete_8"];
@@ -146,7 +146,7 @@ export interface paths {
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_19"];
+        put: operations["update_20"];
         post?: never;
         delete?: never;
         options?: never;
@@ -243,7 +243,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_18"];
+        put: operations["update_19"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -320,7 +320,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_17"];
+        put: operations["update_18"];
         post?: never;
         delete?: never;
         options?: never;
@@ -489,7 +489,7 @@ export interface paths {
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_16"];
+        put: operations["update_17"];
         post?: never;
         delete?: never;
         options?: never;
@@ -599,7 +599,7 @@ export interface paths {
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_15"];
+        put: operations["update_16"];
         post?: never;
         delete?: never;
         options?: never;
@@ -671,7 +671,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_14"];
+        put: operations["update_15"];
         post?: never;
         delete?: never;
         options?: never;
@@ -760,7 +760,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         delete?: never;
         options?: never;
@@ -835,7 +835,7 @@ export interface paths {
          * Edit a label sheet format
          * @description Needs the loaded `version`.
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         /** Delete a label sheet format */
         delete: operations["delete_7"];
@@ -946,6 +946,30 @@ export interface paths {
          */
         get: operations["live"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The parts of the app and which ones the workshop uses
+         * @description Read by every device for its menu. All on until switched off.
+         */
+        get: operations["settings_5"];
+        /**
+         * Switch parts of the app off or on
+         * @description The ones off – every other one is on. Only hides them; their data stays. Needs the loaded `version`.
+         */
+        put: operations["update_12"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3201,6 +3225,30 @@ export interface components {
              */
             on?: string;
         };
+        ModuleDto: {
+            /** @example Eingelagerte Räder, Saisonwechsel, Etiketten */
+            description: string;
+            /** @enum {string} */
+            module: "COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "BOARD" | "MATERIAL" | "STATISTICS";
+            on: boolean;
+            /** @example Pneuhotel */
+            title: string;
+        };
+        ModuleSettingsDto: {
+            modules: components["schemas"]["ModuleDto"][];
+            /** Format: int64 */
+            version: number;
+        };
+        ModuleSettingsRequest: {
+            /**
+             * @example [
+             *       "TIRE_HOTEL"
+             *     ]
+             */
+            off: ("COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "BOARD" | "MATERIAL" | "STATISTICS")[];
+            /** Format: int64 */
+            version: number;
+        };
         MountedSet: {
             depths?: components["schemas"]["DepthsRequest"];
             /** @description Only for a new set the customer brought */
@@ -5209,7 +5257,7 @@ export interface operations {
             };
         };
     };
-    update_20: {
+    update_21: {
         parameters: {
             query?: never;
             header?: never;
@@ -5550,7 +5598,7 @@ export interface operations {
             };
         };
     };
-    update_19: {
+    update_20: {
         parameters: {
             query?: never;
             header?: never;
@@ -6094,7 +6142,7 @@ export interface operations {
             };
         };
     };
-    update_18: {
+    update_19: {
         parameters: {
             query?: never;
             header?: never;
@@ -6573,7 +6621,7 @@ export interface operations {
             };
         };
     };
-    update_17: {
+    update_18: {
         parameters: {
             query?: never;
             header?: never;
@@ -7248,7 +7296,7 @@ export interface operations {
             };
         };
     };
-    update_16: {
+    update_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -7796,7 +7844,7 @@ export interface operations {
             };
         };
     };
-    update_15: {
+    update_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -8135,7 +8183,7 @@ export interface operations {
             };
         };
     };
-    update_14: {
+    update_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -8541,7 +8589,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -8880,7 +8928,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -9442,6 +9490,140 @@ export interface operations {
                 };
                 content: {
                     "text/event-stream": components["schemas"]["DataChanged"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    settings_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ModuleSettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_12: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModuleSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ModuleSettingsDto"];
                 };
             };
             /** @description Bad Request */

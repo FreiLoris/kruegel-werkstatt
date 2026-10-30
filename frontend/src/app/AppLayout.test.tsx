@@ -10,7 +10,10 @@ let device: DeviceStatus = { kind: 'viewOnly' }
 
 import { setIdleMode } from '../lib/deviceIdleMode'
 import { deviceChoice } from '../lib/devicePerson'
+import { modulesOff } from '../test/allModulesOn'
 
+// neutral 3: all modules on, as the app was before
+vi.mock('../features/modules/moduleApi', () => import('../test/allModulesOn'))
 vi.mock('./live/useLiveUpdates', () => ({ useLiveUpdates: () => 'connected' }))
 vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useCanEdit: () => false }))
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
@@ -45,6 +48,7 @@ function renderAt(path: string) {
 
 afterEach(() => {
   vi.useRealTimers()
+  modulesOff.clear()
 })
 
 describe('AppLayout', () => {
@@ -69,6 +73,16 @@ describe('AppLayout', () => {
     expect(links).toEqual(expect.arrayContaining(['Start', 'Termine', 'Pneuhotel', 'Pinnwand', 'To-dos']))
     expect(links).not.toContain('Neuer Auftrag')
     expect(links).not.toContain('Einstellungen')
+  })
+
+  it('a module the workshop switched off is not in the menu – the TV neither (neutral 3)', () => {
+    device = { kind: 'viewOnly' }
+    modulesOff.add('TIRE_HOTEL')
+    modulesOff.add('BOARD')
+    renderAt('/')
+
+    const links = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(links).toEqual(['Start', 'Termine'])
   })
 
   it('the TV returns to the dashboard by itself – touching restarts the wait', () => {

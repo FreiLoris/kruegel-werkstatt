@@ -20,6 +20,8 @@ let absences: Absence[]
 let todos: Todo[]
 const dialog = vi.fn()
 
+// neutral 3: all modules on, as the app was before
+vi.mock('../../modules/moduleApi', () => import('../../../test/allModulesOn'))
 vi.mock('../../../app/person/useDevicePerson', () => ({
   useDevicePerson: () => device,
   useCanEdit: () => device.kind === 'person',

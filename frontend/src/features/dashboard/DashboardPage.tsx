@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useToday } from '../../lib/clock'
 import { isoWeek, weekdayOf, WEEKDAYS_SHORT } from '../../lib/calendar'
 import { addDays, formatDate } from '../../lib/format'
+import { useModuleOn } from '../modules/moduleApi'
 import { TaskStatusLegend } from '../tasks/TaskStatusBadge'
 import { BoardOverview } from './BoardOverview'
 import styles from './DashboardPage.module.css'
@@ -20,6 +21,7 @@ import { WithoutAppointment } from './WithoutAppointment'
  */
 export function DashboardPage() {
   const today = useToday()
+  const boardOn = useModuleOn('BOARD')
   const monday = dashboardMonday(today)
   const nextWeek = monday > today
 
@@ -51,21 +53,24 @@ export function DashboardPage() {
           </div>
           <TodayByLift />
         </section>
-        <section className={styles.area} aria-labelledby="board-heading">
-          <h2 id="board-heading" className={styles.areaTitle}>
-            Pinnwand & To-dos
-            {/* FB-04: two pages now – the overview stays one, per person */}
-            <span className={styles.areaLinks}>
-              <Link to="/pinboard" className={styles.areaLink}>
-                Pinnwand <ChevronRight size={16} aria-hidden />
-              </Link>
-              <Link to="/todos" className={styles.areaLink}>
-                To-dos <ChevronRight size={16} aria-hidden />
-              </Link>
-            </span>
-          </h2>
-          <BoardOverview />
-        </section>
+        {/* neutral 3: gone when the workshop does not use it */}
+        {boardOn && (
+          <section className={styles.area} aria-labelledby="board-heading">
+            <h2 id="board-heading" className={styles.areaTitle}>
+              Pinnwand & To-dos
+              {/* FB-04: two pages now – the overview stays one, per person */}
+              <span className={styles.areaLinks}>
+                <Link to="/pinboard" className={styles.areaLink}>
+                  Pinnwand <ChevronRight size={16} aria-hidden />
+                </Link>
+                <Link to="/todos" className={styles.areaLink}>
+                  To-dos <ChevronRight size={16} aria-hidden />
+                </Link>
+              </span>
+            </h2>
+            <BoardOverview />
+          </section>
+        )}
       </div>
     </div>
   )

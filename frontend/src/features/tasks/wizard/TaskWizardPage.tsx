@@ -15,6 +15,7 @@ import { useTireSet, type TireSet } from '../../tire-hotel/tireHotelApi'
 import type { Customer } from '../../customers/customerSearchApi'
 import { choiceError, NO_COURTESY_CAR, periodOf, type CourtesyCarChoice } from '../../bookings/courtesyCarChoice'
 import { CourtesyCarSection } from '../../bookings/CourtesyCarSection'
+import { useModuleOn } from '../../modules/moduleApi'
 import { useCreateTask, type AnyTask } from '../taskApi'
 import { appointmentErrors, EMPTY_APPOINTMENT, slotFromUrl, toTaskRequest, withSlot, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
@@ -72,6 +73,7 @@ export function TaskWizardPage() {
  *   wizard starts with the appointment
  */
 function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | null; tireSet: TireSet | null }) {
+  const courtesyCarsOn = useModuleOn('COURTESY_CARS')
   // what counts as "nothing typed yet" – the prefill, and empty again after "Weiteren Auftrag erfassen"
   const [startCustomerStep, setStartCustomerStep] = useState<CustomerStepValue>(() => ({
     customer: initialCustomer,
@@ -98,7 +100,9 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
   // a task started before a reload – offered, not filled in by itself: it may be someone else's
   const [draft, setDraft] = useState<WizardDraft | null>(loadDraft)
   const [showRequired, setShowRequired] = useState(false)
-  const [courtesyCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
+  const [chosenCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
+  // switched off (neutral 3): a car of an old draft must not be checked or booked unseen
+  const courtesyCar = courtesyCarsOn ? chosenCar : NO_COURTESY_CAR
   const [saved, setSaved] = useState<{ task: AnyTask; booking: Booking | null } | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const holidays = useHolidayNames()
@@ -268,7 +272,7 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
             customer={customerStep.customer}
           >
             {/* a courtesy car is booked for a period – without an appointment there is none yet */}
-            {!appointment.noAppointment && (
+            {!appointment.noAppointment && courtesyCarsOn && (
               <CourtesyCarSection value={courtesyCar} onChange={setCourtesyCar} appointment={appointment} showRequired={showRequired} />
             )}
           </AppointmentStep>
