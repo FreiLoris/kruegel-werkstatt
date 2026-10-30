@@ -3,13 +3,21 @@ package ch.kruegel.workshop.publicholiday;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Plain unit test – the calculator needs neither Spring nor a database. */
-class ZurichPublicHolidaysTest {
+class PublicHolidaysTest {
 
-    private final ZurichPublicHolidays holidays = new ZurichPublicHolidays();
+    /** What V61 chooses: the canton of Zurich's days, as the app had them before neutral 2 */
+    static final Set<HolidayRule> ZURICH = EnumSet.of(HolidayRule.NEUJAHR, HolidayRule.BERCHTOLDSTAG, HolidayRule.KARFREITAG,
+            HolidayRule.OSTERSONNTAG, HolidayRule.OSTERMONTAG, HolidayRule.TAG_DER_ARBEIT, HolidayRule.AUFFAHRT,
+            HolidayRule.PFINGSTSONNTAG, HolidayRule.PFINGSTMONTAG, HolidayRule.NATIONALFEIERTAG, HolidayRule.WEIHNACHTEN,
+            HolidayRule.STEPHANSTAG);
+
+    private final PublicHolidays holidays = new PublicHolidays(() -> ZURICH);
 
     @Test
     void all2026HolidaysInOrder() {
@@ -54,5 +62,13 @@ class ZurichPublicHolidaysTest {
         assertThat(holidays.isWorkingDay(LocalDate.of(2026, 5, 14))).isFalse();  // Thursday, Auffahrt
         assertThat(holidays.isWorkingDay(LocalDate.of(2026, 5, 16))).isFalse();  // Saturday
         assertThat(holidays.isWorkingDay(LocalDate.of(2026, 5, 17))).isFalse();  // Sunday
+    }
+
+    @Test
+    void onlyTheChosenOnes() {
+        PublicHolidays geneva = new PublicHolidays(() -> EnumSet.of(HolidayRule.NEUJAHR, HolidayRule.GENFER_BETTAG));
+        assertThat(geneva.forYear(2026)).extracting(PublicHoliday::name).containsExactly("Neujahr", "Genfer Bettag");
+        assertThat(geneva.isWorkingDay(LocalDate.of(2026, 5, 14))).isTrue(); // Auffahrt not chosen
+        assertThat(new PublicHolidays(() -> EnumSet.noneOf(HolidayRule.class)).forYear(2026)).isEmpty();
     }
 }

@@ -6,7 +6,7 @@ import java.time.LocalDate;
  * Date of Easter Sunday in the Gregorian calendar.
  *
  * <p>Several public holidays move with Easter (Good Friday, Easter Monday, Ascension,
- * Whit Monday), so this is the basis for {@link ZurichPublicHolidays}.
+ * Whit Monday), so this is the basis for {@link PublicHolidays}.
  *
  * <p>Algorithm: "Anonymous Gregorian algorithm" (Meeus/Jones/Butcher). It is exact for every
  * year of the Gregorian calendar – unlike the simple Gauss formula, which needs extra rules

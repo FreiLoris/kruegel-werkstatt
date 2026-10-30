@@ -5,7 +5,7 @@ import ch.kruegel.workshop.employee.Employee;
 import ch.kruegel.workshop.employee.EmployeeRepository;
 import ch.kruegel.workshop.employee.VacationEntitlement;
 import ch.kruegel.workshop.employee.VacationEntitlementRepository;
-import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
+import ch.kruegel.workshop.publicholiday.PublicHolidays;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +38,11 @@ public class AbsenceStatisticsService {
     private final AbsenceRepository absences;
     private final EmployeeRepository employees;
     private final VacationEntitlementRepository entitlements;
-    private final ZurichPublicHolidays holidays;
+    private final PublicHolidays holidays;
     private final Clock clock;
 
     AbsenceStatisticsService(AbsenceRepository absences, EmployeeRepository employees, VacationEntitlementRepository entitlements,
-                             ZurichPublicHolidays holidays, Clock clock) {
+                             PublicHolidays holidays, Clock clock) {
         this.absences = absences;
         this.employees = employees;
         this.entitlements = entitlements;

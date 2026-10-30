@@ -3,7 +3,7 @@ package ch.kruegel.workshop.absence;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import ch.kruegel.workshop.common.web.NotFoundException;
 import ch.kruegel.workshop.employee.Employee;
-import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
+import ch.kruegel.workshop.publicholiday.PublicHolidays;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,9 +34,9 @@ public class AbsenceSeriesService {
 
     private final AbsenceRepository repository;
     private final AbsenceService absences;
-    private final ZurichPublicHolidays holidays;
+    private final PublicHolidays holidays;
 
-    AbsenceSeriesService(AbsenceRepository repository, AbsenceService absences, ZurichPublicHolidays holidays) {
+    AbsenceSeriesService(AbsenceRepository repository, AbsenceService absences, PublicHolidays holidays) {
         this.repository = repository;
         this.absences = absences;
         this.holidays = holidays;
