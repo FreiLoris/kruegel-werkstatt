@@ -3,6 +3,8 @@
 > Diese Anleitung ist für Garagen, die die App neu einsetzen – darum Deutsch, wie die App selbst.
 > Für Entwickler: [`deployment-nas.md`](deployment-nas.md) (Krügels NAS, Kanäle, Releases) und
 > [`operations.md`](operations.md) (Sicherung, Wiederherstellen).
+>
+> Gilt ab **Version 1.5.0** – erst damit gibt es den Einrichtungs-Assistenten und «Kunden übernehmen».
 
 Die App läuft auf **einem Gerät in der Werkstatt**, das immer eingeschaltet ist. Alle anderen
 Geräte – Laptop, Tablet, der Fernseher in der Werkstatt – öffnen sie im Browser. Es wird nichts
