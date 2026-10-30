@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { useToast } from '../../components/ui/toastContext'
 import { CompanySettings } from '../company/CompanySettings'
+import { DataImport } from '../dataimport/DataImport'
 import { useCompany, useCompleteSetup } from '../company/companyApi'
 import { EmployeeList } from '../employees/EmployeesPage'
 import { InspectionStationSettings } from '../inspection-stations/InspectionStationSettings'
@@ -44,8 +45,21 @@ export function SetupPage() {
     { key: 'holidays', title: 'Feiertage', content: <PublicHolidaySettingsForm /> },
     { key: 'lifts', title: 'Lifte', content: <LiftSettings /> },
     ...(mfkOn ? [{ key: 'inspection-stations', title: 'Prüfstellen', content: <InspectionStationSettings /> }] : []),
-    // last: with the first person the device asks who uses it
+    // with the first person the device asks who uses it – the import after it needs that person
     { key: 'employees', title: 'Mitarbeiter', content: <EmployeeList /> },
+    {
+      key: 'data-import',
+      title: 'Kunden übernehmen',
+      content: (
+        <>
+          <h2>Kunden und Fahrzeuge übernehmen</h2>
+          <p className="muted">
+            Freiwillig: aus dem bisherigen Programm als CSV- oder Excel-Datei. Geht auch später unter «Einstellungen».
+          </p>
+          <DataImport />
+        </>
+      ),
+    },
   ]
   const index = Math.max(0, steps.findIndex((s) => s.key === params.get('step')))
   const step = steps[index]

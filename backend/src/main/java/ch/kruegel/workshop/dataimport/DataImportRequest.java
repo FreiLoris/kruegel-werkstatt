@@ -21,7 +21,8 @@ public record DataImportRequest(
         boolean firstRowIsData,
         boolean dryRun) {
 
-    /** Column {@code index} (from 0) holds {@code field} */
+    /** Column {@code index} (from 0) holds {@code field}; named for the API – "Column" alone says nothing there */
+    @Schema(name = "DataImportColumnMapping")
     public record Column(@Min(0) int index, @NotNull ImportField field) {
     }
 }

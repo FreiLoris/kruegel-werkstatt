@@ -2790,12 +2790,6 @@ export interface components {
              */
             version?: number;
         };
-        Column: {
-            /** @enum {string} */
-            field: "SALUTATION" | "LAST_NAME" | "FIRST_NAME" | "COMPANY" | "ADDITION" | "STREET" | "POSTAL_CODE" | "CITY" | "POSTAL_CODE_CITY" | "PHONE" | "MOBILE" | "EMAIL" | "LICENSE_PLATE" | "MAKE" | "MODEL" | "VIN" | "FIRST_REGISTRATION" | "MODEL_YEAR" | "MILEAGE" | "LAST_MFK" | "COLOR" | "FUEL";
-            /** Format: int32 */
-            index?: number;
-        };
         CompanyDto: {
             city: string | null;
             email: string | null;
@@ -3055,6 +3049,12 @@ export interface components {
              */
             suggested: "SALUTATION" | "LAST_NAME" | "FIRST_NAME" | "COMPANY" | "ADDITION" | "STREET" | "POSTAL_CODE" | "CITY" | "POSTAL_CODE_CITY" | "PHONE" | "MOBILE" | "EMAIL" | "LICENSE_PLATE" | "MAKE" | "MODEL" | "VIN" | "FIRST_REGISTRATION" | "MODEL_YEAR" | "MILEAGE" | "LAST_MFK" | "COLOR" | "FUEL" | null;
         };
+        DataImportColumnMapping: {
+            /** @enum {string} */
+            field: "SALUTATION" | "LAST_NAME" | "FIRST_NAME" | "COMPANY" | "ADDITION" | "STREET" | "POSTAL_CODE" | "CITY" | "POSTAL_CODE_CITY" | "PHONE" | "MOBILE" | "EMAIL" | "LICENSE_PLATE" | "MAKE" | "MODEL" | "VIN" | "FIRST_REGISTRATION" | "MODEL_YEAR" | "MILEAGE" | "LAST_MFK" | "COLOR" | "FUEL";
+            /** Format: int32 */
+            index?: number;
+        };
         DataImportPreviewDto: {
             /** @description Character set of a CSV file (UTF-8 or windows-1252 …); null for Excel */
             charset: string | null;
@@ -3067,7 +3067,7 @@ export interface components {
         };
         DataImportRequest: {
             charset?: string | null;
-            columns: components["schemas"]["Column"][];
+            columns: components["schemas"]["DataImportColumnMapping"][];
             dryRun?: boolean;
             firstRowIsData?: boolean;
         };
