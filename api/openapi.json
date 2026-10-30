@@ -1126,6 +1126,76 @@
         "tags" : [ "Company" ]
       }
     },
+    "/api/company/setup-complete" : {
+      "post" : {
+        "description" : "Finished or skipped – a new installation does not show it again. A second call changes nothing.",
+        "operationId" : "completeSetup",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompanyDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The setup assistant is done",
+        "tags" : [ "Company" ]
+      }
+    },
     "/api/courtesy-car-bookings" : {
       "get" : {
         "operationId" : "inPeriod",
@@ -14707,8 +14777,17 @@
           "phone" : {
             "type" : [ "string", "null" ]
           },
+          "plateCanton" : {
+            "type" : "string",
+            "description" : "Neutral 4: the canton new licence plates start with",
+            "example" : "ZH"
+          },
           "postalCode" : {
             "type" : [ "string", "null" ]
+          },
+          "setupDone" : {
+            "type" : "boolean",
+            "description" : "Neutral 4: the setup assistant is done – false only on a new installation"
           },
           "street" : {
             "type" : [ "string", "null" ]
@@ -14721,7 +14800,7 @@
             "type" : [ "string", "null" ]
           }
         },
-        "required" : [ "city", "email", "logoUrl", "name", "phone", "postalCode", "street", "version", "website" ]
+        "required" : [ "city", "email", "logoUrl", "name", "phone", "plateCanton", "postalCode", "setupDone", "street", "version", "website" ]
       },
       "CompanyRequest" : {
         "type" : "object",
@@ -14746,6 +14825,12 @@
             "type" : "string",
             "maxLength" : 30,
             "minLength" : 0
+          },
+          "plateCanton" : {
+            "type" : "string",
+            "description" : "Neutral 4: the canton new licence plates start with; missing = unchanged",
+            "example" : "ZH",
+            "pattern" : "[A-Z]{2}"
           },
           "postalCode" : {
             "type" : "string",

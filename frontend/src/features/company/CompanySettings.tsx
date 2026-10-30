@@ -5,9 +5,10 @@ import { useUnsavedChanges } from '../../app/useUnsavedChanges'
 import { useCanEdit } from '../../app/person/useDevicePerson'
 import { Button } from '../../components/ui/Button'
 import formStyles from '../../components/ui/FormDialog.module.css'
-import { TextField } from '../../components/ui/Fields'
+import { Select, TextField } from '../../components/ui/Fields'
 import { useConfirm } from '../../components/ui/confirmContext'
 import { useToast } from '../../components/ui/toastContext'
+import { CANTONS } from '../../lib/licensePlate'
 import styles from './CompanySettings.module.css'
 import { useCompany, useDeleteLogo, useUpdateCompany, useUploadLogo, type Company, type CompanyRequest } from './companyApi'
 
@@ -23,6 +24,7 @@ function initialValues(company: Company): FormValues {
     phone: company.phone ?? '',
     email: company.email ?? '',
     website: company.website ?? '',
+    plateCanton: company.plateCanton,
   }
 }
 
@@ -81,6 +83,7 @@ function CompanyForm({ company }: { company: Company }) {
         phone: text(values.phone),
         email: text(values.email),
         website: text(values.website),
+        plateCanton: values.plateCanton,
         version: baseVersion,
       },
       {
@@ -155,6 +158,20 @@ function CompanyForm({ company }: { company: Company }) {
         {text('email', 'E-Mail', { type: 'email', maxLength: 100 })}
       </div>
       {text('website', 'Webseite', { maxLength: 100, placeholder: 'z. B. www.example.ch' })}
+      {/* neutral 4: where the workshop is – a new licence plate starts with it */}
+      <Select
+        label="Kanton für neue Kontrollschilder"
+        disabled={!canEdit}
+        value={values.plateCanton}
+        onChange={(e) => set('plateCanton', e.target.value)}
+        error={fieldError('plateCanton')}
+      >
+        {CANTONS.map((canton) => (
+          <option key={canton.code} value={canton.code}>
+            {canton.code} – {canton.name}
+          </option>
+        ))}
+      </Select>
       {canEdit && (
         <div>
           <Button variant="primary" type="submit" loading={update.isPending}>

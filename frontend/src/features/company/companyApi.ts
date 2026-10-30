@@ -27,6 +27,20 @@ export function useUpdateCompany() {
   })
 }
 
+/** The canton new licence plates start with (neutral 4) – ZH while the profile is loading */
+export function usePlateCanton(): string {
+  return useCompany().data?.plateCanton ?? 'ZH'
+}
+
+/** The setup assistant finished or skipped (neutral 4) – a new installation does not show it again */
+export function useCompleteSetup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => dataOrThrow(await api.POST('/api/company/setup-complete')),
+    onSuccess: (company) => queryClient.setQueryData([TOPIC], company),
+  })
+}
+
 export function useUploadLogo() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -7,6 +7,8 @@ import { CourtesyCarDialog } from './CourtesyCarDialog'
 
 const save = vi.fn()
 
+// the canton of new plates comes from the company profile (neutral 4)
+vi.mock('../company/companyApi', () => ({ usePlateCanton: () => 'ZH' }))
 vi.mock('./courtesyCarApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./courtesyCarApi')>()),
   useSaveCourtesyCar: () => ({ mutate: save, isPending: false, error: null, reset: vi.fn() }),

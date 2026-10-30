@@ -173,6 +173,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/company/setup-complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The setup assistant is done
+         * @description Finished or skipped – a new installation does not show it again. A second call changes nothing.
+         */
+        post: operations["completeSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courtesy-car-bookings": {
         parameters: {
             query?: never;
@@ -2740,7 +2760,14 @@ export interface components {
             logoUrl: string | null;
             name: string;
             phone: string | null;
+            /**
+             * @description Neutral 4: the canton new licence plates start with
+             * @example ZH
+             */
+            plateCanton: string;
             postalCode: string | null;
+            /** @description Neutral 4: the setup assistant is done – false only on a new installation */
+            setupDone: boolean;
             street: string | null;
             /** Format: int64 */
             version: number;
@@ -2752,6 +2779,11 @@ export interface components {
             email?: string;
             name: string;
             phone?: string;
+            /**
+             * @description Neutral 4: the canton new licence plates start with; missing = unchanged
+             * @example ZH
+             */
+            plateCanton?: string;
             postalCode?: string;
             street?: string;
             /**
@@ -5805,6 +5837,71 @@ export interface operations {
         };
     };
     deleteLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    completeSetup: {
         parameters: {
             query?: never;
             header?: never;

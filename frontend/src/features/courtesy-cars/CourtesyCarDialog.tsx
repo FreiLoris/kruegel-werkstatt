@@ -7,6 +7,7 @@ import { useConfirm } from '../../components/ui/confirmContext'
 import { TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
+import { usePlateCanton } from '../company/companyApi'
 import styles from './CourtesyCarDialog.module.css'
 import { useSaveCourtesyCar, useSetCourtesyCarActive, type CourtesyCar, type CourtesyCarRequest } from './courtesyCarApi'
 
@@ -46,6 +47,7 @@ function toRequest(values: FormValues, version?: number): CourtesyCarRequest {
  * (UI review: the old form only had placeholders). Mounted fresh on every open (`key`).
  */
 export function CourtesyCarDialog({ car, onClose }: { car?: CourtesyCar; onClose: () => void }) {
+  const plateCanton = usePlateCanton()
   const formId = useId()
   const toast = useToast()
   const confirm = useConfirm()
@@ -149,6 +151,7 @@ export function CourtesyCarDialog({ car, onClose }: { car?: CourtesyCar; onClose
           value={values.licensePlate}
           onChange={(plate) => set('licensePlate', plate)}
           error={fieldError('licensePlate')}
+          defaultCanton={plateCanton}
         />
         <div className={styles.row}>
           <TextField

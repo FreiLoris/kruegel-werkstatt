@@ -7,8 +7,6 @@ import styles from './LicensePlateField.module.css'
 /** Value of the "Land" selection: Switzerland, a foreign country code or free input */
 type Country = 'CH' | 'OTHER' | string
 
-/** Canton for new plates – the workshop is in the canton of Zurich */
-const DEFAULT_CANTON = 'ZH'
 
 interface LicensePlateFieldProps {
   /** Stored plate text, e.g. "SG 197052" ('' = none) */
@@ -16,6 +14,8 @@ interface LicensePlateFieldProps {
   onChange: (value: string) => void
   /** Error from the server, e.g. "gehört bereits zu einem anderen Ersatzwagen" */
   error?: string
+  /** The canton a new plate starts with – where the workshop is (neutral 4, `usePlateCanton`) */
+  defaultCanton?: string
 }
 
 /**
@@ -26,10 +26,10 @@ interface LicensePlateFieldProps {
  * The parts live in local state – a half-filled plate (canton chosen, no number yet) is not
  * a plate and is reported as '' – the component is mounted fresh for every dialog (`key`).
  */
-export function LicensePlateField({ value, onChange, error }: LicensePlateFieldProps) {
+export function LicensePlateField({ value, onChange, error, defaultCanton = 'ZH' }: LicensePlateFieldProps) {
   const [cantonTyped, setCantonTyped] = useState('')
   const [plate, setPlate] = useState<ParsedPlate>(() =>
-    value ? parsePlate(value) : { kind: 'swiss', canton: DEFAULT_CANTON, number: '' },
+    value ? parsePlate(value) : { kind: 'swiss', canton: defaultCanton, number: '' },
   )
 
   const country: Country = plate.kind === 'swiss' ? 'CH' : plate.kind === 'foreign' ? plate.country : 'OTHER'
@@ -41,7 +41,7 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
   }
 
   function changeCountry(next: Country) {
-    if (next === 'CH') update({ kind: 'swiss', canton: DEFAULT_CANTON, number: '' })
+    if (next === 'CH') update({ kind: 'swiss', canton: defaultCanton, number: '' })
     else if (next === 'OTHER') update({ kind: 'other', text: '' })
     else update({ kind: 'foreign', country: next, number: plate.kind === 'foreign' ? plate.number : '' })
   }

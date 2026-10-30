@@ -5,6 +5,14 @@ import { LicensePlate } from './LicensePlate'
 import { LicensePlateField } from './LicensePlateField'
 
 describe('LicensePlateField', () => {
+  it('a new plate starts with the canton of the workshop (neutral 4)', async () => {
+    const onChange = vi.fn()
+    render(<LicensePlateField value="" onChange={onChange} defaultCanton="SG" />)
+
+    await userEvent.type(screen.getByLabelText('Nummer'), '123')
+    expect(onChange).toHaveBeenLastCalledWith('SG 123')
+  })
+
   it('starts with Switzerland and canton Zurich for a new plate', async () => {
     const onChange = vi.fn()
     render(<LicensePlateField value="" onChange={onChange} />)

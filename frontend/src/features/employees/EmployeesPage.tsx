@@ -63,7 +63,7 @@ export function EmployeesPage() {
  * Administration of the employees: list in fixed order (= order on the pinboard and in
  * selection lists), create/edit in a dialog, former employees separately.
  */
-function EmployeeList() {
+export function EmployeeList() {
   const { data: all, error, isPending, refetch } = useAllEmployees()
   const [dialog, setDialog] = useState<Dialog>(null)
   const canEdit = useCanEdit()

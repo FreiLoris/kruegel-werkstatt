@@ -7,6 +7,7 @@ import { TextField } from '../../components/ui/Fields'
 import { Modal } from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/toastContext'
 import { useSingleFlight } from '../../lib/useSingleFlight'
+import { usePlateCanton } from '../company/companyApi'
 import { useCreateVehicle, useUpdateVehicle, type Vehicle, type VehicleRequest } from './vehicleApi'
 
 /**
@@ -94,6 +95,7 @@ export function VehicleDialog({
   onSaved: (vehicle: Vehicle) => void
   onClose: () => void
 }) {
+  const plateCanton = usePlateCanton()
   const formId = useId()
   const toast = useToast()
   const create = useCreateVehicle()
@@ -171,7 +173,12 @@ export function VehicleDialog({
             nach dem nächsten Import nachtragen – sonst gibt es das Auto doppelt.
           </p>
         )}
-        <LicensePlateField value={values.licensePlate} onChange={(plate) => set('licensePlate', plate)} error={fieldError('licensePlate')} />
+        <LicensePlateField
+          value={values.licensePlate}
+          onChange={(plate) => set('licensePlate', plate)}
+          error={fieldError('licensePlate')}
+          defaultCanton={plateCanton}
+        />
         <div className={styles.row}>
           <TextField
             label="Marke"
