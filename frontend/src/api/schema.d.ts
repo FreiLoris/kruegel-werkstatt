@@ -571,6 +571,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/data-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take over customers and vehicles with the given mapping
+         * @description Dry run (dryRun = true): only counts. Otherwise all or nothing. Customers and vehicles the app already has are left as they are – the import can be repeated.
+         */
+        post: operations["importFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/data-import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The columns of a CSV or Excel file, with their first values and a suggested field
+         * @description Nothing is stored.
+         */
+        post: operations["preview_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/employees": {
         parameters: {
             query?: never;
@@ -2750,6 +2790,12 @@ export interface components {
              */
             version?: number;
         };
+        Column: {
+            /** @enum {string} */
+            field: "SALUTATION" | "LAST_NAME" | "FIRST_NAME" | "COMPANY" | "ADDITION" | "STREET" | "POSTAL_CODE" | "CITY" | "POSTAL_CODE_CITY" | "PHONE" | "MOBILE" | "EMAIL" | "LICENSE_PLATE" | "MAKE" | "MODEL" | "VIN" | "FIRST_REGISTRATION" | "MODEL_YEAR" | "MILEAGE" | "LAST_MFK" | "COLOR" | "FUEL";
+            /** Format: int32 */
+            index?: number;
+        };
         CompanyDto: {
             city: string | null;
             email: string | null;
@@ -2992,6 +3038,66 @@ export interface components {
         DataChanged: {
             /** @example employees */
             topic: string;
+        };
+        DataImportColumnDto: {
+            /** @description The header, or "Spalte 3" without a header row */
+            header: string;
+            /**
+             * Format: int32
+             * @description Position, counted from 0 – the mapping refers to it
+             */
+            index: number;
+            /** @description The values of the first rows */
+            samples: string[];
+            /**
+             * @description What the header usually means
+             * @enum {string|null}
+             */
+            suggested: "SALUTATION" | "LAST_NAME" | "FIRST_NAME" | "COMPANY" | "ADDITION" | "STREET" | "POSTAL_CODE" | "CITY" | "POSTAL_CODE_CITY" | "PHONE" | "MOBILE" | "EMAIL" | "LICENSE_PLATE" | "MAKE" | "MODEL" | "VIN" | "FIRST_REGISTRATION" | "MODEL_YEAR" | "MILEAGE" | "LAST_MFK" | "COLOR" | "FUEL" | null;
+        };
+        DataImportPreviewDto: {
+            /** @description Character set of a CSV file (UTF-8 or windows-1252 …); null for Excel */
+            charset: string | null;
+            columns: components["schemas"]["DataImportColumnDto"][];
+            /**
+             * Format: int32
+             * @description Data rows, without header and empty rows
+             */
+            rowCount: number;
+        };
+        DataImportRequest: {
+            charset?: string | null;
+            columns: components["schemas"]["Column"][];
+            dryRun?: boolean;
+            firstRowIsData?: boolean;
+        };
+        DataImportResultDto: {
+            /** Format: int32 */
+            customersCreated: number;
+            /**
+             * Format: int32
+             * @description Same name and address as a customer of the app – taken as it is
+             */
+            customersExisting: number;
+            dryRun: boolean;
+            /** @description One German line per problem, e.g. "Zeile 17: kein Name" */
+            problems: string[];
+            /** Format: int32 */
+            rowsRead: number;
+            /** Format: int32 */
+            skipped: number;
+            /** Format: int32 */
+            vehiclesCreated: number;
+            /**
+             * Format: int32
+             * @description Same chassis number or plate as a vehicle of the app
+             */
+            vehiclesExisting: number;
+            /**
+             * Format: int32
+             * @description Vehicles not taken over (no make and model, twice in the file …)
+             */
+            vehiclesSkipped: number;
         };
         DepthsRequest: {
             /** @example 6.5 */
@@ -7620,6 +7726,154 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomerDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    importFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    settings: components["schemas"]["DataImportRequest"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DataImportResultDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    preview_1: {
+        parameters: {
+            query?: {
+                charset?: string;
+                firstRowIsData?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DataImportPreviewDto"];
                 };
             };
             /** @description Bad Request */

@@ -3231,6 +3231,197 @@
         "tags" : [ "Customers" ]
       }
     },
+    "/api/data-import" : {
+      "post" : {
+        "description" : "Dry run (dryRun = true): only counts. Otherwise all or nothing. Customers and vehicles the app already has are left as they are – the import can be repeated.",
+        "operationId" : "importFile",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  },
+                  "settings" : {
+                    "$ref" : "#/components/schemas/DataImportRequest"
+                  }
+                },
+                "required" : [ "file", "settings" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DataImportResultDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Take over customers and vehicles with the given mapping",
+        "tags" : [ "Data import" ]
+      }
+    },
+    "/api/data-import/preview" : {
+      "post" : {
+        "description" : "Nothing is stored.",
+        "operationId" : "preview_1",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "charset",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "firstRowIsData",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DataImportPreviewDto"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "403" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Forbidden"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "409" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Conflict"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "The columns of a CSV or Excel file, with their first values and a suggested field",
+        "tags" : [ "Data import" ]
+      }
+    },
     "/api/employees" : {
       "get" : {
         "operationId" : "list_13",
@@ -14757,6 +14948,21 @@
         },
         "required" : [ "courtesyCarId", "pickupAt", "returnAt" ]
       },
+      "Column" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "enum" : [ "SALUTATION", "LAST_NAME", "FIRST_NAME", "COMPANY", "ADDITION", "STREET", "POSTAL_CODE", "CITY", "POSTAL_CODE_CITY", "PHONE", "MOBILE", "EMAIL", "LICENSE_PLATE", "MAKE", "MODEL", "VIN", "FIRST_REGISTRATION", "MODEL_YEAR", "MILEAGE", "LAST_MFK", "COLOR", "FUEL" ]
+          },
+          "index" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          }
+        },
+        "required" : [ "field" ]
+      },
       "CompanyDto" : {
         "type" : "object",
         "properties" : {
@@ -15317,6 +15523,126 @@
           }
         },
         "required" : [ "topic" ]
+      },
+      "DataImportColumnDto" : {
+        "type" : "object",
+        "properties" : {
+          "header" : {
+            "type" : "string",
+            "description" : "The header, or \"Spalte 3\" without a header row"
+          },
+          "index" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Position, counted from 0 – the mapping refers to it"
+          },
+          "samples" : {
+            "type" : "array",
+            "description" : "The values of the first rows",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "suggested" : {
+            "type" : [ "string", "null" ],
+            "description" : "What the header usually means",
+            "enum" : [ "SALUTATION", "LAST_NAME", "FIRST_NAME", "COMPANY", "ADDITION", "STREET", "POSTAL_CODE", "CITY", "POSTAL_CODE_CITY", "PHONE", "MOBILE", "EMAIL", "LICENSE_PLATE", "MAKE", "MODEL", "VIN", "FIRST_REGISTRATION", "MODEL_YEAR", "MILEAGE", "LAST_MFK", "COLOR", "FUEL" ]
+          }
+        },
+        "required" : [ "header", "index", "samples", "suggested" ]
+      },
+      "DataImportPreviewDto" : {
+        "type" : "object",
+        "properties" : {
+          "charset" : {
+            "type" : [ "string", "null" ],
+            "description" : "Character set of a CSV file (UTF-8 or windows-1252 …); null for Excel"
+          },
+          "columns" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DataImportColumnDto"
+            }
+          },
+          "rowCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Data rows, without header and empty rows"
+          }
+        },
+        "required" : [ "charset", "columns", "rowCount" ]
+      },
+      "DataImportRequest" : {
+        "type" : "object",
+        "properties" : {
+          "charset" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 20,
+            "minLength" : 0
+          },
+          "columns" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Column"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "dryRun" : {
+            "type" : "boolean"
+          },
+          "firstRowIsData" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "columns" ]
+      },
+      "DataImportResultDto" : {
+        "type" : "object",
+        "properties" : {
+          "customersCreated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "customersExisting" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Same name and address as a customer of the app – taken as it is"
+          },
+          "dryRun" : {
+            "type" : "boolean"
+          },
+          "problems" : {
+            "type" : "array",
+            "description" : "One German line per problem, e.g. \"Zeile 17: kein Name\"",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "rowsRead" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "skipped" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vehiclesCreated" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vehiclesExisting" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Same chassis number or plate as a vehicle of the app"
+          },
+          "vehiclesSkipped" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Vehicles not taken over (no make and model, twice in the file …)"
+          }
+        },
+        "required" : [ "customersCreated", "customersExisting", "dryRun", "problems", "rowsRead", "skipped", "vehiclesCreated", "vehiclesExisting", "vehiclesSkipped" ]
       },
       "DepthsRequest" : {
         "type" : "object",
