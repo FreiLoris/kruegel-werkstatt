@@ -14948,21 +14948,6 @@
         },
         "required" : [ "courtesyCarId", "pickupAt", "returnAt" ]
       },
-      "Column" : {
-        "type" : "object",
-        "properties" : {
-          "field" : {
-            "type" : "string",
-            "enum" : [ "SALUTATION", "LAST_NAME", "FIRST_NAME", "COMPANY", "ADDITION", "STREET", "POSTAL_CODE", "CITY", "POSTAL_CODE_CITY", "PHONE", "MOBILE", "EMAIL", "LICENSE_PLATE", "MAKE", "MODEL", "VIN", "FIRST_REGISTRATION", "MODEL_YEAR", "MILEAGE", "LAST_MFK", "COLOR", "FUEL" ]
-          },
-          "index" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 0
-          }
-        },
-        "required" : [ "field" ]
-      },
       "CompanyDto" : {
         "type" : "object",
         "properties" : {
@@ -15551,6 +15536,21 @@
         },
         "required" : [ "header", "index", "samples", "suggested" ]
       },
+      "DataImportColumnMapping" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "enum" : [ "SALUTATION", "LAST_NAME", "FIRST_NAME", "COMPANY", "ADDITION", "STREET", "POSTAL_CODE", "CITY", "POSTAL_CODE_CITY", "PHONE", "MOBILE", "EMAIL", "LICENSE_PLATE", "MAKE", "MODEL", "VIN", "FIRST_REGISTRATION", "MODEL_YEAR", "MILEAGE", "LAST_MFK", "COLOR", "FUEL" ]
+          },
+          "index" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          }
+        },
+        "required" : [ "field" ]
+      },
       "DataImportPreviewDto" : {
         "type" : "object",
         "properties" : {
@@ -15583,7 +15583,7 @@
           "columns" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Column"
+              "$ref" : "#/components/schemas/DataImportColumnMapping"
             },
             "maxItems" : 200,
             "minItems" : 0

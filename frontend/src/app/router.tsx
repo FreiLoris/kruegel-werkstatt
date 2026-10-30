@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { CourtesyCarsPage } from '../features/bookings/CourtesyCarsPage'
 import { CustomerPage } from '../features/customers/CustomerPage'
+import { DataImportPage } from '../features/dataimport/DataImportPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { PinboardPage } from '../features/notes/PinboardPage'
@@ -53,6 +54,8 @@ export const router = createBrowserRouter([
           // neutral 4: a new installation, step by step
           { path: 'setup', element: <SetupPage /> },
           { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
+          // neutral 5: customers and vehicles from another program
+          { path: 'settings/data-import', element: <DataImportPage /> },
           { path: 'courtesy-cars', element: <ModulePage module="COURTESY_CARS"><CourtesyCarsPage /></ModulePage> },
           { path: 'tasks', element: <AppointmentsPage /> },
           // FB-04: pinboard, to-dos and shopping list are pages of their own again

@@ -31,6 +31,7 @@ vi.mock('../publicholidays/PublicHolidaySettingsForm', () => ({ PublicHolidaySet
 vi.mock('../lifts/LiftSettings', () => ({ LiftSettings: () => <p>Liftformular</p> }))
 vi.mock('../inspection-stations/InspectionStationSettings', () => ({ InspectionStationSettings: () => <p>Prüfstellenformular</p> }))
 vi.mock('../employees/EmployeesPage', () => ({ EmployeeList: () => <p>Mitarbeiterliste</p> }))
+vi.mock('../dataimport/DataImport', () => ({ DataImport: () => <p>Datenimport</p> }))
 
 afterEach(() => {
   complete.mockClear()
@@ -53,11 +54,11 @@ function renderAt(path: string) {
 }
 
 describe('SetupPage (neutral 4)', () => {
-  it('starts with the company and goes on step by step – the people last', async () => {
+  it('starts with the company and goes on step by step – the people, then the import', async () => {
     renderAt('/setup')
     expect(screen.getByText('Firmenformular')).toBeTruthy()
 
-    for (const form of ['Modulformular', 'Feiertagsformular', 'Liftformular', 'Prüfstellenformular', 'Mitarbeiterliste']) {
+    for (const form of ['Modulformular', 'Feiertagsformular', 'Liftformular', 'Prüfstellenformular', 'Mitarbeiterliste', 'Datenimport']) {
       fireEvent.click(screen.getByRole('button', { name: 'Weiter' }))
       expect(await screen.findByText(form)).toBeTruthy()
     }
@@ -72,7 +73,7 @@ describe('SetupPage (neutral 4)', () => {
   })
 
   it('"Fertig" and "Später einrichten" both end it', async () => {
-    renderAt('/setup?step=employees')
+    renderAt('/setup?step=data-import')
     fireEvent.click(screen.getByRole('button', { name: 'Fertig' }))
     fireEvent.click(screen.getByRole('button', { name: 'Später einrichten' }))
     await waitFor(() => expect(complete).toHaveBeenCalledTimes(2))
@@ -80,7 +81,7 @@ describe('SetupPage (neutral 4)', () => {
 
   it('a device on "Nur ansehen" can look, not end it – the server would refuse', () => {
     canEdit = false
-    renderAt('/setup?step=employees')
+    renderAt('/setup?step=data-import')
     expect(screen.queryByRole('button', { name: 'Fertig' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Später einrichten' })).toBeNull()
   })

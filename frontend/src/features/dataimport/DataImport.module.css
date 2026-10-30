@@ -1,0 +1,127 @@
+.dataImport {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dataImport h3,
+.dataImport p {
+  margin: 0;
+}
+
+/* The whole zone is the label of the hidden file input → click and keyboard work */
+.dropZone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 7rem;
+  padding: var(--space-4);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropZone:hover,
+.dragging {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.dropZone:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Invisible but focusable – the visible part is the zone around it */
+.input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fileBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  align-items: end;
+  gap: var(--space-3);
+}
+
+/* One field per column – side by side on the tablet */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mappingProblems {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--color-danger);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.result {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+}
+
+.problems {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.problemsTitle {
+  margin: 0 0 var(--space-1);
+  font-weight: 600;
+}
+
+.problems ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.problems summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
