@@ -9,7 +9,10 @@ import ch.kruegel.workshop.dataimport.ImportTable.ImportRow;
 import ch.kruegel.workshop.vehicle.Vehicle;
 import ch.kruegel.workshop.vehicle.VehicleDetails;
 import ch.kruegel.workshop.vehicle.VehicleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +41,7 @@ import java.util.stream.Stream;
  *   <li>Taken over as customers of the app ({@code LOCAL}): editable, never deactivated or overwritten.</li>
  *   <li>Repeatable: a customer with the same name and address, a vehicle with the same chassis number or
  *       plate is already there – left as it is, not created twice.</li>
+ *   <li>A customer deactivated in the app stays so – its rows are not taken over.</li>
  *   <li>A row without a name is skipped; a value that cannot be read (date, number) stays empty – both are
  *       reported, the rest is taken over.</li>
  *   <li>A dry run counts the same without storing; the real run stores all or nothing.</li>
@@ -50,15 +53,22 @@ public class DataImportService {
     static final int SAMPLES = 5;
     static final int MAX_PROBLEMS = 100;
     private static final int SAMPLE_MAX = 60;
+    /** Key of the Postgres lock that lets only one import run at a time ("DATAIMP") */
+    private static final long LOCK = 0x44415441494D50L;
+
+    private static final Logger log = LoggerFactory.getLogger(DataImportService.class);
 
     private final CustomerRepository customers;
     private final VehicleRepository vehicles;
     private final ApplicationEventPublisher events;
+    private final JdbcTemplate jdbc;
 
-    DataImportService(CustomerRepository customers, VehicleRepository vehicles, ApplicationEventPublisher events) {
+    DataImportService(CustomerRepository customers, VehicleRepository vehicles, ApplicationEventPublisher events,
+                      JdbcTemplate jdbc) {
         this.customers = customers;
         this.vehicles = vehicles;
         this.events = events;
+        this.jdbc = jdbc;
     }
 
     /** The columns with their first values and a suggested field – nothing is stored. */
@@ -85,7 +95,14 @@ public class DataImportService {
     public DataImportResultDto importFile(byte[] file, DataImportRequest request) {
         ImportTable table = read(file, request.charset(), request.firstRowIsData());
         Map<ImportField, List<Integer>> mapping = mapping(request, table.columnCount());
-        return new Run(mapping, request.dryRun()).execute(table);
+        if (!request.dryRun()) {
+            // two imports at once (double click, two tablets) would both find nothing and both create –
+            // the second waits for the first and then finds its customers
+            jdbc.execute("SELECT pg_advisory_xact_lock(" + LOCK + ")");
+        }
+        Run run = new Run(mapping, request.dryRun());
+        run.loadWhatTheAppHas();
+        return run.execute(table);
     }
 
     /** One import: the rows one by one, against what the app already has */
@@ -94,8 +111,11 @@ public class DataImportService {
         private final Map<ImportField, List<Integer>> mapping;
         private final boolean dryRun;
         private final List<String> problems = new ArrayList<>();
-        private final Map<String, Customer> knownCustomers;
+        /** All customers of the app, also deactivated ones – one deactivated on purpose must not come back */
+        private final Map<String, Customer> knownCustomers = new HashMap<>();
         private final Set<String> knownVehicles = new HashSet<>();
+        /** Make and model of the vehicles of a customer of the app – for vehicles without chassis number and plate */
+        private final Map<UUID, Set<String>> knownDescriptions = new HashMap<>();
         /** The customers of this file by key – new or already there */
         private final Map<String, Customer> fileCustomers = new HashMap<>();
         private final Set<String> fileVehicles = new HashSet<>();
@@ -106,9 +126,10 @@ public class DataImportService {
         Run(Map<ImportField, List<Integer>> mapping, boolean dryRun) {
             this.mapping = mapping;
             this.dryRun = dryRun;
-            this.knownCustomers = customers.findAll().stream()
-                    .filter(Customer::isActive)
-                    .collect(Collectors.toMap(c -> customerKey(c.getDetails()), Function.identity(), (a, b) -> a));
+        }
+
+        void loadWhatTheAppHas() {
+            customers.findAll().forEach(c -> knownCustomers.putIfAbsent(customerKey(c.getDetails()), c));
             for (Vehicle vehicle : vehicles.findAll()) {
                 VehicleDetails details = vehicle.getDetails();
                 if (details.vin() != null) {
@@ -141,13 +162,18 @@ public class DataImportService {
 
         private void row(ImportRow row) {
             rowsRead++;
+            if (value(row, ImportField.LAST_NAME).isEmpty() && value(row, ImportField.COMPANY).isEmpty()) {
+                skipped++;
+                problem(row, "kein Name – nicht übernommen");
+                return;
+            }
             CustomerDetails details;
             try {
                 details = customerDetails(row);
             } catch (IllegalArgumentException e) {
+                // with a name only a text that is too long is left
                 skipped++;
-                boolean noName = value(row, ImportField.LAST_NAME).isEmpty() && value(row, ImportField.COMPANY).isEmpty();
-                problem(row, noName ? "kein Name – nicht übernommen" : "Text zu lang (höchstens 100 Zeichen) – nicht übernommen");
+                problem(row, "Text zu lang – nicht übernommen");
                 return;
             }
             String key = customerKey(details);
@@ -161,6 +187,11 @@ public class DataImportService {
                     newCustomers.add(customer);
                 }
                 fileCustomers.put(key, customer);
+            }
+            if (!customer.isActive()) {
+                skipped++;
+                problem(row, "Kunde ist in der App deaktiviert – nicht übernommen");
+                return;
             }
             if (ImportField.VEHICLE.stream().anyMatch(field -> !value(row, field).isEmpty())) {
                 vehicle(row, customer, key);
@@ -183,6 +214,11 @@ public class DataImportService {
         }
 
         private void vehicle(ImportRow row, Customer customer, String customerKey) {
+            if (value(row, ImportField.MAKE).isEmpty() && value(row, ImportField.MODEL).isEmpty()) {
+                vehiclesSkipped++;
+                problem(row, "Fahrzeug nicht übernommen – Marke und Modell fehlen");
+                return;
+            }
             VehicleDetails details;
             try {
                 details = new VehicleDetails(value(row, ImportField.LICENSE_PLATE), value(row, ImportField.MAKE),
@@ -191,31 +227,45 @@ public class DataImportService {
                         number(row, ImportField.MILEAGE), date(row, ImportField.LAST_MFK),
                         value(row, ImportField.COLOR), value(row, ImportField.FUEL));
             } catch (IllegalArgumentException e) {
+                // make or model there, numbers checked – only a text that is too long is left
                 vehiclesSkipped++;
-                boolean noName = value(row, ImportField.MAKE).isEmpty() && value(row, ImportField.MODEL).isEmpty();
-                problem(row, "Fahrzeug nicht übernommen – " + (noName ? "Marke und Modell fehlen" : "Text zu lang"));
+                problem(row, "Fahrzeug nicht übernommen – Text zu lang");
                 return;
             }
-            String key = details.vin() != null ? vinKey(details.vin())
-                    : details.licensePlate() != null ? plateKey(details.licensePlate())
-                    : "car:" + customerKey + "|" + details.description().toLowerCase(Locale.ROOT);
-            if (!fileVehicles.add(key)) {
+            // the same vehicle if ANY of its keys matches: in the app often only the plate, in the file also the chassis number
+            List<String> keys = new ArrayList<>();
+            if (details.vin() != null) {
+                keys.add(vinKey(details.vin()));
+            }
+            if (details.licensePlate() != null) {
+                keys.add(plateKey(details.licensePlate()));
+            }
+            boolean known;
+            if (keys.isEmpty()) {
+                String description = description(details);
+                keys.add("car:" + customerKey + "|" + description);
+                known = customer.getId() != null && knownDescriptions(customer.getId()).contains(description);
+            } else {
+                known = keys.stream().anyMatch(knownVehicles::contains);
+            }
+            if (keys.stream().anyMatch(fileVehicles::contains)) {
                 vehiclesSkipped++;
                 problem(row, "Fahrzeug steht mehrfach in der Datei – nur einmal übernommen");
-            } else if (knownVehicles.contains(key) || withoutPlateKnown(customer, details)) {
+            } else if (known) {
                 vehiclesExisting++;
             } else {
                 newVehicles.add(Vehicle.local(customer, details));
             }
+            fileVehicles.addAll(keys);
         }
 
-        /** Without chassis number and plate: the customer of the app has a vehicle of that make and model */
-        private boolean withoutPlateKnown(Customer customer, VehicleDetails details) {
-            if (details.vin() != null || details.licensePlate() != null || customer.getId() == null) {
-                return false;
-            }
-            return vehicles.findByCustomerIdOrderByActiveDescLicensePlateAsc(customer.getId()).stream()
-                    .anyMatch(v -> v.isActive() && Objects.equals(v.getDetails().description(), details.description()));
+        /** Without chassis number and plate: make and model of the active vehicles of a customer of the app – once per customer */
+        private Set<String> knownDescriptions(UUID customerId) {
+            return knownDescriptions.computeIfAbsent(customerId, id -> vehicles.findByCustomerIdOrderByActiveDescLicensePlateAsc(id)
+                    .stream()
+                    .filter(Vehicle::isActive)
+                    .map(v -> description(v.getDetails()))
+                    .collect(Collectors.toSet()));
         }
 
         /** The text of the field's columns, joined with a space; "" if not mapped */
@@ -238,7 +288,11 @@ public class DataImportService {
         private Integer number(ImportRow row, ImportField field) {
             try {
                 String value = value(row, field);
-                return field == ImportField.MODEL_YEAR ? ImportValues.modelYear(value) : ImportValues.integer(value);
+                Integer number = field == ImportField.MODEL_YEAR ? ImportValues.modelYear(value) : ImportValues.integer(value);
+                if (number != null && number < 0) {
+                    throw new IllegalArgumentException("negativ");
+                }
+                return number;
             } catch (IllegalArgumentException e) {
                 problem(row, "«" + field.label() + "» ist " + e.getMessage() + " – leer gelassen");
                 return null;
@@ -276,7 +330,7 @@ public class DataImportService {
     }
 
     private static ImportTable read(byte[] file, String charset, boolean firstRowIsData) {
-        if (charset != null && !ImportTable.CHARSETS.contains(charset)) {
+        if (charset != null && !ImportTable.isKnownCharset(charset)) {
             throw new InvalidInputException("charset", "Unbekannter Zeichensatz – " + String.join(" oder ", ImportTable.CHARSETS) + ".");
         }
         if (file.length >= 4 && (file[0] & 0xFF) == 0xD0 && (file[1] & 0xFF) == 0xCF) {
@@ -285,7 +339,11 @@ public class DataImportService {
         ImportTable table;
         try {
             table = ImportTable.read(file, charset, firstRowIsData);
+        } catch (ImportTable.UnreadableFileException e) {
+            throw new InvalidInputException("file", e.getMessage());
         } catch (IOException | RuntimeException e) {
+            // no file content in the log – only what went wrong
+            log.warn("Import file not readable: {}", e.toString().lines().findFirst().orElse(""));
             throw new InvalidInputException("file", "Die Datei konnte nicht gelesen werden. Bitte eine CSV- oder Excel-Datei (.xlsx) verwenden.");
         }
         if (table.rows().isEmpty()) {
@@ -303,6 +361,11 @@ public class DataImportService {
 
     private static String vinKey(String vin) {
         return "vin:" + vin.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
+    }
+
+    /** "vw golf" – make and model, whatever the case */
+    private static String description(VehicleDetails details) {
+        return details.description().toLowerCase(Locale.ROOT);
     }
 
     private static String plateKey(String plate) {

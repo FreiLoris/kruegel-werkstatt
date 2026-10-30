@@ -18,10 +18,10 @@ public enum ImportField {
     LAST_NAME("Name", Kind.TEXT, "name", "nachname", "familienname", "lastname", "surname", "kundenname"),
     FIRST_NAME("Vorname", Kind.TEXT, "vorname", "firstname", "rufname"),
     COMPANY("Firma", Kind.TEXT, "firma", "firmenname", "company", "unternehmen"),
-    ADDITION("Zusatz", Kind.TEXT, "zusatz", "adresszusatz", "zhd", "co"),
+    ADDITION("Zusatz", Kind.TEXT, "zusatz", "adresszusatz", "zhd"),
     /** Several columns are joined: "Strasse" + "Hausnummer" */
     STREET("Strasse", Kind.TEXT, "strasse", "str", "strassenr", "strasseundnr", "strassehausnummer", "adresse",
-            "address", "street", "hausnummer", "hausnr", "nr"),
+            "address", "street", "hausnummer", "hausnr"),
     POSTAL_CODE("PLZ", Kind.TEXT, "plz", "postleitzahl", "zip", "zipcode", "npa"),
     CITY("Ort", Kind.TEXT, "ort", "wohnort", "ortschaft", "stadt", "city"),
     /** "8400 Winterthur" in one column */
@@ -47,7 +47,8 @@ public enum ImportField {
     enum Kind { TEXT, DATE, NUMBER }
 
     /** The fields that make a row also a vehicle */
-    static final Set<ImportField> VEHICLE = EnumSet.range(LICENSE_PLATE, FUEL);
+    static final Set<ImportField> VEHICLE = EnumSet.of(LICENSE_PLATE, MAKE, MODEL, VIN, FIRST_REGISTRATION, MODEL_YEAR,
+            MILEAGE, LAST_MFK, COLOR, FUEL);
 
     private final String label;
     private final Kind kind;

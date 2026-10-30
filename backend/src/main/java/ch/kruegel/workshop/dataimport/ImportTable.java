@@ -33,6 +33,13 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
     /** What the user can choose when the umlauts look wrong */
     static final List<String> CHARSETS = List.of(UTF_8, WINDOWS);
 
+    /** The file cannot be read as a table – the message says why, in German */
+    static final class UnreadableFileException extends RuntimeException {
+        UnreadableFileException(String message) {
+            super(message);
+        }
+    }
+
     /** One data row; {@code number} as Excel shows it (header = 1) – for "Zeile 17: …" */
     record ImportRow(int number, List<String> cells) {
 
@@ -56,7 +63,7 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
         if (excel) {
             return of(excel(file), null, firstRowIsData);
         }
-        Charset chosen = charset == null ? detectCharset(file) : Charset.forName(charset);
+        Charset chosen = charset == null ? detectCharset(file) : Charset.forName(canonical(charset));
         return of(Csv.parse(decode(file, chosen)), chosen.name(), firstRowIsData);
     }
 
@@ -88,7 +95,7 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
      * else Windows – what Excel writes as plain "CSV" on a Swiss PC.
      */
     static Charset detectCharset(byte[] file) {
-        if (file.length >= 3 && (file[0] & 0xFF) == 0xEF && (file[1] & 0xFF) == 0xBB && (file[2] & 0xFF) == 0xBF) {
+        if (hasUtf8Bom(file)) {
             return StandardCharsets.UTF_8;
         }
         if (file.length >= 2 && (file[0] & 0xFF) == 0xFF && (file[1] & 0xFF) == 0xFE) {
@@ -108,8 +115,27 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
         }
     }
 
+    /** Chosen by the user, or what the preview said – whatever the case */
+    static boolean isKnownCharset(String name) {
+        return canonical(name) != null;
+    }
+
+    private static String canonical(String name) {
+        return Stream.concat(CHARSETS.stream(), Stream.of("UTF-16LE", "UTF-16BE"))
+                .filter(known -> known.equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static boolean hasUtf8Bom(byte[] file) {
+        return file.length >= 3 && (file[0] & 0xFF) == 0xEF && (file[1] & 0xFF) == 0xBB && (file[2] & 0xFF) == 0xBF;
+    }
+
     private static String decode(byte[] file, Charset charset) {
-        String text = new String(file, charset);
+        // the UTF-8 mark also when the user chose Windows – else "ï»¿" stands before the first header
+        String text = hasUtf8Bom(file) && !charset.name().startsWith("UTF-16")
+                ? new String(file, 3, file.length - 3, charset)
+                : new String(file, charset);
         return text.startsWith("\uFEFF") ? text.substring(1) : text;
     }
 
@@ -173,6 +199,7 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
             List<String> cells = new ArrayList<>();
             StringBuilder cell = new StringBuilder();
             boolean quoted = false;
+            int quoteRow = 0;
             int i = 0;
             while (i < text.length()) {
                 char c = text.charAt(i);
@@ -187,6 +214,7 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
                     }
                 } else if (c == '"' && cell.toString().isBlank()) {
                     quoted = true;
+                    quoteRow = rows.size() + 1;
                     cell.setLength(0);
                 } else if (c == separator) {
                     cells.add(cell.toString());
@@ -203,6 +231,11 @@ record ImportTable(List<String> headers, List<ImportRow> rows, String charset) {
                     cell.append(c);
                 }
                 i++;
+            }
+            if (quoted) {
+                // else the rest of the file would silently be one cell
+                throw new UnreadableFileException("Ein Anführungszeichen in Zeile " + quoteRow
+                        + " wird nicht geschlossen – die Datei ist so nicht lesbar.");
             }
             if (!cell.isEmpty() || !cells.isEmpty()) {
                 cells.add(cell.toString());

@@ -38,12 +38,13 @@ class DataImportApiTest {
 
     /** A file as an other program might write it: own names, own order, street and number apart */
     private static final String FILE = """
-            Kd-Nr;Nachname;Vorname;Strasse;Nr;PLZ/Ort;Natel;Kennzeichen;Marke;Typ;1. Inv.;Km-Stand;Rabatt
+            Kd-Nr;Nachname;Vorname;Strasse;Hausnr;PLZ/Ort;Natel;Kennzeichen;Marke;Typ;1. Inv.;Km-Stand;Rabatt
             17;Huber;Peter;Musterstrasse;1;8400 Winterthur;079 000 00 01;zh 12345;VW;Golf;31.03.2015;123'456;5
             17;Huber;Peter;Musterstrasse;1;8400 Winterthur;079 000 00 01;ZH-54321;Audi;A3;2019-06-01;;5
             18;Meier;Anna;Testweg;7;CH-8404 Winterthur;;;;;;;
             19;;;Ohne Name;1;8400 Winterthur;;;;;;;
-            20;Keller;Urs;Probeweg;2;8405 Winterthur;;ZH 777;;;irgendwann;;
+            20;Keller;Urs;Probeweg;2;8405 Winterthur;;ZH 777;;;;;
+            21;Frei;Eva;Probeweg;3;8405 Winterthur;;ZH 888;Seat;Ibiza;irgendwann;;
             """;
     /** Columns of {@link #FILE} → fields; "Kd-Nr" and "Rabatt" are not taken over */
     private static final String MAPPING = """
@@ -83,13 +84,14 @@ class DataImportApiTest {
                 .exchange();
 
         assertThat(response).hasStatusOk();
-        assertThat(response).bodyJson().extractingPath("$.rowCount").isEqualTo(5);
+        assertThat(response).bodyJson().extractingPath("$.rowCount").isEqualTo(6);
         assertThat(response).bodyJson().extractingPath("$.charset").isEqualTo("UTF-8");
         assertThat(response).bodyJson().extractingPath("$.columns[*].suggested").asArray().containsExactly(
                 null, "LAST_NAME", "FIRST_NAME", "STREET", "STREET", "POSTAL_CODE_CITY", "MOBILE", "LICENSE_PLATE",
                 "MAKE", "MODEL", "FIRST_REGISTRATION", "MILEAGE", null);
         assertThat(response).bodyJson().extractingPath("$.columns[1].samples").asArray()
                 .containsExactly("Huber", "Huber", "Meier", "", "Keller");
+        // only the first five rows as samples
         assertThat(customers.count()).isZero();
     }
 
@@ -99,8 +101,8 @@ class DataImportApiTest {
 
         assertThat(response).hasStatusOk();
         assertThat(response).bodyJson().extractingPath("$.dryRun").isEqualTo(true);
-        assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(3);
-        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(2);
+        assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(4);
+        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(3);
         assertThat(customers.count()).isZero();
         assertThat(vehicles.count()).isZero();
     }
@@ -110,15 +112,15 @@ class DataImportApiTest {
         MvcTestResult response = importFile(FILE, MAPPING, false);
 
         assertThat(response).hasStatusOk();
-        assertThat(response).bodyJson().extractingPath("$.rowsRead").isEqualTo(5);
-        assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(3);
+        assertThat(response).bodyJson().extractingPath("$.rowsRead").isEqualTo(6);
+        assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(4);
         assertThat(response).bodyJson().extractingPath("$.skipped").isEqualTo(1);
-        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(2);
+        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(3);
         assertThat(response).bodyJson().extractingPath("$.vehiclesSkipped").isEqualTo(1);
         assertThat(response).bodyJson().extractingPath("$.problems").asArray().containsExactly(
                 "Zeile 5: kein Name – nicht übernommen",
-                "Zeile 6: «1. Inverkehrsetzung» ist kein Datum – leer gelassen",
-                "Zeile 6: Fahrzeug nicht übernommen – Marke und Modell fehlen");
+                "Zeile 6: Fahrzeug nicht übernommen – Marke und Modell fehlen",
+                "Zeile 7: «1. Inverkehrsetzung» ist kein Datum – leer gelassen");
 
         Customer huber = customers.findAll().stream().filter(c -> "Huber".equals(c.getDetails().lastName())).findFirst().orElseThrow();
         assertThat(huber.getSource()).isEqualTo(RecordSource.LOCAL);
@@ -142,11 +144,11 @@ class DataImportApiTest {
         MvcTestResult again = importFile(FILE, MAPPING, false);
 
         assertThat(again).bodyJson().extractingPath("$.customersCreated").isEqualTo(0);
-        assertThat(again).bodyJson().extractingPath("$.customersExisting").isEqualTo(3);
+        assertThat(again).bodyJson().extractingPath("$.customersExisting").isEqualTo(4);
         assertThat(again).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(0);
-        assertThat(again).bodyJson().extractingPath("$.vehiclesExisting").isEqualTo(2);
-        assertThat(customers.count()).isEqualTo(3);
-        assertThat(vehicles.count()).isEqualTo(2);
+        assertThat(again).bodyJson().extractingPath("$.vehiclesExisting").isEqualTo(3);
+        assertThat(customers.count()).isEqualTo(4);
+        assertThat(vehicles.count()).isEqualTo(3);
     }
 
     @Test
@@ -184,6 +186,75 @@ class DataImportApiTest {
 
         assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(1);
         assertThat(customers.findAll().getFirst().getDetails().city()).isEqualTo("Zürich");
+    }
+
+    @Test
+    void aVehicleTheAppKnowsByPlate_isFoundAlsoWithChassisNumber() {
+        Customer huber = customers.save(Customer.local(CustomerTestData.person("Huber", "Peter")));
+        vehicles.save(Vehicle.local(huber, new VehicleDetails("ZH 12345", "VW", "Golf", null, null, null, null, null, null, null)));
+        String file = """
+                Name;Kennzeichen;Fahrgestellnummer;Marke
+                Huber;ZH 12345;WVWZZZ1KZAW000001;VW
+                Meier;ZH 999;WVWZZZ1KZAW000002;Audi
+                Keller;ZH 999;;Audi
+                """;
+        String mapping = """
+                [{"index":0,"field":"LAST_NAME"},{"index":1,"field":"LICENSE_PLATE"},{"index":2,"field":"VIN"},
+                 {"index":3,"field":"MAKE"}]""";
+
+        MvcTestResult response = importFile(file, mapping, false);
+
+        assertThat(response).bodyJson().extractingPath("$.vehiclesExisting").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(1);
+        // the same plate in the file again, once without chassis number: the same vehicle
+        assertThat(response).bodyJson().extractingPath("$.vehiclesSkipped").isEqualTo(1);
+        assertThat(vehicles.count()).isEqualTo(2);
+    }
+
+    @Test
+    void aCustomerDeactivatedInTheApp_staysSo() {
+        Customer meier = Customer.local(CustomerTestData.person("Meier", "Anna"));
+        meier.deactivate();
+        customers.save(meier);
+        String file = """
+                Name;Vorname;Strasse;PLZ;Marke
+                Meier;Anna;Musterstrasse 1;8400;VW
+                """;
+        String mapping = """
+                [{"index":0,"field":"LAST_NAME"},{"index":1,"field":"FIRST_NAME"},{"index":2,"field":"STREET"},
+                 {"index":3,"field":"POSTAL_CODE"},{"index":4,"field":"MAKE"}]""";
+
+        MvcTestResult response = importFile(file, mapping, false);
+
+        assertThat(response).bodyJson().extractingPath("$.customersCreated").isEqualTo(0);
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").isEqualTo("Zeile 2: Kunde ist in der App deaktiviert – nicht übernommen");
+        assertThat(customers.count()).isEqualTo(1);
+        assertThat(vehicles.count()).isZero();
+    }
+
+    @Test
+    void aNegativeMileage_staysEmpty_theVehicleIsTakenOver() {
+        String file = """
+                Name;Marke;Km
+                Huber;VW;-5
+                """;
+
+        MvcTestResult response = importFile(file, """
+                [{"index":0,"field":"LAST_NAME"},{"index":1,"field":"MAKE"},{"index":2,"field":"MILEAGE"}]""", false);
+
+        assertThat(response).bodyJson().extractingPath("$.vehiclesCreated").isEqualTo(1);
+        assertThat(response).bodyJson().extractingPath("$.problems[0]").isEqualTo("Zeile 2: «Kilometerstand» ist negativ – leer gelassen");
+    }
+
+    @Test
+    void anUnclosedQuote_saysWhere() {
+        MvcTestResult response = mvc.post().uri("/api/data-import/preview")
+                .multipart().file(file("Name;Ort\nHuber;\"Winterthur\nMeier;Zürich\n"))
+                .header(CurrentPerson.HEADER, chef)
+                .exchange();
+
+        assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(response).bodyJson().extractingPath("$.errors[0].message").asString().contains("Zeile 2");
     }
 
     @Test

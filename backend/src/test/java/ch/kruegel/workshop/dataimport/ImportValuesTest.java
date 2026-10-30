@@ -24,6 +24,11 @@ class ImportValuesTest {
     }
 
     @Test
+    void anExcelDayNumber_theCellFormatDidNotReveal() {
+        assertThat(ImportValues.date("42094")).isEqualTo(LocalDate.of(2015, 3, 31));
+    }
+
+    @Test
     void monthAndYear_theFirstOfTheMonth() {
         assertThat(ImportValues.date("03.2015")).isEqualTo(LocalDate.of(2015, 3, 1));
         assertThat(ImportValues.date("3/2015")).isEqualTo(LocalDate.of(2015, 3, 1));

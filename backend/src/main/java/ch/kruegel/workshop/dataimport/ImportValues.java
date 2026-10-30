@@ -18,6 +18,10 @@ final class ImportValues {
     private static final Pattern ISO_DATE = Pattern.compile("(\\d{4})-(\\d{1,2})-(\\d{1,2})");
     /** "03.2015", "3/2015" – the vehicle papers often only have month and year */
     private static final Pattern MONTH_YEAR = Pattern.compile("(\\d{1,2})[./](\\d{4})");
+    /** Excel's day number: 18264 = 1950-01-01 … 73050 = 2100-01-01 */
+    private static final Pattern EXCEL_DAY = Pattern.compile("[1-7]\\d{4}");
+    /** Day 0 of Excel's day numbers (Dec 30, not 31, 1899 – an old Lotus bug) */
+    private static final LocalDate EXCEL_EPOCH = LocalDate.of(1899, 12, 30);
     /** "123'456", "123.456", "123 456" – thousands separated */
     private static final Pattern THOUSANDS = Pattern.compile("\\d{1,3}([.,]\\d{3})+");
     /** "8400 Winterthur", "CH-8400 Winterthur" */
@@ -41,6 +45,9 @@ final class ImportValues {
                 date = LocalDate.of(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
             } else if ((m = MONTH_YEAR.matcher(text)).matches()) {
                 date = LocalDate.of(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(1)), 1);
+            } else if (EXCEL_DAY.matcher(text).matches()) {
+                // an Excel date the cell format did not reveal (format "Standard", formula)
+                date = EXCEL_EPOCH.plusDays(Long.parseLong(text));
             } else {
                 throw new IllegalArgumentException("kein Datum");
             }

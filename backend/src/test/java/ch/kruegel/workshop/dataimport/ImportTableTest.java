@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** CSV and Excel files as other programs write them – fictitious data only. */
 class ImportTableTest {
@@ -68,6 +69,23 @@ class ImportTableTest {
         byte[] utf8 = "Name\nMüller\n".getBytes(StandardCharsets.UTF_8);
 
         assertThat(firstCell(utf8, "windows-1252")).isEqualTo("MÃ¼ller");
+    }
+
+    @Test
+    void theUtf8Mark_isDroppedAlsoWithWindowsChosen_andTheNameOfTheCharsetWhateverTheCase() throws IOException {
+        byte[] withBom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, 'N', 'a', 'm', 'e', '\n', 'H', 'u', 'b', 'e', 'r', '\n'};
+
+        assertThat(ImportTable.read(withBom, "WINDOWS-1252", false).headers()).containsExactly("Name");
+        assertThat(ImportTable.isKnownCharset("utf-8")).isTrue();
+        assertThat(ImportTable.isKnownCharset("UTF-16LE")).isTrue();
+        assertThat(ImportTable.isKnownCharset("ebcdic")).isFalse();
+    }
+
+    @Test
+    void anUnclosedQuote_isNoSilentGiantCell() {
+        assertThatThrownBy(() -> csv("Name;Ort\nHuber;\"Winterthur\nMeier;Zürich\n"))
+                .isInstanceOf(ImportTable.UnreadableFileException.class)
+                .hasMessageContaining("Zeile 2");
     }
 
     @Test

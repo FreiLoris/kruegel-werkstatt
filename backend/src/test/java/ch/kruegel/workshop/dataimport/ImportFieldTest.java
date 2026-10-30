@@ -24,6 +24,8 @@ class ImportFieldTest {
     @Test
     void unknownHeader_noSuggestion() {
         assertThat(ImportField.suggest("Rabatt")).isEmpty();
+        // often the customer number – joined into the street it would change the customer
+        assertThat(ImportField.suggest("Nr")).isEmpty();
         assertThat(ImportField.suggest("")).isEmpty();
     }
 
