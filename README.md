@@ -39,7 +39,8 @@ database backup – [`docs/operations.md`](docs/operations.md)). Why these techn
 | `docs/glossary.md` | German domain terms ↔ English code names |
 | `docs/operations.md` | Operation: backups, restore |
 | `docs/deployment-nas.md` | Installing and updating on the Synology NAS |
-| `deploy/` | `compose.yaml` + `.env` templates for the installed instances: NAS (release) and test computers (dev) – ready-made images, Watchtower updates them |
+| `docs/installation.md` | Installation guide for a new workshop (German – for the garages themselves) |
+| `deploy/` | `compose.yaml` + `.env` templates for the installed instances: Krügel's NAS and a new workshop (release), test computers (dev) – ready-made images, Watchtower updates them |
 | `backup/` | Scripts of the backup container (nightly `pg_dump`, restore) |
 | `docs/adr/` | Architecture Decision Records |
 | `docs/analysis/` | Analysis of the old app: features, bugs, UI review with screenshots (German) |

@@ -5,6 +5,7 @@
 #
 # One file for every instance, the channel comes from the .env next to it:
 #   release.env.example  the NAS in the workshop – only released versions ("latest")
+#   garage.env.example   a new workshop's installation (docs/installation.md) – also "latest"
 #   dev.env.example      Reto's and Loris' computers – every merge to main ("dev")
 # Watchtower looks for a newer image of the channel and restarts the app with it by itself.
 #

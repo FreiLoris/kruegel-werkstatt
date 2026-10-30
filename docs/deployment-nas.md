@@ -1,5 +1,8 @@
 # Deployment on the Synology NAS
 
+Krügel's installation. A new workshop installs with [`installation.md`](installation.md) (German,
+for the garages themselves, template `deploy/garage.env.example`).
+
 Target: **DS224+** (Intel Celeron J4125, 2 GB RAM), DSM 7.3, reachable in the workshop at
 `http://192.168.1.50:8090`. The NAS does not build anything – it pulls ready-made images from the
 GitHub Container Registry (`ghcr.io/freiloris/kruegel-werkstatt-*`), and only **released**
