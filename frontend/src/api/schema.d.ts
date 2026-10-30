@@ -3358,13 +3358,15 @@ export interface components {
             taskId: string;
         };
         ReminderSettingsDto: {
-            /** @description Customers are reminded the working day before */
-            enabled: boolean;
             /**
-             * @description Neutral 1: the sender taken from the company name – when the field is emptied
+             * @description Neutral 1: the sender taken from the company name – without an own one
              * @example Kruegel
              */
-            nameSender: string;
+            companySender: string;
+            /** @description Customers are reminded the working day before */
+            enabled: boolean;
+            /** @description Neutral 1: the workshop set its own sender */
+            ownSender: boolean;
             /** @description 17e: the workshop changed the wording */
             ownTemplate: boolean;
             /**

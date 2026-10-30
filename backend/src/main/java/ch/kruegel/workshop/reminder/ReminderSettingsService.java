@@ -55,7 +55,7 @@ public class ReminderSettingsService {
         if (sender != null && !SmsSenderName.isValid(sender)) {
             throw new InvalidInputException("smsSender", SmsSenderName.rule());
         }
-        settings.update(request.enabled(), request.sendTime(), request.smsTemplate(), request.smsSender(), company.get().name());
+        settings.update(request.enabled(), request.sendTime(), request.smsTemplate(), request.smsSender());
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
         return dto(settings);
@@ -74,6 +74,6 @@ public class ReminderSettingsService {
         String companyName = company.get().name();
         return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(), ready.contains(ReminderChannel.SMS),
                 s.getSmsTemplate(), s.hasOwnTemplate(), SmsTemplate.STANDARD, SmsTemplate.PLACEHOLDERS,
-                s.getSmsSender(companyName), SmsSenderName.of(companyName));
+                s.getSmsSender(companyName), s.hasOwnSender(), SmsSenderName.of(companyName));
     }
 }

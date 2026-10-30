@@ -15,8 +15,8 @@ import java.util.Objects;
 
 /**
  * Sends reminders as SMS by ASPSMS (17c), a Swiss provider – its JSON API (https://json.aspsms.com).
- * A bean only when the workshop's access is set up ({@link AspsmsConfig}). The workshop's name as the
- * sender (set in the settings, neutral 1: up to 11 letters, needs no unlocking). Characters beyond the SMS alphabet
+ * A bean only when the workshop's access is set up ({@link AspsmsConfig}). The sender is the one set in
+ * the settings, else taken from the company name (neutral 1: up to 11 letters, needs no unlocking). Characters beyond the SMS alphabet
  * (a name with "č") are replaced by ASPSMS – one would make every part of the SMS cost more than double.
  * "OK" means taken by ASPSMS, not yet on the phone.
  */

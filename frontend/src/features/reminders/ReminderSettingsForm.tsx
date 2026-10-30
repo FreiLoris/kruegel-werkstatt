@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { Checkbox, TextField } from '../../components/ui/Fields'
 import { useToast } from '../../components/ui/toastContext'
 import styles from '../tire-hotel/TireHotel.module.css'
-import { smsSenderProblem } from './reminder'
+import { SMS_SENDER_MAX, smsSenderProblem } from './reminder'
 import { SmsTemplateField } from './SmsTemplateField'
 import { useReminderSettings, useSaveReminderSettings, type ReminderSettings } from './reminderApi'
 
@@ -31,7 +31,9 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
   const [enabled, setEnabled] = useState(settings.enabled)
   const [sendTime, setSendTime] = useState(settings.sendTime.slice(0, 5))
   const [smsTemplate, setSmsTemplate] = useState(settings.smsTemplate)
-  const [smsSender, setSmsSender] = useState(settings.smsSender)
+  // only the workshop's own sender in the field – the one from the company name is its placeholder
+  const [openedSender, setOpenedSender] = useState(ownSender(settings))
+  const [smsSender, setSmsSender] = useState(openedSender)
 
   const timeInvalid = !/^\d{2}:\d{2}$/.test(sendTime) || sendTime < '08:00' || sendTime > '19:00'
   const senderProblem = smsSenderProblem(smsSender)
@@ -40,21 +42,23 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
     enabled !== settings.enabled ||
     sendTime !== settings.sendTime.slice(0, 5) ||
     smsTemplate !== settings.smsTemplate ||
-    smsSender !== settings.smsSender
+    smsSender !== openedSender
   useUnsavedChanges(changed)
 
   function submit(event: FormEvent) {
     event.preventDefault()
     if (invalid) return
     save.mutate(
-      { enabled, sendTime, smsTemplate, smsSender, version: openedVersion },
+      // the sender only when edited: one this device did not touch stays as it is
+      { enabled, sendTime, smsTemplate, smsSender: smsSender !== openedSender ? smsSender : undefined, version: openedVersion },
       {
         onSuccess: (saved) => {
           setOpenedVersion(saved.version)
           setEnabled(saved.enabled)
           setSendTime(saved.sendTime.slice(0, 5))
           setSmsTemplate(saved.smsTemplate)
-          setSmsSender(saved.smsSender)
+          setOpenedSender(ownSender(saved))
+          setSmsSender(ownSender(saved))
           toast.success(saved.enabled ? 'Kundenerinnerungen gespeichert – eingeschaltet' : 'Kundenerinnerungen gespeichert – ausgeschaltet')
         },
         onError: (error) => {
@@ -88,11 +92,11 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
         <div className={styles.row}>
           <TextField
             label="SMS-Absender"
-            hint={`So steht es auf dem Handy des Kunden. Leer: aus dem Firmennamen («${settings.nameSender}»).`}
-            maxLength={11}
+            hint={`So steht es auf dem Handy des Kunden. Leer: aus dem Firmennamen («${settings.companySender}»).`}
+            maxLength={SMS_SENDER_MAX}
             disabled={!canEdit}
             value={smsSender}
-            placeholder={settings.nameSender}
+            placeholder={settings.companySender}
             onChange={(e) => setSmsSender(e.target.value)}
             error={senderProblem ?? (save.error instanceof ApiError ? save.error.messageForField('smsSender') : undefined)}
           />
@@ -115,4 +119,8 @@ function SettingsForm({ settings }: { settings: ReminderSettings }) {
       )}
     </>
   )
+}
+
+function ownSender(settings: ReminderSettings): string {
+  return settings.ownSender ? settings.smsSender : ''
 }

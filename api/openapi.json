@@ -15892,14 +15892,18 @@
       "ReminderSettingsDto" : {
         "type" : "object",
         "properties" : {
+          "companySender" : {
+            "type" : "string",
+            "description" : "Neutral 1: the sender taken from the company name – without an own one",
+            "example" : "Kruegel"
+          },
           "enabled" : {
             "type" : "boolean",
             "description" : "Customers are reminded the working day before"
           },
-          "nameSender" : {
-            "type" : "string",
-            "description" : "Neutral 1: the sender taken from the company name – when the field is emptied",
-            "example" : "Kruegel"
+          "ownSender" : {
+            "type" : "boolean",
+            "description" : "Neutral 1: the workshop set its own sender"
           },
           "ownTemplate" : {
             "type" : "boolean",
@@ -15940,7 +15944,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "enabled", "nameSender", "ownTemplate", "placeholders", "sendTime", "smsReady", "smsSender", "smsTemplate", "standardTemplate", "version" ]
+        "required" : [ "companySender", "enabled", "ownSender", "ownTemplate", "placeholders", "sendTime", "smsReady", "smsSender", "smsTemplate", "standardTemplate", "version" ]
       },
       "ReminderSettingsRequest" : {
         "type" : "object",
