@@ -9,6 +9,7 @@ import { LoadFailed } from '../../components/ui/LoadFailed'
 import { formatDate } from '../../lib/format'
 import { CustomerHistory } from '../tasks/wizard/CustomerHistory'
 import { SEASONS, useTireSets } from '../tire-hotel/tireHotelApi'
+import { useModuleOn } from '../modules/moduleApi'
 import { useVehiclesOfCustomer } from '../vehicles/vehicleApi'
 import { useCustomer } from './customerApi'
 import { CustomerDialog } from './CustomerDialog'
@@ -44,6 +45,7 @@ export function CustomerPage() {
 function CustomerView({ customer }: { customer: Customer }) {
   const navigate = useNavigate()
   const canEdit = useCanEdit()
+  const tireHotelOn = useModuleOn('TIRE_HOTEL')
   const vehicles = useVehiclesOfCustomer(customer.id)
   const { data: inHotel } = useTireSets(true)
   const [editing, setEditing] = useState(false)
@@ -111,33 +113,35 @@ function CustomerView({ customer }: { customer: Customer }) {
                     {vehicle.description}
                     {!vehicle.active && <span className="muted"> (nicht mehr verwendet)</span>}
                     {/* FB-12: its tyres – in the hotel, on the car or with the customer */}
-                    <VehicleTires vehicleId={vehicle.id} />
+                    {tireHotelOn && <VehicleTires vehicleId={vehicle.id} />}
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
-          <section aria-labelledby="hotel-heading" className={styles.card}>
-            <h2 id="hotel-heading">Im Pneuhotel</h2>
-            {sets.length === 0 ? (
-              <p className="muted">{inHotel ? 'Keine Sätze eingelagert.' : 'Lade …'}</p>
-            ) : (
-              <ul className={styles.list}>
-                {sets.map((set) => (
-                  <li key={set.id}>
-                    <Link to={`/tires/${set.id}`}>
-                      {SEASONS[set.season]}satz{set.vehicle?.licensePlate ? ` ${set.vehicle.licensePlate}` : ''}
-                    </Link>
-                    <span className="muted">
-                      {' '}
-                      · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn!)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {tireHotelOn && (
+            <section aria-labelledby="hotel-heading" className={styles.card}>
+              <h2 id="hotel-heading">Im Pneuhotel</h2>
+              {sets.length === 0 ? (
+                <p className="muted">{inHotel ? 'Keine Sätze eingelagert.' : 'Lade …'}</p>
+              ) : (
+                <ul className={styles.list}>
+                  {sets.map((set) => (
+                    <li key={set.id}>
+                      <Link to={`/tires/${set.id}`}>
+                        {SEASONS[set.season]}satz{set.vehicle?.licensePlate ? ` ${set.vehicle.licensePlate}` : ''}
+                      </Link>
+                      <span className="muted">
+                        {' '}
+                        · {set.place ?? 'ohne Platz'} · seit {formatDate(set.storedOn!)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
         </div>
         <div className={styles.card}>
           <CustomerHistory customerId={customer.id} linked />

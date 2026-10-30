@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *
  * <p>All tables in ONE statement: they refer to {@code employee} via {@code created_by}/{@code updated_by}.
  * The rows a migration creates (company profile, standard inspection station, tread limits, season deadlines, screen lock,
- * reminders, public holidays)
+ * reminders, public holidays, modules)
  * are created again.
  * Emptied one by one, foreign key errors could occur depending on the order.
  *
@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public final class TestDatabase {
 
-    private static final String BUSINESS_TABLES = "public_holiday_settings_rule, public_holiday_settings, task_reminder, reminder_settings, customer_call, shopping_entry, shopping_item, vacation_entitlement, stock_item_supplier, stock_item, supplier_contact, supplier_delivery, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, inspection_station, tire_season_ack, tire_season_settings, screen_lock_settings, tire_set_event, tire_set, tire_place, tire_location, tire_hotel_settings, label_format, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
+    private static final String BUSINESS_TABLES = "module_settings_off, module_settings, public_holiday_settings_rule, public_holiday_settings, task_reminder, reminder_settings, customer_call, shopping_entry, shopping_item, vacation_entitlement, stock_item_supplier, stock_item, supplier_contact, supplier_delivery, supplier, storage_location, task_number_counter, absence, todo, note_assignee, note, courtesy_car_booking, task_service_item, task, inspection_station, tire_season_ack, tire_season_settings, screen_lock_settings, tire_set_event, tire_set, tire_place, tire_location, tire_hotel_settings, label_format, insurance, import_run, vehicle, customer, courtesy_car, service_item, lift, employee";
 
     private TestDatabase() {
     }
@@ -56,5 +56,9 @@ public final class TestDatabase {
                 SELECT settings.id, rule FROM settings, unnest(ARRAY['NEUJAHR', 'BERCHTOLDSTAG', 'KARFREITAG', 'OSTERSONNTAG',
                     'OSTERMONTAG', 'TAG_DER_ARBEIT', 'AUFFAHRT', 'PFINGSTSONNTAG', 'PFINGSTMONTAG', 'NATIONALFEIERTAG',
                     'WEIHNACHTEN', 'STEPHANSTAG']) AS rule""");
+        // the modules, as the migration creates them: all on
+        jdbc.execute("""
+                INSERT INTO module_settings (id, version, created_at, updated_at)
+                VALUES (uuidv7(), 0, now(), now())""");
     }
 }

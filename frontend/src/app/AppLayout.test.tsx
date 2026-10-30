@@ -11,6 +11,8 @@ let device: DeviceStatus = { kind: 'viewOnly' }
 import { setIdleMode } from '../lib/deviceIdleMode'
 import { deviceChoice } from '../lib/devicePerson'
 
+// neutral 3: all modules on, as the app was before
+vi.mock('../features/modules/moduleApi', () => ({ useModuleOn: () => true, useModulesOn: () => () => true }))
 vi.mock('./live/useLiveUpdates', () => ({ useLiveUpdates: () => 'connected' }))
 vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useCanEdit: () => false }))
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))

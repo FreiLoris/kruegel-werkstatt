@@ -13,6 +13,8 @@ const customer = { id: 'c1', displayName: 'Beispiel Anna' } as Customer
 const vehicle = { id: 'v1', description: 'VW Golf', licensePlate: null } as Vehicle
 
 // Step 1 as three buttons that report what the real step reports on a click
+// neutral 3: all modules on, as the app was before
+vi.mock('../../modules/moduleApi', () => ({ useModuleOn: () => true, useModulesOn: () => () => true }))
 vi.mock('./CustomerStep', () => ({
   CustomerStep: ({ onChange }: { onChange: (value: CustomerStepValue) => void }) => (
     <>

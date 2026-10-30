@@ -5,6 +5,8 @@ import { EMPTY_APPOINTMENT, type AppointmentForm } from './appointmentForm'
 import { AppointmentStep } from './AppointmentStep'
 
 // fictitious
+// neutral 3: all modules on, as the app was before
+vi.mock('../../modules/moduleApi', () => ({ useModuleOn: () => true, useModulesOn: () => () => true }))
 vi.mock('../../employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [] }) }))
 vi.mock('../../lifts/liftApi', () => ({ useAllLifts: () => ({ data: [] }) }))
 vi.mock('../../inspection-stations/inspectionStationApi', () => ({ useInspectionStations: () => ({ data: [] }) }))

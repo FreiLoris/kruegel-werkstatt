@@ -7,6 +7,7 @@ import { formatDate, formatLocalDateTime, formatTime } from '../../../lib/format
 import type { Booking } from '../../bookings/bookingApi'
 import { useAllCourtesyCars } from '../../courtesy-cars/courtesyCarApi'
 import { TaskParts } from '../../shopping/TaskParts'
+import { ModuleGate } from '../../modules/ModuleGate'
 import type { AnyTask } from '../taskApi'
 import styles from './SavedStep.module.css'
 import { TIME_OPEN } from '../taskTime'
@@ -40,10 +41,12 @@ export function SavedStep({ task, booking, onNext }: { task: AnyTask; booking: B
         </p>
       )}
       {/* parts to order are positions of the shopping list – entered here, linked to this task (FB-19) */}
-      <section className={styles.parts} aria-labelledby="saved-parts-title">
-        <h3 id="saved-parts-title">Ersatzteile bestellen</h3>
-        <TaskParts taskId={task.id} canEdit />
-      </section>
+      <ModuleGate module="MATERIAL">
+        <section className={styles.parts} aria-labelledby="saved-parts-title">
+          <h3 id="saved-parts-title">Ersatzteile bestellen</h3>
+          <TaskParts taskId={task.id} canEdit />
+        </section>
+      </ModuleGate>
       <div className={styles.actions}>
         <Button variant="primary" icon={Printer} onClick={() => navigate(`/tasks/${task.id}/sheet`)}>
           Auftragszettel drucken
