@@ -1,5 +1,5 @@
 import { Wrench } from 'lucide-react'
-import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { Link, Navigate, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { useEffect } from 'react'
 import { useCompany } from '../features/company/companyApi'
 import { useActiveEmployees } from '../features/employees/employeeApi'
@@ -44,6 +44,8 @@ export function AppLayout() {
   // no kiosk, and it stays on its page (a half-typed task is not thrown away by going back)
   const tv = device.kind === 'viewOnly' && idleMode !== 'viewOnly'
   const kiosk = tv && pathname === '/'
+  // neutral 4: a new installation is set up first – every page leads there until done or skipped
+  const needsSetup = company?.setUp === false && device.kind !== 'viewOnly' && pathname !== '/setup'
   useBackToDashboard(tv && pathname !== '/')
   const moduleOn = useModulesOn()
   // neutral 3: the parts the workshop switched off are not in the menu
@@ -103,7 +105,13 @@ export function AppLayout() {
       </header>
       <ConnectionLost status={liveStatus} />
       <main className={styles.content}>
-        {device.kind === 'choose' ? <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} /> : <Outlet />}
+        {device.kind === 'choose' ? (
+          <PersonPicker active={active} noLongerActive={device.noLongerActive !== undefined} />
+        ) : needsSetup ? (
+          <Navigate to="/setup" replace />
+        ) : (
+          <Outlet />
+        )}
       </main>
       <UnsavedChangesGuard />
       {lock.locked && idleMode === 'lock' && <LockScreen active={active} onChosen={lock.unlock} />}

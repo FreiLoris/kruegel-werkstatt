@@ -28,6 +28,7 @@ import { TireSetPage } from '../features/tire-hotel/TireSetPage'
 import { TireStorePage } from '../features/tire-hotel/TireStorePage'
 import { TaskTireBookingPage } from '../features/tire-hotel/TaskTireBookingPage'
 import { ModulePage } from '../features/modules/ModuleGate'
+import { SetupPage } from '../features/setup/SetupPage'
 import { AppLayout } from './AppLayout'
 import { CrashPage, NotFoundPage } from './ErrorPages'
 
@@ -49,6 +50,8 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'employees', element: <EmployeesPage /> },
           { path: 'settings', element: <SettingsPage /> },
+          // neutral 4: a new installation, step by step
+          { path: 'setup', element: <SetupPage /> },
           { path: 'settings/swissgarage', element: <SwissGarageImportPage /> },
           { path: 'courtesy-cars', element: <ModulePage module="COURTESY_CARS"><CourtesyCarsPage /></ModulePage> },
           { path: 'tasks', element: <AppointmentsPage /> },

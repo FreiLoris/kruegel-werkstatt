@@ -13,12 +13,14 @@ public record CompanyDto(
         @Schema(types = {"string", "null"}) String email,
         @Schema(types = {"string", "null"}) String website,
         @Schema(types = {"string", "null"}, example = "/api/company/logo?v=1791200000000",
-                description = "Address of the logo – changes with every upload (caches); empty without logo") String logoUrl) {
+                description = "Address of the logo – changes with every upload (caches); empty without logo") String logoUrl,
+        @Schema(description = "Neutral 4: the canton new licence plates start with", example = "ZH") String plateCanton,
+        @Schema(description = "Neutral 4: the setup assistant is done – false only on a new installation") boolean setUp) {
 
     static CompanyDto of(CompanyProfile profile, CompanyLogoStore.LogoInfo logo) {
         CompanyDetails d = profile.getDetails();
         String logoUrl = logo == null ? null : "/api/company/logo?v=" + logo.updatedAt().toEpochMilli();
         return new CompanyDto(profile.getVersion(), d.name(), d.street(), d.postalCode(), d.city(), d.phone(), d.email(),
-                d.website(), logoUrl);
+                d.website(), logoUrl, profile.getPlateCanton(), profile.isSetUp());
     }
 }

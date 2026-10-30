@@ -1,5 +1,6 @@
 package ch.kruegel.workshop.company;
 
+import ch.kruegel.workshop.common.LicensePlates;
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,6 +38,12 @@ public class CompanyService {
     public CompanyDto update(CompanyRequest request) {
         CompanyProfile profile = profile();
         profile.checkVersion(request.version());
+        if (request.plateCanton() != null) {
+            if (!LicensePlates.CANTONS.contains(request.plateCanton())) {
+                throw new InvalidInputException("plateCanton", "kein Kanton");
+            }
+            profile.changePlateCanton(request.plateCanton());
+        }
         profile.update(request.toDetails());
         repository.flush();
         return changed(profile);
@@ -62,6 +69,14 @@ public class CompanyService {
         }
         logos.save(data, type, Instant.now(clock));
         return changed(profile());
+    }
+
+    /** The setup assistant finished or skipped (neutral 4) – it does not come again */
+    public CompanyDto completeSetup() {
+        CompanyProfile profile = profile();
+        profile.completeSetup(Instant.now(clock));
+        repository.flush();
+        return changed(profile);
     }
 
     public CompanyDto deleteLogo() {

@@ -7,6 +7,8 @@ import { CourtesyCarDialog } from './CourtesyCarDialog'
 
 const save = vi.fn()
 
+// the plate field asks the company profile for its canton – not loaded here: ZH
+vi.mock('../company/companyApi', () => ({ useCompany: () => ({ data: undefined }) }))
 vi.mock('./courtesyCarApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./courtesyCarApi')>()),
   useSaveCourtesyCar: () => ({ mutate: save, isPending: false, error: null, reset: vi.fn() }),

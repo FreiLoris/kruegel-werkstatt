@@ -15,6 +15,7 @@ public record CompanyRequest(
         @Size(max = CompanyDetails.PHONE_MAX) String phone,
         @Email @Size(max = CompanyDetails.EMAIL_MAX) String email,
         @Size(max = CompanyDetails.WEBSITE_MAX) String website,
+        @Size(max = 2) @Schema(description = "Neutral 4: the canton new licence plates start with; missing = unchanged", example = "ZH") String plateCanton,
         @NotNull @Schema(description = "The version that was loaded (optimistic locking)") Long version) {
 
     CompanyDetails toDetails() {

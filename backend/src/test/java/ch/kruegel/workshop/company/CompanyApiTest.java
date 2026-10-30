@@ -73,6 +73,26 @@ class CompanyApiTest {
     }
 
     @Test
+    void theCantonOfNewPlates_zurichUntilChanged() {
+        assertThat(mvc.get().uri("/api/company").exchange()).bodyJson().extractingPath("$.plateCanton").isEqualTo("ZH");
+
+        assertThat(put("{ \"name\": \"Garage\", \"plateCanton\": \"XX\", \"version\": 0 }")).hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson().extractingPath("$.errors[0].field").isEqualTo("plateCanton");
+        assertThat(put("{ \"name\": \"Garage\", \"plateCanton\": \"SG\", \"version\": 0 }")).hasStatusOk()
+                .bodyJson().extractingPath("$.plateCanton").isEqualTo("SG");
+        // an older app sends none: unchanged
+        assertThat(put("{ \"name\": \"Garage\", \"version\": 1 }")).bodyJson().extractingPath("$.plateCanton").isEqualTo("SG");
+    }
+
+    @Test
+    void theSetupAssistantOnceDone_staysDone() {
+        assertThat(mvc.get().uri("/api/company").exchange()).bodyJson().extractingPath("$.setUp").isEqualTo(false);
+        MvcTestResult done = mvc.post().uri("/api/company/setup-complete").header(CurrentPerson.HEADER, chef).exchange();
+        assertThat(done).hasStatusOk().bodyJson().extractingPath("$.setUp").isEqualTo(true);
+        assertThat(mvc.post().uri("/api/company/setup-complete").header(CurrentPerson.HEADER, chef).exchange()).hasStatusOk();
+    }
+
+    @Test
     void nameIsRequiredAndVersionIsChecked() {
         assertThat(put("{ \"name\": \" \", \"version\": 0 }")).hasStatus(HttpStatus.BAD_REQUEST)
                 .bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");

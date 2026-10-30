@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useCompany } from '../../features/company/companyApi'
 import { CANTONS, COUNTRIES, composePlate, parsePlate, swissNumberInput, type ParsedPlate } from '../../lib/licensePlate'
 import { Select, TextField } from '../ui/Fields'
 import { LicensePlate } from './LicensePlate'
@@ -7,8 +8,8 @@ import styles from './LicensePlateField.module.css'
 /** Value of the "Land" selection: Switzerland, a foreign country code or free input */
 type Country = 'CH' | 'OTHER' | string
 
-/** Canton for new plates – the workshop is in the canton of Zurich */
-const DEFAULT_CANTON = 'ZH'
+/** Canton for new plates until the company profile is loaded – it says where the workshop is (neutral 4) */
+const FALLBACK_CANTON = 'ZH'
 
 interface LicensePlateFieldProps {
   /** Stored plate text, e.g. "SG 197052" ('' = none) */
@@ -27,9 +28,10 @@ interface LicensePlateFieldProps {
  * a plate and is reported as '' – the component is mounted fresh for every dialog (`key`).
  */
 export function LicensePlateField({ value, onChange, error }: LicensePlateFieldProps) {
+  const defaultCanton = useCompany().data?.plateCanton ?? FALLBACK_CANTON
   const [cantonTyped, setCantonTyped] = useState('')
   const [plate, setPlate] = useState<ParsedPlate>(() =>
-    value ? parsePlate(value) : { kind: 'swiss', canton: DEFAULT_CANTON, number: '' },
+    value ? parsePlate(value) : { kind: 'swiss', canton: defaultCanton, number: '' },
   )
 
   const country: Country = plate.kind === 'swiss' ? 'CH' : plate.kind === 'foreign' ? plate.country : 'OTHER'
@@ -41,7 +43,7 @@ export function LicensePlateField({ value, onChange, error }: LicensePlateFieldP
   }
 
   function changeCountry(next: Country) {
-    if (next === 'CH') update({ kind: 'swiss', canton: DEFAULT_CANTON, number: '' })
+    if (next === 'CH') update({ kind: 'swiss', canton: defaultCanton, number: '' })
     else if (next === 'OTHER') update({ kind: 'other', text: '' })
     else update({ kind: 'foreign', country: next, number: plate.kind === 'foreign' ? plate.number : '' })
   }

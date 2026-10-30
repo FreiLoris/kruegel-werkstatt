@@ -27,6 +27,15 @@ export function useUpdateCompany() {
   })
 }
 
+/** The setup assistant finished or skipped (neutral 4) – a new installation does not show it again */
+export function useCompleteSetup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => dataOrThrow(await api.POST('/api/company/setup-complete')),
+    onSuccess: (company) => queryClient.setQueryData([TOPIC], company),
+  })
+}
+
 export function useUploadLogo() {
   const queryClient = useQueryClient()
   return useMutation({

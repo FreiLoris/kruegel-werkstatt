@@ -7,6 +7,7 @@ import { IDLE_MS } from './kiosk/useBackToDashboard'
 import type { DeviceStatus } from './person/deviceStatus'
 
 let device: DeviceStatus = { kind: 'viewOnly' }
+let setUp = true
 
 import { setIdleMode } from '../lib/deviceIdleMode'
 import { deviceChoice } from '../lib/devicePerson'
@@ -19,7 +20,7 @@ vi.mock('./person/useDevicePerson', () => ({ useDevicePerson: () => device, useC
 vi.mock('./person/PersonMenu', () => ({ PersonMenu: () => null }))
 vi.mock('./CustomerQuickSearch', () => ({ CustomerQuickSearch: () => null }))
 vi.mock('../features/employees/employeeApi', () => ({ useActiveEmployees: () => ({ data: [{ id: 'r', name: 'Reto', color: '#f6d860' }] }) }))
-vi.mock('../features/company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Testgarage', logoUrl: null } }) }))
+vi.mock('../features/company/companyApi', () => ({ useCompany: () => ({ data: { name: 'Testgarage', logoUrl: null, setUp } }) }))
 vi.mock('../features/screenlock/screenLockApi', () => ({ useScreenLockSettings: () => ({ data: { version: 0, lockMinutes: 5 } }) }))
 
 function renderAt(path: string) {
@@ -34,6 +35,7 @@ function renderAt(path: string) {
           { path: 'tasks/new', element: <p>Neuer-Auftrag-Seite</p> },
           { path: 'tasks/:id', element: <p>Auftrag-Seite</p> },
           { path: 'stock', element: <p>Lager-Seite</p> },
+          { path: 'setup', element: <p>Einrichten-Seite</p> },
         ],
       },
     ],
@@ -49,6 +51,7 @@ function renderAt(path: string) {
 afterEach(() => {
   vi.useRealTimers()
   modulesOff.clear()
+  setUp = true
 })
 
 describe('AppLayout', () => {
@@ -73,6 +76,13 @@ describe('AppLayout', () => {
     expect(links).toEqual(expect.arrayContaining(['Start', 'Termine', 'Pneuhotel', 'Pinnwand', 'To-dos']))
     expect(links).not.toContain('Neuer Auftrag')
     expect(links).not.toContain('Einstellungen')
+  })
+
+  it('a new installation is set up first – every page leads there (neutral 4)', () => {
+    device = { kind: 'setup' }
+    setUp = false
+    renderAt('/tasks')
+    expect(screen.getByText('Einrichten-Seite')).toBeTruthy()
   })
 
   it('a module the workshop switched off is not in the menu – the TV neither (neutral 3)', () => {
