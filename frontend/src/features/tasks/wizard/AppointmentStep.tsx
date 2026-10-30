@@ -39,7 +39,7 @@ import type { Customer } from '../../customers/customerSearchApi'
 interface AppointmentStepProps {
   value: AppointmentForm
   onChange: (value: AppointmentForm) => void
-  /** date → holiday name (canton of Zurich) */
+  /** date → holiday name (the workshop's public holidays) */
   holidays: ReadonlyMap<string, string>
   /** Show "Datum wählen" as error – only after the user tried to continue */
   showRequired: boolean

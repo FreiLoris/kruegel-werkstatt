@@ -6,6 +6,7 @@ import { InactiveCustomers } from '../customers/CustomerSettings'
 import { InspectionStationSettings } from '../inspection-stations/InspectionStationSettings'
 import { InsuranceSettings } from '../insurances/InsuranceSettings'
 import { LiftSettings } from '../lifts/LiftSettings'
+import { PublicHolidaySettingsForm } from '../publicholidays/PublicHolidaySettingsForm'
 import { ReminderSettingsForm } from '../reminders/ReminderSettingsForm'
 import { ScreenLockSettingsForm } from '../screenlock/ScreenLockSettingsForm'
 import { ServiceItemSettings } from '../service-items/ServiceItemSettings'
@@ -20,6 +21,7 @@ import styles from './SettingsPage.module.css'
 const SECTIONS: { id: string; title: string; content: ReactNode }[] = [
   { id: 'firma', title: 'Firma', content: <CompanySettings /> },
   { id: 'lifte', title: 'Lifte', content: <LiftSettings /> },
+  { id: 'feiertage', title: 'Feiertage', content: <PublicHolidaySettingsForm /> },
   { id: 'leistungen', title: 'Leistungen', content: <ServiceItemSettings /> },
   { id: 'ersatzwagen', title: 'Ersatzwagen', content: <CourtesyCarSettings /> },
   { id: 'versicherungen', title: 'Versicherungen', content: <InsuranceSettings /> },

@@ -99,7 +99,7 @@ public record AbsencePeriod(
      * 9:00–10:30 is half a day, 11:00–14:00 a whole one. Weekends and public holidays do not count
      * (F6: the old app counted vacation over Saturday and Sunday).
      *
-     * @param isWorkingDay e.g. {@code ZurichPublicHolidays::isWorkingDay}
+     * @param isWorkingDay e.g. {@code PublicHolidays::isWorkingDay}
      */
     public int workingHalfDays(LocalDate from, LocalDate to, Predicate<LocalDate> isWorkingDay) {
         LocalDate first = startDate.isAfter(from) ? startDate : from;

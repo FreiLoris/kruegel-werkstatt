@@ -6,7 +6,7 @@ import ch.kruegel.workshop.company.CompanyService;
 import ch.kruegel.workshop.customer.Customer;
 import ch.kruegel.workshop.customer.ReminderChannel;
 import ch.kruegel.workshop.customer.ReminderContact;
-import ch.kruegel.workshop.publicholiday.ZurichPublicHolidays;
+import ch.kruegel.workshop.publicholiday.PublicHolidays;
 import ch.kruegel.workshop.task.Appointment;
 import ch.kruegel.workshop.task.Task;
 import ch.kruegel.workshop.task.TaskRepository;
@@ -54,7 +54,7 @@ public class ReminderService {
     private final ReminderSettingsService settings;
     private final TaskReminderRepository reminders;
     private final TaskRepository tasks;
-    private final ZurichPublicHolidays holidays;
+    private final PublicHolidays holidays;
     private final CompanyService company;
     private final Map<ReminderChannel, ReminderSender> senders = new EnumMap<>(ReminderChannel.class);
     private final TransactionTemplate transaction;
@@ -62,7 +62,7 @@ public class ReminderService {
     private final Clock clock;
 
     ReminderService(ReminderSettingsService settings, TaskReminderRepository reminders, TaskRepository tasks,
-                    ZurichPublicHolidays holidays, CompanyService company, List<ReminderSender> senders,
+                    PublicHolidays holidays, CompanyService company, List<ReminderSender> senders,
                     PlatformTransactionManager transactions, ApplicationEventPublisher events, Clock clock) {
         this.settings = settings;
         this.reminders = reminders;

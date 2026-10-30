@@ -22,6 +22,16 @@ describe('onDataChanged', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tire-sets', 'season-change'] })
   })
 
+  it('a change of the public holidays also reloads the vacation statistics (neutral 2)', () => {
+    const queryClient = new QueryClient()
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    onDataChanged('{"topic":"public-holidays"}', queryClient)
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['public-holidays'] })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['absences'] })
+  })
+
   it('marks only the affected topic as stale', async () => {
     const queryClient = new QueryClient()
     queryClient.setQueryData(['employees'], [])

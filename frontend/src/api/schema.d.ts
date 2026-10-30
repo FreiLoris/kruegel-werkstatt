@@ -100,7 +100,7 @@ export interface paths {
          * Change absence
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_19"];
+        put: operations["update_20"];
         post?: never;
         /** Delete absence */
         delete: operations["delete_8"];
@@ -146,7 +146,7 @@ export interface paths {
          * Change name and contact data
          * @description Needs the loaded `version`.
          */
-        put: operations["update_18"];
+        put: operations["update_19"];
         post?: never;
         delete?: never;
         options?: never;
@@ -243,7 +243,7 @@ export interface paths {
          * Move a booking (car, period, notes)
          * @description Needs the loaded `version`.
          */
-        put: operations["update_17"];
+        put: operations["update_18"];
         post?: never;
         /** Cancel a booking */
         delete: operations["cancel"];
@@ -320,7 +320,7 @@ export interface paths {
          * Edit courtesy car
          * @description Needs the loaded `version` – otherwise 409.
          */
-        put: operations["update_16"];
+        put: operations["update_17"];
         post?: never;
         delete?: never;
         options?: never;
@@ -489,7 +489,7 @@ export interface paths {
          * Edit local customer
          * @description SwissGarage customers → 409. Needs the loaded `version`.
          */
-        put: operations["update_15"];
+        put: operations["update_16"];
         post?: never;
         delete?: never;
         options?: never;
@@ -599,7 +599,7 @@ export interface paths {
          * Edit employee
          * @description Needs the loaded `version` – otherwise 409 if changed in the meantime.
          */
-        put: operations["update_14"];
+        put: operations["update_15"];
         post?: never;
         delete?: never;
         options?: never;
@@ -671,7 +671,7 @@ export interface paths {
          * Edit an inspection station
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_13"];
+        put: operations["update_14"];
         post?: never;
         delete?: never;
         options?: never;
@@ -760,7 +760,7 @@ export interface paths {
          * Edit an insurance
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_12"];
+        put: operations["update_13"];
         post?: never;
         delete?: never;
         options?: never;
@@ -835,7 +835,7 @@ export interface paths {
          * Edit a label sheet format
          * @description Needs the loaded `version`.
          */
-        put: operations["update_11"];
+        put: operations["update_12"];
         post?: never;
         /** Delete a label sheet format */
         delete: operations["delete_7"];
@@ -990,7 +990,7 @@ export interface paths {
          * Edit note
          * @description Needs the loaded `version` (409 if someone else changed it).
          */
-        put: operations["update_10"];
+        put: operations["update_11"];
         post?: never;
         /**
          * Delete note
@@ -1069,9 +1069,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Public holidays of the canton of Zurich from `from` to `to` (both inclusive, max. 3 years) */
+        /** The workshop's public holidays from `from` to `to` (both inclusive, max. 3 years) */
         get: operations["between_2"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public-holidays/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Every public holiday the app knows, the workshop's ones chosen
+         * @description With this year's date of each.
+         */
+        get: operations["settings_4"];
+        /**
+         * Choose the workshop's public holidays
+         * @description All of them – one left out is none any more. Needs the loaded `version`.
+         */
+        put: operations["update_10"];
         post?: never;
         delete?: never;
         options?: never;
@@ -3329,10 +3353,40 @@ export interface components {
             /** Format: uri */
             type?: string;
         };
+        PublicHolidayChoiceDto: {
+            /** @description A public holiday of this workshop */
+            chosen: boolean;
+            /**
+             * Format: date
+             * @description This year – to recognise it
+             */
+            date: string;
+            /** @example Auffahrt */
+            name: string;
+            /** @enum {string} */
+            rule: "NEUJAHR" | "BERCHTOLDSTAG" | "DREIKOENIGSTAG" | "JOSEFSTAG" | "KARFREITAG" | "OSTERSONNTAG" | "OSTERMONTAG" | "NAEFELSER_FAHRT" | "TAG_DER_ARBEIT" | "AUFFAHRT" | "PFINGSTSONNTAG" | "PFINGSTMONTAG" | "FRONLEICHNAM" | "JURA_UNABHAENGIGKEIT" | "PETER_UND_PAUL" | "NATIONALFEIERTAG" | "MARIAE_HIMMELFAHRT" | "GENFER_BETTAG" | "BETTAGSMONTAG" | "BRUDER_KLAUS" | "ALLERHEILIGEN" | "MARIAE_EMPFAENGNIS" | "WEIHNACHTEN" | "STEPHANSTAG" | "RESTAURATION_GENF";
+        };
         PublicHolidayDto: {
             /** Format: date */
             date: string;
             name: string;
+        };
+        PublicHolidaySettingsDto: {
+            /** @description In the order of the year */
+            holidays: components["schemas"]["PublicHolidayChoiceDto"][];
+            /** Format: int64 */
+            version: number;
+        };
+        PublicHolidaySettingsRequest: {
+            /**
+             * @example [
+             *       "NEUJAHR",
+             *       "AUFFAHRT"
+             *     ]
+             */
+            holidays: ("NEUJAHR" | "BERCHTOLDSTAG" | "DREIKOENIGSTAG" | "JOSEFSTAG" | "KARFREITAG" | "OSTERSONNTAG" | "OSTERMONTAG" | "NAEFELSER_FAHRT" | "TAG_DER_ARBEIT" | "AUFFAHRT" | "PFINGSTSONNTAG" | "PFINGSTMONTAG" | "FRONLEICHNAM" | "JURA_UNABHAENGIGKEIT" | "PETER_UND_PAUL" | "NATIONALFEIERTAG" | "MARIAE_HIMMELFAHRT" | "GENFER_BETTAG" | "BETTAGSMONTAG" | "BRUDER_KLAUS" | "ALLERHEILIGEN" | "MARIAE_EMPFAENGNIS" | "WEIHNACHTEN" | "STEPHANSTAG" | "RESTAURATION_GENF")[];
+            /** Format: int64 */
+            version: number;
         };
         ReminderDto: {
             /**
@@ -5155,7 +5209,7 @@ export interface operations {
             };
         };
     };
-    update_19: {
+    update_20: {
         parameters: {
             query?: never;
             header?: never;
@@ -5496,7 +5550,7 @@ export interface operations {
             };
         };
     };
-    update_18: {
+    update_19: {
         parameters: {
             query?: never;
             header?: never;
@@ -6040,7 +6094,7 @@ export interface operations {
             };
         };
     };
-    update_17: {
+    update_18: {
         parameters: {
             query?: never;
             header?: never;
@@ -6519,7 +6573,7 @@ export interface operations {
             };
         };
     };
-    update_16: {
+    update_17: {
         parameters: {
             query?: never;
             header?: never;
@@ -7194,7 +7248,7 @@ export interface operations {
             };
         };
     };
-    update_15: {
+    update_16: {
         parameters: {
             query?: never;
             header?: never;
@@ -7742,7 +7796,7 @@ export interface operations {
             };
         };
     };
-    update_14: {
+    update_15: {
         parameters: {
             query?: never;
             header?: never;
@@ -8081,7 +8135,7 @@ export interface operations {
             };
         };
     };
-    update_13: {
+    update_14: {
         parameters: {
             query?: never;
             header?: never;
@@ -8487,7 +8541,7 @@ export interface operations {
             };
         };
     };
-    update_12: {
+    update_13: {
         parameters: {
             query?: never;
             header?: never;
@@ -8826,7 +8880,7 @@ export interface operations {
             };
         };
     };
-    update_11: {
+    update_12: {
         parameters: {
             query?: never;
             header?: never;
@@ -9644,7 +9698,7 @@ export interface operations {
             };
         };
     };
-    update_10: {
+    update_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -10012,6 +10066,140 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PublicHolidayDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    settings_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublicHolidaySettingsDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_10: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicHolidaySettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublicHolidaySettingsDto"];
                 };
             };
             /** @description Bad Request */

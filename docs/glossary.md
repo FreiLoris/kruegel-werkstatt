@@ -142,7 +142,7 @@ If a term is missing: add it here in the same pull request that introduces it.
 | Ferienanspruch / bezogen / geplant / übrig | `vacationEntitlement` / `vacationTaken` / `vacationPlanned` / `vacationLeft` | in working days; taken = up to today, planned = from tomorrow |
 | Statistik (Abwesenheiten eines Jahres) | `AbsenceStatisticsDto` (`AbsenceStatisticsService`) | `/api/absences/statistics?year=` |
 | Einsatz (Fremdarbeit) | `assignment` | one external-work entry |
-| Feiertag | `PublicHoliday` | canton Zurich, computed (`ZurichPublicHolidays`) – names stay German |
+| Feiertag | `PublicHoliday`, `HolidayRule` | computed (`PublicHolidays`), the workshop chooses which (neutral 2, default canton Zurich) – names stay German |
 | Arbeitstag | working day (`isWorkingDay`) | Monday–Friday without public holidays |
 | Ostersonntag | `EasterSunday` | basis for the moving holidays |
 | SwissGarage-Import | SwissGarage import | product name stays |
