@@ -32,7 +32,7 @@ public class SmsPreviewService {
         LocalDate today = LocalDate.now(clock);
         CompanyDto workshop = company.get();
         String text = new ReminderText(EXAMPLE_CUSTOMER, EXAMPLE_PLATE, today.plusDays(1), EXAMPLE_TIME, false)
-                .message(today, workshop.name(), workshop.phone(), template).text();
+                .text(today, workshop.name(), workshop.phone(), template);
         SmsLength length = SmsLength.of(text);
         return new SmsPreviewDto(text, length.characters(), length.parts(), length.replaced(), SmsTemplate.unknownPlaceholders(template));
     }

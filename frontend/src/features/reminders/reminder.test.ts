@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canRemind, customerReminderLabel, missedReason, reminderOutcomeText, reminderReach, reminderSummary } from './reminder'
+import { canRemind, customerReminderLabel, missedReason, reminderOutcomeText, reminderReach, reminderSummary, smsSenderProblem } from './reminder'
 
 const huber = { noReminders: false, reminderChannel: 'SMS' as const, source: 'SWISSGARAGE' as const }
 
@@ -35,5 +35,16 @@ describe('what happened (17d)', () => {
     )
     expect(missedReason('NO_CONTACT', null)).toBe('keine Handynummer')
     expect(missedReason('LOGGED', null)).toBe('SMS auf diesem Server nicht eingerichtet')
+  })
+})
+
+describe('the SMS sender (neutral 1)', () => {
+  it('letters and digits, up to 11, at least one letter – empty takes the company name', () => {
+    expect(smsSenderProblem('Kruegel')).toBeNull()
+    expect(smsSenderProblem('')).toBeNull()
+    expect(smsSenderProblem('GarageMuster')).toBe('höchstens 11 Zeichen')
+    expect(smsSenderProblem('Krügel')).toMatch(/ohne Umlaute/)
+    expect(smsSenderProblem('Garage 24')).toMatch(/keine Leerzeichen/)
+    expect(smsSenderProblem('0521234567')).toMatch(/mindestens ein Buchstabe/)
   })
 })

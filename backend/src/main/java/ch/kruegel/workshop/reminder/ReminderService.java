@@ -113,6 +113,7 @@ public class ReminderService {
                 .map(r -> new Reminded(r.getTaskId(), r.getDropOffDate()))
                 .collect(Collectors.toSet());
         CompanyDto workshop = company.get();
+        String sender = current.getSmsSender(workshop.name());
         List<Due> result = new ArrayList<>();
         for (Task task : tasks.toRemind(first, last)) {
             Appointment appointment = task.getAppointment();
@@ -125,8 +126,8 @@ public class ReminderService {
             Customer customer = task.getCustomer();
             String plate = task.getVehicle() == null ? null : task.getVehicle().getDetails().licensePlate();
             LocalTime at = appointment.timeOpen() && !earlier ? null : dropOff.toLocalTime();
-            ReminderMessage message = new ReminderText(customer.getDetails(), plate, day, at, earlier)
-                    .message(today, workshop.name(), workshop.phone(), current.getSmsTemplate());
+            ReminderMessage message = new ReminderMessage(sender, new ReminderText(customer.getDetails(), plate, day, at, earlier)
+                    .text(today, workshop.name(), workshop.phone(), current.getSmsTemplate()));
             result.add(new Due(task.getId(), task.getTaskNumber(), day, ReminderContact.of(customer.getDetails()), message));
         }
         return result;

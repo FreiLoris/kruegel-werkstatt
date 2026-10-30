@@ -15892,9 +15892,18 @@
       "ReminderSettingsDto" : {
         "type" : "object",
         "properties" : {
+          "companySender" : {
+            "type" : "string",
+            "description" : "Neutral 1: the sender taken from the company name – without an own one",
+            "example" : "Kruegel"
+          },
           "enabled" : {
             "type" : "boolean",
             "description" : "Customers are reminded the working day before"
+          },
+          "ownSender" : {
+            "type" : "boolean",
+            "description" : "Neutral 1: the workshop set its own sender"
           },
           "ownTemplate" : {
             "type" : "boolean",
@@ -15917,6 +15926,11 @@
             "type" : "boolean",
             "description" : "This installation can send SMS – the access to the SMS provider is set up"
           },
+          "smsSender" : {
+            "type" : "string",
+            "description" : "Neutral 1: shown on the phone as the sender",
+            "example" : "Kruegel"
+          },
           "smsTemplate" : {
             "type" : "string",
             "description" : "17e: the wording sent – the workshop's own or the standard"
@@ -15930,7 +15944,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "enabled", "ownTemplate", "placeholders", "sendTime", "smsReady", "smsTemplate", "standardTemplate", "version" ]
+        "required" : [ "companySender", "enabled", "ownSender", "ownTemplate", "placeholders", "sendTime", "smsReady", "smsSender", "smsTemplate", "standardTemplate", "version" ]
       },
       "ReminderSettingsRequest" : {
         "type" : "object",
@@ -15941,6 +15955,12 @@
           "sendTime" : {
             "type" : "string",
             "example" : "16:00"
+          },
+          "smsSender" : {
+            "type" : "string",
+            "description" : "Neutral 1: shown as the sender, up to 11 letters or digits; empty = from the company name, missing = unchanged",
+            "maxLength" : 11,
+            "minLength" : 0
           },
           "smsTemplate" : {
             "type" : "string",

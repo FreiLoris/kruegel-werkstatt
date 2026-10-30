@@ -2,6 +2,7 @@ package ch.kruegel.workshop.reminder;
 
 import ch.kruegel.workshop.common.live.DataChanged;
 import ch.kruegel.workshop.common.web.InvalidInputException;
+import ch.kruegel.workshop.company.CompanyService;
 import ch.kruegel.workshop.customer.ReminderChannel;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,15 @@ public class ReminderSettingsService {
 
     private final ReminderSettingsRepository repository;
     private final ApplicationEventPublisher events;
+    private final CompanyService company;
     /** The channels this installation can send on – a sender bean exists only when its access is set up */
     private final Set<ReminderChannel> ready = EnumSet.noneOf(ReminderChannel.class);
 
-    ReminderSettingsService(ReminderSettingsRepository repository, ApplicationEventPublisher events, List<ReminderSender> senders) {
+    ReminderSettingsService(ReminderSettingsRepository repository, ApplicationEventPublisher events, CompanyService company,
+                            List<ReminderSender> senders) {
         this.repository = repository;
         this.events = events;
+        this.company = company;
         senders.forEach(sender -> ready.add(sender.channel()));
     }
 
@@ -47,7 +51,11 @@ public class ReminderSettingsService {
                 throw new InvalidInputException("smsTemplate", "unbekannt: %s – möglich sind %s".formatted(String.join(", ", unknown), known()));
             }
         }
-        settings.update(request.enabled(), request.sendTime(), request.smsTemplate());
+        String sender = SmsSenderName.normalized(request.smsSender());
+        if (sender != null && !SmsSenderName.isValid(sender)) {
+            throw new InvalidInputException("smsSender", SmsSenderName.rule());
+        }
+        settings.update(request.enabled(), request.sendTime(), request.smsTemplate(), request.smsSender());
         repository.flush();
         events.publishEvent(new DataChanged(TOPIC));
         return dto(settings);
@@ -63,7 +71,9 @@ public class ReminderSettingsService {
     }
 
     private ReminderSettingsDto dto(ReminderSettings s) {
+        String companyName = company.get().name();
         return new ReminderSettingsDto(s.getVersion(), s.isEnabled(), s.getSendTime(), ready.contains(ReminderChannel.SMS),
-                s.getSmsTemplate(), s.hasOwnTemplate(), SmsTemplate.STANDARD, SmsTemplate.PLACEHOLDERS);
+                s.getSmsTemplate(), s.hasOwnTemplate(), SmsTemplate.STANDARD, SmsTemplate.PLACEHOLDERS,
+                s.getSmsSender(companyName), s.hasOwnSender(), SmsSenderName.of(companyName));
     }
 }

@@ -68,3 +68,19 @@ export function reminderOutcomeText(reminder: Pick<Reminder, 'outcome' | 'error'
     ? `SMS gesendet am ${formatTimestamp(reminder.remindedAt)}`
     : `${missedReason(reminder.outcome, reminder.error)} – bitte anrufen`
 }
+
+/** What the phone shows as the sender at most (SmsSenderName.MAX) */
+export const SMS_SENDER_MAX = 11
+
+/**
+ * Why a sender name does not fit, or null (neutral 1) – the server checks the same (SmsSenderName):
+ * up to 11 letters or digits, at least one letter. Empty is fine: then from the company name.
+ */
+export function smsSenderProblem(sender: string): string | null {
+  const name = sender.trim()
+  if (name === '') return null
+  if (name.length > SMS_SENDER_MAX) return `höchstens ${SMS_SENDER_MAX} Zeichen`
+  if (!/^[A-Za-z0-9]+$/.test(name)) return 'nur Buchstaben ohne Umlaute und Ziffern, keine Leerzeichen'
+  if (!/[A-Za-z]/.test(name)) return 'mindestens ein Buchstabe – nur Ziffern gelten als Telefonnummer'
+  return null
+}

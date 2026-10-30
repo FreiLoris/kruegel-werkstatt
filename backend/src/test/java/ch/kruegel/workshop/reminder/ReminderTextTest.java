@@ -17,9 +17,9 @@ class ReminderTextTest {
 
     @Test
     void tomorrowAtItsTime() {
-        ReminderMessage message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
-                .message(WEDNESDAY, "Krügel Fahrzeugtechnik", "052 123 45 67", SmsTemplate.STANDARD);
-        assertThat(message.text()).isEqualTo("""
+        String message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
+                .text(WEDNESDAY, "Krügel Fahrzeugtechnik", "052 123 45 67", SmsTemplate.STANDARD);
+        assertThat(message).isEqualTo("""
                 Guten Tag Herr Huber
 
                 Wir erinnern Sie an Ihren Termin:
@@ -37,9 +37,9 @@ class ReminderTextTest {
     void onMondayFromFriday_withoutTimeOrPlate_theirLinesLeftOut() {
         CustomerDetails company = new CustomerDetails(null, null, null, "Muster AG", null, null, null, null, null, null, null);
         LocalDate friday = LocalDate.of(2026, 10, 30);
-        ReminderMessage message = new ReminderText(company, null, friday.plusDays(3), null, false)
-                .message(friday, "Garage", "052 123 45 67", SmsTemplate.STANDARD);
-        assertThat(message.text()).isEqualTo("""
+        String message = new ReminderText(company, null, friday.plusDays(3), null, false)
+                .text(friday, "Garage", "052 123 45 67", SmsTemplate.STANDARD);
+        assertThat(message).isEqualTo("""
                 Guten Tag
 
                 Wir erinnern Sie an Ihren Termin:
@@ -54,9 +54,9 @@ class ReminderTextTest {
 
     @Test
     void withoutAPhoneOfTheWorkshopTheLineThatAsksForItGoesToo() {
-        ReminderMessage message = new ReminderText(HUBER, null, WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
-                .message(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
-        assertThat(message.text()).isEqualTo("""
+        String message = new ReminderText(HUBER, null, WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
+                .text(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
+        assertThat(message).isEqualTo("""
                 Guten Tag Herr Huber
 
                 Wir erinnern Sie an Ihren Termin:
@@ -68,23 +68,23 @@ class ReminderTextTest {
 
     @Test
     void aCarThatComesEarlierIsToBeBroughtThen() {
-        ReminderMessage message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(17, 0), true)
-                .message(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
-        assertThat(message.text()).contains("Wir erinnern Sie an Ihren Termin:\nMorgen, Do 29.10., 17:00 Uhr (bitte Fahrzeug bringen)\n");
+        String message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(17, 0), true)
+                .text(WEDNESDAY, "Garage", null, SmsTemplate.STANDARD);
+        assertThat(message).contains("Wir erinnern Sie an Ihren Termin:\nMorgen, Do 29.10., 17:00 Uhr (bitte Fahrzeug bringen)\n");
     }
 
     @Test
     void theWorkshopsOwnWording() {
-        ReminderMessage message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
-                .message(WEDNESDAY, "Krügel", "052 123 45 67", "{Anrede}, Termin {Termin} ({Kennzeichen}). {Firma}, {Telefon}");
-        assertThat(message.text()).isEqualTo("Guten Tag Herr Huber, Termin Morgen, Do 29.10., 08:00 Uhr (SH 12345). Krügel, 052 123 45 67");
+        String message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), false)
+                .text(WEDNESDAY, "Krügel", "052 123 45 67", "{Anrede}, Termin {Termin} ({Kennzeichen}). {Firma}, {Telefon}");
+        assertThat(message).isEqualTo("Guten Tag Herr Huber, Termin Morgen, Do 29.10., 08:00 Uhr (SH 12345). Krügel, 052 123 45 67");
     }
 
     @Test
     void theStandardOnlyInTheSmsAlphabet() {
-        ReminderMessage message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), true)
-                .message(WEDNESDAY, "Krügel Fahrzeugtechnik", "052 123 45 67", SmsTemplate.STANDARD);
-        assertThat(SmsLength.of(message.text()).replaced()).isEmpty();
+        String message = new ReminderText(HUBER, "SH 12345", WEDNESDAY.plusDays(1), LocalTime.of(8, 0), true)
+                .text(WEDNESDAY, "Krügel Fahrzeugtechnik", "052 123 45 67", SmsTemplate.STANDARD);
+        assertThat(SmsLength.of(message).replaced()).isEmpty();
     }
 
     @Test

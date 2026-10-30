@@ -26,6 +26,9 @@ public class ReminderSettings extends BaseEntity {
     /** The workshop's own wording (17e); empty = {@link SmsTemplate#STANDARD} */
     private String smsTemplate;
 
+    /** Shown as the sender (neutral 1); empty = {@link SmsSenderName#of taken from the company name} */
+    private String smsSender;
+
     protected ReminderSettings() {
         // for JPA
     }
@@ -35,13 +38,25 @@ public class ReminderSettings extends BaseEntity {
         return !sendTime.isBefore(EARLIEST) && !sendTime.isAfter(LATEST);
     }
 
-    public void update(boolean enabled, LocalTime sendTime, String smsTemplate) {
+    /**
+     * @param smsTemplate null: unchanged
+     * @param smsSender   null: unchanged (the form sends it only when edited – a sender kept by V60 stays);
+     *                    blank: taken from the company name again
+     */
+    public void update(boolean enabled, LocalTime sendTime, String smsTemplate, String smsSender) {
         Objects.requireNonNull(sendTime, "sendTime");
         if (!isValidSendTime(sendTime)) {
             throw new IllegalArgumentException("Send time must be " + EARLIEST + "–" + LATEST + ": " + sendTime);
         }
         if (smsTemplate != null && !SmsTemplate.unknownPlaceholders(smsTemplate).isEmpty()) {
             throw new IllegalArgumentException("Unknown placeholders: " + SmsTemplate.unknownPlaceholders(smsTemplate));
+        }
+        String sender = SmsSenderName.normalized(smsSender);
+        if (sender != null && !SmsSenderName.isValid(sender)) {
+            throw new IllegalArgumentException("Invalid SMS sender: " + sender);
+        }
+        if (smsSender != null) {
+            this.smsSender = sender;
         }
         this.enabled = enabled;
         this.sendTime = sendTime;
@@ -60,6 +75,15 @@ public class ReminderSettings extends BaseEntity {
 
     public boolean hasOwnTemplate() {
         return smsTemplate != null;
+    }
+
+    /** The sender to show – the workshop's own, else taken from its name */
+    public String getSmsSender(String companyName) {
+        return smsSender == null ? SmsSenderName.of(companyName) : smsSender;
+    }
+
+    public boolean hasOwnSender() {
+        return smsSender != null;
     }
 
     public boolean isEnabled() {

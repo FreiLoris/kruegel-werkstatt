@@ -3358,8 +3358,15 @@ export interface components {
             taskId: string;
         };
         ReminderSettingsDto: {
+            /**
+             * @description Neutral 1: the sender taken from the company name – without an own one
+             * @example Kruegel
+             */
+            companySender: string;
             /** @description Customers are reminded the working day before */
             enabled: boolean;
+            /** @description Neutral 1: the workshop set its own sender */
+            ownSender: boolean;
             /** @description 17e: the workshop changed the wording */
             ownTemplate: boolean;
             /**
@@ -3377,6 +3384,11 @@ export interface components {
             sendTime: string;
             /** @description This installation can send SMS – the access to the SMS provider is set up */
             smsReady: boolean;
+            /**
+             * @description Neutral 1: shown on the phone as the sender
+             * @example Kruegel
+             */
+            smsSender: string;
             /** @description 17e: the wording sent – the workshop's own or the standard */
             smsTemplate: string;
             /** @description 17e: the app's standard wording */
@@ -3388,6 +3400,8 @@ export interface components {
             enabled: boolean;
             /** @example 16:00 */
             sendTime: string;
+            /** @description Neutral 1: shown as the sender, up to 11 letters or digits; empty = from the company name, missing = unchanged */
+            smsSender?: string;
             /** @description 17e: the wording with placeholders; empty = the standard text, missing = unchanged */
             smsTemplate?: string;
             /** Format: int64 */

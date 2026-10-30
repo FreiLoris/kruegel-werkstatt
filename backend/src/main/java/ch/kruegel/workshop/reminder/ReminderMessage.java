@@ -3,7 +3,8 @@ package ch.kruegel.workshop.reminder;
 /**
  * What the customer gets (17a).
  *
- * @param text the SMS
+ * @param sender what the phone shows as the sender (neutral 1)
+ * @param text   the SMS
  */
-public record ReminderMessage(String text) {
+public record ReminderMessage(String sender, String text) {
 }
