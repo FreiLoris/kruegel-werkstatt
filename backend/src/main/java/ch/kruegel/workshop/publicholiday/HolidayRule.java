@@ -7,7 +7,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.function.IntFunction;
 
 /**
- * Every public holiday a Swiss workshop may have (neutral 2) – which ones apply is chosen in the
+ * The Swiss public holidays the app knows (neutral 2) – which ones apply is chosen in the
  * settings ({@link PublicHolidaySettings}); the cantons differ too much for a fixed list per canton.
  * The names stay as the workshops know them. Stored by the enum's name: never rename one.
  */

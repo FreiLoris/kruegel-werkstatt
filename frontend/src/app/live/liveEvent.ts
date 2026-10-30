@@ -16,6 +16,8 @@ export type DataChanged = components['schemas']['DataChanged']
 const ALSO: Partial<Record<string, readonly (readonly string[])[]>> = {
   // "Termin geplant" of the season change (FB-21)
   tasks: [SEASON_CHANGE_KEY],
+  // vacation days are working days: the statistics count without the holidays (neutral 2)
+  'public-holidays': [['absences']],
 }
 
 export function onDataChanged(data: string, queryClient: QueryClient): void {

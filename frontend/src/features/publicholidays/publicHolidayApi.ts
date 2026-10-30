@@ -45,7 +45,7 @@ export function useSavePublicHolidaySettings() {
   return useMutation({
     mutationFn: async (request: PublicHolidaySettingsRequest) =>
       dataOrThrow(await api.PUT('/api/public-holidays/settings', { body: request })),
-    // the calendars too, not only the settings
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [TOPIC] }),
+    // the calendars too, not only the settings – and the vacation statistics, which count working days
+    onSettled: () => Promise.all([TOPIC, 'absences'].map((topic) => queryClient.invalidateQueries({ queryKey: [topic] }))),
   })
 }

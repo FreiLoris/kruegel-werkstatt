@@ -47,8 +47,7 @@ public class PublicHolidaySettingsService {
     }
 
     private PublicHolidaySettings theSettings() {
-        return repository.findAll().stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("Public holiday settings missing – migration V61 creates them"));
+        return repository.theSettings();
     }
 
     private PublicHolidaySettingsDto dto(PublicHolidaySettings settings) {

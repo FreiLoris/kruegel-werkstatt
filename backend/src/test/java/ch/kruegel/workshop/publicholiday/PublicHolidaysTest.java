@@ -71,4 +71,11 @@ class PublicHolidaysTest {
         assertThat(geneva.isWorkingDay(LocalDate.of(2026, 5, 14))).isTrue(); // Auffahrt not chosen
         assertThat(new PublicHolidays(() -> EnumSet.noneOf(HolidayRule.class)).forYear(2026)).isEmpty();
     }
+
+    @Test
+    void twoOnOneDayAsOne() {
+        // 2008: Easter March 23 → Auffahrt May 1
+        assertThat(holidays.forYear(2008)).filteredOn(h -> h.date().equals(LocalDate.of(2008, 5, 1)))
+                .extracting(PublicHoliday::name).containsExactly("Tag der Arbeit / Auffahrt");
+    }
 }
