@@ -45,6 +45,7 @@ class ReminderApiTest {
     /** An SMS provider that keeps what it got – or fails */
     static class FakeSms implements ReminderSender {
         final List<String> sent = new ArrayList<>();
+        final List<String> senders = new ArrayList<>();
         boolean failing;
 
         @Override
@@ -58,6 +59,7 @@ class ReminderApiTest {
                 throw new IllegalStateException("Kein Guthaben");
             }
             sent.add(to.recipient() + ": " + message.text());
+            senders.add(message.sender());
         }
     }
 
@@ -94,6 +96,7 @@ class ReminderApiTest {
         TestDatabase.clear(jdbc);
         chef = employees.save(EmployeeTestData.employee("Chef", 0)).getId().toString();
         sms.sent.clear();
+        sms.senders.clear();
         sms.failing = false;
     }
 
@@ -302,6 +305,29 @@ class ReminderApiTest {
         MvcTestResult standard = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsTemplate\": \" \", \"version\": 2 }");
         assertThat(standard).bodyJson().extractingPath("$.ownTemplate").isEqualTo(false);
         assertThat(standard).bodyJson().extractingPath("$.smsTemplate").asString().startsWith("{Anrede}");
+    }
+
+    @Test
+    void theSender_fromTheCompanyName_orTheWorkshopsOwn() {
+        MvcTestResult settings = mvc.get().uri("/api/reminder-settings").exchange();
+        assertThat(settings).bodyJson().extractingPath("$.smsSender").isEqualTo("Kruegel");
+        assertThat(settings).bodyJson().extractingPath("$.nameSender").isEqualTo("Kruegel");
+
+        assertThat(send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsSender\": \"Garage Muster\", \"version\": 0 }"))
+                .hasStatus(HttpStatus.BAD_REQUEST).bodyJson().extractingPath("$.errors[0].field").isEqualTo("smsSender");
+        assertThat(send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsSender\": \"0521234567\", \"version\": 0 }"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+
+        MvcTestResult own = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsSender\": \"Muster\", \"version\": 0 }");
+        assertThat(own).hasStatusOk().bodyJson().extractingPath("$.smsSender").isEqualTo("Muster");
+
+        task(withMobile("079 123 45 67"), "2026-12-04", null);
+        service.remindDue(THURSDAY);
+        assertThat(sms.senders).containsExactly("Muster");
+
+        // emptied: from the company name again
+        MvcTestResult emptied = send("PUT", "/api/reminder-settings", "{ \"enabled\": true, \"sendTime\": \"16:00\", \"smsSender\": \"\", \"version\": 1 }");
+        assertThat(emptied).hasStatusOk().bodyJson().extractingPath("$.smsSender").isEqualTo("Kruegel");
     }
 
     private void turnOn() {

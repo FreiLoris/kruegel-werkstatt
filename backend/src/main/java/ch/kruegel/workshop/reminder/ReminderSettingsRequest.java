@@ -11,5 +11,6 @@ public record ReminderSettingsRequest(
         @NotNull Boolean enabled,
         @NotNull @Schema(type = "string", example = "16:00") LocalTime sendTime,
         @Size(max = SmsTemplate.MAX) @Schema(description = "17e: the wording with placeholders; empty = the standard text, missing = unchanged") String smsTemplate,
+        @Size(max = SmsSenderName.MAX) @Schema(description = "Neutral 1: shown as the sender, up to 11 letters or digits; empty = from the company name, missing = unchanged") String smsSender,
         @NotNull Long version) {
 }

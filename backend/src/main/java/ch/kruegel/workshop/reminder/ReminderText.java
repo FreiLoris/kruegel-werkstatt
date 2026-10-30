@@ -38,14 +38,14 @@ record ReminderText(CustomerDetails customer, String plate, LocalDate day, Local
     private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("d.M.");
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm");
 
-    ReminderMessage message(LocalDate today, String company, String companyPhone, String template) {
+    String text(LocalDate today, String company, String companyPhone, String template) {
         Map<String, String> values = new HashMap<>();
         values.put(SmsTemplate.GREETING, greeting());
         values.put(SmsTemplate.WHEN, when(today));
         values.put(SmsTemplate.PLATE, plate);
         values.put(SmsTemplate.PHONE, companyPhone);
         values.put(SmsTemplate.COMPANY, company);
-        return new ReminderMessage(SmsTemplate.fill(template, values));
+        return SmsTemplate.fill(template, values);
     }
 
     /** "Morgen, Fr 30.10., 08:00 Uhr" – "Mo 2.11." when the time is open */
