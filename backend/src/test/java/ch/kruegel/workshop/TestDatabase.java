@@ -8,8 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *
  * <p>All tables in ONE statement: they refer to {@code employee} via {@code created_by}/{@code updated_by}.
  * The rows a migration creates (company profile, standard inspection station, tread limits, season deadlines, screen lock,
- * reminders, public holidays, modules)
- * are created again.
+ * reminders, public holidays, modules) are created again – company and inspection station as Krügel's installation
+ * has them, not the neutral ones a new installation gets (V63, see {@code V63MigrationTest}).
  * Emptied one by one, foreign key errors could occur depending on the order.
  *
  * <p><b>New table → add it here.</b>

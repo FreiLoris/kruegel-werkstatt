@@ -4,19 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { LicensePlate } from './LicensePlate'
 import { LicensePlateField } from './LicensePlateField'
 
-let plateCanton: string | undefined
-// the company profile says where the workshop is (neutral 4) – not loaded: ZH
-vi.mock('../../features/company/companyApi', () => ({ useCompany: () => ({ data: plateCanton ? { plateCanton } : undefined }) }))
-
 describe('LicensePlateField', () => {
   it('a new plate starts with the canton of the workshop (neutral 4)', async () => {
-    plateCanton = 'SG'
     const onChange = vi.fn()
-    render(<LicensePlateField value="" onChange={onChange} />)
+    render(<LicensePlateField value="" onChange={onChange} defaultCanton="SG" />)
 
     await userEvent.type(screen.getByLabelText('Nummer'), '123')
     expect(onChange).toHaveBeenLastCalledWith('SG 123')
-    plateCanton = undefined
   })
 
   it('starts with Switzerland and canton Zurich for a new plate', async () => {

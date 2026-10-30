@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useCompany } from '../../features/company/companyApi'
 import { CANTONS, COUNTRIES, composePlate, parsePlate, swissNumberInput, type ParsedPlate } from '../../lib/licensePlate'
 import { Select, TextField } from '../ui/Fields'
 import { LicensePlate } from './LicensePlate'
@@ -8,8 +7,6 @@ import styles from './LicensePlateField.module.css'
 /** Value of the "Land" selection: Switzerland, a foreign country code or free input */
 type Country = 'CH' | 'OTHER' | string
 
-/** Canton for new plates until the company profile is loaded – it says where the workshop is (neutral 4) */
-const FALLBACK_CANTON = 'ZH'
 
 interface LicensePlateFieldProps {
   /** Stored plate text, e.g. "SG 197052" ('' = none) */
@@ -17,6 +14,8 @@ interface LicensePlateFieldProps {
   onChange: (value: string) => void
   /** Error from the server, e.g. "gehört bereits zu einem anderen Ersatzwagen" */
   error?: string
+  /** The canton a new plate starts with – where the workshop is (neutral 4, `usePlateCanton`) */
+  defaultCanton?: string
 }
 
 /**
@@ -27,8 +26,7 @@ interface LicensePlateFieldProps {
  * The parts live in local state – a half-filled plate (canton chosen, no number yet) is not
  * a plate and is reported as '' – the component is mounted fresh for every dialog (`key`).
  */
-export function LicensePlateField({ value, onChange, error }: LicensePlateFieldProps) {
-  const defaultCanton = useCompany().data?.plateCanton ?? FALLBACK_CANTON
+export function LicensePlateField({ value, onChange, error, defaultCanton = 'ZH' }: LicensePlateFieldProps) {
   const [cantonTyped, setCantonTyped] = useState('')
   const [plate, setPlate] = useState<ParsedPlate>(() =>
     value ? parsePlate(value) : { kind: 'swiss', canton: defaultCanton, number: '' },

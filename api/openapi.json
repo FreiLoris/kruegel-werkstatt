@@ -14785,7 +14785,7 @@
           "postalCode" : {
             "type" : [ "string", "null" ]
           },
-          "setUp" : {
+          "setupDone" : {
             "type" : "boolean",
             "description" : "Neutral 4: the setup assistant is done – false only on a new installation"
           },
@@ -14800,7 +14800,7 @@
             "type" : [ "string", "null" ]
           }
         },
-        "required" : [ "city", "email", "logoUrl", "name", "phone", "plateCanton", "postalCode", "setUp", "street", "version", "website" ]
+        "required" : [ "city", "email", "logoUrl", "name", "phone", "plateCanton", "postalCode", "setupDone", "street", "version", "website" ]
       },
       "CompanyRequest" : {
         "type" : "object",
@@ -14830,8 +14830,7 @@
             "type" : "string",
             "description" : "Neutral 4: the canton new licence plates start with; missing = unchanged",
             "example" : "ZH",
-            "maxLength" : 2,
-            "minLength" : 0
+            "pattern" : "[A-Z]{2}"
           },
           "postalCode" : {
             "type" : "string",

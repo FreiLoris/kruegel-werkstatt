@@ -16,7 +16,7 @@ const company: Company = {
   website: null,
   logoUrl: null,
   plateCanton: 'ZH',
-  setUp: true,
+  setupDone: true,
 }
 
 // fictitious customer and vehicle

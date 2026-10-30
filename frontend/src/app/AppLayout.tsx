@@ -45,7 +45,7 @@ export function AppLayout() {
   const tv = device.kind === 'viewOnly' && idleMode !== 'viewOnly'
   const kiosk = tv && pathname === '/'
   // neutral 4: a new installation is set up first – every page leads there until done or skipped
-  const needsSetup = company?.setUp === false && device.kind !== 'viewOnly' && pathname !== '/setup'
+  const needsSetup = company?.setupDone === false && device.kind !== 'viewOnly' && pathname !== '/setup'
   useBackToDashboard(tv && pathname !== '/')
   const moduleOn = useModulesOn()
   // neutral 3: the parts the workshop switched off are not in the menu

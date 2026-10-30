@@ -2767,7 +2767,7 @@ export interface components {
             plateCanton: string;
             postalCode: string | null;
             /** @description Neutral 4: the setup assistant is done – false only on a new installation */
-            setUp: boolean;
+            setupDone: boolean;
             street: string | null;
             /** Format: int64 */
             version: number;

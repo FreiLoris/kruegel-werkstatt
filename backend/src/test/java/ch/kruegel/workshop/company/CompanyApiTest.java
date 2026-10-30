@@ -86,9 +86,9 @@ class CompanyApiTest {
 
     @Test
     void theSetupAssistantOnceDone_staysDone() {
-        assertThat(mvc.get().uri("/api/company").exchange()).bodyJson().extractingPath("$.setUp").isEqualTo(false);
+        assertThat(mvc.get().uri("/api/company").exchange()).bodyJson().extractingPath("$.setupDone").isEqualTo(false);
         MvcTestResult done = mvc.post().uri("/api/company/setup-complete").header(CurrentPerson.HEADER, chef).exchange();
-        assertThat(done).hasStatusOk().bodyJson().extractingPath("$.setUp").isEqualTo(true);
+        assertThat(done).hasStatusOk().bodyJson().extractingPath("$.setupDone").isEqualTo(true);
         assertThat(mvc.post().uri("/api/company/setup-complete").header(CurrentPerson.HEADER, chef).exchange()).hasStatusOk();
     }
 

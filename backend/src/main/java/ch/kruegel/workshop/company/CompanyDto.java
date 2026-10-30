@@ -15,7 +15,7 @@ public record CompanyDto(
         @Schema(types = {"string", "null"}, example = "/api/company/logo?v=1791200000000",
                 description = "Address of the logo – changes with every upload (caches); empty without logo") String logoUrl,
         @Schema(description = "Neutral 4: the canton new licence plates start with", example = "ZH") String plateCanton,
-        @Schema(description = "Neutral 4: the setup assistant is done – false only on a new installation") boolean setUp) {
+        @Schema(description = "Neutral 4: the setup assistant is done – false only on a new installation") boolean setupDone) {
 
     static CompanyDto of(CompanyProfile profile, CompanyLogoStore.LogoInfo logo) {
         CompanyDetails d = profile.getDetails();
