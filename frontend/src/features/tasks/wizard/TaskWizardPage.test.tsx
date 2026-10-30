@@ -14,7 +14,7 @@ const vehicle = { id: 'v1', description: 'VW Golf', licensePlate: null } as Vehi
 
 // Step 1 as three buttons that report what the real step reports on a click
 // neutral 3: all modules on, as the app was before
-vi.mock('../../modules/moduleApi', () => ({ useModuleOn: () => true, useModulesOn: () => () => true }))
+vi.mock('../../modules/moduleApi', () => import('../../../test/allModulesOn'))
 vi.mock('./CustomerStep', () => ({
   CustomerStep: ({ onChange }: { onChange: (value: CustomerStepValue) => void }) => (
     <>

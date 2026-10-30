@@ -3229,7 +3229,7 @@ export interface components {
             /** @example Eingelagerte Räder, Saisonwechsel, Etiketten */
             description: string;
             /** @enum {string} */
-            module: "COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "PINBOARD" | "TODOS" | "MATERIAL" | "STATISTICS";
+            module: "COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "BOARD" | "MATERIAL" | "STATISTICS";
             on: boolean;
             /** @example Pneuhotel */
             title: string;
@@ -3245,7 +3245,7 @@ export interface components {
              *       "TIRE_HOTEL"
              *     ]
              */
-            off: ("COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "PINBOARD" | "TODOS" | "MATERIAL" | "STATISTICS")[];
+            off: ("COURTESY_CARS" | "TIRE_HOTEL" | "MFK" | "BOARD" | "MATERIAL" | "STATISTICS")[];
             /** Format: int64 */
             version: number;
         };

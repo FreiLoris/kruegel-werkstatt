@@ -62,9 +62,13 @@ interface AppointmentStepProps {
  * day of the appointment at opening time (the evening before for an appointment at opening time),
  * "fertig bis" = the same evening.
  */
+/** The kinds of a tyre change that store something in the tyre hotel */
+const STORED_KINDS: readonly string[] = ['WHEELS_STORED', 'TIRES_STORED']
+
 export function AppointmentStep({ value: form, onChange, holidays, showRequired, taskId, vehicleId, customerId, customer, children }: AppointmentStepProps) {
   const tireHotelOn = useModuleOn('TIRE_HOTEL')
   const mfkOn = useModuleOn('MFK')
+  const materialOn = useModuleOn('MATERIAL')
   const { data: employees } = useActiveEmployees()
   const { data: lifts } = useAllLifts()
   const { data: serviceItems } = useAllServiceItems()
@@ -284,11 +288,14 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
             <div className={`${styles.row} ${styles.indented}`}>
               <Select label="Art" value={form.tireChangeKind} onChange={(e) => chooseTireChangeKind(e.target.value as TireChangeKind | '')}>
                 <option value="">noch offen</option>
-                {Object.entries(TIRE_CHANGE_KINDS).map(([kind, label]) => (
-                  <option key={kind} value={kind}>
-                    {label}
-                  </option>
-                ))}
+                {Object.entries(TIRE_CHANGE_KINDS)
+                  // without the tyre hotel nothing is stored – unless this task already says so
+                  .filter(([kind]) => tireHotelOn || !STORED_KINDS.includes(kind) || kind === form.tireChangeKind)
+                  .map(([kind, label]) => (
+                    <option key={kind} value={kind}>
+                      {label}
+                    </option>
+                  ))}
               </Select>
               {form.tireChangeKind === 'NEW_TIRES' && (
                 <>
@@ -310,7 +317,7 @@ export function AppointmentStep({ value: form, onChange, holidays, showRequired,
               )}
             </div>
           )}
-          {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && (
+          {form.tireChange && form.tireChangeKind === 'NEW_TIRES' && materialOn && (
             <p className={`muted ${styles.indented}`}>
               Die Dimension ist vom Reifensatz des Fahrzeugs übernommen, wenn bekannt – bitte prüfen. Beim ersten Speichern mit dieser Art kommt
               die Bestellposition «Reifen …» auf die Einkaufsliste. Spätere Änderungen übernimmt sie, solange sie noch zu bestellen ist – sonst bekommt sie einen Vermerk.

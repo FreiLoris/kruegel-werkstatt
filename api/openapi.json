@@ -15835,7 +15835,7 @@
           },
           "module" : {
             "type" : "string",
-            "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "PINBOARD", "TODOS", "MATERIAL", "STATISTICS" ]
+            "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "BOARD", "MATERIAL", "STATISTICS" ]
           },
           "on" : {
             "type" : "boolean"
@@ -15871,7 +15871,7 @@
             "example" : [ "TIRE_HOTEL" ],
             "items" : {
               "type" : "string",
-              "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "PINBOARD", "TODOS", "MATERIAL", "STATISTICS" ]
+              "enum" : [ "COURTESY_CARS", "TIRE_HOTEL", "MFK", "BOARD", "MATERIAL", "STATISTICS" ]
             },
             "maxItems" : 20,
             "minItems" : 0

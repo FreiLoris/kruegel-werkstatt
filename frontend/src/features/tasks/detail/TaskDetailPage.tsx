@@ -78,7 +78,8 @@ function TaskDetail({ task }: { task: AnyTask }) {
   const [dialog, setDialog] = useState<'customer' | 'vehicle' | null>(null)
   const [askBooking, setAskBooking] = useState(false)
   const tires = useTaskTires(task.id, task.tireChange)
-  const fromHotel = task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED'
+  // the tyre hotel switched off (neutral 3): nothing to book out – its page is gone
+  const fromHotel = moduleOn('TIRE_HOTEL') && (task.tireChangeKind === 'WHEELS_STORED' || task.tireChangeKind === 'TIRES_STORED')
   // FB-25: ordered new tyres – here yet? (the same query as "Ersatzteilbestellungen")
   const { data: parts } = useTaskShoppingItems(task.tireChangeKind === 'NEW_TIRES' ? task.id : undefined)
 
@@ -373,7 +374,7 @@ function TaskDetail({ task }: { task: AnyTask }) {
           </Card>
         )}
 
-        {(moduleOn('PINBOARD') || moduleOn('TODOS')) && (
+        {moduleOn('BOARD') && (
           <Card title="Pinnwand & To-dos">
             <TaskPinboard taskId={task.id} canEdit={canEdit} />
           </Card>

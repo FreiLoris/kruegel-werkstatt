@@ -27,8 +27,8 @@ export const navigation: NavEntry[] = [
   { path: '/tasks/new', title: 'Neuer Auftrag' },
   { path: '/courtesy-cars', title: 'Ersatzwagen', module: 'COURTESY_CARS' },
   { path: '/tires', title: 'Pneuhotel', module: 'TIRE_HOTEL' },
-  { path: '/pinboard', title: 'Pinnwand', module: 'PINBOARD' },
-  { path: '/todos', title: 'To-dos', module: 'TODOS' },
+  { path: '/pinboard', title: 'Pinnwand', module: 'BOARD' },
+  { path: '/todos', title: 'To-dos', module: 'BOARD' },
   // "Material" alone read like the shopping list only – stock and suppliers are behind it too (UX M-15)
   { path: '/shopping', title: 'Material & Lager', pages: materialPages, module: 'MATERIAL' },
   { path: '/employees', title: 'Mitarbeiter' },

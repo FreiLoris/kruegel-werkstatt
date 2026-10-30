@@ -13,7 +13,7 @@ CREATE TABLE module_settings (
 CREATE TABLE module_settings_off (
     settings_id  uuid NOT NULL REFERENCES module_settings (id) ON DELETE CASCADE,
     module       text NOT NULL CHECK (module IN (
-        'COURTESY_CARS', 'TIRE_HOTEL', 'MFK', 'PINBOARD', 'TODOS', 'MATERIAL', 'STATISTICS')),
+        'COURTESY_CARS', 'TIRE_HOTEL', 'MFK', 'BOARD', 'MATERIAL', 'STATISTICS')),
     PRIMARY KEY (settings_id, module)
 );
 

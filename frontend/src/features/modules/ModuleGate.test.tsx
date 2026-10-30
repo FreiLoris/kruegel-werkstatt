@@ -4,8 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { ModuleGate, ModulePage } from './ModuleGate'
 
 let settings: { modules: { module: string; on: boolean }[] } | undefined
+let error: Error | null = null
 
-vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: settings }) }))
+vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: settings, error }) }))
 
 const off = (module: string) => ({ modules: [{ module, on: false }] })
 
@@ -14,6 +15,14 @@ describe('ModuleGate (neutral 3)', () => {
     settings = undefined
     render(<ModuleGate module="TIRE_HOTEL">Pneuhotel</ModuleGate>)
     expect(screen.getByText('Pneuhotel')).toBeTruthy()
+  })
+
+  it('without the server too – the app was all on before', () => {
+    settings = undefined
+    error = new Error('offline')
+    render(<ModuleGate module="TIRE_HOTEL">Pneuhotel</ModuleGate>)
+    expect(screen.getByText('Pneuhotel')).toBeTruthy()
+    error = null
   })
 
   it('hides it when the workshop switched it off – the others stay', () => {

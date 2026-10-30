@@ -9,6 +9,8 @@ import { TodoItem } from './TodoItem'
 const setDone = vi.fn()
 const remove = vi.fn()
 
+// neutral 3: all modules on, as the app was before
+vi.mock('../modules/moduleApi', () => import('../../test/allModulesOn'))
 vi.mock('./todoApi', () => ({
   useSetTodoDone: () => ({ mutate: setDone, isPending: false }),
   useDeleteTodo: () => ({ mutate: remove, isPending: false }),

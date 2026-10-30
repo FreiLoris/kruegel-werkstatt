@@ -32,7 +32,7 @@ export function DayInfo({ date }: { date: string }) {
 
   const me = device.kind === 'person' ? device.person : undefined
   const canEdit = useCanEdit()
-  const todosOn = useModuleOn('TODOS')
+  const todosOn = useModuleOn('BOARD')
   const team = absencesOn(absences ?? [], date)
   const due = (todos ?? []).filter((todo) => todo.dueDate === date)
   const nameOf = (id: string) => employees?.find((e) => e.id === id)?.name ?? ''

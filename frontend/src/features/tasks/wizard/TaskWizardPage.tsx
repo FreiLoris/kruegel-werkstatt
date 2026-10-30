@@ -100,7 +100,9 @@ function TaskWizard({ initialCustomer, tireSet }: { initialCustomer: Customer | 
   // a task started before a reload – offered, not filled in by itself: it may be someone else's
   const [draft, setDraft] = useState<WizardDraft | null>(loadDraft)
   const [showRequired, setShowRequired] = useState(false)
-  const [courtesyCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
+  const [chosenCar, setCourtesyCar] = useState<CourtesyCarChoice>(NO_COURTESY_CAR)
+  // switched off (neutral 3): a car of an old draft must not be checked or booked unseen
+  const courtesyCar = courtesyCarsOn ? chosenCar : NO_COURTESY_CAR
   const [saved, setSaved] = useState<{ task: AnyTask; booking: Booking | null } | null>(null)
   const [serverErrors, setServerErrors] = useState<FieldError[]>([])
   const holidays = useHolidayNames()

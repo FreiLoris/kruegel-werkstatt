@@ -24,7 +24,7 @@ const customer = {
 }
 
 // neutral 3: all modules on, as the app was before
-vi.mock('../modules/moduleApi', () => ({ useModuleOn: () => true, useModulesOn: () => () => true }))
+vi.mock('../modules/moduleApi', () => import('../../test/allModulesOn'))
 vi.mock('./customerApi', () => ({
   useCustomer: () => ({ data: customer, error: null }),
   useSetNoReminders: () => ({ mutate: vi.fn(), isPending: false }),
