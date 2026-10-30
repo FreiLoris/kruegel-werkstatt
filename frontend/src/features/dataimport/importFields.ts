@@ -39,6 +39,22 @@ export const FIELD_GROUPS: { title: string; fields: { field: ImportField; label:
 
 const LABELS = new Map(FIELD_GROUPS.flatMap((group) => group.fields.map((f) => [f.field, f.label] as const)))
 
+/**
+ * Every field of the backend is offered – a new one there makes this fail to compile instead of
+ * silently not being choosable.
+ */
+const OFFERED = {
+  SALUTATION: true, LAST_NAME: true, FIRST_NAME: true, COMPANY: true, ADDITION: true, STREET: true,
+  POSTAL_CODE: true, CITY: true, POSTAL_CODE_CITY: true, PHONE: true, MOBILE: true, EMAIL: true,
+  LICENSE_PLATE: true, MAKE: true, MODEL: true, VIN: true, FIRST_REGISTRATION: true, MODEL_YEAR: true,
+  MILEAGE: true, LAST_MFK: true, COLOR: true, FUEL: true,
+} satisfies Record<ImportField, true>
+
+/** Fields of the choice that the backend knows – and none missing (see {@link OFFERED}) */
+export function isOffered(field: string): field is ImportField {
+  return Object.hasOwn(OFFERED, field) && LABELS.has(field as ImportField)
+}
+
 /** Text may come from several columns (joined) – dates and numbers not; same rule as the backend */
 const SINGLE: ReadonlySet<ImportField> = new Set(['FIRST_REGISTRATION', 'MODEL_YEAR', 'MILEAGE', 'LAST_MFK'])
 
@@ -57,6 +73,11 @@ export function mappingProblems(mapping: Mapping): string[] {
     }
   }
   return problems
+}
+
+/** "1 Zeile" / "1’234 Zeilen" */
+export function rowsText(count: number): string {
+  return `${formatCount(count)} ${count === 1 ? 'Zeile' : 'Zeilen'}`
 }
 
 /** "4 Kunden neu, 1 schon vorhanden · 3 Fahrzeuge neu · 1 Zeile übersprungen" */
@@ -82,9 +103,15 @@ const STORAGE_KEY = 'dataImport.mapping'
  */
 export function rememberedMapping(headers: string[]): Mapping | null {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as { headers: string[]; mapping: Mapping } | null
-    const same = stored?.headers.length === headers.length && stored.headers.every((h, i) => h === headers[i])
-    return same ? stored.mapping : null
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as { headers?: unknown; mapping?: unknown } | null
+    const storedHeaders = stored?.headers
+    const mapping = stored?.mapping
+    const same =
+      Array.isArray(storedHeaders) && storedHeaders.length === headers.length && storedHeaders.every((h, i) => h === headers[i])
+    // stored by an older version: a field that is gone is not sent
+    const valid =
+      Array.isArray(mapping) && mapping.length === headers.length && mapping.every((f) => f === null || (typeof f === 'string' && isOffered(f)))
+    return same && valid ? (mapping as Mapping) : null
   } catch {
     return null
   }

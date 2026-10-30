@@ -45,7 +45,7 @@ const SECTIONS: { id: string; title: string; content: ReactNode; module?: AppMod
         <p className="muted">Werden in SwissGarage gepflegt und von dort importiert.</p>
         <Link to="/settings/swissgarage">Zum SwissGarage-Import</Link>
         <p className="muted">Ohne SwissGarage: einmalig aus dem bisherigen Programm übernehmen (CSV oder Excel).</p>
-        <Link to="/settings/data-import">Aus anderem Programm übernehmen</Link>
+        <Link to="/settings/data-import">Kunden übernehmen</Link>
         <InactiveCustomers />
       </>
     ),
@@ -85,7 +85,7 @@ export function SettingsPage() {
           </li>
           <li>
             <Link to="/settings/data-import" className={`${styles.tile} ${styles.page}`}>
-              Daten übernehmen →
+              Kunden übernehmen →
             </Link>
           </li>
           <li>

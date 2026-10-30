@@ -1,5 +1,6 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../../api/errors'
 import { DataImport } from './DataImport'
 import type { ImportPreview, ImportResult, ImportSettings } from './dataImportApi'
 
@@ -25,34 +26,38 @@ const RESULT: ImportResult = {
 }
 
 let canEdit = true
-let previewData: ImportPreview | undefined
+let previewError: Error | null = null
+/** false: the import answers only when the test calls `answer()` */
+let answerAtOnce = true
+let answer: () => void = () => {}
 const sent: ImportSettings[] = []
-const previewMutate = vi.fn((_: unknown, options: { onSuccess: (p: ImportPreview) => void }) => {
-  previewData = PREVIEW
-  options.onSuccess(PREVIEW)
-})
+const read: { charset: string | null; firstRowIsData: boolean }[] = []
+const previewMutate = vi.fn(
+  (variables: { options: { charset: string | null; firstRowIsData: boolean } }, options: { onSuccess: (p: ImportPreview) => void }) => {
+    read.push(variables.options)
+    options.onSuccess(PREVIEW)
+  },
+)
 const importMutate = vi.fn((variables: { settings: ImportSettings }, options: { onSuccess: (r: ImportResult) => void }) => {
   sent.push(variables.settings)
-  options.onSuccess({ ...RESULT, dryRun: variables.settings.dryRun ?? false })
+  answer = () => options.onSuccess({ ...RESULT, dryRun: variables.settings.dryRun ?? false })
+  if (answerAtOnce) answer()
 })
 
 vi.mock('../../app/person/useDevicePerson', () => ({ useCanEdit: () => canEdit }))
 vi.mock('../../components/ui/toastContext', () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn() }) }))
+vi.mock('../../app/useUnsavedChanges', () => ({ useUnsavedChanges: () => () => {} }))
 vi.mock('./dataImportApi', () => ({
-  useImportPreview: () => ({
-    data: previewData,
-    mutate: previewMutate,
-    isPending: false,
-    error: null,
-    reset: () => (previewData = undefined),
-  }),
+  useImportPreview: () => ({ mutate: previewMutate, isPending: false, error: previewError, reset: vi.fn() }),
   useImportData: () => ({ mutate: importMutate, isPending: false, error: null, reset: vi.fn() }),
 }))
 
 afterEach(() => {
   canEdit = true
-  previewData = undefined
+  previewError = null
+  answerAtOnce = true
   sent.length = 0
+  read.length = 0
   previewMutate.mockClear()
   importMutate.mockClear()
   localStorage.clear()
@@ -110,6 +115,43 @@ describe('DataImport (neutral 5)', () => {
 
     expect(screen.queryByRole('button', { name: 'Jetzt übernehmen' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Probelauf' })).toBeTruthy()
+  })
+
+  it('a dry run that answers after the mapping changed unlocks nothing – it was for other columns', () => {
+    answerAtOnce = false
+    render(<DataImport />)
+    chooseFile()
+    fireEvent.click(screen.getByRole('button', { name: 'Probelauf' }))
+
+    fireEvent.change(screen.getByLabelText('Kd-Nr'), { target: { value: 'COMPANY' } })
+    act(() => answer())
+
+    expect(screen.queryByRole('button', { name: 'Jetzt übernehmen' })).toBeNull()
+  })
+
+  it('another character set: read again, the mapping stays on screen as it was', () => {
+    render(<DataImport />)
+    chooseFile()
+    fireEvent.change(screen.getByLabelText('Kd-Nr'), { target: { value: 'COMPANY' } })
+
+    fireEvent.change(screen.getByLabelText('Zeichensatz'), { target: { value: 'windows-1252' } })
+
+    expect(read).toEqual([
+      { charset: null, firstRowIsData: false },
+      { charset: 'windows-1252', firstRowIsData: false },
+    ])
+    expect((screen.getByLabelText('Kd-Nr') as HTMLSelectElement).value).toBe('COMPANY')
+  })
+
+  it('a refused file: the reason of the server', () => {
+    previewError = new ApiError({
+      status: 400,
+      title: 'Ungültige Anfrage',
+      errors: [{ field: 'charset', message: 'Unbekannter Zeichensatz' }],
+    })
+    render(<DataImport />)
+
+    expect(screen.getByRole('alert').textContent).toBe('Unbekannter Zeichensatz')
   })
 
   it('the same columns again: the mapping of last time', () => {
